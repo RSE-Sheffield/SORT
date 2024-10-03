@@ -1,0 +1,30 @@
+{% load static %}
+<html>
+    <head>
+        <title>SORT</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    </head>
+
+    <body>
+
+        <nav class="navbar navbar-dark bg-dark">
+            <div class="ms-auto">
+                {% if user.is_authenticated %}
+
+                <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-light me-1">Logout</button>
+                </form>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-outline-light me-1">Login</a>
+                <a href="{% url 'signup' %}" class="btn btn-outline-light me-1">Signup</a>
+                {% endif %}
+            </div>
+        </nav>
+
+      <div class="my-5 text-center container">
+        {% block content %}
+        {% endblock %}
+      </div>
+    </body>
+</html>
