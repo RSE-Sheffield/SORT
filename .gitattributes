@@ -1,3 +1,2 @@
 # Handle line endings
-* text=auto
 *.py text eol=lf

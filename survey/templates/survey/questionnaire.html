@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+   <h3>{{ questionnaire.title }}</h3>
+    <p>{{ questionnaire.description }}</p>
+
+    {% if legend_text %}
+    <div class="legend">
+        <p><strong>Legend:</strong> {{ legend_text }}</p>
+    </div>
+    {% endif %}
+
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == "info" %}
+                <div class="alert alert-success" role="alert">
+                    {{ message }}
+                </div>
+            {% elif message.tags == "error" %}
+                <div class="alert alert-danger" role="alert">
+                    {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+   <form method="post">
+       {% csrf_token %}
+       {{ form.as_p }}
+       <button type="submit">Submit</button>
+   </form>
+
+{% endblock %}

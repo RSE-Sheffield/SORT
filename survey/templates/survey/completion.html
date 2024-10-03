@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h3>Survey Completed!</h3>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+
+{#    <p>#}
+{#        <a href="{% url 'questionnaire' pk=questionnaire.pk %}">Take the survey again.</a>#}
+{#    </p>#}
+{% endblock %}
