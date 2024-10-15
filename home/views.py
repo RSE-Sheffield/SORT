@@ -8,9 +8,10 @@ from django.urls import reverse_lazy
 from survey.models import Questionnaire
 from django.shortcuts import render
 from django.views import View
+from .forms import ManagerSignupForm
 
 class SignupView(CreateView):
-    form_class = UserCreationForm
+    form_class = ManagerSignupForm
     template_name = 'home/register.html'
     success_url = reverse_lazy('home')
 
