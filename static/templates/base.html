@@ -12,6 +12,7 @@
                 {% if user.is_authenticated %}
 
                 <a href="{% url 'home' %}" class="btn btn-outline-light me-1">Home</a>
+                <a href="{% url 'invite' %}" class="btn btn-outline-light me-1">Invites</a>
                 <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline-light me-1">Logout</button>
