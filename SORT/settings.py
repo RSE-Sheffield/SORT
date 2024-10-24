@@ -41,11 +41,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_bootstrap5",
 
     # apps created by FA:
 
     "home",
     "survey",
+    "invites",
 ]
 
 MIDDLEWARE = [
@@ -131,9 +133,9 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-STATICFILES_DIRS=[
-    BASE_DIR / 'static',
-]
+STATICFILES_DIRS = [BASE_DIR / 'static']
+
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -149,3 +151,9 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # FA: 30 minutes before automatic log out
 SESSION_COOKIE_AGE = 1800
+
+# FA: for local testing emails:
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
