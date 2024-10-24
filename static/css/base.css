@@ -1,0 +1,78 @@
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Source Sans Pro', sans-serif;
+    line-height: 1.6;
+}
+
+
+.card-header {
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+}
+
+
+.form-label {
+    font-weight: normal;
+}
+
+.text-center a {
+    color: #7C4DB8;
+    text-decoration: none;
+}
+
+.text-center a:hover {
+    color: #440099;
+    text-decoration: underline;
+}
+
+.container-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.card {
+    border-radius: 10rem;
+    box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 50%;
+}
+
+
+.card-body {
+    max-width: 400px;
+    width: 100%;
+    line-height: 1.5;
+}
+
+.title-container {
+    margin-bottom: 5px;
+}
+
+.sort-title {
+    font-size: 2rem;
+    font-weight: normal;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: #555;
+}
+
+.btn-primary {
+    background-color: #6933AD !important;
+    border-color: #6933AD !important;
+}
+
+.btn-primary:hover {
+    background-color: #440099 !important;
+    border-color: #440099 !important;
+}
+
+.btn-primary, .btn-primary:hover {
+    color: white !important;
+}
