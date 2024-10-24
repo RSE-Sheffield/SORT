@@ -1,11 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="container full-height d-flex align-items-center justify-content-center">
+    <div class="container">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <!-- Loop through each form field and apply Bootstrap classes -->
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                <div class="text-danger">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
 
-<form method="POST" style="text-align: left ; margin:auto; width: 600px; font-size:small">
-    {% csrf_token %}
-    {{form.as_p}}
-    <input type="submit" class="btn btn-secondary" name="Submit">
-</form>
-
+                    <button type="submit" class="btn btn-primary w-100">Register</button>
+                </form>
+                <div class="text-center mt-2 small-text" style="font-size: 0.7rem;">
+                    <a href="{% url 'login' %}">Already have an account? Login here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

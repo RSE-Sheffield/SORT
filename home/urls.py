@@ -9,5 +9,5 @@ urlpatterns = [
     path('logout/', views.LogoutInterfaceView.as_view(), name='logout'),
     path('signup/', views.SignupView.as_view(), name='signup'),
     path('', include('survey.urls'), name='survey'),
-    path('', include('invitations.urls'), name='invites'),
+    path('invite/', include('invites.urls'), name='invites')
 ]

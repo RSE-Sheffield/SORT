@@ -1,8 +1,6 @@
-from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic.edit import CreateView
-from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from survey.models import Questionnaire
@@ -21,11 +19,16 @@ class SignupView(CreateView):
         return super().get(request, *args, **kwargs)
 
 class LogoutInterfaceView(LogoutView):
-    template_name = 'home/logout.html'
+    success_url = reverse_lazy('login')
 
 class LoginInterfaceView(LoginView):
     template_name = 'home/login.html'
     success_url = reverse_lazy('home')
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('home')
+        return super().dispatch(request, *args, **kwargs)
 
 
 class HomeView(LoginRequiredMixin, View):
