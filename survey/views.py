@@ -4,34 +4,89 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Questionnaire, Answer, Comment
 from .forms import AnswerForm
 from django.contrib import messages
+from invites.models import Invitation
+from .mixins import TokenAuthenticationMixin
+import logging
 
+logger = logging.getLogger(__name__)
 
-class QuestionnaireView(LoginRequiredMixin, View):
+class QuestionnaireView(TokenAuthenticationMixin, View):
     login_url = '/login/'  # redirect to login if not authenticated
 
+    def get(self, request, pk, token):
+        # Retrieve the questionnaire
+        questionnaire = get_object_or_404(Questionnaire, pk=pk)
+
+        if not self.validate_token(token):
+            messages.error(request, "Invalid or expired invitation token.")
+            logger.error(f"Token validation failed.")
+            return redirect('completion_page')
+
+        form = AnswerForm(questionnaire=questionnaire)
+        question_numbers = list(enumerate(questionnaire.questions.all(), start=1))
+
+        rating_questions = questionnaire.questions.filter(question_type='rating')
+        legend_text = self.get_legend_text(rating_questions)
+
+        return render(request, 'survey/questionnaire.html', {
+            'form': form,
+            'questionnaire': questionnaire,
+            'question_numbers': question_numbers,
+            'legend_text': legend_text,
+            'token': token,
+        })
+
+    def post(self, request, pk, token):
+        logger.info("Received POST request for questionnaire and token")
+        questionnaire = get_object_or_404(Questionnaire, pk=pk)
+        form = AnswerForm(request.POST, questionnaire=questionnaire)
+
+        if form.is_valid():
+            if self.all_agree(form, questionnaire):
+                self.save_answers(form, questionnaire, token)
+                next_questionnaire = self.get_next_questionnaire(questionnaire)
+
+                if next_questionnaire:
+                    logger.info(f"Redirecting to next questionnaire: {next_questionnaire.pk}")
+                    return redirect('questionnaire', pk=next_questionnaire.pk, token=token)
+                else:
+                    logger.info("No more questionnaires. Redirecting to completion page.")
+                    return redirect('completion_page')
+
+            else:
+                messages.error(request, "You must agree to all statements to proceed.")
+
+        context = {
+            'form': form,
+            'questionnaire': questionnaire,
+            'question_numbers': enumerate(questionnaire.questions.all(), start=1),
+            'token': token,
+        }
+        return render(request, 'survey/questionnaire.html', context=context)
+
     def all_agree(self, form, questionnaire):
-        # only check agreement for the consent questionnaire
         if questionnaire.title == "Consent":
             for question in questionnaire.questions.all():
                 answer_text = form.cleaned_data.get(f'question_{question.id}')
                 if answer_text != "agree":
                     return False
         return True
-    def save_answers(self, form, questionnaire, user):
+
+    def save_answers(self, form, questionnaire, token):
         for question in questionnaire.questions.all():
             answer_text = form.cleaned_data.get(f'question_{question.id}')
             Answer.objects.create(
                 question=question,
                 answer_text=answer_text,
-                user=user
+                token=token,
             )
 
         comment_text = form.cleaned_data.get('comments')
         if comment_text:
             Comment.objects.create(
                 text=comment_text,
-                user=user,
-                questionnaire=questionnaire
+                questionnaire=questionnaire,
+                token=token,
             )
 
     def get_legend_text(self, rating_questions):
@@ -43,50 +98,22 @@ class QuestionnaireView(LoginRequiredMixin, View):
         next_questionnaire = (
             Questionnaire.objects
             .exclude(title="Consent")
-            .filter(pk__gt=current_questionnaire.pk)  #
+            .filter(pk__gt=current_questionnaire.pk)
             .order_by('pk')
             .first()
         )
         return next_questionnaire
 
-    def get(self, request, pk):
-        questionnaire = get_object_or_404(Questionnaire, pk=pk)
-        form = AnswerForm(questionnaire=questionnaire)
-        question_numbers = list(enumerate(questionnaire.questions.all(), start=1))
 
-        rating_questions = questionnaire.questions.filter(question_type='rating')
-        legend_text = self.get_legend_text(rating_questions)
+    def validate_token(self, token):
 
-        return render(request, 'survey/questionnaire.html', {
-            'form': form,
-            'questionnaire': questionnaire,
-            'question_numbers': question_numbers,
-            'legend_text': legend_text
-        })
+        is_valid = Invitation.objects.filter(token=token).exists()
 
-    def post(self, request, pk):
-        questionnaire = get_object_or_404(Questionnaire, pk=pk)
-        form = AnswerForm(request.POST, questionnaire=questionnaire)
-
-        if form.is_valid():
-            if self.all_agree(form, questionnaire):
-                self.save_answers(form, questionnaire, request.user)
-                next_questionnaire = self.get_next_questionnaire(questionnaire)
-
-                if next_questionnaire:
-                    return redirect('questionnaire', pk=next_questionnaire.pk)
-                else:
-                    return redirect('completion_page')
-
-            else:
-                messages.error(request, "You must agree to all statements to proceed.")
-
-        return render(request, 'survey/questionnaire.html', {
-            'form': form,
-            'questionnaire': questionnaire,
-            'question_numbers': enumerate(questionnaire.questions.all(), start=1)
-        })
-
+        if is_valid:
+            logger.info(f"Token is valid.")
+        else:
+            logger.warning(f"Token is invalid or expired.")
+        return is_valid
 
 class CompletionView(View):
     def get(self, request):

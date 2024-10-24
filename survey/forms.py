@@ -31,9 +31,10 @@ class AnswerForm(forms.ModelForm):
 
                 else:
 
-                    self.fields[f'question_{question.id}'] = forms.CharField(
-                        label=question.question_text,
-                        required=True,
-                        widget=forms.Textarea(attrs={'rows': 4, 'style': 'width: 80%;'}),
-                    )
+                    pass
 
+                    # self.fields[f'question_{question.id}'] = forms.CharField(
+                    #     label=question.question_text,
+                    #     required=True,
+                    #     widget=forms.Textarea(attrs={'rows': 4, 'style': 'width: 80%;'}),
+                    # )

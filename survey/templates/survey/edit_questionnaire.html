@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Edit Questionnaire: {{ questionnaire.title }}</h1>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <h2>Edit Questions</h2>
+    {% for question_form in question_edit_forms %}
+      <div>
+        <label>{{ question_form.instance.text }}</label>
+        {{ question_form.as_p }}
+      </div>
+    {% endfor %}
+
+    <h2>Add New Question</h2>
+    {{ new_question_form.as_p }}
+    <button type="submit">Save Changes</button>
+  </form>
+
+{% endblock %}

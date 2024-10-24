@@ -10,8 +10,8 @@ class Questionnaire(models.Model):
     def __str__(self):
         return self.title
 
-    def get_absolute_url(self):
-        return reverse('questionnaire', kwargs={'pk': self.pk})
+    def get_absolute_url(self, token):
+        return reverse('survey', kwargs={'pk': self.pk, 'token': token})
 
 
 class Question(models.Model):
@@ -35,19 +35,19 @@ class Answer(models.Model):
     # User answer data model
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     answer_text = models.TextField(blank=True, null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.CharField(max_length=64, blank=True, editable=False)
     submitted_at = models.DateTimeField(null=True)  #
 
     def __str__(self):
-        return f"Answer for {self.question.question_text} by {self.user.username}"
+        return f"Answer for {self.question.question_text}"
 
 
 class Comment(models.Model):
     # Comments data model
     questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.CharField(max_length=64, blank=True, editable=False)
     text = models.TextField()
     submitted_at = models.DateTimeField(null=True)
 
     def __str__(self):
-        return f"Comment by {self.user} on {self.questionnaire.title}"
+        return f"Comment on {self.questionnaire.title}"

@@ -24,10 +24,11 @@
         {% endfor %}
     {% endif %}
 
-   <form method="post">
-       {% csrf_token %}
-       {{ form.as_p }}
-       <button type="submit">Submit</button>
-   </form>
+    <form method="post" action="{% url 'questionnaire' pk=questionnaire.pk token=token %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+
 
 {% endblock %}
