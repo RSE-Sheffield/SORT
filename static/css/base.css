@@ -1,13 +1,42 @@
 body {
-    margin: 0;                  /* Removes default margin */
-    padding: 0;                 /* Removes default padding */
-    height: 100vh;              /* Ensures the body takes the full height of the viewport */
-    overflow: hidden;           /* Prevents any scroll bars from appearing */
+    font-family: 'Source Sans Pro', sans-serif;
+    background-color: #f8f9fa;
 }
+
+header {
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.navbar {
+    background-color: #DACCEB;
+}
+
+
+
+footer {
+    position: relative;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0px 0; /
+}
+
+
+.container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+
 
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Source Sans Pro', sans-serif;
     line-height: 1.6;
+    font-weight: normal
 }
 
 
@@ -46,7 +75,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .card {
-    border-radius: 10rem;
+    border-radius: 1rem;
     box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.2);
     max-width: 400px;
     width: 50%;
@@ -90,7 +119,7 @@ h1, h2, h3, h4, h5, h6 {
 
 
 .full-height {
-    height: 100vh; /* Full viewport height */
+    height: 100vh;
 }
 
 
