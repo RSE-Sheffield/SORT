@@ -14,6 +14,9 @@ from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, 
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+
 
 class SignupView(CreateView):
     form_class = ManagerSignupForm
@@ -84,12 +87,6 @@ class CustomPasswordResetView(PasswordResetView):
     success_url = reverse_lazy('password_reset_done')
     subject_template_name = 'home/password_reset_subject.txt'
 
-    def get(self, request, *args, **kwargs):
-        uidb64 = kwargs.get('uidb64')
-        token = kwargs.get('token')
-        print(uidb64, token)
-        return super().get(request, *args, **kwargs)
-
     def post(self, request, *args, **kwargs):
         email = request.POST.get('email')
         if not email:
@@ -104,15 +101,12 @@ class CustomPasswordResetView(PasswordResetView):
             return self.get(request, *args, **kwargs)
 
     def form_valid(self, form):
-        # Call the superclass method
         response = super().form_valid(form)
-
-        # Debugging the uid and token
         for user in form.get_users(form.cleaned_data['email']):
-            uid = user.pk
-            token = default_token_generator.make_token(user)  # Generate the token
-            print(f'Password reset for user: {user}, uid: {uid}, token: {token}')
-
+            print(f'Debug - user.pk: {user.pk}')
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            print(f'Debug - uidb64: {uidb64}, token: {token}')
         return response
 
 
@@ -123,6 +117,12 @@ class CustomPasswordResetDoneView(PasswordResetDoneView):
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'home/password_reset_confirm.html'
     success_url = reverse_lazy('password_reset_complete')
+
+    def get(self, request, *args, **kwargs):
+        uidb64 = kwargs.get('uidb64')
+        token = kwargs.get('token')
+        print(f'CustomPasswordResetConfirmView: {uidb64}, uid: {token}, token: {token}')
+        return super().get(request, *args, **kwargs)
 
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
