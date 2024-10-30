@@ -159,3 +159,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
+
+
+# FA: for production:
+
+#EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

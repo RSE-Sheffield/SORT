@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView
-from django.views.generic import TemplateView
+from django.contrib.auth.views import PasswordResetConfirmView
 from django.views.generic.edit import CreateView, UpdateView
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -10,7 +10,10 @@ from django.shortcuts import render
 from django.views import View
 from .forms import ManagerSignupForm, ManagerLoginForm, UserProfileForm
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
+from django.urls import reverse_lazy
 from django.contrib import messages
+from django.contrib.auth.tokens import default_token_generator
 
 class SignupView(CreateView):
     form_class = ManagerSignupForm
@@ -73,3 +76,54 @@ class ProfileView(LoginRequiredMixin, UpdateView):
     def form_invalid(self, form):
         messages.error(self.request, 'Please correct the errors below.')
         return super().form_invalid(form)
+
+
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'home/password_reset_form.html'
+    email_template_name = 'home/password_reset_email.html'
+    success_url = reverse_lazy('password_reset_done')
+    subject_template_name = 'home/password_reset_subject.txt'
+
+    def get(self, request, *args, **kwargs):
+        uidb64 = kwargs.get('uidb64')
+        token = kwargs.get('token')
+        print(uidb64, token)
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        email = request.POST.get('email')
+        if not email:
+            messages.error(request, "Email field is required.")
+            return self.get(request, *args, **kwargs)
+
+        try:
+            User.objects.get(email=email)
+            return super().post(request, *args, **kwargs)
+        except User.DoesNotExist:
+            messages.error(request, "No user is associated with this email address.")
+            return self.get(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        # Call the superclass method
+        response = super().form_valid(form)
+
+        # Debugging the uid and token
+        for user in form.get_users(form.cleaned_data['email']):
+            uid = user.pk
+            token = default_token_generator.make_token(user)  # Generate the token
+            print(f'Password reset for user: {user}, uid: {uid}, token: {token}')
+
+        return response
+
+
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'home/password_reset_done.html'
+
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'home/password_reset_confirm.html'
+    success_url = reverse_lazy('password_reset_complete')
+
+
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = 'home/password_reset_complete.html'
