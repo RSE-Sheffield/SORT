@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SORT{% endblock %}</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login_base.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x"
@@ -20,21 +20,43 @@
             <h1 class="sort-title">SORT</h1>
             <p class="subtitle">The Self-Assessment of Organisational Readiness Tool</p>
         </div>
+
         <div class="card">
             <div class="card-body">
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="text-center alert alert-danger" role="alert" style="font-size: 0.7rem;">
-                            {{ message }}
-                        </div>
+                        {% if message.tags == 'success' %}
+                            <div class="text-center alert alert-success" role="alert" style="font-size: 0.7rem;">
+                                {{ message }}
+                            </div>
+                        {% endif %}
                     {% endfor %}
                 {% endif %}
-                {% block content %}
-                <!-- Content goes here -->
-                {% endblock %}
 
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'error' %}
+                            <div class="text-center alert alert-danger" role="alert" style="font-size: 0.7rem;">
+                                {{ message }}
+                            </div>
+                        {% elif message.tags == 'warning' %}
+                            <div class="text-center alert alert-warning" role="alert" style="font-size: 0.7rem;">
+                                {{ message }}
+                            </div>
+                        {% elif message.tags == 'info' %}
+                            <div class="text-center alert alert-info" role="alert" style="font-size: 0.7rem;">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                {% block content %}
+                <!-- Content  here -->
+                {% endblock %}
             </div>
         </div>
     </div>
+
 </body>
 </html>
