@@ -153,6 +153,8 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # FA: 30 minutes before automatic log out
 SESSION_COOKIE_AGE = 1800
 
+PASSWORD_RESET_TIMEOUT = 1800 # FA: default to expire after 30 minutes
+
 # FA: for local testing emails:
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
