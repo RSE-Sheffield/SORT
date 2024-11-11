@@ -14,23 +14,19 @@ header {
     background-color: #DACCEB;
 }
 
-
-
 footer {
     position: relative;
     left: 0;
     right: 0;
     bottom: 0;
-    padding: 0px 0; /
+    padding: 0 0; /
 }
-
 
 .container {
     display: flex;
     justify-content: center;
     flex-direction: column;
 }
-
 
 
 h1, h2, h3, h4, h5, h6 {
@@ -56,36 +52,24 @@ h1, h2, h3, h4, h5, h6 {
     text-decoration: underline;
 }
 
-.container-login {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 90vh;
-    flex-direction: column;
-    padding: 5px;
-}
-
-.container-register {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 90vh;
-    flex-direction: column;
-    padding: 5px;
-}
-
 .card {
     border-radius: 1rem;
     box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.2);
-    max-width: 400px;
-    width: 50%;
+    width: 100%;
+     flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+
 }
 
 
 .card-body {
-    max-width: 400px;
     width: 100%;
     line-height: 1.5;
+     flex-direction: column;
+    align-items: center;
+    margin:0 auto;
+
 }
 
 .title-container {
