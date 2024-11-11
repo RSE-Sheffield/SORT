@@ -17,21 +17,16 @@
                        value="{{ field.value|default:'' }}"
                        {% if field.field.required %} required {% endif %} />
               {% if field.errors %}
-                    <div class="text-center alert-danger mt-1" role="alert" style="font-size: 0.7rem">
+                    <div class="text-center alert-danger mt-3 p-2" role="alert" style="font-size: 0.7rem">
                         {{ field.errors|join:", " }}
                     </div>
-
-                    {% if field.help_text %}
-                        <small class="form-text text-muted">{{ field.help_text }}</small>
-                    {% endif %}
-
               {% endif %}
             </div>
         {% endfor %}
 
         <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" id="is_manager" name="is_manager" required>
-            <label class="form-check-label" for="is_manager" style="font-size: 0.8rem">
+            <label class="form-check-label" for="is_manager">
                 I confirm I am signing up to SORT as an account manager.
             </label>
         </div>
