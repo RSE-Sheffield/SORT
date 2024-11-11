@@ -1,7 +1,8 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+
 
 class ManagerSignupForm(UserCreationForm):
     email = forms.EmailField(required=True, label='Email', error_messages={'required': 'Email is required.'})

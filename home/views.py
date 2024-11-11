@@ -7,15 +7,11 @@ from survey.models import Questionnaire
 from django.shortcuts import render
 from django.views import View
 from .forms import ManagerSignupForm, ManagerLoginForm, UserProfileForm
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
-from django.template.loader import render_to_string
-from django.core.mail import send_mail
+
 
 class SignupView(CreateView):
     form_class = ManagerSignupForm
@@ -62,12 +58,11 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
     def form_valid(self, form):
-        form.save()  # Save the user's updated information
-        messages.success(self.request, 'Your profile was successfully updated!')
+        messages.success(self.request, 'Your profile has been successfully updated.')
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, 'Please correct the errors below.')
+        messages.error(self.request, 'There was an error updating your profile. Please try again.')
         return super().form_invalid(form)
 
 
@@ -77,52 +72,18 @@ class CustomPasswordResetView(PasswordResetView):
     success_url = reverse_lazy('password_reset_done')
     subject_template_name = 'home/password_reset_subject.txt'
 
-    def post(self, request, *args, **kwargs):
-        email = request.POST.get('email')
-        if not email:
-            messages.error(request, "Email field is required.")
-            return self.get(request, *args, **kwargs)
-
-        return super().post(request, *args, **kwargs)
-
-    def form_valid(self, form):
-
-        response = super().form_valid(form)
-
-        for user in form.get_users(form.cleaned_data['email']):
-            custom_uid = urlsafe_base64_encode(force_bytes(user.pk, encoding='utf-16'))
-            custom_token = default_token_generator.make_token(user)
-
-            context = {
-                'uid': custom_uid,
-                'token': custom_token,
-                'first_name': user.first_name,
-                'username': user.username,
-                'protocol': 'https' if self.request.is_secure() else 'http',
-                'domain': self.request.get_host(),
-            }
-            email_subject = render_to_string(self.subject_template_name, context).strip()
-            email_body = render_to_string(self.email_template_name, context)
-
-            send_mail(
-                subject=email_subject,
-                message=email_body,
-                from_email="no-reply-SORT@sheffield.ac.uk",
-                recipient_list=[user.email],
-            )
-
-        return super().form_valid(form)
-
-
-class CustomPasswordResetDoneView(PasswordResetDoneView):
-    template_name = 'home/password_reset_done.html'
-
 
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'home/password_reset_confirm.html'
     success_url = reverse_lazy('password_reset_complete')
 
 
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'home/password_reset_done.html'
+
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'home/password_reset_complete.html'
+
+# class PasswordResetExpiredView(TemplateView):  # leave for now
+#     template_name = 'home/password_reset_expired.html'
