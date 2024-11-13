@@ -2,7 +2,6 @@
 
 {% block content %}
     <div class="container">
-
         <form method="post">
             {% csrf_token %}
 
@@ -28,6 +27,9 @@
                 <button type="submit" class="btn btn-primary" style="background-color: #6933AD; border: none;">
                     Update Profile
                 </button>
+              <a href="{% url 'home' %}" class="btn btn-primary" style="background-color: #6933AD; border: none; margin-left: 10px;">
+                    Cancel
+                </a>
             </div>
         </form>
     </div>
