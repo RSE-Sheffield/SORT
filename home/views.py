@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic.edit import CreateView, UpdateView
 from django.shortcuts import redirect
-from survey.models import Questionnaire
+from survey.models import Survey
 from django.shortcuts import render
 from django.views import View
 from .forms import ManagerSignupForm, ManagerLoginForm, UserProfileForm
@@ -44,7 +44,7 @@ class HomeView(LoginRequiredMixin, View):
     template_name = 'home/welcome.html'
     login_url = 'login'
     def get(self, request):
-        consent_questionnaire = Questionnaire.objects.get(
+        consent_questionnaire = Survey.objects.get(
             title="Consent")
         return render(request, 'home/welcome.html', {'questionnaire': consent_questionnaire})
 

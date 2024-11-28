@@ -48,7 +48,6 @@ INSTALLED_APPS = [
 
     "home",
     "survey",
-    "invites",
 ]
 
 MIDDLEWARE = [
