@@ -2,8 +2,9 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
 
-
+User = get_user_model()
 class ManagerSignupForm(UserCreationForm):
     email = forms.EmailField(
         required=True, label="Email", error_messages={"required": "Email is required."}
@@ -41,7 +42,7 @@ class ManagerLoginForm(AuthenticationForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ["email", "first_name", "last_name"]
+        fields = ['email', 'firstname', 'lastname', 'password']
 
     def clean_email(self):
         email = self.cleaned_data.get("email")

@@ -1,24 +1,21 @@
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
-from django.contrib.auth.views import (
-    LoginView,
-    LogoutView,
-    PasswordResetCompleteView,
-    PasswordResetConfirmView,
-    PasswordResetDoneView,
-    PasswordResetView,
-)
-from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
-from django.views import View
+from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic.edit import CreateView, UpdateView
 
 from survey.models import Questionnaire
+from django.shortcuts import render
+from django.views import View
+from .forms import ManagerSignupForm, ManagerLoginForm, UserProfileForm
+from django.contrib.auth import login
+from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
+from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
+from django.contrib import messages
+from django.contrib.auth import get_user_model
 
-from .forms import ManagerLoginForm, ManagerSignupForm, UserProfileForm
-
+User = get_user_model()
 
 class SignupView(CreateView):
     form_class = ManagerSignupForm
