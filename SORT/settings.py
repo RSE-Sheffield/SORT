@@ -163,6 +163,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
+AUTH_USER_MODEL = 'home.User' # FA: replace username with email as unique identifiers
 
 # FA: for production:
 

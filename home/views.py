@@ -1,5 +1,4 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic.edit import CreateView, UpdateView
 from django.shortcuts import redirect
@@ -11,7 +10,9 @@ from django.contrib.auth import login
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 class SignupView(CreateView):
     form_class = ManagerSignupForm
