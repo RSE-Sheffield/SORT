@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h3>{{ title }}</h3>
+<form action="{% url "survey_response" pk=pk token=token %}" method="post">
+    {% csrf_token %}
+    {{ form }}
+
+    <input type="submit" value="Next">
+</form>
+
+{% endblock %}

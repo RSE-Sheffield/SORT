@@ -1,109 +1,148 @@
+from django.core.mail import send_mail
+from django.http import HttpRequest
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse_lazy
 from django.views import View
-from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Questionnaire, Answer, Comment
-from .forms import AnswerForm
+from django.views.generic import FormView, TemplateView
+from django.views.generic.edit import CreateView
 from django.contrib import messages
-from invites.models import Invitation
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .mixins import TokenAuthenticationMixin
-import logging
 
+from .forms import create_dynamic_formset, InvitationForm
+from .models import Survey, SurveyResponse
+from .models import Invitation
+from .misc import test_survey_config
+
+import logging
 logger = logging.getLogger(__name__)
 
-class QuestionnaireView(TokenAuthenticationMixin, View):
+class SurveyView(LoginRequiredMixin, View):
+    """
+    Manager's view of a survey to be sent out. The manager is able to
+    configure what fields are included in the survey on this page.
+    """
     login_url = '/login/'  # redirect to login if not authenticated
 
-    def get(self, request, pk, token):
-        # Retrieve the questionnaire
-        questionnaire = get_object_or_404(Questionnaire, pk=pk)
+    def get(self, request, pk):
+        return self.render_survey_page(request, pk)
 
-        if not self.validate_token(token):
-            messages.error(request, "Invalid or expired invitation token.")
-            logger.error(f"Token validation failed.")
-            return redirect('completion_page')
+    def post(self, request, pk):
+        return self.render_survey_page(request, pk)
 
-        form = AnswerForm(questionnaire=questionnaire)
-        question_numbers = list(enumerate(questionnaire.questions.all(), start=1))
 
-        rating_questions = questionnaire.questions.filter(question_type='rating')
-        legend_text = self.get_legend_text(rating_questions)
+    def render_survey_page(self, request, pk):
+        context = {}
+        survey = get_object_or_404(Survey, pk=pk)
 
-        return render(request, 'survey/questionnaire.html', {
-            'form': form,
-            'questionnaire': questionnaire,
-            'question_numbers': question_numbers,
-            'legend_text': legend_text,
-            'token': token,
-        })
+        context["survey"] = survey
 
-    def post(self, request, pk, token):
-        logger.info("Received POST request for questionnaire and token")
-        questionnaire = get_object_or_404(Questionnaire, pk=pk)
-        form = AnswerForm(request.POST, questionnaire=questionnaire)
+        return render(request, 'survey/survey.html', context)
 
-        if form.is_valid():
-            if self.all_agree(form, questionnaire):
-                self.save_answers(form, questionnaire, token)
-                next_questionnaire = self.get_next_questionnaire(questionnaire)
+# TODO: Add TokenAuthenticationMixin after re-enabling the token
+class SurveyResponseView(View):
+    """
+    Participant's view of the survey. This view renders the survey configuration
+    allowing participant to fill in the survey form and send it for processing.
+    """
 
-                if next_questionnaire:
-                    logger.info(f"Redirecting to next questionnaire: {next_questionnaire.pk}")
-                    return redirect('questionnaire', pk=next_questionnaire.pk, token=token)
+
+    def get(self, request: HttpRequest, pk: int, token: str):
+        return self.render_survey_response_page(request, pk, token, is_post=False)
+
+    def post(self, request: HttpRequest, pk: int, token: str):
+        return self.render_survey_response_page(request, pk, token, is_post=True)
+
+
+    def render_survey_response_page(self,
+                                    request: HttpRequest,
+                                    pk: int,
+                                    token: str,
+                                    is_post: bool):
+
+        survey_form_session_key = "survey_form_session"
+
+        # Check token
+
+        # TODO: Re-enable token once the invitation UI is in place
+        # if not self.validate_token(token):
+        #     messages.error(request, "Invalid or expired invitation token.")
+        #     logger.error(f"Token validation failed.")
+        #     return redirect('survey_link_invalid')
+
+        # Get the survey object and config
+        survey = get_object_or_404(Survey, pk=pk)
+        survey_config = survey.survey_config
+
+        # TODO: Check that config is valid
+
+        # Context for rendering
+        context = {}
+
+        context["pk"] = pk
+        context["token"] = token
+
+        # Gets the session data or sets it anew with section starting from 0
+        session_data = {"section": 0}
+        if is_post:
+            if survey_form_session_key in request.session:
+                session_data = request.session[survey_form_session_key]
+
+        current_section = session_data["section"]
+        survey_form_set = create_dynamic_formset(survey_config["sections"][current_section]["fields"])
+
+        if is_post:
+            # Only process if it's a post request
+
+            # Validate current form
+            survey_form = survey_form_set(request.POST)
+            if survey_form.is_valid():
+                logger.info("Form validated")
+                # Store form data
+                if "data" not in session_data:
+                    session_data["data"] = []
+                session_data["data"].append(survey_form.cleaned_data)
+
+                current_section += 1
+                if current_section < len(survey_config["sections"]):
+                    # Go to next section
+                    logger.info(f"Redirecting to next section")
+                    # Store section's data
+                    session_data["section"] = current_section
+                    # Display the next section
+                    survey_form = create_dynamic_formset(survey_config["sections"][current_section]["fields"])
                 else:
-                    logger.info("No more questionnaires. Redirecting to completion page.")
+                    # No more sections so it's finished
+                    logger.info("No more questions. Redirecting to completion page.")
+
+                    # Save data
+                    SurveyResponse.objects.create(survey=survey, answers=session_data["data"])
+
+                    # Delete session key
+                    del request.session[survey_form_session_key]
+                    request.session.modified = True
+
+                    # TODO: Re-enable this once token has been enabled
+                    # Invalidate token
+                    # token = Invitation.objects.get(token=token)
+                    # token.used = True
+                    # token.save()
+
+                    # Go to the completion page
                     return redirect('completion_page')
-
             else:
-                messages.error(request, "You must agree to all statements to proceed.")
+                logger.info("Form invalid")
+        else:
+            # Return empty form if it's a get request
+            survey_form = survey_form_set()
 
-        context = {
-            'form': form,
-            'questionnaire': questionnaire,
-            'question_numbers': enumerate(questionnaire.questions.all(), start=1),
-            'token': token,
-        }
-        return render(request, 'survey/questionnaire.html', context=context)
+        request.session[survey_form_session_key] = session_data
+        context["title"] = survey_config["sections"][session_data["section"]]["title"]
+        context["form"] = survey_form
 
-    def all_agree(self, form, questionnaire):
-        if questionnaire.title == "Consent":
-            for question in questionnaire.questions.all():
-                answer_text = form.cleaned_data.get(f'question_{question.id}')
-                if answer_text != "agree":
-                    return False
-        return True
-
-    def save_answers(self, form, questionnaire, token):
-        for question in questionnaire.questions.all():
-            answer_text = form.cleaned_data.get(f'question_{question.id}')
-            Answer.objects.create(
-                question=question,
-                answer_text=answer_text,
-                token=token,
-            )
-
-        comment_text = form.cleaned_data.get('comments')
-        if comment_text:
-            Comment.objects.create(
-                text=comment_text,
-                questionnaire=questionnaire,
-                token=token,
-            )
-
-    def get_legend_text(self, rating_questions):
-        if rating_questions.exists():
-            return "Our Organisation: (0=Not yet planned; 1=Planned; 2=Early progress; 3=Substantial Progress; 4=Established)"
-        return ""
-
-    def get_next_questionnaire(self, current_questionnaire):
-        next_questionnaire = (
-            Questionnaire.objects
-            .exclude(title="Consent")
-            .filter(pk__gt=current_questionnaire.pk)
-            .order_by('pk')
-            .first()
-        )
-        return next_questionnaire
-
+        return render(request=request,
+                      template_name='survey/survey_response.html',
+                      context=context)
 
     def validate_token(self, token):
 
@@ -115,7 +154,56 @@ class QuestionnaireView(TokenAuthenticationMixin, View):
             logger.warning(f"Token is invalid or expired.")
         return is_valid
 
+class SurveyLinkInvalidView(View):
+    """
+    Shown when a participant is trying to access the SurveyResponseView using an
+    invalid pk or token.
+    """
+
+    def get(self, request):
+        return render(request, "survey/survey_link_invalid_view.html" )
+
 class CompletionView(View):
+    """
+    Shown when a survey is completed by a participant.
+    """
     def get(self, request):
         messages.info(request, "You have completed the survey.")
         return render(request, 'survey/completion.html')
+
+class InvitationView(FormView):
+
+    template_name = 'invitations/send_invitation.html'
+    form_class = InvitationForm
+    success_url = reverse_lazy('success_invitation')
+
+    def form_valid(self, form):
+        email = form.cleaned_data['email']
+
+        questionnaire = Survey.objects.first()
+
+        invitation = Invitation.objects.create(questionnaire=questionnaire)
+
+        token = invitation.token
+
+        # Generate the survey link with the token
+        survey_link = f"http://localhost:8000/survey/{questionnaire.pk}/{token}/"
+
+        # Send the email
+        send_mail(
+            'Your Survey Invitation',
+            f'Click here to start the survey: {survey_link}',
+            'from@example.com',
+            [email],
+            fail_silently=False,
+        )
+
+        # Show success message
+        messages.success(self.request, f'Invitation sent to {email}.')
+        return super().form_valid(form)
+
+
+
+class SuccessInvitationView(LoginRequiredMixin, TemplateView):
+
+    template_name = 'invitations/complete_invitation.html'
