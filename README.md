@@ -59,7 +59,15 @@ python manage.py createsuperuser
 
 ---
 
-6. Finally, run start the development server
+6. Create a `.env` file in the project root directory and add the following environment variables:
+
+```
+DJANGO_SECRET_KEY=your_secret_key
+```
+
+---
+
+7. Finally, run start the development server
 ```bash
 python manage.py runserver
 ```

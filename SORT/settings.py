@@ -165,7 +165,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-
+# For django-debug-toolbar
 INTERNAL_IPS = [
     # ...
     "127.0.0.1",
