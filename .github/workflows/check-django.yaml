@@ -9,6 +9,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install Django
-        run: pip install django
+        run: pip install django dotenv
       - name: Run Django deployment checks
         run: python manage.py check --deploy
