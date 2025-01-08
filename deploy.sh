@@ -29,6 +29,7 @@ cp --recursive * "$sort_dir/"
 # Install Gunicorn service
 cp --verbose config/systemd/gunicorn.service /etc/systemd/system/gunicorn.service
 cp --verbose config/systemd/gunicorn.socket /etc/systemd/system/gunicorn.socket
+systemctl daemon-reload
 
 systemctl enable gunicorn.service
 systemctl enable gunicorn.socket
