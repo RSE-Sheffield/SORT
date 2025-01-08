@@ -1,0 +1,11 @@
+# Django deployment checks
+# https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+name: Check Django deployment
+on: [ push ]
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - run: python manage.py check --deploy

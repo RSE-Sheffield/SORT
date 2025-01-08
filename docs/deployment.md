@@ -1,5 +1,7 @@
 # Deployment
 
+This app can be deployed to a web server using the script [`deploy.sh`](../deploy.sh) and configured as described in the section below.
+
 The production web server has the following architecture:
 
 ```mermaid
@@ -17,8 +19,6 @@ end
 
 
 
-This app can be deployed to a web server using the script [`deploy.sh`](../deploy.sh).
-
 You may also refer to the following guides:
 
 * Django documentation: [How to deploy Django](https://docs.djangoproject.com/en/5.1/howto/deployment/)
@@ -27,6 +27,22 @@ You may also refer to the following guides:
 The relevant files are:
 
 * The `config/` directory contains server configuration files.
+
+# Configuration
+
+To configure the environment variables for the service:
+
+```bash
+sudo systemctl edit gunicorn.service
+```
+
+Add the following lines:
+
+```ini
+[Service]
+Environment="DJANGO_SECRET_KEY=*********"
+Environment="DJANGO_ALLOWED_HOSTS=sort-web-app.shef.ac.uk www.sort-web-app.shef.ac.uk"
+```
 
 # Monitoring
 
@@ -43,6 +59,7 @@ sudo systemctl status nginx
 
 ```bash
 sudo tail /var/log/nginx/error.log
+sudo tail /var/log/nginx/access.log
 ```
 
 [Gunicorn logs](https://docs.gunicorn.org/en/stable/settings.html#logging)

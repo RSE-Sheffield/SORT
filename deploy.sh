@@ -23,7 +23,7 @@ apt install --yes -qq "$python_version" "$python_version-venv"
 python3 -m venv "$venv_dir"
 
 # Install the SORT Django app package
-$pip install -r requirements.txt
+$pip install --quiet -r requirements.txt
 cp --recursive * "$sort_dir/"
 
 # Install Gunicorn service
