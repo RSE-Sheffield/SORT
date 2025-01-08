@@ -42,5 +42,6 @@ apt install --yes -qq nginx
 # Configure web server
 rm -f /etc/nginx/sites-enabled/default
 cp config/nginx/*.conf /etc/nginx/sites-available
-ln -s /etc/nginx/sites-available/gunicorn.conf /etc/nginx/sites-enabled/gunicorn.conf
+# Enable the site by creating a symbolic link
+ln --symbolic --force /etc/nginx/sites-available/gunicorn.conf /etc/nginx/sites-enabled/gunicorn.conf
 systemctl reload nginx.service
