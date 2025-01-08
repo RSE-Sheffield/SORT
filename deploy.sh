@@ -16,6 +16,7 @@ sort_dir="/opt/sort"
 venv_dir="$sort_dir/venv"
 pip="$venv_dir/bin/pip"
 python_version="python3.12"
+python="$venv_dir/bin/python"
 
 # Create Python virtual environment
 apt update -qq
@@ -25,8 +26,6 @@ python3 -m venv "$venv_dir"
 # Install the SORT Django app package
 $pip install --quiet -r requirements.txt
 cp --recursive * "$sort_dir/"
-# Collect static files
-"$venv_dir/bin/python" manage.py collectstatic
 
 # Install Gunicorn service
 cp --verbose config/systemd/gunicorn.service /etc/systemd/system/gunicorn.service
@@ -35,6 +34,7 @@ systemctl daemon-reload
 systemctl enable gunicorn.service
 systemctl enable gunicorn.socket
 systemctl reload gunicorn.service
+systemctl restart gunicorn.service
 
 # Install web reverse proxy server
 # Install nginx
