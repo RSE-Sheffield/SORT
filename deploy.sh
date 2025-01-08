@@ -12,7 +12,8 @@ set -e
 # sudo bash deploy.sh
 
 # Options
-venv_dir="/opt/sort/venv"
+sort_dir="/opt/sort"
+venv_dir="$sort_dir/venv"
 pip="$venv_dir/bin/pip"
 python_version="python3.12"
 
@@ -22,7 +23,8 @@ apt install --yes -qq "$python_version" "$python_version-venv"
 python3 -m venv "$venv_dir"
 
 # Install the SORT Django app package
-$pip install .
+$pip install -r requirements.txt
+cp --recursive * "$sort_dir/"
 
 # Install Gunicorn service
 cp --verbose config/systemd/gunicorn.service /etc/systemd/system/gunicorn.service
