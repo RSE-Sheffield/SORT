@@ -167,3 +167,5 @@ INTERNAL_IPS = [
 # FA: for production:
 
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+STATIC_ROOT = os.getenv('DJANGO_STATIC_ROOT')

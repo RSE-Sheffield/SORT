@@ -36,7 +36,17 @@ The relevant files are:
 
 # Configuration
 
-To configure the environment variables for the service:
+To configure the environment variables for the service, you can either edit the `.env` file and/or add them to the systemd service.
+
+To edit the environment file:
+
+```bash
+sudo nano /opt/sort/.env
+```
+
+## Service options
+
+To edit the system service options:
 
 ```bash
 sudo systemctl edit gunicorn.service

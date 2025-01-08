@@ -25,6 +25,8 @@ python3 -m venv "$venv_dir"
 # Install the SORT Django app package
 $pip install --quiet -r requirements.txt
 cp --recursive * "$sort_dir/"
+# Collect static files
+"$venv_dir/bin/python" manage.py collectstatic
 
 # Install Gunicorn service
 cp --verbose config/systemd/gunicorn.service /etc/systemd/system/gunicorn.service
