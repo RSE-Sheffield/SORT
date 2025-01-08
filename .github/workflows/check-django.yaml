@@ -8,4 +8,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - run: python manage.py check --deploy
+      - name: Install Django
+        run: pip install django
+      - name: Run Django deployment checks
+        run: python manage.py check --deploy
