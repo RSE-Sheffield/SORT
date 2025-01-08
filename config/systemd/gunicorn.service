@@ -25,6 +25,7 @@ TimeoutStopSec=5
 PrivateTmp=true
 # if your app does not need administrative capabilities, let systemd know
 ProtectSystem=strict
+Delegate=yes
 
 [Install]
 WantedBy=multi-user.target

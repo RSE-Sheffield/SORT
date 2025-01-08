@@ -30,7 +30,6 @@ cp --recursive * "$sort_dir/"
 cp --verbose config/systemd/gunicorn.service /etc/systemd/system/gunicorn.service
 cp --verbose config/systemd/gunicorn.socket /etc/systemd/system/gunicorn.socket
 systemctl daemon-reload
-
 systemctl enable gunicorn.service
 systemctl enable gunicorn.socket
 
@@ -38,6 +37,8 @@ systemctl enable gunicorn.socket
 # Install nginx
 # https://nginx.org/en/docs/install.html
 apt install --yes -qq nginx
-rm -f /etc/nginx/sites-enabled/default
 
 # Configure web server
+rm -f /etc/nginx/sites-enabled/default
+cp config/nginx/*.conf /etc/nginx/sites-available
+ln -s /etc/nginx/sites-available/gunicorn.conf /etc/nginx/sites-enabled/gunicorn.conf
