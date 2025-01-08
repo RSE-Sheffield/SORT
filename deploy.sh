@@ -32,6 +32,7 @@ cp --verbose config/systemd/gunicorn.socket /etc/systemd/system/gunicorn.socket
 systemctl daemon-reload
 systemctl enable gunicorn.service
 systemctl enable gunicorn.socket
+systemctl reload gunicorn.service
 
 # Install web reverse proxy server
 # Install nginx
@@ -42,3 +43,4 @@ apt install --yes -qq nginx
 rm -f /etc/nginx/sites-enabled/default
 cp config/nginx/*.conf /etc/nginx/sites-available
 ln -s /etc/nginx/sites-available/gunicorn.conf /etc/nginx/sites-enabled/gunicorn.conf
+systemctl reload nginx.service

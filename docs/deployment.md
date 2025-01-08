@@ -37,6 +37,20 @@ sudo systemctl status gunicorn
 sudo systemctl status nginx
 ```
 
+# View logs
+
+[nginx logs](https://docs.nginx.com/nginx/admin-guide/monitoring/logging/)
+
+```bash
+sudo tail /var/log/nginx/error.log
+```
+
+[Gunicorn logs](https://docs.gunicorn.org/en/stable/settings.html#logging)
+
+```bash
+ sudo journalctl -u gunicorn.service
+```
+
 # Control
 
 The services are controlled using [`systemd`](https://systemd.io/), which is the service management system on Ubuntu 24. To launch services:
