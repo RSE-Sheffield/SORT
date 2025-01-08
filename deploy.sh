@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-st -e
+set -e
 
 # SORT deployment script for Ubuntu 22.04 LTS
 # See: How to deploy Django
