@@ -76,4 +76,8 @@ The app will be available at http://127.0.0.1:8000.
 
 ---
 
+8. Import data using the [`loaddata`](https://docs.djangoproject.com/en/5.1/ref/django-admin/#django-admin-loaddata) command
 
+```bash
+python manage.py loaddata data\questionnaires.json data\questionnaires.json
+```
