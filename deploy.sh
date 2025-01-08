@@ -9,7 +9,7 @@ set -e
 # Clone the repository
 # git clone git@github.com:RSE-Sheffield/SORT.git
 # cd SORT
-# sudo bash deploy.sh
+# sudo bash -x deploy.sh
 
 # Options
 sort_dir="/opt/sort"
@@ -18,7 +18,7 @@ pip="$venv_dir/bin/pip"
 python_version="python3.12"
 
 # Create Python virtual environment
-apt update
+apt update -qq
 apt install --yes -qq "$python_version" "$python_version-venv"
 python3 -m venv "$venv_dir"
 
@@ -28,6 +28,7 @@ cp --recursive * "$sort_dir/"
 
 # Install Gunicorn service
 cp --verbose config/systemd/gunicorn.service /etc/systemd/system/gunicorn.service
+cp --verbose config/systemd/gunicorn.socket /etc/systemd/system/gunicorn.socket
 
 # Install web reverse proxy server
 # Install nginx
