@@ -18,9 +18,6 @@ Group=gunicorn
 DynamicUser=true
 RuntimeDirectory=gunicorn
 WorkingDirectory=/opt/sort
-# Collect static files on launch
-# See: https://docs.djangoproject.com/en/5.1/howto/static-files/#deployment
-ExecStartPre=/opt/sort/venv/bin/python manage.py collectstatic --no-input
 ExecStart=/opt/sort/venv/bin/gunicorn SORT.wsgi
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed

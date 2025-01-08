@@ -27,6 +27,9 @@ python3 -m venv "$venv_dir"
 $pip install --quiet -r requirements.txt
 cp --recursive * "$sort_dir/"
 
+# Install static files
+(cd "$sort_dir" && exec $python manage.py collectstatic --no-input)
+
 # Install Gunicorn service
 cp --verbose config/systemd/gunicorn.service /etc/systemd/system/gunicorn.service
 cp --verbose config/systemd/gunicorn.socket /etc/systemd/system/gunicorn.socket
@@ -34,7 +37,6 @@ systemctl daemon-reload
 systemctl enable gunicorn.service
 systemctl enable gunicorn.socket
 systemctl reload gunicorn.service
-systemctl restart gunicorn.service
 
 # Install web reverse proxy server
 # Install nginx
