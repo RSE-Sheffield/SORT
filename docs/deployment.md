@@ -10,14 +10,20 @@ title: SORT architecture
 ---
 flowchart LR
 Browser -- "HTTPS port 443" --> nginx
-subgraph UoS
-nginx -- "Unix socket" --> Gunicorn
-Gunicorn -- "WSGI" --> Django
-Django --> PostgreSQL
+subgraph University of Sheffield network
+    subgraph sort-web-app machine
+    nginx -- "Unix socket" --> Gunicorn
+    Gunicorn -- "WSGI" --> Django
+    Django --> PostgreSQL
+    end
 end
 ```
 
+When accessing the web site, the following process happens:
 
+1. A user uses their web browser to access the server using the HTTPS port 443;
+2. The request is sent to the web server and is handled by Nginx;
+3. 
 
 You may also refer to the following guides:
 
@@ -55,17 +61,17 @@ sudo systemctl status nginx
 
 # View logs
 
-[nginx logs](https://docs.nginx.com/nginx/admin-guide/monitoring/logging/)
+View [nginx logs](https://docs.nginx.com/nginx/admin-guide/monitoring/logging/)
 
 ```bash
-sudo tail /var/log/nginx/error.log
-sudo tail /var/log/nginx/access.log
+sudo tail --follow /var/log/nginx/access.log
+sudo tail --follow /var/log/nginx/error.log
 ```
 
-[Gunicorn logs](https://docs.gunicorn.org/en/stable/settings.html#logging)
+View [Gunicorn logs](https://docs.gunicorn.org/en/stable/settings.html#logging)
 
 ```bash
- sudo journalctl -u gunicorn.service
+ sudo journalctl -u gunicorn.service --follow
 ```
 
 # Control
