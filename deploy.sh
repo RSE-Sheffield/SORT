@@ -49,3 +49,7 @@ cp config/nginx/*.conf /etc/nginx/sites-available
 # Enable the site by creating a symbolic link
 ln --symbolic --force /etc/nginx/sites-available/gunicorn.conf /etc/nginx/sites-enabled/gunicorn.conf
 systemctl reload nginx.service
+
+# Install PostgreSQL database
+# https://ubuntu.com/server/docs/install-and-configure-postgresql
+apt install --yes -qq postgresql
