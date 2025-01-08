@@ -30,6 +30,9 @@ cp --recursive * "$sort_dir/"
 cp --verbose config/systemd/gunicorn.service /etc/systemd/system/gunicorn.service
 cp --verbose config/systemd/gunicorn.socket /etc/systemd/system/gunicorn.socket
 
+systemctl enable gunicorn.service
+systemctl enable gunicorn.socket
+
 # Install web reverse proxy server
 # Install nginx
 # https://nginx.org/en/docs/install.html

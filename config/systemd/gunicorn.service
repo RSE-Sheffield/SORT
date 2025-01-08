@@ -17,7 +17,7 @@ Group=gunicorn
 # this user can be transiently created by systemd
 DynamicUser=true
 RuntimeDirectory=gunicorn
-WorkingDirectory=/opt/sort/venv/lib/python3.12/site-packages/SORT
+WorkingDirectory=/opt/sort
 ExecStart=/opt/sort/venv/bin/gunicorn sort.wsgi
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
