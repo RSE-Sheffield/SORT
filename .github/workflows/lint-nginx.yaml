@@ -11,4 +11,4 @@ jobs:
       - name: Install nginx-linter
         run: npm install -g nginx-linter
       - name: Run nginx linter
-        run: nginx-linter --help
+        run: nginx-linter --include config/nginx/* --no-follow-includes
