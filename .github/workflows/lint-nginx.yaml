@@ -10,5 +10,5 @@ jobs:
         uses: actions/checkout@v4
       - name: Install nginx-linter
         run: npm install -g nginx-linter
-      - name: Lint systemd units
-        run: nginx-linter
+      - name: Run nginx linter
+        run: nginx-linter --help

@@ -1,3 +1,0 @@
-# Controlling files in the distribution
-# https://setuptools.pypa.io/en/latest/userguide/miscellaneous.html
-recursive-include static *
