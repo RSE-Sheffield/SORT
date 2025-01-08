@@ -1,0 +1,30 @@
+# This is a systemd unit that defines the Gunicorn service.
+# https://docs.gunicorn.org/en/stable/deploy.html#systemd
+# https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html
+
+[Unit]
+Description=gunicorn service
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+# gunicorn can let systemd know when it is ready
+Type=notify
+NotifyAccess=main
+# the specific user that our service will run as
+User=gunicorn
+Group=gunicorn
+# this user can be transiently created by systemd
+DynamicUser=true
+RuntimeDirectory=gunicorn
+WorkingDirectory=/opt/sort/venv/lib/python3.12/site-packages/SORT
+ExecStart=/opt/sort/venv/bin/gunicorn sort.wsgi
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+# if your app does not need administrative capabilities, let systemd know
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

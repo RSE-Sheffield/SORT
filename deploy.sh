@@ -17,15 +17,20 @@ pip="$venv_dir/bin/pip"
 python_version="python3.12"
 
 # Create Python virtual environment
+apt update
 apt install --yes -qq "$python_version" "$python_version-venv"
 python3 -m venv "$venv_dir"
 
 # Install the SORT Django app package
 $pip install .
 
+# Install Gunicorn service
+cp --verbose config/systemd/gunicorn.service /etc/systemd/system/gunicorn.service
+
 # Install web reverse proxy server
 # Install nginx
 # https://nginx.org/en/docs/install.html
 apt install --yes -qq nginx
+rm -f /etc/nginx/sites-enabled/default
 
 # Configure web server
