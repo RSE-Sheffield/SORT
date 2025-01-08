@@ -19,7 +19,6 @@ load_dotenv()  # Load environment variables from .env file
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -29,8 +28,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split()
 
 # Application definition
 
@@ -84,7 +82,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "SORT.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -118,7 +115,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -130,15 +126,12 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
-
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -148,14 +141,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
-
 # FA: End session when the browser is closed
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # FA: 30 minutes before automatic log out
 SESSION_COOKIE_AGE = 1800
 
-PASSWORD_RESET_TIMEOUT = 1800 # FA: default to expire after 30 minutes
+PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 
 # FA: for local testing emails:
 
@@ -174,5 +166,4 @@ INTERNAL_IPS = [
 
 # FA: for production:
 
-#EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
