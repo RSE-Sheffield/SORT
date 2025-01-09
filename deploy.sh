@@ -18,16 +18,21 @@ pip="$venv_dir/bin/pip"
 python_version="python3.12"
 python="$venv_dir/bin/python"
 
+# Install locale
+sudo locale-gen en_GB
+sudo locale-gen en_GB.UTF-8
+sudo update-locale
+
 # Create Python virtual environment
 apt update -qq
-apt install --yes -qq "$python_version" "$python_version-venv"
+apt install --upgrade --yes -qq "$python_version" "$python_version-venv"
 python3 -m venv "$venv_dir"
 
 # Install the SORT Django app package
 $pip install --quiet -r requirements.txt
 cp --recursive * "$sort_dir/"
 
-# Install static files
+# Install static files into DJANGO_STATIC_ROOT
 (cd "$sort_dir" && exec $python manage.py collectstatic --no-input)
 
 # Install Gunicorn service
@@ -53,3 +58,5 @@ systemctl reload nginx.service
 # Install PostgreSQL database
 # https://ubuntu.com/server/docs/install-and-configure-postgresql
 apt install --yes -qq postgresql
+# Restart PostgreSQL to enable any new locales
+systemctl restart postgresql

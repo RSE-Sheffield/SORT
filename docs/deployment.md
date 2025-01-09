@@ -93,11 +93,13 @@ The [`su` command](https://manpages.ubuntu.com/manpages/noble/man1/su.1.html) c
 
 ## Create a database
 
-[Create a database](https://www.postgresql.org/docs/16/tutorial-createdb.html)
+[Create a database](https://www.postgresql.org/docs/16/tutorial-createdb.html) with the appropriate [encoding](https://www.postgresql.org/docs/current/multibyte.html).
 
 ```bash
-createdb sort
+createdb --template=template0 --encoding=UTF8 --locale=en_GB.UTF-8 sort "SORT application"
 ```
+
+We can list databases using `psql --list`.
 
 ## Create a user
 
@@ -171,13 +173,16 @@ On our PostgreSQL instance, this should create a database named `sort` with a us
 
 # Management
 
-To use the Django management tool
+To use the Django management tool, we need to load up the virtual environment of the SORT Django application and navigate to the directory containing the tool.
 
 ```bash
 sort_dir="/opt/sort"
 venv_dir="$sort_dir/venv"
 python="$venv_dir/bin/python"
 cd "$sort_dir"
+# Check the Django management tool works
+$python "$sort_dir"/manage.py version
+# View available commands
 $python "$sort_dir"/manage.py help
 ```
 
@@ -193,7 +198,11 @@ Create a super-user
 sudo $python manage.py createsuperuser
 ```
 
+Load data
 
+```bash
+sudo $python manage.py loaddata data/*.json
+```
 
 # Monitoring
 
