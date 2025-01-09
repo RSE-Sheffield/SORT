@@ -1,13 +1,15 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
 class ManagerSignupForm(UserCreationForm):
     email = forms.EmailField(
-        required=True, label="Email", error_messages={"required": "Email is required."}
+        required=True,
+        label='Email',
+        error_messages={'required': 'Email is required.'}
     )
 
     class Meta:
@@ -31,21 +33,22 @@ class ManagerSignupForm(UserCreationForm):
 
 class ManagerLoginForm(AuthenticationForm):
     username = forms.EmailField(
-        label="Email", max_length=60, widget=forms.EmailInput(attrs={"autofocus": True})
+        label='Email',
+        max_length=60,
+        widget=forms.EmailInput(attrs={'autofocus': True})
     )
-
-    class Meta:
-        model = AuthenticationForm
-        fields = ["username", "password"]
 
 
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['email', 'firstname', 'lastname', 'password']
+        fields = ['email', 'first_name', 'last_name']
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
+
+        if email == self.instance.email:
+            return email
 
         if User.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
             raise forms.ValidationError("This email is already in use.")
@@ -53,6 +56,10 @@ class UserProfileForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+        if self.cleaned_data.get('password'):
+            user.set_password(self.cleaned_data['password'])
         if commit:
             user.save()
         return user
+
+
