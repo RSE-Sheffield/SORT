@@ -18,7 +18,8 @@ pip="$venv_dir/bin/pip"
 python_version="python3.12"
 python="$venv_dir/bin/python"
 
-# Install locale
+# Install British UTF-8 locale so we can use this with PostgreSQL.
+# This is important to avoid the limitations of the LATIN1 character set.
 sudo locale-gen en_GB
 sudo locale-gen en_GB.UTF-8
 sudo update-locale
@@ -41,6 +42,7 @@ cp --verbose config/systemd/gunicorn.socket /etc/systemd/system/gunicorn.socket
 systemctl daemon-reload
 systemctl enable gunicorn.service
 systemctl enable gunicorn.socket
+systemctl start gunicorn.service
 systemctl reload gunicorn.service
 
 # Install web reverse proxy server
