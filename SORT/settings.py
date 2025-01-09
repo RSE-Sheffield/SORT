@@ -14,7 +14,16 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  # Load environment variables from .env file
+
+def string_to_boolean(s: str) -> bool:
+    """
+    Check if the string value is 1, yes, or true.
+    """
+    return s.casefold()[0] in {"1", "y", "t"}
+
+
+# Load environment variables from .env file
+load_dotenv(os.getenv('DJANGO_ENV_PATH'))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +35,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = string_to_boolean(os.getenv("DJANGO_DEBUG", "False"))
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split()
 
@@ -80,15 +89,19 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "SORT.wsgi.application"
+WSGI_APPLICATION = os.getenv("DJANGO_WSGI_APPLICATION", "SORT.wsgi.application")
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
 DATABASES = {
+    # Set the database settings using environment variables, or default to a local SQLite database file.
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / 'db.sqlite3'
+        "ENGINE": os.getenv("DJANGO_DATABASE_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.getenv("DJANGO_DATABASE_NAME", BASE_DIR / 'db.sqlite3'),
+        "USER": os.getenv("DJANGO_DATABASE_USER"),
+        "PASSWORD": os.getenv("DJANGO_DATABASE_PASSWORD"),
+        "HOST": os.getenv("DJANGO_DATABASE_HOST"),
+        "PORT": os.getenv("DJANGO_DATABASE_PORT"),
     }
 }
 
