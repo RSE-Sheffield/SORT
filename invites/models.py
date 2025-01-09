@@ -1,7 +1,10 @@
 import secrets
+
 from django.db import models
 from django.utils import timezone
+
 from survey.models import Questionnaire
+
 
 class Invitation(models.Model):
 
