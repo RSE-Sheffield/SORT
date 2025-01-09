@@ -61,8 +61,9 @@ python manage.py createsuperuser
 
 6. Create a `.env` file in the project root directory and add the following environment variables:
 
-```
+```bash
 DJANGO_SECRET_KEY=your_secret_key
+DJANGO_DEBUG=True
 ```
 
 ---
