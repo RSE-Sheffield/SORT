@@ -123,11 +123,17 @@ ALTER USER sort WITH PASSWORD '********';
 
 We can list users (i.e. database "roles") using [the `\du`  command](https://www.postgresql.org/docs/current/app-psql.html#APP-PSQL-META-COMMAND-DU) in PostgreSQL.
 
+```bash
+psql sort --command "\du"
+```
+
+
+
 ## Grant permissions
 
 We must allow this user the minimum necessary privileges to operate the web app. We authorise the user using the PostgreSQL [grant statement](https://www.postgresql.org/docs/current/sql-grant.html), which we execute in the `psql` tool.
 
-Create a schema, which is a "folder" in the database (a namespace) that will contain our tables.
+Create a schema, which is a "folder" in the database (a namespace) that will contain our tables. Remember to initialise the PostgreSQL command line with `psql sort`.
 
 ```sql
 CREATE SCHEMA sort AUTHORIZATION sort;
@@ -137,21 +143,6 @@ You can view the [list of schemas](https://www.postgresql.org/docs/current/app-p
 
 ```sql
 \dnS
-```
-
-The result looks something like this:
-
-```
-sort=# \dnS
-            List of schemas
-        Name        |       Owner
---------------------+-------------------
- information_schema | postgres
- pg_catalog         | postgres
- pg_toast           | postgres
- public             | pg_database_owner
- sort               | sort
-(5 rows)
 ```
 
 Let's restrict the visibility of the schema so the app can only see the `sort` schema.
@@ -173,7 +164,7 @@ On our PostgreSQL instance, this should create a database named `sort` with a us
 
 # Management
 
-To use the Django management tool, we need to load up the virtual environment of the SORT Django application and navigate to the directory containing the tool.
+To use the [Django management tool](https://docs.djangoproject.com/en/5.1/ref/django-admin/), we need to load up the virtual environment of the SORT Django application and navigate to the directory containing the tool.
 
 ```bash
 sort_dir="/opt/sort"
@@ -182,7 +173,11 @@ python="$venv_dir/bin/python"
 cd "$sort_dir"
 # Check the Django management tool works
 $python "$sort_dir"/manage.py version
-# View available commands
+```
+
+View available commands
+
+```bash
 $python "$sort_dir"/manage.py help
 ```
 
