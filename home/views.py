@@ -63,6 +63,7 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
+        print(form.errors)  # Output form errors to the console
         messages.error(self.request, 'There was an error updating your profile. Please try again.')
         return super().form_invalid(form)
 
