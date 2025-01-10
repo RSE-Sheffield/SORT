@@ -10,49 +10,57 @@
         </a>
       {% endif %}
     </div>
-    <div class="space-y-4">
+    <div class="d-flex flex-column gap-3">
       {% for project in projects %}
         <div class="card w-100">
           <div class="card-body">
             <h5 class="card-title">{{ project.name }}</h5>
-            <p class="card-text"></p>
-            {% if can_edit|get_item:project.id %}
+            <div class="card-text">
+              <div class="flex flex-wrap gap-2 mb-3">
+                {% for org in project_orgs|get_item:project.id %}<span class="badge text-bg-primary">{{ org.name }}</span>{% endfor %}
+              </div>
+              <span>Responses: {{ project.surveys.count }}</span>
+            </div>
+            <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
+              {% if can_edit|get_item:project.id %}
+                <a href="{% url 'projects' %}">
+                  <button type="button" class="btn btn-light">Edit</button>
+                </a>
+              {% endif %}
               <a href="{% url 'projects' %}">
-                <button type="button" class="btn btn-light">Edit</button>
+                <button type="button" class="btn btn-dark">View</button>
               </a>
-            {% endif %}
-            <a href="{% url 'projects' %}">
-              <button type="button" class="btn btn-info">View</button>
-            </a>
+            </div>
           </div>
         </div>
       {% empty %}
         <p class="text-gray-600">No studies found.</p>
       {% endfor %}
     </div>
-    {% if page_obj.has_other_pages %}
-      <div class="flex justify-center space-x-2 mt-6">
-        {% if page_obj.has_previous %}
-          <a href="?page=1" class="px-3 py-2 border rounded hover:bg-gray-100">First</a>
-          <a href="?page={{ page_obj.previous_page_number }}"
-             class="px-3 py-2 border rounded hover:bg-gray-100">Previous</a>
-        {% endif %}
-        {% for num in page_obj.paginator.page_range %}
-          {% if page_obj.number == num %}
-            <span class="px-3 py-2 border rounded bg-blue-600 text-white">{{ num }}</span>
-          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-            <a href="?page={{ num }}"
-               class="px-3 py-2 border rounded hover:bg-gray-100">{{ num }}</a>
-          {% endif %}
-        {% endfor %}
-        {% if page_obj.has_next %}
-          <a href="?page={{ page_obj.next_page_number }}"
-             class="px-3 py-2 border rounded hover:bg-gray-100">Next</a>
-          <a href="?page={{ page_obj.paginator.num_pages }}"
-             class="px-3 py-2 border rounded hover:bg-gray-100">Last</a>
-        {% endif %}
-      </div>
-      <div class="text-center text-gray-600 mt-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
-    {% endif %}
   </div>
+  {% comment %} pagination {% endcomment %}
+  {% if page_obj.has_other_pages %}
+    <div class="flex justify-center space-x-2 mt-6">
+      {% if page_obj.has_previous %}
+        <a href="?page=1" class="px-3 py-2 border rounded hover:bg-gray-100">First</a>
+        <a href="?page={{ page_obj.previous_page_number }}"
+           class="px-3 py-2 border rounded hover:bg-gray-100">Previous</a>
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <span class="px-3 py-2 border rounded bg-blue-600 text-white">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <a href="?page={{ num }}"
+             class="px-3 py-2 border rounded hover:bg-gray-100">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}"
+           class="px-3 py-2 border rounded hover:bg-gray-100">Next</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}"
+           class="px-3 py-2 border rounded hover:bg-gray-100">Last</a>
+      {% endif %}
+    </div>
+    <div class="text-center text-gray-600 mt-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+  {% endif %}
 {% endblock %}

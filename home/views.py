@@ -130,15 +130,10 @@ class ProjectListView(LoginRequiredMixin, ListView):
             )
             .distinct()
             .select_related("created_by")
-            .prefetch_related("surveys")
+            .prefetch_related("surveys", "organisations", "organisations__organisationmembership_set")
         )
 
-        # Filter to only projects user can view
-        viewable_projects = [
-            project for project in projects if project.user_can_view(self.request.user)
-        ]
-
-        return viewable_projects
+        return projects
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -150,4 +145,18 @@ class ProjectListView(LoginRequiredMixin, ListView):
         context["can_create"] = OrganisationMembership.objects.filter(
             user=self.request.user, role="ADMIN"
         ).exists()
+        
+        user_orgs = set(
+            OrganisationMembership.objects.filter(
+                user=self.request.user
+            ).values_list('organisation_id', flat=True)
+        )
+        
+        context["project_orgs"] = {
+            project.id: [
+                org for org in project.organisations.all()
+                if org.id in user_orgs
+            ]
+            for project in context["projects"]
+        }
         return context
