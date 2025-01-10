@@ -83,7 +83,7 @@ class OrganisationMembership(models.Model):
 
     class Meta:
         unique_together = ["user", "organisation"]
-
+        """ A user can only be a member of an organisation once """
 
 class Project(models.Model):
     name = models.CharField(max_length=100)
