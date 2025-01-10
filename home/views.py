@@ -14,6 +14,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 
 User = get_user_model()
 
@@ -51,11 +52,15 @@ class HomeView(LoginRequiredMixin, View):
     login_url = "login"
 
     def get(self, request):
-        consent_questionnaire = Questionnaire.objects.get(title="Consent")
-        return render(
-            request, "home/welcome.html", {"questionnaire": consent_questionnaire}
-        )
-
+        try:
+            consent_questionnaire = Questionnaire.objects.get(title="Consent")
+            print(consent_questionnaire)
+        except ObjectDoesNotExist:
+            consent_questionnaire = None
+            
+        return render(request, self.template_name, {
+            'questionnaire': consent_questionnaire
+        })
 
 class ProfileView(LoginRequiredMixin, UpdateView):
     model = User
