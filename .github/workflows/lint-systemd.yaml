@@ -1,7 +1,11 @@
 # GitHub Actions workflow for linting the systemd unit files
 # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions
 name: Lint systemd units
-on: [ push ]
+on:
+  pull_request:
+  push:
+    branches:
+     - main
 jobs:
   lint:
     runs-on: ubuntu-24.04

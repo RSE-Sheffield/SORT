@@ -2,7 +2,11 @@
 # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions
 # https://github.com/marketplace/actions/shell-linter
 name: Lint shell scripts
-on: push
+on:
+  pull_request:
+  push:
+    branches:
+     - main
 jobs:
   lint_shell:
     runs-on: ubuntu-24.04
