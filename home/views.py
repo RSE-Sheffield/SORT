@@ -2,8 +2,10 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
+from django.views.generic import ListView
 from django.views.generic.edit import CreateView, UpdateView
 
+from .models import Project, OrganisationMembership
 from survey.models import Questionnaire
 from django.shortcuts import render
 from django.views import View
@@ -112,3 +114,40 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
 
 # class PasswordResetExpiredView(TemplateView):  # leave for now
 #     template_name = 'home/password_reset_expired.html'
+
+
+class ProjectListView(LoginRequiredMixin, ListView):
+    model = Project
+    template_name = "projects/list.html"
+    context_object_name = "projects"
+    paginate_by = 10
+
+    def get_queryset(self):
+        # Get all projects associated with user's organisations
+        projects = (
+            Project.objects.filter(
+                organisations__organisationmembership__user=self.request.user
+            )
+            .distinct()
+            .select_related("created_by")
+            .prefetch_related("surveys")
+        )
+
+        # Filter to only projects user can view
+        viewable_projects = [
+            project for project in projects if project.user_can_view(self.request.user)
+        ]
+
+        return viewable_projects
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Add edit permissions for each project
+        context["can_view"] = {
+            project.id: project.user_can_view(self.request.user)
+            for project in context["projects"]
+        }
+        context["can_create"] = OrganisationMembership.objects.filter(
+            user=self.request.user, role="ADMIN"
+        ).exists()
+        return context
