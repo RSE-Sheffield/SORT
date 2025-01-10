@@ -1,23 +1,29 @@
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
+from django.contrib.auth.views import LoginView, LogoutView
+from django.views.generic import ListView
+from django.views.generic.edit import CreateView, UpdateView
+
+from .models import Project, OrganisationMembership
+from survey.models import Questionnaire
+from django.shortcuts import render
+from django.views import View
+from .forms import ManagerSignupForm, ManagerLoginForm, UserProfileForm
+from django.contrib.auth import login
 from django.contrib.auth.views import (
-    LoginView,
-    LogoutView,
-    PasswordResetCompleteView,
-    PasswordResetConfirmView,
-    PasswordResetDoneView,
     PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView,
 )
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views import View
-from django.views.generic.edit import CreateView, UpdateView
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 
-from survey.models import Questionnaire
-
-from .forms import ManagerLoginForm, ManagerSignupForm, UserProfileForm
+User = get_user_model()
 
 
 class SignupView(CreateView):
@@ -54,9 +60,14 @@ class HomeView(LoginRequiredMixin, View):
     login_url = "login"
 
     def get(self, request):
-        consent_questionnaire = Questionnaire.objects.get(title="Consent")
+        try:
+            consent_questionnaire = Questionnaire.objects.get(title="Consent")
+            print(consent_questionnaire)
+        except ObjectDoesNotExist:
+            consent_questionnaire = None
+
         return render(
-            request, "home/welcome.html", {"questionnaire": consent_questionnaire}
+            request, self.template_name, {"questionnaire": consent_questionnaire}
         )
 
 
@@ -74,6 +85,7 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
+        print(form.errors)  # Output form errors to the console
         messages.error(
             self.request, "There was an error updating your profile. Please try again."
         )
@@ -102,3 +114,49 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
 
 # class PasswordResetExpiredView(TemplateView):  # leave for now
 #     template_name = 'home/password_reset_expired.html'
+
+
+class ProjectListView(LoginRequiredMixin, ListView):
+    model = Project
+    template_name = "projects/list.html"
+    context_object_name = "projects"
+    paginate_by = 10
+
+    def get_queryset(self):
+        # Get all projects associated with user's organisations
+        projects = (
+            Project.objects.filter(
+                organisations__organisationmembership__user=self.request.user
+            )
+            .distinct()
+            .select_related("created_by")
+            .prefetch_related("surveys", "organisations", "organisations__organisationmembership_set")
+        )
+
+        return projects
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Add edit permissions for each project
+        context["can_edit"] = {
+            project.id: project.user_can_edit(self.request.user)
+            for project in context["projects"]
+        }
+        context["can_create"] = OrganisationMembership.objects.filter(
+            user=self.request.user, role="ADMIN"
+        ).exists()
+        
+        user_orgs = set(
+            OrganisationMembership.objects.filter(
+                user=self.request.user
+            ).values_list('organisation_id', flat=True)
+        )
+        
+        context["project_orgs"] = {
+            project.id: [
+                org for org in project.organisations.all()
+                if org.id in user_orgs
+            ]
+            for project in context["projects"]
+        }
+        return context

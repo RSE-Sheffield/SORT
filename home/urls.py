@@ -33,4 +33,6 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     # path('password_reset/expired/', views.PasswordResetExpiredView.as_view(), name='password_reset_expired'),
+    path("projects/", views.ProjectListView.as_view(), name="projects"),
+    # path("projects/create/", views.ProjectCreateView.as_view(), name="project_create"),
 ]

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load project_filters %}
+{% block content %}
+  <div class="container mx-auto px-4 py-8">
+    <div class="w-100 d-flex justify-content-between align-items-center mt-3 mb-6">
+      <h1 class="text-2xl font-bold d-inline-block">Studies</h1>
+      {% if can_create %}
+        <a href="todo">
+          <button type="button" class="btn btn-primary">Create study</button>
+        </a>
+      {% endif %}
+    </div>
+    <div class="d-flex flex-column gap-3">
+      {% for project in projects %}
+        <div class="card w-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ project.name }}</h5>
+            <div class="card-text">
+              <div class="flex flex-wrap gap-2 mb-3">
+                {% for org in project_orgs|get_item:project.id %}<span class="badge text-bg-primary">{{ org.name }}</span>{% endfor %}
+              </div>
+              <span>Responses: {{ project.surveys.count }}</span>
+            </div>
+            <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
+              {% if can_edit|get_item:project.id %}
+                <a href="{% url 'projects' %}">
+                  <button type="button" class="btn btn-light">Edit</button>
+                </a>
+              {% endif %}
+              <a href="{% url 'projects' %}">
+                <button type="button" class="btn btn-dark">View</button>
+              </a>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <p class="text-gray-600">No studies found.</p>
+      {% endfor %}
+    </div>
+    {% comment %} pagination {% endcomment %}
+    {% if page_obj.has_other_pages %}
+      <nav aria-label="Study navigation" class="mt-3">
+        <ul class="pagination justify-content-center">
+          <!-- First Page -->
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page=1" aria-label="First">
+                <span aria-hidden="true">&laquo;&laquo;</span>
+              </a>
+            </li>
+            <!-- Previous -->
+            <li class="page-item">
+              <a class="page-link"
+                 href="?page={{ page_obj.previous_page_number }}"
+                 aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">&laquo;&laquo;</span>
+            </li>
+            <li class="page-item disabled">
+              <span class="page-link">&laquo;</span>
+            </li>
+          {% endif %}
+          <!-- Page Numbers -->
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ num }}</span>
+              </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+          <!-- Next -->
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link"
+                 href="?page={{ page_obj.next_page_number }}"
+                 aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+            <!-- Last Page -->
+            <li class="page-item">
+              <a class="page-link"
+                 href="?page={{ page_obj.paginator.num_pages }}"
+                 aria-label="Last">
+                <span aria-hidden="true">&raquo;&raquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">&raquo;</span>
+            </li>
+            <li class="page-item disabled">
+              <span class="page-link">&raquo;&raquo;</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      <!-- Show page info -->
+      <p class="text-center text-muted mt-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+    {% endif %}
+  </div>
+{% endblock %}
