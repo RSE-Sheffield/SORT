@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
+
 User = get_user_model()
 
 class ManagerSignupForm(UserCreationForm):
@@ -14,17 +15,17 @@ class ManagerSignupForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('email', 'password1', 'password2')
+        fields = ("email", "password1", "password2")
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
+        email = self.cleaned_data.get("email")
         if User.objects.filter(email=email).exists():
             raise ValidationError("This email is already registered.")
         return email
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.email = self.cleaned_data['email']
+        user.email = self.cleaned_data["email"]
         user.username = user.email
         if commit:
             user.save()
@@ -42,10 +43,10 @@ class ManagerLoginForm(AuthenticationForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name']
+        fields = ["email", "first_name", "last_name"]
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
+        email = self.cleaned_data.get("email")
 
         if email == self.instance.email:
             return email
@@ -61,4 +62,3 @@ class UserProfileForm(forms.ModelForm):
         if commit:
             user.save()
         return user
-
