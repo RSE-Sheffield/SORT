@@ -120,7 +120,7 @@ class ProjectListView(LoginRequiredMixin, ListView):
     model = Project
     template_name = "projects/list.html"
     context_object_name = "projects"
-    paginate_by = 1
+    paginate_by = 10
 
     def get_queryset(self):
         # Get all projects associated with user's organisations
