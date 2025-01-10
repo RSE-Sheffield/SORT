@@ -26,6 +26,7 @@ PrivateTmp=true
 # if your app does not need administrative capabilities, let systemd know
 ProtectSystem=strict
 Delegate=yes
+LockPersonality=yes
 
 [Install]
 WantedBy=multi-user.target
