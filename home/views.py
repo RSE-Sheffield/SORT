@@ -143,8 +143,8 @@ class ProjectListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Add edit permissions for each project
-        context["can_view"] = {
-            project.id: project.user_can_view(self.request.user)
+        context["can_edit"] = {
+            project.id: project.user_can_edit(self.request.user)
             for project in context["projects"]
         }
         context["can_create"] = OrganisationMembership.objects.filter(

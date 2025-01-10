@@ -2,29 +2,28 @@
 {% load project_filters %}
 {% block content %}
   <div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mt-3 mb-6">
+    <div class="w-100 d-flex justify-content-between align-items-center mt-3 mb-6">
       <h1 class="text-2xl font-bold d-inline-block">Studies</h1>
       {% if can_create %}
-        <a
-          href="todo"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-        >Create study</a>
+        <a href="todo">
+          <button type="button" class="btn btn-primary">Create study</button>
+        </a>
       {% endif %}
     </div>
     <div class="space-y-4">
       {% for project in projects %}
-        <div class="border rounded-lg p-4 hover:border-gray-400 cursor-pointer transition-colors">
-          <div class="flex justify-between items-center">
-            <div>
-              <span class="font-medium">Study {{ forloop.counter }}</span>
-              <span class="text-gray-600 ml-4">Responses: {{ project.surveys.count }}</span>
-            </div>
-            <div class="flex items-center space-x-2">
-              {% if can_view|get_item:project.id %}
-                <a href="todo" class="text-sm text-blue-600 hover:text-blue-800">Edit</a>
-              {% endif %}
-              <a href="todo" class="text-sm text-gray-600 hover:text-gray-800">View</a>
-            </div>
+        <div class="card w-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ project.name }}</h5>
+            <p class="card-text"></p>
+            {% if can_edit|get_item:project.id %}
+              <a href="{% url 'projects' %}">
+                <button type="button" class="btn btn-light">Edit</button>
+              </a>
+            {% endif %}
+            <a href="{% url 'projects' %}">
+              <button type="button" class="btn btn-info">View</button>
+            </a>
           </div>
         </div>
       {% empty %}
@@ -34,7 +33,7 @@
     {% if page_obj.has_other_pages %}
       <div class="flex justify-center space-x-2 mt-6">
         {% if page_obj.has_previous %}
-          <a href="?page=1" class="px-3 py-2 border rounded hover:bg-gray-100">&laquo; First</a>
+          <a href="?page=1" class="px-3 py-2 border rounded hover:bg-gray-100">First</a>
           <a href="?page={{ page_obj.previous_page_number }}"
              class="px-3 py-2 border rounded hover:bg-gray-100">Previous</a>
         {% endif %}
@@ -50,7 +49,7 @@
           <a href="?page={{ page_obj.next_page_number }}"
              class="px-3 py-2 border rounded hover:bg-gray-100">Next</a>
           <a href="?page={{ page_obj.paginator.num_pages }}"
-             class="px-3 py-2 border rounded hover:bg-gray-100">Last &raquo;</a>
+             class="px-3 py-2 border rounded hover:bg-gray-100">Last</a>
         {% endif %}
       </div>
       <div class="text-center text-gray-600 mt-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>

@@ -57,7 +57,7 @@ h1, h2, h3, h4, h5, h6 {
     text-decoration: underline;
 }
 
-.card {
+.card.custom-card {
     border-radius: 1rem;
     box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.2);
     width: 100%;
@@ -68,7 +68,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 
-.card-body {
+.card-body.custom-card, .card.custom-card > .card-body {
     width: 100%;
     line-height: 1.5;
      flex-direction: column;
