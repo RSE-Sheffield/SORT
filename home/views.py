@@ -9,7 +9,12 @@ from django.shortcuts import render
 from django.views import View
 from .forms import ManagerSignupForm, ManagerLoginForm, UserProfileForm
 from django.contrib.auth import login
-from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
+from django.contrib.auth.views import (
+    PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView,
+)
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.contrib import messages
@@ -17,6 +22,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 
 User = get_user_model()
+
 
 class SignupView(CreateView):
     form_class = ManagerSignupForm
@@ -57,10 +63,11 @@ class HomeView(LoginRequiredMixin, View):
             print(consent_questionnaire)
         except ObjectDoesNotExist:
             consent_questionnaire = None
-            
-        return render(request, self.template_name, {
-            'questionnaire': consent_questionnaire
-        })
+
+        return render(
+            request, self.template_name, {"questionnaire": consent_questionnaire}
+        )
+
 
 class ProfileView(LoginRequiredMixin, UpdateView):
     model = User
@@ -77,7 +84,9 @@ class ProfileView(LoginRequiredMixin, UpdateView):
 
     def form_invalid(self, form):
         print(form.errors)  # Output form errors to the console
-        messages.error(self.request, 'There was an error updating your profile. Please try again.')
+        messages.error(
+            self.request, "There was an error updating your profile. Please try again."
+        )
         return super().form_invalid(form)
 
 
