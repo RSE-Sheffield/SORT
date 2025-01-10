@@ -12,14 +12,15 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from dotenv import load_dotenv
+from typing import Any
 import os
 
 
-def string_to_boolean(s: str) -> bool:
+def string_to_boolean(obj: Any) -> bool:
     """
     Check if the string value is 1, yes, or true.
     """
-    return s.casefold()[0] in {"1", "y", "t"}
+    return str(obj).casefold()[0] in {"1", "y", "t"}
 
 
 # Load environment variables from .env file
