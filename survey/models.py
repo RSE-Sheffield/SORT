@@ -1,6 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.urls import reverse
+
 
 class Questionnaire(models.Model):
     # Questionnaire data model
@@ -11,21 +11,25 @@ class Questionnaire(models.Model):
         return self.title
 
     def get_absolute_url(self, token):
-        return reverse('survey', kwargs={'pk': self.pk, 'token': token})
+        return reverse("survey", kwargs={"pk": self.pk, "token": token})
 
 
 class Question(models.Model):
     # Question data model
     QUESTION_TYPE_CHOICES = [
-        ('text', 'Text'),
-        ('multiple_choice', 'Multiple Choice'),
-        ('rating', 'Rating'),
-        ('boolean', 'Agree/Disagree')
+        ("text", "Text"),
+        ("multiple_choice", "Multiple Choice"),
+        ("rating", "Rating"),
+        ("boolean", "Agree/Disagree"),
     ]
 
-    questionnaire = models.ForeignKey(Questionnaire, related_name='questions', on_delete=models.CASCADE)  # Many questions belong to one questionnaire
+    questionnaire = models.ForeignKey(
+        Questionnaire, related_name="questions", on_delete=models.CASCADE
+    )  # Many questions belong to one questionnaire
     question_text = models.CharField(max_length=500)
-    question_type = models.CharField(max_length=50, choices=QUESTION_TYPE_CHOICES, default='multiple_choice')
+    question_type = models.CharField(
+        max_length=50, choices=QUESTION_TYPE_CHOICES, default="multiple_choice"
+    )
 
     def __str__(self):
         return self.question_text
