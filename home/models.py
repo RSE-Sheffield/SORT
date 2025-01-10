@@ -33,16 +33,13 @@ class Organisation(models.Model):
     # One organisation can have many users
     users = models.ManyToManyField('User', blank=True)
 
-    projects = models.ForeignKey('Project', on_delete=models.CASCADE, blank=True)
+    projects = models.ManyToManyField('Project', on_delete=models.CASCADE, blank=True)
 
     def __str__(self):
         return self.name
 
 class Project(models.Model):
     name = models.CharField(max_length=100)
-
-    # One-to-many relationship with organisation
-    organisations = models.ForeignKey('Organisation', on_delete=models.CASCADE, blank=True)
 
     created_on = models.DateTimeField(auto_now_add=True)
 
