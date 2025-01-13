@@ -16,7 +16,7 @@ Follow these steps to set up and run the app locally:
 
 Prerequisites
 
-- Python 3.10
+- Python 3.12
 - pip
 ---
 
