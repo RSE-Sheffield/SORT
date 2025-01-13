@@ -182,6 +182,34 @@ ALTER DEFAULT PRIVILEGES FOR USER sort GRANT SELECT, INSERT, UPDATE, DELETE ON T
 
 On our PostgreSQL instance, this should create a database named `sort` with a user named `sort` that has all the necessary permissions on the `sort` schema to create, modify, and drop tables and read/write data to those tables.
 
+# Security
+
+## SSL Certificates
+
+See: ITS Wiki [SSL Certificates/Howto](https://itswiki.shef.ac.uk/wiki/SSL_Certificates/Howto) for the commands to generate a Certificate Signing Request (CSR) using [OpenSSL](https://docs.openssl.org/3.3/man1/openssl-req/#options) with an unencrypted private key.
+
+We can install the private key
+
+```bash
+sudo mv "$(hostname -s)_shef_ac_uk.key" /etc/ssl/private/sort.key
+sudo chmod 640 /etc/ssl/private/sort.key
+sudo chown root:ssl-cert /etc/ssl/private/sort.key
+```
+
+The CSR may be used to get a signed SSL certificate via [Information Security](https://staff.sheffield.ac.uk/it-services/information-security) in IT Services.
+
+For *development purposes only* we can generate a self-signed certificate
+
+```bash
+openssl x509 -signkey /etc/ssl/private/sort.key -in "$(hostname -s)_shef_ac_uk.csr" -req -days 365 -out "$(hostname -s)_shef_ac_uk.crt"
+```
+
+Install the SSL certificate:
+
+```bash
+sudo cp "$(hostname -s)_shef_ac_uk.crt" /etc/ssl/certs/sort.pem
+```
+
 # Management
 
 To use the [Django management tool](https://docs.djangoproject.com/en/5.1/ref/django-admin/), we need to load up the virtual environment of the SORT Django application and navigate to the directory containing the tool.
