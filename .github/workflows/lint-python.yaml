@@ -10,10 +10,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install linters
-        run: pip install black flake8
+        run: pip install black flake8 isort
       - name: Lint Python code
         run: |
           dirs="SORT home survey invites"
+          isort $dirs
           black $dirs
           flake8 $dirs
       # Suggest merging any changes
