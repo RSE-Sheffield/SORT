@@ -20,7 +20,6 @@ load_dotenv()  # Load environment variables from .env file
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -31,7 +30,6 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -82,7 +80,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "SORT.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -116,18 +113,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "en-gb"
 
 TIME_ZONE = "UTC"
 
-USE_I18N = True
+# https://docs.djangoproject.com/en/5.1/topics/i18n/translation/
+USE_I18N = False
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -136,7 +132,6 @@ STATIC_URL = "static/"
 
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -144,7 +139,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
-
 
 # FA: End session when the browser is closed
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -166,7 +160,7 @@ INTERNAL_IPS = [
     "127.0.0.1",
     # ...
 ]
-AUTH_USER_MODEL = 'home.User' # FA: replace username with email as unique identifiers
+AUTH_USER_MODEL = 'home.User'  # FA: replace username with email as unique identifiers
 
 # FA: for production:
 
