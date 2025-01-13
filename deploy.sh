@@ -34,6 +34,7 @@ $pip install --quiet -r requirements.txt
 cp --recursive * "$sort_dir/"
 
 # Install static files into DJANGO_STATIC_ROOT
+# This runs in a subshell because it's changing directory
 (cd "$sort_dir" && exec $python manage.py collectstatic --no-input)
 
 # Install Gunicorn service
@@ -62,3 +63,7 @@ systemctl reload nginx.service
 apt install --yes -qq postgresql
 # Restart PostgreSQL to enable any new locales
 systemctl restart postgresql
+
+# Run deployment checks
+# https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+(cd "$sort_dir" && exec $python manage.py check --deploy)
