@@ -10,10 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-from pathlib import Path
-from dotenv import load_dotenv
-from typing import Any
 import os
+from pathlib import Path
+from typing import Any
+
+from dotenv import load_dotenv
 
 
 def cast_to_boolean(obj: Any) -> bool:
@@ -32,7 +33,7 @@ def cast_to_boolean(obj: Any) -> bool:
 
 
 # Load environment variables from .env file
-load_dotenv(os.getenv('DJANGO_ENV_PATH'))
+load_dotenv(os.getenv("DJANGO_ENV_PATH"))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,12 +42,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(os.getenv("DJANGO_DEBUG", "False"))
 
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'sort-web-app.shef.ac.uk').split()
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "sort-web-app.shef.ac.uk").split()
 
 # Application definition
 
@@ -59,10 +60,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_bootstrap5",
     "django_extensions",
-    'debug_toolbar',
-
+    "debug_toolbar",
     # apps created by FA:
-
     "home",
     "survey",
     "invites",
@@ -78,7 +77,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'debug_toolbar.middleware.DebugToolbarMiddleware'
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "SORT.urls"
@@ -86,8 +85,7 @@ ROOT_URLCONF = "SORT.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'static/templates']
-        ,
+        "DIRS": [BASE_DIR / "static/templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -108,7 +106,7 @@ DATABASES = {
     # Set the database settings using environment variables, or default to a local SQLite database file.
     "default": {
         "ENGINE": os.getenv("DJANGO_DATABASE_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.getenv("DJANGO_DATABASE_NAME", BASE_DIR / 'db.sqlite3'),
+        "NAME": os.getenv("DJANGO_DATABASE_NAME", BASE_DIR / "db.sqlite3"),
         "USER": os.getenv("DJANGO_DATABASE_USER"),
         "PASSWORD": os.getenv("DJANGO_DATABASE_PASSWORD"),
         "HOST": os.getenv("DJANGO_DATABASE_HOST"),
@@ -150,7 +148,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -170,11 +168,9 @@ PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 
 # FA: for local testing emails:
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-)
+AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
 # For django-debug-toolbar
 INTERNAL_IPS = [
@@ -187,8 +183,10 @@ INTERNAL_IPS = [
 
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
-STATIC_ROOT = os.getenv('DJANGO_STATIC_ROOT')
+STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT")
 
 # Security settings
-SESSION_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_SESSION_COOKIE_SECURE", not DEBUG))
+SESSION_COOKIE_SECURE = cast_to_boolean(
+    os.getenv("DJANGO_SESSION_COOKIE_SECURE", not DEBUG)
+)
 CSRF_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_CSRF_COOKIE_SECURE", not DEBUG))
