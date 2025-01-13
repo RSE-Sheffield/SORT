@@ -1,14 +1,10 @@
-from django.test import TestCase
 import django.test
-from django.test import TestCase
 
 
-class InviteTestCase(TestCase):
-    def setUp(self):
-        self.client = django.test.Client()
+class InviteTestCase(django.test.TestCase):
 
-    def test_home_view(self):
+    def test_invite_page(self):
         """
         Send out invitation page.
         """
-        self.client.get('/invite/')
+        self.client.get("/invite/")
