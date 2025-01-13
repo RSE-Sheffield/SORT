@@ -18,7 +18,8 @@ jobs:
         run: |
           # Update pip
           python -m pip install --upgrade pip
-          pip install --requirements requirements.txt
+          # https://pip.pypa.io/en/stable/cli/pip_install/
+          pip install --requirement requirements.txt
       - name: Run Django checks
         # https://docs.djangoproject.com/en/5.1/ref/django-admin/#check
         run: python manage.py check
