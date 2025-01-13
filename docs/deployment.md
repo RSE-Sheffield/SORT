@@ -78,7 +78,7 @@ DJANGO_DATABASE_PORT=5432
 You can generate a secret key using the Python [secrets library](https://docs.python.org/3/library/secrets.html):
 
 ```bash
-python -c "import secrets; print(secrets.token_urlsafe())"
+python -c "import secrets; print(secrets.token_urlsafe(37))"
 ```
 
 ## Service settings
