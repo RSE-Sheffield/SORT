@@ -178,6 +178,7 @@ INTERNAL_IPS = [
     "127.0.0.1",
     # ...
 ]
+AUTH_USER_MODEL = 'home.User' # FA: replace username with email as unique identifiers
 
 # FA: for production:
 
