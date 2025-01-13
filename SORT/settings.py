@@ -16,7 +16,7 @@ from typing import Any
 import os
 
 
-def string_to_boolean(obj: Any) -> bool:
+def cast_to_boolean(obj: Any) -> bool:
     """
     Check if the string value is 1, yes, or true.
     """
@@ -36,9 +36,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = string_to_boolean(os.getenv("DJANGO_DEBUG", "False"))
+DEBUG = cast_to_boolean(os.getenv("DJANGO_DEBUG", "False"))
 
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split()
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'sort-web-app.shef.ac.uk').split()
 
 # Application definition
 
@@ -61,7 +61,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
+    # Implement security in the web server, not in Django.
+    # https://docs.djangoproject.com/en/5.1/ref/middleware/#module-django.middleware.security
+    # "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -178,3 +180,7 @@ INTERNAL_IPS = [
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 STATIC_ROOT = os.getenv('DJANGO_STATIC_ROOT')
+
+# Security settings
+SESSION_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_SESSION_COOKIE_SECURE", not DEBUG))
+CSRF_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_CSRF_COOKIE_SECURE", not DEBUG))
