@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "survey",
     "invites",
     "rest_framework",
+    "api",
 ]
 
 MIDDLEWARE = [
