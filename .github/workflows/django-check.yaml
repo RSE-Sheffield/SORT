@@ -1,4 +1,4 @@
-name: Run Django checks
+name: Run Django tests
 on:
   push:
     branches: [ "main" ]
@@ -25,7 +25,7 @@ jobs:
       - name: Run Django system checks
         run: python manage.py check
       # https://docs.djangoproject.com/en/5.1/topics/testing/
-      - name: Run Django tests
+      - name: Run Django test suites
         run: |
           export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
           python manage.py test
