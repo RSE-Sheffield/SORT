@@ -50,6 +50,7 @@ systemctl reload gunicorn.service
 # Install nginx
 # https://nginx.org/en/docs/install.html
 apt install --yes -qq nginx
+nginx -version
 
 # Configure web server
 rm -f /etc/nginx/sites-enabled/default
