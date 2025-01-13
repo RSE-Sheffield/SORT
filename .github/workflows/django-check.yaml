@@ -26,4 +26,6 @@ jobs:
         run: python manage.py check
       # https://docs.djangoproject.com/en/5.1/topics/testing/
       - name: Run Django tests
-        run: python manage.py test
+        run: |
+          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
+          python manage.py test
