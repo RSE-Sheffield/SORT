@@ -47,7 +47,9 @@ We can run commands and Bash scripts as the superuser (`root`) using the [`sudo`
 
 # Configuration
 
-To configure the environment variables for the service, you can either edit the `.env` file and/or add them to the systemd service.
+## Environment variables
+
+To configure the environment variables for the service, you can either edit the `.env` file and/or add them to the systemd service using `systemctl edit`.
 
 To edit the environment file:
 
@@ -56,7 +58,7 @@ sudo mkdir --parents /opt/sort
 sudo nano /opt/sort/.env
 ```
 
-This file would typically look similar to the example below. The contents of these values should be stored in a password manager.
+This file would typically look similar to the example below. The contents of these values should be stored in a password manager. In general, the name of each environment variable is the same as the [Django setting](https://docs.djangoproject.com/en/5.1/ref/settings) with the prefix `DJANGO_`.
 
 ```ini
 DJANGO_SECRET_KEY=********
@@ -76,8 +78,26 @@ DJANGO_DATABASE_PORT=5432
 You can generate a secret key using the Python [secrets library](https://docs.python.org/3/library/secrets.html):
 
 ```bash
-python -c "import secrets; print(secrets.token_urlsafe(37))"
+python -c "import secrets; print(secrets.token_urlsafe())"
 ```
+
+## Service settings
+
+If needed, you can add environment variables to the `systemd` service like so:
+
+```bash
+sudo systemctl edit gunicorn.service
+```
+
+And add environment variables, or other `systemd` settings, to that override configuration file:
+
+```
+[Service]
+Environment="DJANGO_SECRET_KEY=********"
+Environment="DEBUG=off"
+```
+
+
 
 # Database installation
 
@@ -89,7 +109,7 @@ To run these commands, switch to the `postgres` user:
 sudo su - postgres
 ```
 
-The [`su` command](https://manpages.ubuntu.com/manpages/noble/man1/su.1.html) creates a new shell on behalf of the `postgres` user.
+The [`su` command](https://manpages.ubuntu.com/manpages/noble/man1/su.1.html) creates a new shell on behalf of the `postgres` user.
 
 ## Create a database
 
