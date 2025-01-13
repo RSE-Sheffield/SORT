@@ -19,8 +19,16 @@ import os
 def cast_to_boolean(obj: Any) -> bool:
     """
     Check if the string value is 1, yes, or true.
+
+    Empty values are interpreted as False.
     """
-    return str(obj).casefold()[0] in {"1", "y", "t"}
+    # Cast to lower case string
+    obj = str(obj).casefold()
+    # False / off
+    if obj in {"", "off", "none"}:
+        return False
+    # True / on
+    return obj[0] in {"1", "y", "t", "o"}
 
 
 # Load environment variables from .env file
