@@ -198,7 +198,7 @@ sudo chown root:ssl-cert /etc/ssl/private/sort.key
 
 The CSR may be used to get a signed SSL certificate via [Information Security](https://staff.sheffield.ac.uk/it-services/information-security) in IT Services.
 
-For *development purposes only* we can generate a self-signed certificate
+For *development purposes only* we can generate a self-signed certificate (which will cause web browsers to say "Not secure")
 
 ```bash
 openssl x509 -signkey /etc/ssl/private/sort.key -in "$(hostname -s)_shef_ac_uk.csr" -req -days 365 -out "$(hostname -s)_shef_ac_uk.crt"
