@@ -13,7 +13,8 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5.3.0
         with:
-          python-version: '3.13'
+          # This should match the version used in production
+          python-version: "3.12"
       - name: Install dependencies
         run: |
           # Update pip
