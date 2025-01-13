@@ -1,3 +1,13 @@
-# from django.test import TestCase
+import django.test
+from django.test import TestCase
 
-# Create your tests here.
+
+class HomeTestCase(TestCase):
+    def setUp(self):
+        self.client = django.test.Client()
+
+    def test_home_view(self):
+        """
+        Welcome page
+        """
+        self.client.get('/')

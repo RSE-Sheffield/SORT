@@ -26,4 +26,4 @@ jobs:
         run: python manage.py check
       # https://docs.djangoproject.com/en/5.1/topics/testing/
       - name: Run Django tests
-        run: python manage.py test
+        run: python manage.py test --parallel
