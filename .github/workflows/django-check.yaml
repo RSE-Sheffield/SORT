@@ -1,9 +1,9 @@
-name: Lint Python code
+name: Run Django checks
 on:
-  pull_request:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 jobs:
   lint:
     runs-on: ubuntu-24.04
@@ -21,6 +21,9 @@ jobs:
           python -m pip install --upgrade pip
           # https://pip.pypa.io/en/stable/cli/pip_install/
           pip install --requirement requirements.txt
-      - name: Run Django checks
-        # https://docs.djangoproject.com/en/5.1/ref/django-admin/#check
+      # https://docs.djangoproject.com/en/5.1/ref/django-admin/#check
+      - name: Run Django system checks
         run: python manage.py check
+      # https://docs.djangoproject.com/en/5.1/topics/testing/
+      - name: Run Django tests
+        run: python manage.py test
