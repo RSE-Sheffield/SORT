@@ -1,6 +1,5 @@
 import secrets
 from django.db import models
-from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils import timezone
 
@@ -17,7 +16,7 @@ class Survey(models.Model):
         return self.title
 
     def get_absolute_url(self, token):
-        return reverse('survey', kwargs={'pk': self.pk, 'token': token})
+        return reverse("survey", kwargs={"pk": self.pk, "token": token})
 
 
 class SurveyResponse(models.Model):

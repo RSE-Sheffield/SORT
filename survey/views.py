@@ -149,9 +149,9 @@ class SurveyResponseView(View):
         is_valid = Invitation.objects.filter(token=token).exists()
 
         if is_valid:
-            logger.info(f"Token is valid.")
+            logger.info("Token is valid.")
         else:
-            logger.warning(f"Token is invalid or expired.")
+            logger.warning("Token is invalid or expired.")
         return is_valid
 
 class SurveyLinkInvalidView(View):
@@ -169,7 +169,7 @@ class CompletionView(View):
     """
     def get(self, request):
         messages.info(request, "You have completed the survey.")
-        return render(request, 'survey/completion.html')
+        return render(request, "survey/completion.html")
 
 class InvitationView(FormView):
 

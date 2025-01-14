@@ -1,26 +1,30 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 class ManagerSignupForm(UserCreationForm):
-    email = forms.EmailField(required=True, label='Email', error_messages={'required': 'Email is required.'})
-
+    email = forms.EmailField(
+        required=True,
+        label='Email',
+        error_messages={'required': 'Email is required.'}
+    )
 
     class Meta:
         model = User
-        fields = ('email', 'password1', 'password2')
+        fields = ("email", "password1", "password2")
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
+        email = self.cleaned_data.get("email")
         if User.objects.filter(email=email).exists():
             raise ValidationError("This email is already registered.")
         return email
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.email = self.cleaned_data['email']
+        user.email = self.cleaned_data["email"]
         user.username = user.email
         if commit:
             user.save()
@@ -28,11 +32,11 @@ class ManagerSignupForm(UserCreationForm):
 
 
 class ManagerLoginForm(AuthenticationForm):
-    username = forms.EmailField(label='Email', max_length=60, widget=forms.EmailInput(attrs={'autofocus': True}))
-
-    class Meta:
-        model = AuthenticationForm
-        fields = ['username', 'password']
+    username = forms.EmailField(
+        label='Email',
+        max_length=60,
+        widget=forms.EmailInput(attrs={'autofocus': True})
+    )
 
 
 class UserProfileForm(forms.ModelForm):
@@ -41,7 +45,10 @@ class UserProfileForm(forms.ModelForm):
         fields = ['email', 'first_name', 'last_name']
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
+        email = self.cleaned_data.get("email")
+
+        if email == self.instance.email:
+            return email
 
         if email == self.instance.email:
             return email
@@ -52,6 +59,10 @@ class UserProfileForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+        if self.cleaned_data.get('password'):
+            user.set_password(self.cleaned_data['password'])
         if commit:
             user.save()
         return user
+
+

@@ -24,4 +24,5 @@ traitlets==5.14.3
 typing_extensions==4.12.2
 tzdata==2024.1
 wcwidth==0.2.13
+django_debug_toolbar==4.4.6
 strenum==0.4.15

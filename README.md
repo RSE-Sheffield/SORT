@@ -59,7 +59,15 @@ python manage.py createsuperuser
 
 ---
 
-6. Finally, run start the development server
+6. Create a `.env` file in the project root directory and add the following environment variables:
+
+```
+DJANGO_SECRET_KEY=your_secret_key
+```
+
+---
+
+7. Finally, run start the development server
 ```bash
 python manage.py runserver
 ```
@@ -68,4 +76,8 @@ The app will be available at http://127.0.0.1:8000.
 
 ---
 
+8. Import data using the [`loaddata`](https://docs.djangoproject.com/en/5.1/ref/django-admin/#django-admin-loaddata) command
 
+```bash
+python manage.py loaddata data\questionnaires.json data\questionnaires.json
+```

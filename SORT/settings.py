@@ -10,9 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-from pathlib import Path
-from dotenv import load_dotenv
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -24,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -43,9 +44,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_bootstrap5",
     "django_extensions",
-
+    "debug_toolbar",
     # apps created by FA:
-
     "home",
     "survey",
 ]
@@ -58,6 +58,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "SORT.urls"
@@ -65,8 +66,7 @@ ROOT_URLCONF = "SORT.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'static/templates']
-        ,
+        "DIRS": [BASE_DIR / "static/templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -88,7 +88,7 @@ WSGI_APPLICATION = "SORT.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / 'db.sqlite3',
+        "NAME": BASE_DIR / "db.sqlite3",
         # "NAME": os.getenv("DB_NAME"),
         # "USER": os.getenv("DB_USER"),
         # "PASSWORD": os.getenv("DB_PASSWORD"),
@@ -133,8 +133,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-STATICFILES_DIRS = [BASE_DIR / 'static']
-
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 
 # Default primary key field type
@@ -152,17 +151,22 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # FA: 30 minutes before automatic log out
 SESSION_COOKIE_AGE = 1800
 
-PASSWORD_RESET_TIMEOUT = 1800 # FA: default to expire after 30 minutes
+PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 
 # FA: for local testing emails:
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-)
+AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
+# For django-debug-toolbar
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]
+AUTH_USER_MODEL = 'home.User' # FA: replace username with email as unique identifiers
 
 # FA: for production:
 
-#EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
