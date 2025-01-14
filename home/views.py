@@ -6,7 +6,6 @@ from django.views.generic import ListView
 from django.views.generic.edit import CreateView, UpdateView
 
 from .models import Project, OrganisationMembership
-from survey.models import Questionnaire
 from django.shortcuts import render
 from django.views import View
 from .forms import ManagerSignupForm, ManagerLoginForm, UserProfileForm
@@ -60,14 +59,9 @@ class HomeView(LoginRequiredMixin, View):
     login_url = "login"
 
     def get(self, request):
-        try:
-            consent_questionnaire = Questionnaire.objects.get(title="Consent")
-            print(consent_questionnaire)
-        except ObjectDoesNotExist:
-            consent_questionnaire = None
 
         return render(
-            request, self.template_name, {"questionnaire": consent_questionnaire}
+            request, self.template_name, {}
         )
 
 

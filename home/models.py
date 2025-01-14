@@ -4,7 +4,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
-from survey.models import Questionnaire
+
 
 
 class UserManager(BaseUserManager):
@@ -91,7 +91,6 @@ class Project(models.Model):
     """ A project can be associated with multiple organisations/teams """
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
-    surveys = models.ManyToManyField(Questionnaire, blank=True)
 
     def __str__(self):
         return self.name

@@ -2,6 +2,7 @@ import secrets
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from home.models import Project
 
 class Survey(models.Model):
     """
@@ -10,7 +11,7 @@ class Survey(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     survey_config = models.JSONField()
-    # TODO: Add the project it belongs to as foreign key
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
