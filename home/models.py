@@ -4,7 +4,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
-
+from django.urls import reverse
 
 
 class UserManager(BaseUserManager):
@@ -53,6 +53,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Organisation(models.Model):
     name = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
     members = models.ManyToManyField(User, through="OrganisationMembership")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -107,6 +108,8 @@ class Project(models.Model):
             organisation__organisationmembership__user=user
         ).exists()
 
+    def get_absolute_url(self):
+        return reverse("project", kwargs={"project_id": self.pk})
 
 class ProjectOrganisation(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)

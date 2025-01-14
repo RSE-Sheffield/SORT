@@ -7,6 +7,8 @@ from django.views.generic import FormView, TemplateView
 from django.views.generic.edit import CreateView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+
+from home.models import Project
 from .mixins import TokenAuthenticationMixin
 
 from .forms import create_dynamic_formset, InvitationForm
@@ -30,7 +32,6 @@ class SurveyView(LoginRequiredMixin, View):
     def post(self, request, pk):
         return self.render_survey_page(request, pk)
 
-
     def render_survey_page(self, request, pk):
         context = {}
         survey = get_object_or_404(Survey, pk=pk)
@@ -38,6 +39,24 @@ class SurveyView(LoginRequiredMixin, View):
         context["survey"] = survey
 
         return render(request, 'survey/survey.html', context)
+
+class SurveyCreateView(LoginRequiredMixin, CreateView):
+    model = Survey
+    template_name = "survey/create.html"
+    fields = ["name", "description"]
+
+    def get_success_url(self):
+        return self.object.get_absolute_url()
+
+    def form_valid(self, form):
+        result = super().form_valid(form)
+        project = Project.objects.get(id=self.kwargs["project_id"])
+        self.object.project = project
+
+        self.object.survey_config = test_survey_config # TODO: Using a test config for now, to be replaced
+        self.object.save()
+        return result
+
 
 # TODO: Add TokenAuthenticationMixin after re-enabling the token
 class SurveyResponseView(View):
