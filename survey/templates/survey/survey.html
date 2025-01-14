@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h3>{{ survey.title }}</h3>
+    <p>{{ survey.description }}</p>
+
+    <ul>
+        <li>
+            <a href="{% url "invite" %}">Send an invitation</a>
+        </li>
+    </ul>
+
+
+
+
+
+{% endblock %}
