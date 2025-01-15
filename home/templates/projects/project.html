@@ -21,7 +21,9 @@
             <h2 class="text-2xl font-bold d-inline-block">Surveys</h2>
             {% if can_create %}
                 <a href="{% url "survey_create" project.id %}">
-                    <button type="button" class="btn btn-primary">Create survey</button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="bx bx-chart align-middle"></i> Create survey
+                    </button>
                 </a>
             {% endif %}
         </div>
@@ -35,7 +37,9 @@
                         </div>
                         <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
                             <a href="{% url 'survey' survey.id %}">
-                                <button type="button" class="btn btn-dark">View</button>
+                                <button type="button" class="btn btn-dark">
+                                    <i class="bx bxs-chart align-middle"></i> View
+                                </button>
                             </a>
                         </div>
                     </div>

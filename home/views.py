@@ -175,52 +175,6 @@ class OrganisationCreateView(LoginRequiredMixin, CreateView):
         return redirect("myorganisation")
 
 
-class ProjectListView(LoginRequiredMixin, ListView):
-    model = Project
-    template_name = "projects/list.html"
-    context_object_name = "projects"
-    paginate_by = 10
-
-    def get_queryset(self):
-        # Get all projects associated with user's organisations
-        projects = (
-            Project.objects.filter(
-                organisations__organisationmembership__user=self.request.user
-            )
-            .distinct()
-            .select_related("created_by")
-            .prefetch_related(
-                "organisations", "organisations__organisationmembership_set"
-            )
-        )
-
-        return projects
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Add edit permissions for each project
-        context["can_edit"] = {
-            project.id: project.user_can_edit(self.request.user)
-            for project in context["projects"]
-        }
-        context["can_create"] = OrganisationMembership.objects.filter(
-            user=self.request.user, role="ADMIN"
-        ).exists()
-
-        user_orgs = set(
-            OrganisationMembership.objects.filter(user=self.request.user).values_list(
-                "organisation_id", flat=True
-            )
-        )
-
-        context["project_orgs"] = {
-            project.id: [
-                org for org in project.organisations.all() if org.id in user_orgs
-            ]
-            for project in context["projects"]
-        }
-        return context
-
 
 class ProjectView(LoginRequiredMixin, ListView):
     template_name = "projects/project.html"
