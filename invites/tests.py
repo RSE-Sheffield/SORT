@@ -1,3 +1,10 @@
-# from django.test import TestCase
+import django.test
 
-# Create your tests here.
+
+class InviteTestCase(django.test.TestCase):
+
+    def test_invite_page(self):
+        """
+        Send out invitation page.
+        """
+        self.client.get("/invite/")
