@@ -25,6 +25,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count
 
 User = get_user_model()
 
@@ -64,9 +65,7 @@ class HomeView(LoginRequiredMixin, View):
 
     def get(self, request):
 
-        return render(
-            request, self.template_name, {}
-        )
+        return render(request, self.template_name, {})
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
@@ -113,6 +112,7 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
 # class PasswordResetExpiredView(TemplateView):  # leave for now
 #     template_name = 'home/password_reset_expired.html'
 
+
 class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView):
     template_name = "organisation/organisation.html"
     context_object_name = "projects"
@@ -120,7 +120,9 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
 
     def get_queryset(self):
         organisation = self.request.user.organisation_set.first()
-        projects = Project.objects.filter(projectorganisation__organisation=organisation)
+        projects = Project.objects.filter(
+            projectorganisation__organisation=organisation
+        ).annotate(survey_count=Count("survey"))
         return projects
 
     def get_context_data(self, **kwargs):
@@ -137,21 +139,19 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
         ).exists()
 
         user_orgs = set(
-            OrganisationMembership.objects.filter(
-                user=self.request.user
-            ).values_list('organisation_id', flat=True)
+            OrganisationMembership.objects.filter(user=self.request.user).values_list(
+                "organisation_id", flat=True
+            )
         )
 
         context["project_orgs"] = {
             project.id: [
-                org for org in project.organisations.all()
-                if org.id in user_orgs
+                org for org in project.organisations.all() if org.id in user_orgs
             ]
             for project in context["projects"]
         }
 
         return context
-
 
 
 class OrganisationCreateView(LoginRequiredMixin, CreateView):
@@ -165,7 +165,9 @@ class OrganisationCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         super().form_valid(form)
         # Add user that creates the org as admin
-        OrganisationMembership.objects.create(organisation=self.object, user=self.request.user, role="ADMIN")
+        OrganisationMembership.objects.create(
+            organisation=self.object, user=self.request.user, role="ADMIN"
+        )
 
         return redirect("myorganisation")
 
@@ -184,7 +186,9 @@ class ProjectListView(LoginRequiredMixin, ListView):
             )
             .distinct()
             .select_related("created_by")
-            .prefetch_related("surveys", "organisations", "organisations__organisationmembership_set")
+            .prefetch_related(
+                "organisations", "organisations__organisationmembership_set"
+            )
         )
 
         return projects
@@ -199,27 +203,26 @@ class ProjectListView(LoginRequiredMixin, ListView):
         context["can_create"] = OrganisationMembership.objects.filter(
             user=self.request.user, role="ADMIN"
         ).exists()
-        
+
         user_orgs = set(
-            OrganisationMembership.objects.filter(
-                user=self.request.user
-            ).values_list('organisation_id', flat=True)
+            OrganisationMembership.objects.filter(user=self.request.user).values_list(
+                "organisation_id", flat=True
+            )
         )
-        
+
         context["project_orgs"] = {
             project.id: [
-                org for org in project.organisations.all()
-                if org.id in user_orgs
+                org for org in project.organisations.all() if org.id in user_orgs
             ]
             for project in context["projects"]
         }
         return context
 
+
 class ProjectView(LoginRequiredMixin, ListView):
     template_name = "projects/project.html"
     context_object_name = "surveys"
     paginate_by = 10
-
 
     def get_queryset(self):
         surveys = Survey.objects.filter(project_id=self.kwargs["project_id"])
@@ -235,6 +238,7 @@ class ProjectView(LoginRequiredMixin, ListView):
 
         return context
 
+
 class ProjectCreateView(LoginRequiredMixin, CreateView):
     model = Project
     fields = ["name"]
@@ -248,10 +252,7 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
         result = super().form_valid(form)
         organisation = Organisation.objects.get(id=self.kwargs["organisation_id"])
         # Link to the organisation
-        ProjectOrganisation.objects.create(project=self.object,
-                                           organisation=organisation,
-                                           added_by=self.request.user)
+        ProjectOrganisation.objects.create(
+            project=self.object, organisation=organisation, added_by=self.request.user
+        )
         return result
-
-
-
