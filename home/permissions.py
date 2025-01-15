@@ -1,5 +1,6 @@
-from typing import Optional
-from .models import GuestProjectAccess, Project, User
+from typing import Optional, Dict
+from django.db.models.query import QuerySet
+from .models import GuestProjectAccess, OrganisationMembership, Project, User
 from .constants import ROLE_ADMIN, ROLE_MEMBER, ROLE_GUEST, RoleType
 
 
@@ -57,3 +58,13 @@ def can_edit_project(user: User, project: Project) -> bool:
         ).exists()
 
     return False
+
+
+def can_create_projects(user: User) -> bool:
+    """Check if user can create projects based on admin role"""
+    return OrganisationMembership.objects.filter(user=user, role=ROLE_ADMIN).exists()
+
+
+def get_project_permissions(user: User, projects: QuerySet[Project]) -> Dict[int, bool]:
+    """Get edit permissions for multiple projects"""
+    return {project.id: can_edit_project(user, project) for project in projects}

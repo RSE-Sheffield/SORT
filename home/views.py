@@ -26,8 +26,17 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count
-from .permissions import can_view_project, can_edit_project
-from .services import ProjectAccessService
+from .permissions import (
+    can_create_projects,
+    can_view_project,
+    can_edit_project,
+    get_project_permissions,
+)
+from .services import (
+    OrganisationAccessService,
+    OrganisationService,
+    ProjectAccessService,
+)
 
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse
@@ -124,38 +133,32 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
     context_object_name = "projects"
     paginate_by = 10
 
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.org_service = OrganisationService()
+        self.org_access_service = OrganisationAccessService()
+        self.organisation = self.org_service.get_user_organisation(request.user)
+
     def get_queryset(self):
-        organisation = self.request.user.organisation_set.first()
-        projects = Project.objects.filter(
-            projectorganisation__organisation=organisation
-        ).annotate(survey_count=Count("survey"))
-        return projects
+        return self.org_service.get_organisation_projects(self.organisation)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        organisation = self.request.user.organisation_set.first()
-        context["organisation"] = organisation
+        projects = context["projects"]
+        user = self.request.user
 
-        context["can_edit"] = {
-            project.id: can_edit_project(self.request.user, project)
-            for project in context["projects"]
-        }
-        context["can_create"] = OrganisationMembership.objects.filter(
-            user=self.request.user, role="ADMIN"
-        ).exists()
+        user_org_ids = self.org_service.get_user_organisation_ids(user)
 
-        user_orgs = set(
-            OrganisationMembership.objects.filter(user=self.request.user).values_list(
-                "organisation_id", flat=True
-            )
+        context.update(
+            {
+                "organisation": self.organisation,
+                "can_edit": get_project_permissions(user, projects),
+                "can_create": can_create_projects(user),
+                "project_orgs": self.org_access_service.get_user_accessible_organisations(
+                    projects, user_org_ids
+                ),
+            }
         )
-
-        context["project_orgs"] = {
-            project.id: [
-                org for org in project.organisations.all() if org.id in user_orgs
-            ]
-            for project in context["projects"]
-        }
 
         return context
 
