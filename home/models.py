@@ -67,8 +67,6 @@ class Organisation(models.Model):
 
 
 class OrganisationMembership(models.Model):
-    ROLE_CHOICES = ROLES
-
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLES, default=ROLE_GUEST)

@@ -9,7 +9,7 @@ def get_user_role_in_project(user: User, project: Project) -> Optional[RoleType]
         project.projectorganisation_set.filter(
             organisation__organisationmembership__user=user
         )
-        .select_related("organisation__organisationmembership")
+        .select_related("organisation")
         .first()
     )
 
