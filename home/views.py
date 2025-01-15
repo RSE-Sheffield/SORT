@@ -10,7 +10,7 @@ from django.views.generic.edit import CreateView, UpdateView
 from survey.models import Survey
 from .mixins import OrganisationRequiredMixin
 from .models import Organisation, Project, OrganisationMembership, ProjectOrganisation
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.views import View
 from .forms import ManagerSignupForm, ManagerLoginForm, UserProfileForm
 from django.contrib.auth import login
@@ -26,6 +26,9 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count
+from .permissions import can_view_project, can_edit_project
+from .services import ProjectAccessService
+
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
@@ -134,7 +137,7 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
         context["organisation"] = organisation
 
         context["can_edit"] = {
-            project.id: project.user_can_edit(self.request.user)
+            project.id: can_edit_project(self.request.user, project)
             for project in context["projects"]
         }
         context["can_create"] = OrganisationMembership.objects.filter(
@@ -175,23 +178,34 @@ class OrganisationCreateView(LoginRequiredMixin, CreateView):
         return redirect("myorganisation")
 
 
-
 class ProjectView(LoginRequiredMixin, ListView):
     template_name = "projects/project.html"
     context_object_name = "surveys"
     paginate_by = 10
 
+    def dispatch(self, request, *args, **kwargs):
+        # Check if user is allowed to access the project
+        try:
+            self.project = Project.objects.get(id=self.kwargs["project_id"])
+        except Project.DoesNotExist:
+            messages.error(request, "Project not found.")
+            return redirect("myorganisation")
+
+        if not can_view_project(request.user, self.project):
+            messages.error(
+                request,
+                f"You do not have permission to view the project {self.project.name}.",
+            )
+            return redirect("myorganisation")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
-        surveys = Survey.objects.filter(project_id=self.kwargs["project_id"])
-        return surveys
+        return Survey.objects.filter(project_id=self.kwargs["project_id"])
 
     def get_context_data(self, **kwargs):
-        # TODO: Check if user is allowed to access the project
         context = super().get_context_data(**kwargs)
         context["project"] = Project.objects.get(id=self.kwargs["project_id"])
-
-        # TODO: Check for role level for creating surveys
-        context["can_create"] = True
+        context["can_edit"] = can_edit_project(self.request.user, self.project)
 
         return context
 

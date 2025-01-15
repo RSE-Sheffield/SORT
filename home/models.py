@@ -5,6 +5,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.urls import reverse
+from .constants import ROLES, ROLE_ADMIN, ROLE_MEMBER, ROLE_GUEST, RoleType
 
 
 class UserManager(BaseUserManager):
@@ -66,25 +67,17 @@ class Organisation(models.Model):
 
 
 class OrganisationMembership(models.Model):
-    ROLE_CHOICES = [
-        ("ADMIN", "Administrator"),
-        ("MEMBER", "Member"),
-        ("GUEST", "Guest"),
-    ]
-    """
-    ADMIN: Full control
-    MEMBER: Can view and edit projects
-    GUEST: Can view certain projects
-    """
+    ROLE_CHOICES = ROLES
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="GUEST")
+    role = models.CharField(max_length=20, choices=ROLES, default=ROLE_GUEST)
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ["user", "organisation"]
         """ A user can only be a member of an organisation once """
+
 
 class Project(models.Model):
     name = models.CharField(max_length=100)
@@ -96,20 +89,12 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
-    def user_can_edit(self, user):
-        user_orgs = self.projectorganisation_set.filter(
-            organisation__organisationmembership__user=user,
-            organisation__organisationmembership__role__in=["ADMIN", "MEMBER"],
-        )
-        return user_orgs.exists()
-
-    def user_can_view(self, user):
-        return self.projectorganisation_set.filter(
-            organisation__organisationmembership__user=user
-        ).exists()
+    def get_guest_users(self):
+        return GuestProjectAccess.objects.filter(project=self).select_related("user")
 
     def get_absolute_url(self):
         return reverse("project", kwargs={"project_id": self.pk})
+
 
 class ProjectOrganisation(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
@@ -119,3 +104,24 @@ class ProjectOrganisation(models.Model):
 
     class Meta:
         unique_together = ["project", "organisation"]
+
+
+class GuestProjectAccess(models.Model):
+    PERMISSION_CHOICES = [
+        ("VIEW", "View Only"),
+        ("EDIT", "View and Edit"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    permission = models.CharField(
+        max_length=10, choices=PERMISSION_CHOICES, default="VIEW"
+    )
+    granted_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="granted_access"
+    )
+    granted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["user", "project"]
+        verbose_name_plural = "Guest project access"
