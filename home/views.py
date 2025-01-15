@@ -26,6 +26,9 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count
+from django.core.exceptions import PermissionDenied
+from django.urls import reverse
+from django.shortcuts import get_object_or_404
 
 User = get_user_model()
 
@@ -256,3 +259,60 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
             project=self.object, organisation=organisation, added_by=self.request.user
         )
         return result
+
+
+class ProjectEditView(LoginRequiredMixin, UpdateView):
+    model = Project
+    template_name = "projects/edit.html"
+    fields = ["name"]
+    context_object_name = "project"
+
+    def get_object(self, queryset=None):
+        # Get the project with related organizations
+        project = get_object_or_404(
+            Project.objects.prefetch_related(
+                "organisations",
+                "organisations__organisationmembership_set"
+            ),
+            id=self.kwargs["project_id"]
+        )
+
+        # Check if user has edit permissions
+        if not project.user_can_edit(self.request.user):
+            raise PermissionDenied("You don't have permission to edit this project.")
+
+        return project
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Get user's org
+        user_orgs = set(
+            OrganisationMembership.objects.filter(
+                user=self.request.user
+            ).values_list("organisation_id", flat=True)
+        )
+
+        # Get the org that the user is a member of and are linked to the project
+        context["project_orgs"] = [
+            org for org in self.object.organisations.all()
+            if org.id in user_orgs
+        ]
+
+        # Check if user can manage org for this project
+        context["can_manage_orgs"] = any(
+            membership.role == "ADMIN"
+            for org in context["project_orgs"]
+            for membership in org.organisationmembership_set.all()
+            if membership.user == self.request.user
+        )
+
+        return context
+
+    def get_success_url(self):
+        return reverse("myorganisation")
+
+    def form_valid(self, form):
+        # Perform the update
+        response = super().form_valid(form)
+        return response
