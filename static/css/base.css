@@ -19,11 +19,17 @@ header {
     background-color: var(--primary-bg-colour);
 }
 
+.nav-link:hover,
+.nav-link.active {
+    color: black !important;
+    filter: brightness(0.8);
+}
+
 footer {
     position: absolute;
     bottom: 0;
-    height: 60px;
-    line-height: 60px;
+    height: 3.75rem;
+    line-height: 3.75rem;
     width: 100%;
 }
 
