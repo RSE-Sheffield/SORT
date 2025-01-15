@@ -1,25 +1,38 @@
 {% extends 'base.html' %}
-
 {% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-folder-open"></i> <a href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bx bxs-chart"></i> Survey: {{ survey.name }}
+                </li>
+            </ol>
+        </nav>
+    </div>
     <div class="container mx-auto px-4 py-8">
         <h3>{{ survey.name }}</h3>
         <p>{{ survey.description }}</p>
-
         <ul>
             <li>
                 <a href="{% url "invite" %}">Send an invitation</a>
             </li>
             <li>
-               Link to fill in survey <a href="{% url 'survey_response' survey.id 'notoken' %}">{% url 'survey_response' survey.id 'notoken' %}</a>
+                Link to fill in survey <a href="{% url 'survey_response' survey.id 'notoken' %}">{% url 'survey_response' survey.id 'notoken' %}</a>
             </li>
         </ul>
-
         <div>
-        <h2>Responses</h2>
+            <h2>Responses</h2>
             <ul>
-                {% for survey_response in survey.survey_response.all %}
-                    <li>{{ survey_response.answers }}</li>
-                {% endfor %}
+                {% for survey_response in survey.survey_response.all %}<li>{{ survey_response.answers }}</li>{% endfor %}
             </ul>
         </div>
     </div>
