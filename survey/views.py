@@ -199,14 +199,14 @@ class InvitationView(FormView):
     def form_valid(self, form):
         email = form.cleaned_data['email']
 
-        questionnaire = Survey.objects.first()
+        survey = Survey.objects.first()
 
-        invitation = Invitation.objects.create(questionnaire=questionnaire)
+        invitation = Invitation.objects.create(survey=survey)
 
         token = invitation.token
 
         # Generate the survey link with the token
-        survey_link = f"http://localhost:8000/survey/{questionnaire.pk}/{token}/"
+        survey_link = f"http://localhost:8000/survey/{survey.pk}/{token}/"
 
         # Send the email
         send_mail(
