@@ -1,0 +1,27 @@
+name: AI code review
+on:
+  push:
+    branches:
+      - main
+jobs:
+  code-review:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: "3.13"
+      - name: Install Anthropic package
+        run: |
+          python -m pip install --upgrade pip
+          pip install anthropic==0.*
+      - name: Serialise site code
+        # Get the codebase and get Claude to review it and write a patch
+        run: find . -type f -name '*.py' -print -exec cat {} \; | python scripts/claude_code_review.py > ${{ runner.temp }}/diff.patch
+      # https://manpages.ubuntu.com/manpages/noble/man1/patch.1.html
+      - name: Apply patch
+        run: patch < ${{ runner.temp }}/diff.patch
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7.0.6
