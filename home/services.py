@@ -43,6 +43,7 @@ class ProjectService:
         project: Project, user: User
     ) -> Optional[ProjectManagerPermission]:
         """Get user's permission level for a specific project"""
+        
         return ProjectManagerPermission.objects.filter(
             user=user, project=project
         ).first()

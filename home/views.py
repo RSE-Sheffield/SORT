@@ -211,13 +211,10 @@ class ProjectView(LoginRequiredMixin, ListView):
         user = self.request.user
         project = self.project
 
-        permission = ProjectService.get_user_permission(project, user)
-
         context.update(
             {
                 "project": project,
-                "can_edit": can_edit_project(user, project),
-                "permission_level": permission.permission if permission else None,
+                "can_create": can_edit_project(user, project),
             }
         )
 
