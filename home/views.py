@@ -1,11 +1,15 @@
+from lib2to3.fixes.fix_input import context
+
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView
 
-from .models import Project, OrganisationMembership
+from survey.models import Survey
+from .mixins import OrganisationRequiredMixin
+from .models import Organisation, Project, OrganisationMembership, ProjectOrganisation
 from django.shortcuts import render
 from django.views import View
 from .forms import ManagerSignupForm, ManagerLoginForm, UserProfileForm
@@ -21,6 +25,10 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count
+from django.core.exceptions import PermissionDenied
+from django.urls import reverse
+from django.shortcuts import get_object_or_404
 
 User = get_user_model()
 
@@ -60,9 +68,7 @@ class HomeView(LoginRequiredMixin, View):
 
     def get(self, request):
 
-        return render(
-            request, self.template_name, {}
-        )
+        return render(request, self.template_name, {})
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
@@ -110,6 +116,65 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
 #     template_name = 'home/password_reset_expired.html'
 
 
+class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView):
+    template_name = "organisation/organisation.html"
+    context_object_name = "projects"
+    paginate_by = 10
+
+    def get_queryset(self):
+        organisation = self.request.user.organisation_set.first()
+        projects = Project.objects.filter(
+            projectorganisation__organisation=organisation
+        ).annotate(survey_count=Count("survey"))
+        return projects
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        organisation = self.request.user.organisation_set.first()
+        context["organisation"] = organisation
+
+        context["can_edit"] = {
+            project.id: project.user_can_edit(self.request.user)
+            for project in context["projects"]
+        }
+        context["can_create"] = OrganisationMembership.objects.filter(
+            user=self.request.user, role="ADMIN"
+        ).exists()
+
+        user_orgs = set(
+            OrganisationMembership.objects.filter(user=self.request.user).values_list(
+                "organisation_id", flat=True
+            )
+        )
+
+        context["project_orgs"] = {
+            project.id: [
+                org for org in project.organisations.all() if org.id in user_orgs
+            ]
+            for project in context["projects"]
+        }
+
+        return context
+
+
+class OrganisationCreateView(LoginRequiredMixin, CreateView):
+    model = Organisation
+    template_name = "organisation/create.html"
+    fields = ["name", "description"]
+
+    def get_success_url(self):
+        return reverse_lazy("myorganisation")
+
+    def form_valid(self, form):
+        super().form_valid(form)
+        # Add user that creates the org as admin
+        OrganisationMembership.objects.create(
+            organisation=self.object, user=self.request.user, role="ADMIN"
+        )
+
+        return redirect("myorganisation")
+
+
 class ProjectListView(LoginRequiredMixin, ListView):
     model = Project
     template_name = "projects/list.html"
@@ -124,7 +189,9 @@ class ProjectListView(LoginRequiredMixin, ListView):
             )
             .distinct()
             .select_related("created_by")
-            .prefetch_related("surveys", "organisations", "organisations__organisationmembership_set")
+            .prefetch_related(
+                "organisations", "organisations__organisationmembership_set"
+            )
         )
 
         return projects
@@ -139,18 +206,113 @@ class ProjectListView(LoginRequiredMixin, ListView):
         context["can_create"] = OrganisationMembership.objects.filter(
             user=self.request.user, role="ADMIN"
         ).exists()
-        
+
         user_orgs = set(
-            OrganisationMembership.objects.filter(
-                user=self.request.user
-            ).values_list('organisation_id', flat=True)
+            OrganisationMembership.objects.filter(user=self.request.user).values_list(
+                "organisation_id", flat=True
+            )
         )
-        
+
         context["project_orgs"] = {
             project.id: [
-                org for org in project.organisations.all()
-                if org.id in user_orgs
+                org for org in project.organisations.all() if org.id in user_orgs
             ]
             for project in context["projects"]
         }
         return context
+
+
+class ProjectView(LoginRequiredMixin, ListView):
+    template_name = "projects/project.html"
+    context_object_name = "surveys"
+    paginate_by = 10
+
+    def get_queryset(self):
+        surveys = Survey.objects.filter(project_id=self.kwargs["project_id"])
+        return surveys
+
+    def get_context_data(self, **kwargs):
+        # TODO: Check if user is allowed to access the project
+        context = super().get_context_data(**kwargs)
+        context["project"] = Project.objects.get(id=self.kwargs["project_id"])
+
+        # TODO: Check for role level for creating surveys
+        context["can_create"] = True
+
+        return context
+
+
+class ProjectCreateView(LoginRequiredMixin, CreateView):
+    model = Project
+    fields = ["name"]
+    template_name = "projects/create.html"
+
+    def get_success_url(self):
+        return self.object.get_absolute_url()
+
+    def form_valid(self, form):
+        # TODO: Check user allowed to create project in the org
+        result = super().form_valid(form)
+        organisation = Organisation.objects.get(id=self.kwargs["organisation_id"])
+        # Link to the organisation
+        ProjectOrganisation.objects.create(
+            project=self.object, organisation=organisation, added_by=self.request.user
+        )
+        return result
+
+
+class ProjectEditView(LoginRequiredMixin, UpdateView):
+    model = Project
+    template_name = "projects/edit.html"
+    fields = ["name"]
+    context_object_name = "project"
+
+    def get_object(self, queryset=None):
+        # Get the project with related organizations
+        project = get_object_or_404(
+            Project.objects.prefetch_related(
+                "organisations",
+                "organisations__organisationmembership_set"
+            ),
+            id=self.kwargs["project_id"]
+        )
+
+        # Check if user has edit permissions
+        if not project.user_can_edit(self.request.user):
+            raise PermissionDenied("You don't have permission to edit this project.")
+
+        return project
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Get user's org
+        user_orgs = set(
+            OrganisationMembership.objects.filter(
+                user=self.request.user
+            ).values_list("organisation_id", flat=True)
+        )
+
+        # Get the org that the user is a member of and are linked to the project
+        context["project_orgs"] = [
+            org for org in self.object.organisations.all()
+            if org.id in user_orgs
+        ]
+
+        # Check if user can manage org for this project
+        context["can_manage_orgs"] = any(
+            membership.role == "ADMIN"
+            for org in context["project_orgs"]
+            for membership in org.organisationmembership_set.all()
+            if membership.user == self.request.user
+        )
+
+        return context
+
+    def get_success_url(self):
+        return reverse("myorganisation")
+
+    def form_valid(self, form):
+        # Perform the update
+        response = super().form_valid(form)
+        return response

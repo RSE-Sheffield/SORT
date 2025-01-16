@@ -32,6 +32,11 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     # path('password_reset/expired/', views.PasswordResetExpiredView.as_view(), name='password_reset_expired'),
+    path("myorganisation/", views.MyOrganisationView.as_view(), name="myorganisation"),
+    path("organisation/create/", views.OrganisationCreateView.as_view(), name="organisation_create"),
     path("projects/", views.ProjectListView.as_view(), name="projects"),
     # path("projects/create/", views.ProjectCreateView.as_view(), name="project_create"),
+    path("projects/<int:project_id>/", views.ProjectView.as_view(), name="project"),
+    path("projects/create/<int:organisation_id>/", views.ProjectCreateView.as_view(), name="project_create"),
+    path("projects/<int:project_id>/edit", views.ProjectEditView.as_view(), name="project-edit"),
 ]

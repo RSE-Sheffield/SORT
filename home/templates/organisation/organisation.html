@@ -2,10 +2,14 @@
 {% load project_filters %}
 {% block content %}
   <div class="container mx-auto px-4 py-8">
+    <h1>{{ organisation.name }}</h1>
+    <p>{{ organisation.description }}</p>
+  </div>
+  <div class="container mx-auto px-4 py-8">
     <div class="w-100 d-flex justify-content-between align-items-center mt-3 mb-6">
-      <h1 class="text-2xl font-bold d-inline-block">Projects</h1>
+      <h2 class="text-2xl font-bold d-inline-block">Projects</h2>
       {% if can_create %}
-        <a href="todo">
+        <a href="{% url 'project_create' organisation.id %}">
           <button type="button" class="btn btn-primary">Create project</button>
         </a>
       {% endif %}
@@ -19,11 +23,11 @@
               <div class="flex flex-wrap gap-2 mb-3">
                 {% for org in project_orgs|get_item:project.id %}<span class="badge text-bg-primary">{{ org.name }}</span>{% endfor %}
               </div>
-              <span>Responses: {{ project.surveys.count }}</span>
+              <span>Surveys: {{ project.survey_count }}</span>
             </div>
             <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
               {% if can_edit|get_item:project.id %}
-                <a href="{% url 'projects' %}">
+                <a href="{% url 'project-edit' project.id %}">
                   <button type="button" class="btn btn-light">Edit</button>
                 </a>
               {% endif %}
