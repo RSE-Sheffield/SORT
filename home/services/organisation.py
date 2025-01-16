@@ -62,7 +62,7 @@ class OrganisationService(BasePermissionService):
     def get_user_accessible_organisations(
         self, projects: QuerySet[Project], user: User
     ) -> Dict[int, List[Organisation]]:
-        """Get organisations for each project that user is member of"""
+        """Get organisations user has access to for each project"""
         user_org_ids = self.get_user_organisation_ids(user)
         return {
             project.id: [
@@ -139,10 +139,10 @@ class OrganisationService(BasePermissionService):
 
         if with_metrics:
             projects = projects.annotate(
-                survey_count=Count("survey"),
+                survey_count=Count("survey__id", distinct=True),
                 manager_count=Count("projectmanagerpermission", distinct=True),
             )
-
+            
         return projects
 
     @requires_permission("view")

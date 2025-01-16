@@ -1,4 +1,4 @@
-from .base import BaseService
+from .base import BasePermissionService
 from .project import ProjectService
 from .organisation import OrganisationService
 
@@ -7,7 +7,7 @@ project_service = ProjectService()
 organisation_service = OrganisationService()
 
 __all__ = [
-    'BaseService',
+    'BasePermissionService',
     'ProjectService',
     'OrganisationService',
     'project_service',

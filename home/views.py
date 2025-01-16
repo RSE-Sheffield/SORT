@@ -114,7 +114,9 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
         self.organisation = organisation_service.get_user_organisation(request.user)
 
     def get_queryset(self):
-        return organisation_service.get_organisation_projects(self.organisation)
+        return organisation_service.get_organisation_projects(
+            self.organisation
+        ).order_by("-created_on")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -187,7 +189,10 @@ class ProjectView(LoginRequiredMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        return Survey.objects.filter(project_id=self.kwargs["project_id"])
+        # Django requires consistent ordering for pagination
+        return Survey.objects.filter(project_id=self.kwargs["project_id"]).order_by(
+            "-id"
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
