@@ -1,18 +1,32 @@
 {% extends "base.html" %}
 {% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bx bxs-folder-open"></i> Project: {{ project.name }}
+                </li>
+            </ol>
+        </nav>
+    </div>
     <div class="container mx-auto px-4 py-8">
         <h1>{{ project.name }}</h1>
-
         <div class="w-100 d-flex justify-content-between align-items-center mt-3 mb-6">
             <h2 class="text-2xl font-bold d-inline-block">Surveys</h2>
             {% if can_create %}
                 <a href="{% url "survey_create" project.id %}">
-                    <button type="button" class="btn btn-primary">Create survey</button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="bx bx-chart align-middle"></i> Create survey
+                    </button>
                 </a>
             {% endif %}
         </div>
-
-
         <div class="d-flex flex-column gap-3">
             {% for survey in surveys %}
                 <div class="card w-100">
@@ -22,9 +36,10 @@
                             <span>Responses: {{ project.surveys.count }}</span>
                         </div>
                         <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
-
                             <a href="{% url 'survey' survey.id %}">
-                                <button type="button" class="btn btn-dark">View</button>
+                                <button type="button" class="btn btn-dark">
+                                    <i class="bx bxs-chart align-middle"></i> View
+                                </button>
                             </a>
                         </div>
                     </div>
@@ -102,9 +117,5 @@
             <!-- Show page info -->
             <p class="text-center text-muted mt-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
         {% endif %}
-
-
     </div>
-
 {% endblock %}
-

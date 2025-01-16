@@ -1,34 +1,28 @@
-from lib2to3.fixes.fix_input import context
-
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LoginView, LogoutView
-from django.views.generic import ListView, DetailView
-from django.views.generic.edit import CreateView, UpdateView
-
-from survey.models import Survey
-from .mixins import OrganisationRequiredMixin
-from .models import Organisation, Project, OrganisationMembership, ProjectOrganisation
-from django.shortcuts import render
-from django.views import View
-from .forms import ManagerSignupForm, ManagerLoginForm, UserProfileForm
-from django.contrib.auth import login
 from django.contrib.auth.views import (
+    LoginView,
+    LogoutView,
     PasswordResetView,
     PasswordResetDoneView,
     PasswordResetConfirmView,
     PasswordResetCompleteView,
 )
-from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
-from django.contrib import messages
-from django.contrib.auth import get_user_model
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Count
+from django.views.generic import ListView, DetailView
+from django.views.generic.edit import CreateView, UpdateView
+from django.shortcuts import get_object_or_404, render, redirect
+from django.views import View
+from django.urls import reverse_lazy, reverse
 from django.core.exceptions import PermissionDenied
-from django.urls import reverse
-from django.shortcuts import get_object_or_404
+from django.db.models import Count
+
+from survey.models import Survey
+from .mixins import OrganisationRequiredMixin
+from .models import Organisation, Project, OrganisationMembership, ProjectOrganisation
+from .forms import ManagerSignupForm, ManagerLoginForm, UserProfileForm
+from .services import project_service, organisation_service
+from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 
 User = get_user_model()
 
@@ -67,7 +61,6 @@ class HomeView(LoginRequiredMixin, View):
     login_url = "login"
 
     def get(self, request):
-
         return render(request, self.template_name, {})
 
 
@@ -85,7 +78,6 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        print(form.errors)  # Output form errors to the console
         messages.error(
             self.request, "There was an error updating your profile. Please try again."
         )
@@ -112,47 +104,42 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = "home/password_reset_complete.html"
 
 
-# class PasswordResetExpiredView(TemplateView):  # leave for now
-#     template_name = 'home/password_reset_expired.html'
-
-
 class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView):
     template_name = "organisation/organisation.html"
     context_object_name = "projects"
     paginate_by = 10
 
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.organisation = organisation_service.get_user_organisation(request.user)
+
     def get_queryset(self):
-        organisation = self.request.user.organisation_set.first()
-        projects = Project.objects.filter(
-            projectorganisation__organisation=organisation
-        ).annotate(survey_count=Count("survey"))
-        return projects
+        return organisation_service.get_organisation_projects(
+            self.organisation
+        ).order_by("-created_on")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        organisation = self.request.user.organisation_set.first()
-        context["organisation"] = organisation
+        user = self.request.user
+        projects = context["projects"]
 
-        context["can_edit"] = {
-            project.id: project.user_can_edit(self.request.user)
-            for project in context["projects"]
-        }
-        context["can_create"] = OrganisationMembership.objects.filter(
-            user=self.request.user, role="ADMIN"
-        ).exists()
+        user_role = self.organisation.get_user_role(user)
 
-        user_orgs = set(
-            OrganisationMembership.objects.filter(user=self.request.user).values_list(
-                "organisation_id", flat=True
-            )
+        context.update(
+            {
+                "organisation": self.organisation,
+                "can_edit": {
+                    project.id: project_service.can_edit(user, project)
+                    for project in projects
+                },
+                "can_create": project_service.can_create(user),
+                "is_admin": user_role == ROLE_ADMIN,
+                "is_project_manager": user_role == ROLE_PROJECT_MANAGER,
+                "project_orgs": organisation_service.get_user_accessible_organisations(
+                    projects, user
+                ),
+            }
         )
-
-        context["project_orgs"] = {
-            project.id: [
-                org for org in project.organisations.all() if org.id in user_orgs
-            ]
-            for project in context["projects"]
-        }
 
         return context
 
@@ -166,60 +153,19 @@ class OrganisationCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy("myorganisation")
 
     def form_valid(self, form):
-        super().form_valid(form)
-        # Add user that creates the org as admin
-        OrganisationMembership.objects.create(
-            organisation=self.object, user=self.request.user, role="ADMIN"
-        )
-
-        return redirect("myorganisation")
-
-
-class ProjectListView(LoginRequiredMixin, ListView):
-    model = Project
-    template_name = "projects/list.html"
-    context_object_name = "projects"
-    paginate_by = 10
-
-    def get_queryset(self):
-        # Get all projects associated with user's organisations
-        projects = (
-            Project.objects.filter(
-                organisations__organisationmembership__user=self.request.user
+        try:
+            organisation = organisation_service.create_organisation(
+                user=self.request.user,
+                name=form.cleaned_data["name"],
+                description=form.cleaned_data["description"],
             )
-            .distinct()
-            .select_related("created_by")
-            .prefetch_related(
-                "organisations", "organisations__organisationmembership_set"
+            self.object = organisation
+            return redirect(self.get_success_url())
+        except PermissionDenied:
+            messages.error(
+                self.request, "You don't have permission to create organisations."
             )
-        )
-
-        return projects
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Add edit permissions for each project
-        context["can_edit"] = {
-            project.id: project.user_can_edit(self.request.user)
-            for project in context["projects"]
-        }
-        context["can_create"] = OrganisationMembership.objects.filter(
-            user=self.request.user, role="ADMIN"
-        ).exists()
-
-        user_orgs = set(
-            OrganisationMembership.objects.filter(user=self.request.user).values_list(
-                "organisation_id", flat=True
-            )
-        )
-
-        context["project_orgs"] = {
-            project.id: [
-                org for org in project.organisations.all() if org.id in user_orgs
-            ]
-            for project in context["projects"]
-        }
-        return context
+            return redirect("home")
 
 
 class ProjectView(LoginRequiredMixin, ListView):
@@ -227,17 +173,39 @@ class ProjectView(LoginRequiredMixin, ListView):
     context_object_name = "surveys"
     paginate_by = 10
 
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            self.project = Project.objects.get(id=self.kwargs["project_id"])
+        except Project.DoesNotExist:
+            messages.error(request, "Project not found.")
+            return redirect("myorganisation")
+
+        if not project_service.can_view(request.user, self.project):
+            messages.error(
+                request,
+                f"You do not have permission to view the project {self.project.name}.",
+            )
+            return redirect("myorganisation")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
-        surveys = Survey.objects.filter(project_id=self.kwargs["project_id"])
-        return surveys
+        # Django requires consistent ordering for pagination
+        return Survey.objects.filter(project_id=self.kwargs["project_id"]).order_by(
+            "-id"
+        )
 
     def get_context_data(self, **kwargs):
-        # TODO: Check if user is allowed to access the project
         context = super().get_context_data(**kwargs)
-        context["project"] = Project.objects.get(id=self.kwargs["project_id"])
+        user = self.request.user
+        project = self.project
 
-        # TODO: Check for role level for creating surveys
-        context["can_create"] = True
+        context.update(
+            {
+                "project": project,
+                "can_create": project_service.can_edit(user, project),
+                "permission": project_service.get_user_permission(user, project),
+            }
+        )
 
         return context
 
@@ -247,18 +215,36 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
     fields = ["name"]
     template_name = "projects/create.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        organisation = Organisation.objects.get(id=self.kwargs["organisation_id"])
+        context["organisation"] = organisation
+
+        if not project_service.can_create(self.request.user):
+            messages.error(
+                self.request,
+                "You don't have permission to create projects in this organisation.",
+            )
+            return redirect("myorganisation")
+
+        return context
+
     def get_success_url(self):
         return self.object.get_absolute_url()
 
     def form_valid(self, form):
-        # TODO: Check user allowed to create project in the org
-        result = super().form_valid(form)
-        organisation = Organisation.objects.get(id=self.kwargs["organisation_id"])
-        # Link to the organisation
-        ProjectOrganisation.objects.create(
-            project=self.object, organisation=organisation, added_by=self.request.user
-        )
-        return result
+        try:
+            organisation = Organisation.objects.get(id=self.kwargs["organisation_id"])
+            project = project_service.create_project(
+                user=self.request.user,
+                name=form.cleaned_data["name"],
+                organisation=organisation,
+            )
+            self.object = project
+            return redirect(self.get_success_url())
+        except PermissionDenied:
+            messages.error(self.request, "Permission denied")
+            return redirect("myorganisation")
 
 
 class ProjectEditView(LoginRequiredMixin, UpdateView):
@@ -268,43 +254,45 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
     context_object_name = "project"
 
     def get_object(self, queryset=None):
-        # Get the project with related organizations
         project = get_object_or_404(
             Project.objects.prefetch_related(
-                "organisations",
-                "organisations__organisationmembership_set"
+                "organisations", "organisations__organisationmembership_set"
             ),
-            id=self.kwargs["project_id"]
+            id=self.kwargs["project_id"],
         )
 
-        # Check if user has edit permissions
-        if not project.user_can_edit(self.request.user):
-            raise PermissionDenied("You don't have permission to edit this project.")
+        if not project_service.can_edit(self.request.user, project):
+            messages.error(
+                self.request, "You don't have permission to edit this project."
+            )
+            return redirect("myorganisation")
 
         return project
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.request.user
 
-        # Get user's org
-        user_orgs = set(
-            OrganisationMembership.objects.filter(
-                user=self.request.user
-            ).values_list("organisation_id", flat=True)
-        )
+        project_orgs = organisation_service.get_user_accessible_organisations(
+            [self.object], user
+        ).get(self.object.id, [])
 
-        # Get the org that the user is a member of and are linked to the project
-        context["project_orgs"] = [
-            org for org in self.object.organisations.all()
-            if org.id in user_orgs
-        ]
+        # Get user's roles across organisations
+        user_roles = {
+            org.id: organisation_service.get_user_role(user, org)
+            for org in project_orgs
+        }
 
-        # Check if user can manage org for this project
-        context["can_manage_orgs"] = any(
-            membership.role == "ADMIN"
-            for org in context["project_orgs"]
-            for membership in org.organisationmembership_set.all()
-            if membership.user == self.request.user
+        context.update(
+            {
+                "project_orgs": project_orgs,
+                "can_manage_orgs": any(
+                    role == ROLE_ADMIN for role in user_roles.values()
+                ),
+                "is_project_manager": any(
+                    role == ROLE_PROJECT_MANAGER for role in user_roles.values()
+                ),
+            }
         )
 
         return context
@@ -313,6 +301,15 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
         return reverse("myorganisation")
 
     def form_valid(self, form):
-        # Perform the update
-        response = super().form_valid(form)
-        return response
+        try:
+            project_service.update_project(
+                user=self.request.user, project=self.object, data=form.cleaned_data
+            )
+            messages.success(
+                self.request,
+                f"Project {self.object.name} has been updated successfully.",
+            )
+            return redirect(self.get_success_url())
+        except PermissionDenied:
+            messages.error(self.request, "Permission denied")
+            return redirect("myorganisation")
