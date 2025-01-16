@@ -1,0 +1,24 @@
+[
+  {
+    "model": "home.projectmanagerpermission",
+    "pk": 1,
+    "fields": {
+      "user": 2,
+      "project": 1,
+      "permission": "EDIT",
+      "granted_by": 1,
+      "granted_at": "2024-01-15T00:00:00Z"
+    }
+  },
+  {
+    "model": "home.projectmanagerpermission",
+    "pk": 2,
+    "fields": {
+      "user": 3,
+      "project": 1,
+      "permission": "VIEW",
+      "granted_by": 1,
+      "granted_at": "2024-01-15T00:00:00Z"
+    }
+  }
+]

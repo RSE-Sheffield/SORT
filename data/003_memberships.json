@@ -15,7 +15,7 @@
     "fields": {
       "user": 2,
       "organisation": 1,
-      "role": "MEMBER",
+      "role": "PROJECT_MANAGER",
       "joined_at": "2024-01-15T00:00:00Z"
     }
   },
@@ -24,8 +24,8 @@
     "pk": 3,
     "fields": {
       "user": 3,
-      "organisation": 1,
-      "role": "GUEST",
+      "organisation": 2,
+      "role": "PROJECT_MANAGER",
       "joined_at": "2024-01-15T00:00:00Z"
     }
   }
