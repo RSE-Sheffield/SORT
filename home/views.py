@@ -217,12 +217,19 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
     model = Project
     fields = ["name"]
     template_name = "projects/create.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["organisation"] = Organisation.objects.get(id=self.kwargs["organisation_id"])
+
+        if not can_create_projects(self.request.user):
+            messages.error(self.request, f"You do not have the permission to create projects in this organisation.")
+            return redirect('myorganisation')
 
     def get_success_url(self):
         return self.object.get_absolute_url()
 
     def form_valid(self, form):
-        # TODO: Check user allowed to create project in the org
         result = super().form_valid(form)
         organisation = Organisation.objects.get(id=self.kwargs["organisation_id"])
         # Link to the organisation
@@ -249,8 +256,9 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
         )
 
         # Check if user has edit permissions
-        if not project.user_can_edit(self.request.user):
-            raise PermissionDenied("You don't have permission to edit this project.")
+        if not can_edit_project(self.request.user, project):
+            messages.error(self.request, "You don't have permission to edit this project.")
+            return redirect("myorganisation")
 
         return project
 

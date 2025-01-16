@@ -1,3 +1,18 @@
+"""
+This module handles permission checking logic.
+
+Permissions files define who can do what in the system. They contain functions that:
+- Check if users have specific permissions
+- Validate access rights
+- Determine role-based capabilities
+- Handle authorization logic
+
+These functions should:
+- Take a user and the object to check permissions against
+- Return boolean or permission mapping results
+- Be pure functions when possible (same input always gives same output)
+- Not contain business logic (that belongs in services)
+"""
 from typing import Optional, Dict
 from django.db.models.query import QuerySet
 from .models import GuestProjectAccess, OrganisationMembership, Project, User

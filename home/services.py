@@ -1,3 +1,23 @@
+"""
+This module contains the business logic and data operations.
+
+Services files are responsible for:
+- Implementing business logic
+- Handling data operations
+- Coordinating between different parts of the system
+- Providing an interface for views to access functionality
+
+Services should:
+- Be organised by domain/model
+- Handle complex operations
+- Not contain permission checks (use permissions.py)
+- Not contain presentation logic (use views)
+
+Example usage:
+    org_service = OrganisationService()
+    user_org = org_service.get_user_organisation(user)
+    projects = org_service.get_organisation_projects(user_org)
+"""
 from .models import (
     GuestProjectAccess,
     Organisation,
@@ -50,7 +70,7 @@ class OrganisationAccessService:
 
 class ProjectAccessService:
     """
-    Service class for managing project access
+    Service class for managing project access permissions for GUEST users
     """
 
     @staticmethod
