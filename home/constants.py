@@ -1,19 +1,23 @@
 from typing import Literal
 
 ROLE_ADMIN = "ADMIN"
-ROLE_MEMBER = "MEMBER"
-ROLE_GUEST = "GUEST"
+ROLE_PROJECT_MANAGER = "PROJECT_MANAGER"
 
 ROLES = [
     (ROLE_ADMIN, "Admin"),
-    (ROLE_MEMBER, "Member"),
-    (ROLE_GUEST, "Guest"),
+    (ROLE_PROJECT_MANAGER, "Project Manager"),
 ]
 """
-ADMIN: Full control
-MEMBER: Can view and edit projects
-GUEST: Can view certain projects
+ADMIN: Full control over organisation and all projects
+PROJECT_MANAGER: Can manage specific projects with view or edit permissions
 """
 
+RoleType = Literal["ADMIN", "PROJECT_MANAGER"]
 
-RoleType = Literal["ADMIN", "MEMBER", "GUEST"]
+PERMISSION_VIEW = "VIEW"
+PERMISSION_EDIT = "EDIT"
+
+PERMISSION_CHOICES = [
+    (PERMISSION_VIEW, "View Only"),
+    (PERMISSION_EDIT, "View and Edit"),
+]
