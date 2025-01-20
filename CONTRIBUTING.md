@@ -44,6 +44,20 @@ graph LR
   D -- Yes --> E
 ```
 
+so the commit history would look something like this:
+
+```mermaid
+gitGraph
+    commit id: "Initial commit"
+    branch dev
+    branch feat/my-feature
+    commit id: "Work on feature branch"
+    checkout dev
+    merge feat/my-feature id: "Merge into dev"
+    checkout main
+    merge dev id: "Merge dev into main"
+```
+
 # Code of Conduct
 
 We expect all contributors to follow the SORT [Code of Conduct](CODE_OF_CONDUCT.md).
