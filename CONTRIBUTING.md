@@ -29,17 +29,19 @@ Any proposed changes should be proposed in pull requests that would be merged in
 
 ```mermaid
 graph LR
-  subgraph Develop
-    A[Commit to develop branch]
-    B(Feature branch)
-    C{Merge feature branch into develop}
+  subgraph Development
+    A(Feature branch)
+    B{Approve?}
+    C[Merge feature branch into dev]
+    D{Approve?}
   end
-  subgraph Main
-    D[Main branch]
+  subgraph Production
+    E[Main branch]
   end
   A --> B
-  B --> C {approved}
-  C --> D {Merge develop into main}
+  B -- Yes --> C
+  C --> D
+  D -- Yes --> E
 ```
 
 # Code of Conduct
