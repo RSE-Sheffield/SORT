@@ -18,12 +18,14 @@ Please use the [Kanban board](https://github.com/orgs/RSE-Sheffield/projects/19)
 4. Create a [draft pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests) (PR) while the changes are being designed;
 5. When ready, mark the PR "Ready for review" and request for reviewers to look at the proposed changes;
 
-# Environments
+## Environments
 
 There are two main environments:
 
 - Development (the `dev` branch and the `sort-web-dev` virtual machine)
 - Production (the `main` branch and the `sort-web-app` virtual machine)
+
+## Change process
 
 Any proposed changes should be proposed in pull requests that would be merged into the `dev` branch.
 
