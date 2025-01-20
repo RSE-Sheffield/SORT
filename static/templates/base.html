@@ -25,9 +25,6 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == home_url %}active{% endif %}" href="{{ home_url }}">Home</a>
-                    </li>
-                    <li class="nav-item">
                         {% url 'invite' as invite_url %}
                         <a class="nav-link {% if request.path == invite_url %}active{% endif %}" href="{{ invite_url }}">Manage</a>
                     </li>
