@@ -1,11 +1,13 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container-login">
+<div class="container mt-3">
 
-    <div class="card custom-card shadow-sm">
+    <h1>Invitations</h1>
+    <p>Use the form below to send out invitations to your survey participants.</p>
+
+    <div class="card custom-card shadow-sm my-4">
         <div class="card-body">
-            <p class="card-text">Use the form below to send out invitations to your survey participants. </p>
 
             <form method="post">
                 {% csrf_token %}
@@ -28,5 +30,6 @@
             </form>
         </div>
     </div>
+
 </div>
 {% endblock %}
