@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.views import View
 from django.urls import reverse_lazy, reverse
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from survey.models import Survey
 from .mixins import OrganisationRequiredMixin
@@ -114,33 +114,38 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
         self.organisation = organisation_service.get_user_organisation(request.user)
 
     def get_queryset(self):
-        return organisation_service.get_organisation_projects(
+        queryset = organisation_service.get_organisation_projects(
             self.organisation
-        ).order_by("-created_on")
+        )
+
+        search_query = self.request.GET.get('q')
+        if search_query:
+            queryset = queryset.filter(
+                Q(name__icontains=search_query)
+            )
+
+        return queryset.order_by("-created_on")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         projects = context["projects"]
-
         user_role = self.organisation.get_user_role(user)
 
-        context.update(
-            {
-                "organisation": self.organisation,
-                "can_edit": {
-                    project.id: project_service.can_edit(user, project)
-                    for project in projects
-                },
-                "can_create": project_service.can_create(user),
-                "is_admin": user_role == ROLE_ADMIN,
-                "is_project_manager": user_role == ROLE_PROJECT_MANAGER,
-                "project_orgs": organisation_service.get_user_accessible_organisations(
-                    projects, user
-                ),
-            }
-        )
-
+        context.update({
+            "organisation": self.organisation,
+            "can_edit": {
+                project.id: project_service.can_edit(user, project)
+                for project in projects
+            },
+            "can_create": project_service.can_create(user),
+            "is_admin": user_role == ROLE_ADMIN,
+            "is_project_manager": user_role == ROLE_PROJECT_MANAGER,
+            "project_orgs": organisation_service.get_user_accessible_organisations(
+                projects, user
+            ),
+            "current_search": self.request.GET.get('q', '')
+        })
         return context
 
 
@@ -189,10 +194,17 @@ class ProjectView(LoginRequiredMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
+        queryset = Survey.objects.filter(project_id=self.kwargs["project_id"])
+
+        # Add search if query exists
+        search_query = self.request.GET.get('q')
+        if search_query:
+            queryset = queryset.filter(
+                Q(name__icontains=search_query)  # Only search by survey name
+            )
+
         # Django requires consistent ordering for pagination
-        return Survey.objects.filter(project_id=self.kwargs["project_id"]).order_by(
-            "-id"
-        )
+        return queryset.order_by("-id")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -204,6 +216,7 @@ class ProjectView(LoginRequiredMixin, ListView):
                 "project": project,
                 "can_create": project_service.can_edit(user, project),
                 "permission": project_service.get_user_permission(user, project),
+                "current_search": self.request.GET.get('q', '')
             }
         )
 
