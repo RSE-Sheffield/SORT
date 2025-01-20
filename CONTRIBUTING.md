@@ -29,13 +29,13 @@ Any proposed changes should be proposed in pull requests that would be merged in
 
 ```mermaid
 graph LR
-  subgraph Development
+  subgraph Development environment
     A(Feature branch)
     B{Approve?}
     C[Merge feature branch into dev]
     D{Approve?}
   end
-  subgraph Production
+  subgraph Production environment
     E[Main branch]
   end
   A --> B
