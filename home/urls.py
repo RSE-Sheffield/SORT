@@ -9,7 +9,6 @@ urlpatterns = [
     path("login/", views.LoginInterfaceView.as_view(), name="login"),
     path("logout/", views.LogoutInterfaceView.as_view(), name="logout"),
     path("signup/", views.SignupView.as_view(), name="signup"),
-    path("", include("survey.urls"), name="survey"),
     path("profile/", views.ProfileView.as_view(), name="profile"),
     path(
         "password_reset/",
