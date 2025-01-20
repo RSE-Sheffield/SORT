@@ -38,6 +38,9 @@ load_dotenv(os.getenv("DJANGO_ENV_PATH"))
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Path when redirecting to login
+LOGIN_URL = "/login/"
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -64,7 +67,6 @@ INSTALLED_APPS = [
     # apps created by FA:
     "home",
     "survey",
-    "invites",
 ]
 
 MIDDLEWARE = [
@@ -135,11 +137,12 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "en-gb"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/London"
 
-USE_I18N = True
+# Disable translation features
+USE_I18N = False
 
 USE_TZ = True
 
