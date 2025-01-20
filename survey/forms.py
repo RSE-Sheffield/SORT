@@ -1,46 +1,62 @@
 from django import forms
+from django.forms import BaseFormSet, formset_factory
+from strenum import StrEnum
+from django.core.validators import EmailValidator
 
-from .models import Answer
+class InvitationForm(forms.Form):
+    email = forms.EmailField(label='Participant Email',
+                             max_length=100,
+                             required=True,
+                             validators=[EmailValidator()])
+
+class FormFieldType(StrEnum):
+    CHAR = "char"
+    TEXT = "text"
+    RADIO = "radio"
+    CHECKBOX = "checkbox"
+    LIKERT = "likert"
 
 
-class AnswerForm(forms.ModelForm):
-    class Meta:
-        model = Answer
-        fields = []  # no defaults needed
 
-    def __init__(self, *args, **kwargs):
-        questionnaire = kwargs.pop(
-            "questionnaire", None
-        )  # get the questionnaire passed in
-        super().__init__(*args, **kwargs)
+def create_field_from_config(field_config: dict):
+    """
+    Convert a field configuration into the correct django field
+    """
+    if field_config['type'] == FormFieldType.CHAR:
+        field = forms.CharField(label=field_config["label"])
+    elif field_config['type'] == FormFieldType.TEXT:
+        field = forms.CharField(label=field_config["label"],
+                                widget=forms.Textarea)
+    elif field_config['type'] == FormFieldType.RADIO:
+        field = forms.ChoiceField(label=field_config["label"],
+                                  choices=field_config["options"],
+                                  widget=forms.RadioSelect)
+    elif field_config['type'] == FormFieldType.CHECKBOX:
+        field = forms.MultipleChoiceField(label=field_config["label"],
+                                          widget=forms.CheckboxSelectMultiple,
+                                          choices=field_config["options"])
+    else:
+        field = forms.CharField(label=field_config["label"],
+                                widget=forms.Textarea)
 
-        if questionnaire:
+    if "required" in field_config:
+        field.required = field_config["required"]
 
-            for index, question in enumerate(questionnaire.questions.all(), start=1):
-                if question.question_type == "boolean":
-                    self.fields[f"question_{question.id}"] = forms.ChoiceField(
-                        label=f"{index}. {question.question_text}",
-                        choices=[("agree", "I agree"), ("disagree", "I disagree")],
-                        widget=forms.RadioSelect,
-                        required=True,
-                    )
+    return field
 
-                elif question.question_type == "rating":
 
-                    self.fields[f"question_{question.id}"] = forms.ChoiceField(
-                        label=question.question_text,
-                        choices=[
-                            (i, str(i)) for i in range(1, 6)
-                        ],  # assuming a 1-5 rating
-                        required=True,
-                    )
 
-                else:
+def create_dynamic_formset(field_configs: list):
+    """
+    Create a dynamic form set from a list of field configurations.
+    """
+    class BlankDynamicForm(forms.Form):
+        pass
 
-                    pass
+    class BaseTestFormSet(BaseFormSet):
+        def add_fields(self, form, index):
+            super().add_fields(form, index)
+            for field_config in field_configs:
+                form.fields[field_config["name"]] = create_field_from_config(field_config)
 
-                    # self.fields[f'question_{question.id}'] = forms.CharField(
-                    #     label=question.question_text,
-                    #     required=True,
-                    #     widget=forms.Textarea(attrs={'rows': 4, 'style': 'width: 80%;'}),
-                    # )
+    return formset_factory(BlankDynamicForm, BaseTestFormSet, min_num=1, max_num=1)
