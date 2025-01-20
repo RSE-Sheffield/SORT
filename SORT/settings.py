@@ -12,14 +12,31 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 
-load_dotenv()  # Load environment variables from .env file
+
+def cast_to_boolean(obj: Any) -> bool:
+    """
+    Check if the string value is 1, yes, or true.
+
+    Empty values are interpreted as False.
+    """
+    # Cast to lower case string
+    obj = str(obj).casefold()
+    # False / off
+    if obj in {"", "off", "none"}:
+        return False
+    # True / on
+    return obj[0] in {"1", "y", "t", "o"}
+
+
+# Load environment variables from .env file
+load_dotenv(os.getenv("DJANGO_ENV_PATH"))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Path when redirecting to login
 LOGIN_URL = "/login/"
@@ -31,10 +48,9 @@ LOGIN_URL = "/login/"
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = cast_to_boolean(os.getenv("DJANGO_DEBUG", "False"))
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "sort-web-app.shef.ac.uk").split()
 
 # Application definition
 
@@ -54,7 +70,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
+    # Implement security in the web server, not in Django.
+    # https://docs.djangoproject.com/en/5.1/ref/middleware/#module-django.middleware.security
+    # "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -82,21 +100,19 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "SORT.wsgi.application"
-
+WSGI_APPLICATION = os.getenv("DJANGO_WSGI_APPLICATION", "SORT.wsgi.application")
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
 DATABASES = {
+    # Set the database settings using environment variables, or default to a local SQLite database file.
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-        # "NAME": os.getenv("DB_NAME"),
-        # "USER": os.getenv("DB_USER"),
-        # "PASSWORD": os.getenv("DB_PASSWORD"),
-        # "HOST": os.getenv("DB_HOST"),
-        # "PORT": os.getenv("DB_PORT"),
+        "ENGINE": os.getenv("DJANGO_DATABASE_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.getenv("DJANGO_DATABASE_NAME", BASE_DIR / "db.sqlite3"),
+        "USER": os.getenv("DJANGO_DATABASE_USER"),
+        "PASSWORD": os.getenv("DJANGO_DATABASE_PASSWORD"),
+        "HOST": os.getenv("DJANGO_DATABASE_HOST"),
+        "PORT": os.getenv("DJANGO_DATABASE_PORT"),
     }
 }
 
@@ -118,7 +134,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -131,14 +146,12 @@ USE_I18N = False
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
 
 STATICFILES_DIRS = [BASE_DIR / "static"]
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -147,7 +160,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
-
 
 # FA: End session when the browser is closed
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -174,3 +186,11 @@ AUTH_USER_MODEL = 'home.User' # FA: replace username with email as unique identi
 # FA: for production:
 
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT")
+
+# Security settings
+SESSION_COOKIE_SECURE = cast_to_boolean(
+    os.getenv("DJANGO_SESSION_COOKIE_SECURE", not DEBUG)
+)
+CSRF_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_CSRF_COOKIE_SECURE", not DEBUG))
