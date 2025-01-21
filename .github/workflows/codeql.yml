@@ -2,10 +2,7 @@
 name: "CodeQL"
 
 on:
-  push:
-    branches: [ "main", "dev" ]
-  pull_request:
-    branches: [ "main", "dev" ]
+  # Scan the latest commit on the main branch each Tuesday morning
   schedule:
     - cron: '34 6 * * 2'
 
