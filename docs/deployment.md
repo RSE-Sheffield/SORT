@@ -42,6 +42,7 @@ This app can be deployed to a web server using the script [`deploy.sh`](../deplo
 1. Configure the `.env` file as described below.
 2. Run the deployment script: `sudo bash -x deploy.sh`
 3. Configure the database
+4. Run database migrations
 
 We can run commands and Bash scripts as the superuser (`root`) using the [`sudo` command](https://manpages.ubuntu.com/manpages/noble/en/man8/sudo.8.html).
 
@@ -147,8 +148,6 @@ We can list users (i.e. database "roles") using [the `\du`  command](https://www
 psql sort --command "\du"
 ```
 
-
-
 ## Grant permissions
 
 We must allow this user the minimum necessary privileges to operate the web app. We authorise the user using the PostgreSQL [grant statement](https://www.postgresql.org/docs/current/sql-grant.html), which we execute in the `psql` tool.
@@ -182,11 +181,63 @@ ALTER DEFAULT PRIVILEGES FOR USER sort GRANT SELECT, INSERT, UPDATE, DELETE ON T
 
 On our PostgreSQL instance, this should create a database named `sort` with a user named `sort` that has all the necessary permissions on the `sort` schema to create, modify, and drop tables and read/write data to those tables.
 
+# Database administration
+
+To open the [`psql` terminal](https://www.postgresql.org/docs/16/app-psql.html), use the [`dbshell`](https://docs.djangoproject.com/en/5.1/ref/django-admin/#dbshell) command. We can pass a command using the [`--` option](https://docs.djangoproject.com/en/5.1/ref/django-admin/#cmdoption-dbshell-0). We need to set up the shell as follows:
+
+```bash
+sort_dir="/opt/sort"
+venv_dir="$sort_dir/venv"
+python="$venv_dir/bin/python"
+psql="$python manage.py dbshell --"
+
+cd "$sort_dir"
+```
+
+To view the available PostgreSQL commands:
+
+```bash
+sudo $psql -c "\?"
+```
+
+The `psql` command invokes the Postgres shell:
+
+```bash
+$ sudo $psql
+sort=>
+```
+
+Once you're in the `psql` shell, you can exit using the `\q` command.
+
+## Manage tables
+
+### Run schema migrations
+
+Run the migrations command using [django-admin](https://docs.djangoproject.com/en/5.1/ref/django-admin/)
+
+```bash
+sudo $python manage.py migrate
+```
+
+### List tables
+
+```bash
+sudo $psql -c "\dt"
+```
+
+### Drop tables
+
+You can delete tables using the [`DROP TABLE` syntax](https://www.postgresql.org/docs/current/sql-droptable.html).
+
+```sql
+DROP TABLE IF EXISTS table_name CASCADE;
+```
+
 # Security
 
 ## SSL Certificates
 
-See: ITS Wiki [SSL Certificates/Howto](https://itswiki.shef.ac.uk/wiki/SSL_Certificates/Howto) for the commands to generate a Certificate Signing Request (CSR) using [OpenSSL](https://docs.openssl.org/3.3/man1/openssl-req/#options) with an unencrypted private key.
+See: ITS Wiki [SSL Certificates/Howto](https://itswiki.shef.ac.uk/wiki/SSL_Certificates/Howto) for the commands to generate a Certificate Signing Request (CSR) using [OpenSSL](https://docs.openssl.org/3.3/man1/openssl-req/#options) with an unencrypted private key.
 
 We can install the private key
 
@@ -218,27 +269,29 @@ To use the [Django management tool](https://docs.djangoproject.com/en/5.1/ref/dj
 sort_dir="/opt/sort"
 venv_dir="$sort_dir/venv"
 python="$venv_dir/bin/python"
+django_admin="$python $sort_dir/manage.py"
+
 cd "$sort_dir"
 # Check the Django management tool works
-$python "$sort_dir"/manage.py version
+sudo $django_admin version
 ```
 
 View available commands
 
 ```bash
-$python "$sort_dir"/manage.py help
+sudo $django_admin help
 ```
 
 Migrate the database
 
 ```bash
-sudo $python manage.py migrate
+sudo $django_admin migrate
 ```
 
 Create a super-user
 
 ```bash
-sudo $python manage.py createsuperuser
+sudo $django_admin createsuperuser
 ```
 
 Load data
