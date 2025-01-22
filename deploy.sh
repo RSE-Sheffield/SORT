@@ -32,6 +32,7 @@ python3 -m venv "$venv_dir"
 # Install the SORT Django app package
 $pip install --quiet -r requirements.txt
 cp --recursive * "$sort_dir/"
+rsync --archive --recursive --delete * "$sort_dir/" --exclude=".git*"
 
 # Install static files into DJANGO_STATIC_ROOT
 # This runs in a subshell because it's changing directory
