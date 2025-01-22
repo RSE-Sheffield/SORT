@@ -13,4 +13,6 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "SORT.settings")
 
+# Create WSGI application object
 application = get_wsgi_application()
+"https://docs.djangoproject.com/en/5.1/howto/deployment/wsgi/#the-application-object"
