@@ -1,0 +1,40 @@
+[
+  {
+    "model": "home.user",
+    "pk": 1,
+    "fields": {
+      "email": "admin@test.com",
+      "first_name": "Admin",
+      "last_name": "User",
+      "password": "pbkdf2_sha256$870000$generate something random$jxrzQIBcrwqeZdLY5hJxM5tugSuSyGIDAsVVx2qIWBY=",
+      "is_staff": true,
+      "is_superuser": true,
+      "is_active": true,
+      "date_joined": "2024-01-15T00:00:00Z"
+    }
+  },
+  {
+    "model": "home.user",
+    "pk": 2,
+    "fields": {
+      "email": "member@test.com",
+      "first_name": "Member",
+      "last_name": "User",
+      "password": "pbkdf2_sha256$870000$generate something random$so3lHdCP3pMjsJw0HoSAlZHqIIFRQqYU7C05ndgP/i4=",
+      "is_active": true,
+      "date_joined": "2024-01-15T00:00:00Z"
+    }
+  },
+  {
+    "model": "home.user",
+    "pk": 3,
+    "fields": {
+      "email": "guest@test.com",
+      "first_name": "Guest",
+      "last_name": "User",
+      "password": "pbkdf2_sha256$870000$generate something random$bVomqYDHpEn8jXJdd8FGdl5Ju+/kjBm5//jAJkICnEU=",
+      "is_active": true,
+      "date_joined": "2024-01-15T00:00:00Z"
+    }
+  }
+]

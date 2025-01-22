@@ -50,6 +50,9 @@ class UserProfileForm(forms.ModelForm):
         if email == self.instance.email:
             return email
 
+        if email == self.instance.email:
+            return email
+
         if User.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
             raise forms.ValidationError("This email is already in use.")
         return email
@@ -63,3 +66,13 @@ class UserProfileForm(forms.ModelForm):
         return user
 
 
+
+class SearchBarForm(forms.Form):
+    q = forms.CharField(required=False,
+                            widget=forms.TextInput(attrs={
+                                'class': 'form-control',
+                                'placeholder': 'Search...',
+                                'aria-label': 'Search',
+                                'name': 'q'
+                            })
+                        )

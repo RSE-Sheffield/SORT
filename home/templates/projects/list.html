@@ -3,10 +3,10 @@
 {% block content %}
   <div class="container mx-auto px-4 py-8">
     <div class="w-100 d-flex justify-content-between align-items-center mt-3 mb-6">
-      <h1 class="text-2xl font-bold d-inline-block">Studies</h1>
+      <h1 class="text-2xl font-bold d-inline-block">Projects</h1>
       {% if can_create %}
         <a href="todo">
-          <button type="button" class="btn btn-primary">Create study</button>
+          <button type="button" class="btn btn-primary">Create project</button>
         </a>
       {% endif %}
     </div>
@@ -27,19 +27,19 @@
                   <button type="button" class="btn btn-light">Edit</button>
                 </a>
               {% endif %}
-              <a href="{% url 'projects' %}">
+              <a href="{% url 'project' project.id %}">
                 <button type="button" class="btn btn-dark">View</button>
               </a>
             </div>
           </div>
         </div>
       {% empty %}
-        <p class="text-gray-600">No studies found.</p>
+        <p class="text-gray-600">No projects found.</p>
       {% endfor %}
     </div>
     {% comment %} pagination {% endcomment %}
     {% if page_obj.has_other_pages %}
-      <nav aria-label="Study navigation" class="mt-3">
+      <nav aria-label="Project navigation" class="mt-3">
         <ul class="pagination justify-content-center">
           <!-- First Page -->
           {% if page_obj.has_previous %}
