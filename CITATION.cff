@@ -8,7 +8,7 @@ message: >-
   metadata from this file.
 type: software
 authors:
-- given-names: Farhad
+  - given-names: Farhad
     orcid: 'https://orcid.org/0000-0002-4569-0370'
     family-names: Allian
     email: farhad.allian@sheffield.ac.uk
