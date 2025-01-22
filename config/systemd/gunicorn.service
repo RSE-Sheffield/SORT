@@ -18,9 +18,7 @@ Group=gunicorn
 DynamicUser=true
 RuntimeDirectory=gunicorn
 WorkingDirectory=/opt/sort
-# https://docs.gunicorn.org/en/stable/settings.html
-ExecStartPre=/opt/sort/venv/bin/gunicorn --config ./gunicorn.conf.py --check-config
-ExecStart=/opt/sort/venv/bin/gunicorn --config ./gunicorn.conf.py SORT.wsgi
+ExecStart=/opt/sort/venv/bin/gunicorn SORT.wsgi
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 TimeoutStopSec=5
