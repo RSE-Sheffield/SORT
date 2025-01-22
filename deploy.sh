@@ -17,6 +17,7 @@ venv_dir="$sort_dir/venv"
 pip="$venv_dir/bin/pip"
 python_version="python3.12"
 python="$venv_dir/bin/python"
+env_file="$sort_dir/.env"
 
 # Install British UTF-8 locale so we can use this with PostgreSQL.
 # This is important to avoid the limitations of the LATIN1 character set.
@@ -25,6 +26,7 @@ sudo locale-gen en_GB.UTF-8
 sudo update-locale
 
 # Create Python virtual environment
+mkdir --parents "$sort_dir"
 apt update -qq
 apt install --upgrade --yes -qq "$python_version" "$python_version-venv"
 python3 -m venv "$venv_dir"
@@ -32,6 +34,11 @@ python3 -m venv "$venv_dir"
 # Install the SORT Django app package
 $pip install --quiet -r requirements.txt
 cp --recursive * "$sort_dir/"
+
+# Create environment file
+sudo touch "$env_file"
+sudo chown gunicorn:gunicorn "$env_file"
+sudo chmod 600 "$env_file"
 
 # Install static files into DJANGO_STATIC_ROOT
 # This runs in a subshell because it's changing directory
