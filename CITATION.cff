@@ -1,0 +1,47 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Self-Assessment of Organisational Readiness Tool
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+- given-names: Farhad
+    orcid: 'https://orcid.org/0000-0002-4569-0370'
+    family-names: Allian
+    email: farhad.allian@sheffield.ac.uk
+    affiliation: University of Sheffield
+  - given-names: Parveen
+    family-names: Ali
+    email: parveen.ali@sheffield.ac.uk
+    affiliation: University of Sheffield
+    orcid: 'https://orcid.org/0000-0002-7839-8130'
+  - given-names: Twin
+    family-names: Karmakharm
+    orcid: 'https://orcid.org/0000-0002-1888-7098'
+    email: t.karmakharm@sheffield.ac.uk
+    affiliation: University of Sheffield
+  - given-names: Yuliang
+    family-names: Weng
+    email: y.weng@sheffield.ac.uk
+    affiliation: University of Sheffield
+  - given-names: Joe Salvador Thornhill
+    name-particle: Joe
+    family-names: Heffer
+    email: j.heffer@sheffield.ac.uk
+    affiliation: University of Sheffield
+    orcid: 'https://orcid.org/0000-0001-8733-1117'
+repository-code: 'https://github.com/RSE-Sheffield/SORT'
+url: 'https://www.sort-online.org/'
+abstract: >-
+  The Self-Assessment of Organisational Readiness Tool is a
+  self-assessment framework for organisations to evaluate
+  and strengthen their research capabilities in healthcare
+  practices.
+keywords:
+  - healthcare
+  - surveys
+  - nursing
+license: MIT
