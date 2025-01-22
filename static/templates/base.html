@@ -33,13 +33,16 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'invite' %}">Manage</a>
+                            {% url 'invite' as invite_url %}
+                            <a class="nav-link {% if request.path == invite_url %}active{% endif %}" href="{{ invite_url }}">Manage</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                            {% url 'profile' as profile_url %}
+                            <a class="nav-link {% if request.path == profile_url %}active{% endif %}" href="{{ profile_url }}">Profile</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'myorganisation' %}">My Organisation</a>
+                            {% url 'myorganisation' as myorganisation_url %}
+                            <a class="nav-link {% if request.path == myorganisation_url %}active{% endif %}" href="{% url 'myorganisation' %}">My Organisation</a>
                         </li>
                         {% if user.is_authenticated %}
                             <li class="nav-item">
