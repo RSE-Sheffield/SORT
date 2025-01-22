@@ -200,6 +200,7 @@ CSRF_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_CSRF_COOKIE_SECURE", not 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    # Send log messages to the standard output, which will be sent to the Gunicorn service logs
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
@@ -207,6 +208,6 @@ LOGGING = {
     },
     "root": {
         "handlers": ["console"],
-        "level": os.getenv("DJANG_LOG_LEVEL", "WARNING"),
+        "level": os.getenv("DJANGO_LOG_LEVEL", "WARNING"),
     },
 }
