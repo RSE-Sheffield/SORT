@@ -55,7 +55,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Organisation(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-    members = models.ManyToManyField(User, through="OrganisationMembership")
+    members = models.ManyToManyField(User, through="OrganisationMembership", through_fields=("organisation", "user"))
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -71,6 +71,7 @@ class OrganisationMembership(models.Model):
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLES, default=ROLE_PROJECT_MANAGER)
     joined_at = models.DateTimeField(auto_now_add=True)
+    added_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="members_added", null=True)
 
     class Meta:
         unique_together = ["user", "organisation"]
