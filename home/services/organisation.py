@@ -3,6 +3,7 @@ Organisation service with integrated permissions
 """
 
 from typing import Optional, Dict, List, Set, Literal
+from django.db import transaction
 from django.db.models.query import QuerySet
 from django.db.models import Count
 from django.core.exceptions import PermissionDenied
@@ -101,7 +102,6 @@ class OrganisationService(BasePermissionService):
         self,
         user: User,
         organisation: Organisation,
-        new_user: User,
         role: Literal["ADMIN", "PROJECT_MANAGER"],
     ) -> OrganisationMembership:
         """Add a user to an organisation with specified role"""
@@ -111,7 +111,7 @@ class OrganisationService(BasePermissionService):
             )
 
         return OrganisationMembership.objects.create(
-            user=new_user, organisation=organisation, role=role
+            user=user, organisation=organisation, role=role, added_by=added_by
         )
 
     @requires_permission("edit")
