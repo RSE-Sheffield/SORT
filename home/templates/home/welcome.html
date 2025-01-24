@@ -1,18 +1,43 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="container my-4">
-        <div class="row justify-content-center">
-            <div class="col-12 col-lg-12 mb-4">
-                <div class="card custom-card shadow-sm">
-                    <div class="card-body">
-                        <h1 class="card-title">About SORT</h1>
-                        <p class="card-text">
-                            SORT provides a comprehensive self-assessment framework to evaluate and strengthen your organisation's research capabilities in nursing and health practices. It helps assess your research maturity and available support, providing a tailored plan to integrate research into practice for improved patient care.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+   <div class="container my-4">
+       <div class="row justify-content-center">
+           <div class="col-12 col-lg-12 mb-4">
+               {% if user.is_authenticated %}
+                   <div class="card custom-card shadow-sm mb-4">
+                       <div class="card-body">
+                           <h2 class="card-title">
+                               {% if user.first_name %}
+                                   {% if user.last_name %}
+                                       Welcome, {{ user.first_name }} {{ user.last_name }}!
+                                   {% else %}
+                                       Welcome, {{ user.first_name }}!
+                                   {% endif %}
+                               {% else %}
+                                   Welcome!
+                               {% endif %}
+                           </h2>
+                           {% if user.organisation_set.first %}
+                               <p class="card-text">Your organisation is {{ user.organisation_set.first.name }}.</p>
+                           {% else %}
+                               <p class="card-text">You are currently not part of an organisation. Click
+                                   <a href="{% url 'organisation_create' %}">here</a> to create your first organisation.
+                               </p>
+                           {% endif %}
+                       </div>
+                   </div>
+               {% endif %}
+
+               <div class="card custom-card shadow-sm">
+                   <div class="card-body">
+                       <h1 class="card-title">About SORT</h1>
+                       <p class="card-text">
+                           SORT provides a comprehensive self-assessment framework to evaluate and strengthen your organisation's research capabilities in nursing and health practices. It helps assess your research maturity and available support, providing a tailored plan to integrate research into practice for improved patient care.
+                       </p>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
 {% endblock %}
