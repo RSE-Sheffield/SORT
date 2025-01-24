@@ -19,38 +19,43 @@
               crossorigin="anonymous">
     </head>
     <body>
-        <div class="container-register">
-            <div class="text-center title-container">
-                <h1 class="sort-title">SORT</h1>
-                <p class="subtitle">The Self-Assessment of Organisational Readiness Tool</p>
-            </div>
-            <div class="card">
-                <div class="card-body">
-                    {% if messages %}
-                        {% for message in messages %}
-                            {% if message.tags == 'success' %}
-                                <div class="text-center alert alert-success"
-                                     role="alert"
-                                     style="font-size: 0.7rem">{{ message }}</div>
-                            {% endif %}
-                            {% if message.tags == 'error' %}
-                                <div class="text-center alert alert-danger"
-                                     role="alert"
-                                     style="font-size: 0.7rem">{{ message }}</div>
-                            {% elif message.tags == 'warning' %}
-                                <div class="text-center alert alert-warning"
-                                     role="alert"
-                                     style="font-size: 0.7rem">{{ message }}</div>
-                            {% elif message.tags == 'info' %}
-                                <div class="text-center alert alert-info"
-                                     role="alert"
-                                     style="font-size: 0.7rem">{{ message }}</div>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-                    {% block content %}<!-- Content  here -->{% endblock %}
+        <main>
+            <div class="container-register">
+                <div class="text-center title-container">
+                    <h1 class="sort-title">SORT</h1>
+                    <p class="subtitle">The Self-Assessment of Organisational Readiness Tool</p>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        {% if messages %}
+                            {% for message in messages %}
+                                {% if message.tags == 'success' %}
+                                    <div class="text-center alert alert-success"
+                                        role="alert"
+                                        style="font-size: 0.7rem">{{ message }}</div>
+                                {% endif %}
+                                {% if message.tags == 'error' %}
+                                    <div class="text-center alert alert-danger"
+                                        role="alert"
+                                        style="font-size: 0.7rem">{{ message }}</div>
+                                {% elif message.tags == 'warning' %}
+                                    <div class="text-center alert alert-warning"
+                                        role="alert"
+                                        style="font-size: 0.7rem">{{ message }}</div>
+                                {% elif message.tags == 'info' %}
+                                    <div class="text-center alert alert-info"
+                                        role="alert"
+                                        style="font-size: 0.7rem">{{ message }}</div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        {% block content %}<!-- Content  here -->{% endblock %}
+                    </div>
                 </div>
             </div>
-        </div>
+        </main>
+
+        {% include 'footer.html' %}
+
     </body>
 </html>

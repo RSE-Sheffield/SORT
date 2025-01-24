@@ -19,7 +19,8 @@
     <body>
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">SORT</a>
+                {% url 'home' as home_url %}
+                <a class="navbar-brand" href="{{ home_url }}">SORT</a>
                 <button class="navbar-toggler"
                         type="button"
                         data-bs-toggle="collapse"
@@ -32,16 +33,20 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link " href="{% url 'home' %}">Home</a>
+                            {% url 'home' as invite_url %}
+                            <a class="nav-link {% if request.path == invite_url %}active{% endif %}" href="{{ home_url }}">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'invite' %}">Manage</a>
+                            {% url 'invite' as invite_url %}
+                            <a class="nav-link {% if request.path == invite_url %}active{% endif %}" href="{{ invite_url }}">Manage</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                            {% url 'profile' as profile_url %}
+                            <a class="nav-link {% if request.path == profile_url %}active{% endif %}" href="{{ profile_url }}">Profile</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'myorganisation' %}">My Organisation</a>
+                            {% url 'organisation_create' as myorganisation_url %}
+                            <a class="nav-link {% if request.path == myorganisation_url %}active{% endif %}" href="{{ myorganisation_url }}">My Organisation</a>
                         </li>
                         {% if user.is_authenticated %}
                             <li class="nav-item">
@@ -77,6 +82,9 @@
                 {% block content %}<!-- Content  here -->{% endblock %}
             </div>
         </main>
+
+        {% include 'footer.html' %}
+        
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </body>
