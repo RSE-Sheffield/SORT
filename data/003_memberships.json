@@ -1,0 +1,32 @@
+[
+  {
+    "model": "home.organisationmembership",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "organisation": 1,
+      "role": "ADMIN",
+      "joined_at": "2024-01-15T00:00:00Z"
+    }
+  },
+  {
+    "model": "home.organisationmembership",
+    "pk": 2,
+    "fields": {
+      "user": 2,
+      "organisation": 1,
+      "role": "PROJECT_MANAGER",
+      "joined_at": "2024-01-15T00:00:00Z"
+    }
+  },
+  {
+    "model": "home.organisationmembership",
+    "pk": 3,
+    "fields": {
+      "user": 3,
+      "organisation": 2,
+      "role": "PROJECT_MANAGER",
+      "joined_at": "2024-01-15T00:00:00Z"
+    }
+  }
+]
