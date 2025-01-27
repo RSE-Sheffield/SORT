@@ -1,13 +1,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="container mx-auto px-4 py-8 mt-4">
+    <h3>{{ title }}</h3>
+    <form action="{% url "survey_response" pk=pk token=token %}" method="post">
+        {% csrf_token %}
+        {{ form }}
 
-<h3>{{ title }}</h3>
-<form action="{% url "survey_response" pk=pk token=token %}" method="post">
-    {% csrf_token %}
-    {{ form }}
-
-    <input type="submit" value="Next">
-</form>
+        <input type="submit" value="Next">
+    </form>
+</div>
 
 {% endblock %}

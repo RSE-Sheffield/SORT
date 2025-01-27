@@ -12,33 +12,25 @@
                 <li class="breadcrumb-item" aria-current="page">
                     <i class="bx bxs-folder-open"></i> <a href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
                 </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-chart"></i> <a href="{% url 'survey' survey.id %}"> Survey: {{ survey.name }}</a>
+                </li>
                 <li class="breadcrumb-item active" aria-current="page">
-                    <i class="bx bxs-chart"></i> Survey: {{ survey.name }}
+                    <i class="bx bxs-chart"></i> Configuration
                 </li>
             </ol>
         </nav>
     </div>
+    {{ testdata | json_script:"testdata" }}
     <div class="container mx-auto px-4 py-8">
-        <h3>{{ survey.name }}</h3>
-        <p>{{ survey.description }}</p>
-        <ul>
-            <li>
-                <a href="{% url "invite" %}">Send an invitation</a>
-            </li>
-            <li>
-                Link to fill in survey <a href="{% url 'survey_response' survey.id 'notoken' %}">{% url 'survey_response' survey.id 'notoken' %}</a>
-            </li>
-        </ul>
-        <div>
-            <h2>Survey configuration</h2>
-            <p>Configure you survey here</p>
-            <a href="{% url "survey_configure" survey.id%}" class="btn btn-primary">Configure</a>
-        </div>
-        <div>
-            <h2>Responses</h2>
-            <ul>
-                {% for survey_response in survey.survey_response.all %}<li>{{ survey_response.answers }}</li>{% endfor %}
-            </ul>
-        </div>
+        <h3>Configure {{ survey.name }}</h3>
+        <p>Specify what questions you would like to add in the survey.</p>
+        <form method="post">
+            <textarea name="survey_config">
+                {{ survey.survey_config }}
+            </textarea>
+
+            <input type="submit" class="btn btn-primary" value="Save" name="save"/>
+        </form>
     </div>
 {% endblock %}

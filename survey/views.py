@@ -3,7 +3,7 @@ from django.http import HttpRequest
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import FormView, TemplateView
+from django.views.generic import FormView, TemplateView, DetailView
 from django.views.generic.edit import CreateView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -57,6 +57,14 @@ class SurveyCreateView(LoginRequiredMixin, CreateView):
         self.object.save()
         return result
 
+class SurveyConfigureView(LoginRequiredMixin, DetailView):
+    model = Survey
+    template_name = "survey/survey_configure.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["testdata"] = ["one", "two", "three"]
+        return context
 
 # TODO: Add TokenAuthenticationMixin after re-enabling the token
 class SurveyResponseView(View):
