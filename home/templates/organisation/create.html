@@ -1,36 +1,40 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-3">
-    <div>
-        <h1>Create an Organisation</h1>
-        <p class="subtitle">Use the form below to create a new organisation.</p>
-    </div>
-    <div class="card custom-card shadow-sm my-4">
-        <div class="card-body">
-            <form method="post" action="{% url 'organisation_create' %}">
-                {% csrf_token %}
-                {% for field in form %}
-                <div class="mb-3">
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                    <input type="{{ field.field.widget.input_type }}"
-                           name="{{ field.name }}"
-                           id="{{ field.id_for_label }}"
-                           class="form-control"
-                           placeholder="Enter {{ field.label|lower }}"
-                           {% if field.value %}value="{{ field.value }}"{% endif %}
-                           {% if field.field.required %}required{% endif %}>
-                    {% if field.help_text %}
-                    <div class="form-text">{{ field.help_text }}</div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-                <div class="text-center">
-                    <button type="submit" class="btn btn-primary" style="background-color: #6933AD; border: none;">
-                        Create Organisation
-                    </button>
-                </div>
-            </form>
+    {% if request.user.organisation_set.exists %}
+        <meta http-equiv="refresh" content="0;url={% url 'myorganisation' %}">
+    {% else %}
+        <div>
+            <h1>Create an Organisation</h1>
+            <p class="subtitle">Use the form below to create a new organisation.</p>
         </div>
-    </div>
+        <div class="card custom-card shadow-sm my-4">
+            <div class="card-body">
+                <form method="post" action="{% url 'organisation_create' %}">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        <input type="{{ field.field.widget.input_type }}"
+                               name="{{ field.name }}"
+                               id="{{ field.id_for_label }}"
+                               class="form-control"
+                               placeholder="Enter {{ field.label|lower }}"
+                               {% if field.value %}value="{{ field.value }}"{% endif %}
+                               {% if field.field.required %}required{% endif %}>
+                        {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary" style="background-color: #6933AD; border: none;">
+                            Create Organisation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

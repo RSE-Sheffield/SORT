@@ -1,25 +1,24 @@
 {% extends "base.html" %}
 {% load project_filters %}
 {% block content %}
-  <div class="container mx-auto px-4 py-8 mt-4">
+<div class="container mx-auto px-4 py-8 mt-4">
     <div class="d-flex justify-content-between align-items-center">
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb mb-0">
-          <li class="breadcrumb-item">
-            <a href="{% url 'home' %}">Home</a>
-          </li>
-          <li class="breadcrumb-item active" aria-current="page">
-            <i class="bx bxs-buildings"></i> My Organisation
-          </li>
-        </ol>
-      </nav>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bx bxs-buildings"></i> My Organisation
+                </li>
+            </ol>
+        </nav>
         <div class="ms-auto">
-      {% load search_tags %}
-      {% search_bar placeholder="Search projects..." %}
+            {% load search_tags %}
+            {% search_bar placeholder="Search projects..." %}
+        </div>
     </div>
-    </div>
-  </div>
-
+</div>
   <div class="container mx-auto px-4 py-8">
     <h1>{{ organisation.name }}</h1>
     <p>{{ organisation.description }}</p>
@@ -39,13 +38,13 @@
       {% for project in projects %}
         <div class="card w-100">
           <div class="card-body">
-            <h5 class="card-title">{{ project.name }}</h5>
-            <div class="card-text">
               <div class="flex flex-wrap gap-2 mb-3">
                 {% for org in project_orgs|get_item:project.id %}<span class="badge text-bg-primary">{{ org.name }}</span>{% endfor %}
               </div>
-              <span>Surveys: {{ project.survey_count }}</span>
-            </div>
+            <h5 class="card-title">{{ project.name }}</h5>
+            <h6 class="card-title">{{ project.description}}</h6>
+            <h7 class="card-title">Surveys: {{ project.survey_count }}</h7>
+
             <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
               {% if can_edit|get_item:project.id %}
                 <a href="{% url 'project-edit' project.id %}">
