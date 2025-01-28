@@ -78,6 +78,7 @@ class OrganisationMembership(models.Model):
 
 class Project(models.Model):
     name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
     organisations = models.ManyToManyField(Organisation, through="ProjectOrganisation")
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
