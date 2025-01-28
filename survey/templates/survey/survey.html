@@ -3,9 +3,6 @@
     <div class="container mx-auto px-4 py-8 mt-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <i class="bx bxs-home"></i> <a href="{% url 'home' %}">Home</a>
-                </li>
                 <li class="breadcrumb-item" aria-current="page">
                     <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
                 </li>
@@ -23,7 +20,7 @@
         <p>{{ survey.description }}</p>
         <ul>
             <li>
-                <a href="{% url "invite" %}">Send an invitation</a>
+                <a href="{% url 'invite' %}">Send an invitation</a>
             </li>
             <li>
                 Link to fill in survey <a href="{% url 'survey_response' survey.id 'notoken' %}">{% url 'survey_response' survey.id 'notoken' %}</a>
