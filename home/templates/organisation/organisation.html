@@ -41,9 +41,9 @@
               <div class="flex flex-wrap gap-2 mb-3">
                 {% for org in project_orgs|get_item:project.id %}<span class="badge text-bg-primary">{{ org.name }}</span>{% endfor %}
               </div>
-            <h5 class="card-title">{{ project.name }}</h5>
-            <h6 class="card-title">{{ project.description}}</h6>
-            <h7 class="card-title">Surveys: {{ project.survey_count }}</h7>
+            <h3 class="card-title">{{ project.name }}</h3>
+            <h4 class="card-title">{{ project.description}}</h4>
+            <h5 class="card-title">Surveys: {{ project.survey_count }}</h5>
 
             <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
               {% if can_edit|get_item:project.id %}

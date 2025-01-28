@@ -38,7 +38,7 @@
             {% for survey in surveys %}
                 <div class="card w-100">
                     <div class="card-body">
-                        <h5 class="card-title">{{ survey.name }}</h5>
+                        <h3 class="card-title">{{ survey.name }}</h3>
                         <div class="card-text">
                             <span>Responses: {{ project.surveys.count|default:0  }}</span>
                         </div>
