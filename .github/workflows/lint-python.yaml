@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - dev
 jobs:
   lint:
     runs-on: ubuntu-24.04
@@ -14,9 +15,9 @@ jobs:
       - name: Lint Python code
         run: |
           dirs="SORT home survey"
-          isort $dirs
-          black $dirs
-          flake8 $dirs
+          isort $dirs --skip-glob '*/migrations/*'
+          black $dirs --exclude '/migrations/'
+          flake8 $dirs --exclude '*/migrations/*'
       # Suggest merging any changes
       - name: Create Pull Request
         # https://github.com/marketplace/actions/create-pull-request

@@ -1,0 +1,24 @@
+[
+  {
+    "model": "survey.surveyresponse",
+    "pk": 1,
+    "fields": {
+      "survey": 1,
+      "answers": {
+        "q1": "4",
+        "q2": "The interface could be more intuitive"
+      }
+    }
+  },
+  {
+    "model": "survey.surveyresponse",
+    "pk": 2,
+    "fields": {
+      "survey": 1,
+      "answers": {
+        "q1": "5",
+        "q2": "Everything works great!"
+      }
+    }
+  }
+]

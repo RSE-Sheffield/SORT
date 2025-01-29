@@ -16,7 +16,7 @@ Follow these steps to set up and run the app locally:
 
 Prerequisites
 
-- Python 3.10
+- Python 3.12
 - pip
 ---
 
@@ -61,8 +61,9 @@ python manage.py createsuperuser
 
 6. Create a `.env` file in the project root directory and add the following environment variables:
 
-```
+```bash
 DJANGO_SECRET_KEY=your_secret_key
+DJANGO_DEBUG=True
 ```
 
 ---
@@ -81,3 +82,7 @@ The app will be available at http://127.0.0.1:8000.
 ```bash
 python manage.py loaddata data\questionnaires.json data\questionnaires.json
 ```
+
+# Deployment
+
+Please read [`docs/deployment.md`](docs/deployment.md).

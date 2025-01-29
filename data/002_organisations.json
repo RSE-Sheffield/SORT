@@ -1,0 +1,20 @@
+[
+  {
+    "model": "home.organisation",
+    "pk": 1,
+    "fields": {
+      "name": "RSE Team",
+      "description": "Research Software Engineering Team",
+      "created_at": "2024-01-15T00:00:00Z"
+    }
+  },
+  {
+    "model": "home.organisation",
+    "pk": 2,
+    "fields": {
+      "name": "Research Group",
+      "description": "Academic Research Group",
+      "created_at": "2024-01-15T00:00:00Z"
+    }
+  }
+]

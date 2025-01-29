@@ -6,6 +6,7 @@
 body {
     font-family: 'Source Sans Pro', sans-serif;
     background-color: #f8f9fa;
+    margin-bottom: 60px;
 }
 
 header {
@@ -19,13 +20,12 @@ header {
     background-color: var(--primary-bg-colour);
 }
 
-footer {
-    position: relative;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 0 0; /
+.nav-link:hover,
+.nav-link.active {
+    color: black !important;
+    filter: brightness(0.8);
 }
+
 
 .container {
     display: flex;
@@ -33,19 +33,16 @@ footer {
     flex-direction: column;
 }
 
-
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Source Sans Pro', sans-serif;
     line-height: 1.6;
     font-weight: normal
 }
 
-
 .card-header {
     border-top-left-radius: 1rem;
     border-top-right-radius: 1rem;
 }
-
 
 .text-center a {
     color: #7C4DB8;
@@ -64,9 +61,7 @@ h1, h2, h3, h4, h5, h6 {
      flex-direction: column;
     align-items: center;
     margin: 0 auto;
-
 }
-
 
 .card-body.custom-card, .card.custom-card > .card-body {
     width: 100%;
@@ -74,7 +69,6 @@ h1, h2, h3, h4, h5, h6 {
      flex-direction: column;
     align-items: center;
     margin:0 auto;
-
 }
 
 .title-container {
@@ -106,18 +100,15 @@ h1, h2, h3, h4, h5, h6 {
     color: white !important;
 }
 
-
 .full-height {
     height: 100vh;
 }
-
 
 .form-label {
     text-align: left !important;
     display: block;
     margin-bottom: 0.5rem;
 }
-
 
 .form-control {
     padding: 0.375rem 0.75rem;
