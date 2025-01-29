@@ -37,7 +37,7 @@
                     <div class="card-body">
                         <h3 class="card-title">{{ survey.name }}</h3>
                         <div class="card-text">
-                            <span>Responses: {{ project.surveys.count|default:0  }}</span>
+                            <span>Responses: {{ project.survey_set.first.survey_response.count|default:0 }}</span>
                         </div>
                         <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
                             <a href="{% url 'survey' survey.id %}">
