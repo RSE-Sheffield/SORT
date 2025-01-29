@@ -52,10 +52,13 @@ We can run commands and Bash scripts as the superuser (`root`) using the [`sudo`
 
 To configure the environment variables for the service, you can either edit the `.env` file and/or add them to the systemd service using `systemctl edit`.
 
-To edit the environment file:
+To create and edit the environment file, which should have access restricted to only the Python app (the Gunicorn service):
 
 ```bash
 sudo mkdir --parents /opt/sort
+sudo touch /opt/sort/.env
+sudo chown gunicorn:gunicorn /opt/sort/.env
+sudo chmod 600 /opt/sort/.env
 sudo nano /opt/sort/.env
 ```
 
