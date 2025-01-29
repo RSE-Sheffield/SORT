@@ -33,20 +33,22 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            {% url 'home' as invite_url %}
                             <a class="nav-link {% if request.path == invite_url %}active{% endif %}" href="{{ home_url }}">Home</a>
                         </li>
                         <li class="nav-item">
-                            {% url 'invite' as invite_url %}
-                            <a class="nav-link {% if request.path == invite_url %}active{% endif %}" href="{{ invite_url }}">Manage</a>
+                            <a class="nav-link {% if '/invite' in request.path %}active{% endif %}" href="{% url 'invite' %}">Manage</a>
                         </li>
                         <li class="nav-item">
-                            {% url 'profile' as profile_url %}
-                            <a class="nav-link {% if request.path == profile_url %}active{% endif %}" href="{{ profile_url }}">Profile</a>
+                            <a class="nav-link {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">Profile</a>
                         </li>
                         <li class="nav-item">
-                            {% url 'organisation_create' as myorganisation_url %}
-                            <a class="nav-link {% if request.path == myorganisation_url %}active{% endif %}" href="{{ myorganisation_url }}">My Organisation</a>
+                            {% url 'organisation_create' as organisation_create_url %}
+                            <a class="nav-link 
+                                {% if '/myorganisation' in request.path %}active{% endif %} 
+                                {% if '/projects' in request.path %}active{% endif %} 
+                                {% if '/survey' in request.path %}active{% endif %} 
+                                {% if '/completion' in request.path %}active{% endif %}"
+                                href="{% url 'myorganisation' %}">My Organisation</a>
                         </li>
                         {% if user.is_authenticated %}
                             <li class="nav-item">

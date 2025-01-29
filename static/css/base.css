@@ -6,6 +6,7 @@
 body {
     font-family: 'Source Sans Pro', sans-serif;
     background-color: #f8f9fa;
+    margin-bottom: 60px;
 }
 
 header {
@@ -25,13 +26,6 @@ header {
     filter: brightness(0.8);
 }
 
-footer {
-    position: absolute;
-    bottom: 0;
-    height: 3.75rem;
-    line-height: 3.75rem;
-    width: 100%;
-}
 
 .container {
     display: flex;

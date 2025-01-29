@@ -76,7 +76,7 @@ class ProjectService(BasePermissionService):
         role = self.get_user_role(user, project)
         return role == ROLE_ADMIN
 
-    @requires_permission("edit")
+    @requires_permission("edit", obj_param="project")
     def update_project(self, user: User, project: Project, data: Dict) -> Project:
         """Update project with provided data"""
         for key, value in data.items():
@@ -91,13 +91,12 @@ class ProjectService(BasePermissionService):
         return project
 
     def create_project(
-        self, user: User, name: str, organisation: Organisation
-    ) -> Project:
+        self, user: User, name: str, organisation: Organisation, description: str="") -> Project:
         """Create a new project"""
         if not self.can_create(user):
             raise PermissionDenied("User cannot create projects")
 
-        project = Project.objects.create(name=name, created_by=user)
+        project = Project.objects.create(name=name, description=description, created_by=user)
         self.link_project_to_organisation(
             user=user, project=project, organisation=organisation, permission="EDIT"
         )

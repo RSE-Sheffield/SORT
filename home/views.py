@@ -225,7 +225,7 @@ class ProjectView(LoginRequiredMixin, ListView):
 
 class ProjectCreateView(LoginRequiredMixin, CreateView):
     model = Project
-    fields = ["name"]
+    fields = ["name", "description"]
     template_name = "projects/create.html"
 
     def get_context_data(self, **kwargs):
@@ -251,6 +251,7 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
             project = project_service.create_project(
                 user=self.request.user,
                 name=form.cleaned_data["name"],
+                description=form.cleaned_data["description"],
                 organisation=organisation,
             )
             self.object = project
@@ -263,7 +264,7 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
 class ProjectEditView(LoginRequiredMixin, UpdateView):
     model = Project
     template_name = "projects/edit.html"
-    fields = ["name"]
+    fields = ["name", "description"]
     context_object_name = "project"
 
     def get_object(self, queryset=None):
