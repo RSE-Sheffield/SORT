@@ -33,6 +33,11 @@ authors:
     email: j.heffer@sheffield.ac.uk
     affiliation: University of Sheffield
     orcid: 'https://orcid.org/0000-0001-8733-1117'
+  - given-names: Rosanna
+    orcid: 'https://orcid.org/0000-0001-8924-0593'
+    family-names: Milner
+    email: rosanna.milner@sheffield.ac.uk
+    affiliation: University of Sheffield
 repository-code: 'https://github.com/RSE-Sheffield/SORT'
 url: 'https://www.sort-online.org/'
 abstract: >-
