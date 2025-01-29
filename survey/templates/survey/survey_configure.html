@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-folder-open"></i> <a href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-chart"></i> <a href="{% url 'survey' survey.id %}"> Survey: {{ survey.name }}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bx bxs-chart"></i> Configuration
+                </li>
+            </ol>
+        </nav>
+    </div>
+    {{ testdata | json_script:"testdata" }}
+    <div class="container mx-auto px-4 py-8">
+        <h3>Configure {{ survey.name }}</h3>
+        <p>Specify what questions you would like to add in the survey.</p>
+        <form method="post">
+            <textarea name="survey_config">
+                {{ survey.survey_config }}
+            </textarea>
+
+            <input type="submit" class="btn btn-primary" value="Save" name="save"/>
+        </form>
+    </div>
+{% endblock %}

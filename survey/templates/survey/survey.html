@@ -27,6 +27,11 @@
             </li>
         </ul>
         <div>
+            <h2>Survey configuration</h2>
+            <p>Configure you survey here</p>
+            <a href="{% url "survey_configure" survey.id%}" class="btn btn-primary">Configure</a>
+        </div>
+        <div>
             <h2>Responses</h2>
             <ul>
                 {% for survey_response in survey.survey_response.all %}<li>{{ survey_response.answers }}</li>{% endfor %}
