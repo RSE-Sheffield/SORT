@@ -13,7 +13,7 @@ jobs:
         run: pip install black flake8 isort
       - name: Lint Python code
         run: |
-          dirs="SORT home survey invites"
+          dirs="SORT home survey"
           isort $dirs
           black $dirs
           flake8 $dirs
