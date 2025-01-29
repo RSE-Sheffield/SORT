@@ -7,7 +7,8 @@
                     <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-folder-open"></i> <a href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
+                    <i class="bx bxs-folder-open"></i> <a
+                        href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
                 </li>
                 <li class="breadcrumb-item active" aria-current="page">
                     <i class="bx bxs-chart"></i> Survey: {{ survey.name }}
@@ -16,21 +17,58 @@
         </nav>
     </div>
     <div class="container mx-auto px-4 py-8">
-        <h3>{{ survey.name }}</h3>
+        <h1>{{ survey.name }}</h1>
         <p>{{ survey.description }}</p>
-        <ul>
-            <li>
-                <a href="{% url "invite" %}">Send an invitation</a>
-            </li>
-            <li>
-                Link to fill in survey <a href="{% url 'survey_response' survey.id 'notoken' %}">{% url 'survey_response' survey.id 'notoken' %}</a>
-            </li>
-        </ul>
-        <div>
-            <h2>Responses</h2>
-            <ul>
-                {% for survey_response in survey.survey_response.all %}<li>{{ survey_response.answers }}</li>{% endfor %}
-            </ul>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>Configure your survey and invite participants</h2>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 mt-3">
+                    <p>First, configure you survey here. You are able to add and customise demographic questions asked
+                        in the survey.</p>
+                    <a href="{% url "survey_configure" survey.id %}" class="btn btn-primary">Configure the survey</a>
+                </div>
+
+                <div class="mb-3 mt-3">
+                    <h3>Invite your participants</h3>
+                    <p>Invite your participants using the follow link</p>
+                    <ul>
+                        <li>
+                            <a href="{% url "invite" %}">Send an invitation</a>
+                        </li>
+                        <li>
+                            Link to fill in survey <a
+                                href="{% url 'survey_response' survey.id 'notoken' %}">{% url 'survey_response' survey.id 'notoken' %}</a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
         </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>Survey responses</h2>
+            </div>
+            <div class="card-body">
+
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>Gather Evidence</h2>
+            </div>
+            <div class="card-body">
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>Improvement Plan</h2>
+            </div>
+            <div class="card-body">
+            </div>
+        </div>
+
+
     </div>
 {% endblock %}
