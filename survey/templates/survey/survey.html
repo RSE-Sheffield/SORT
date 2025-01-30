@@ -32,16 +32,40 @@
 
                 <div class="mb-3 mt-3">
                     <h3>Invite your participants</h3>
-                    <p>Invite your participants using the follow link</p>
-                    <ul>
-                        <li>
-                            <a href="{% url "invite" %}">Send an invitation</a>
-                        </li>
-                        <li>
-                            Link to fill in survey <a
-                                href="{% url 'survey_response' survey.id 'notoken' %}">{% url 'survey_response' survey.id 'notoken' %}</a>
-                        </li>
-                    </ul>
+
+                    {% if invite_link %}
+                        <p>Invite your participants using the follow link:</p>
+                        <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
+                            <div class="input-group mb-3">
+                            <span class="input-group-text">
+                                Invitation link
+                            </span>
+                                {% csrf_token %}
+                                <input type="text" class="form-control" disabled value="{{ invite_link }}"/>
+                                <input type="submit" class="btn btn-outline-primary" name="generate_token"
+                                       value="Regenerate invitation"/>
+
+                            </div>
+                        </form>
+
+                        <p>Or send an invitation by email:</p>
+
+                        <a href="{% url 'invite' survey.id %}" class="btn btn-primary">Send an invitation</a>
+
+                    {% else %}
+                        <p>
+                            Geneate an invitation link for your participants to fill in the survey:
+                        </p>
+                        <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
+                            {% csrf_token %}
+                            <input type="submit" name="generate_token" value="Generate invitation"
+                                   class="btn btn-primary"/>
+                        </form>
+
+
+                    {% endif %}
+
+
                 </div>
 
             </div>

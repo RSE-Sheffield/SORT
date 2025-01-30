@@ -36,9 +36,6 @@
                             <a class="nav-link {% if request.path == invite_url %}active{% endif %}" href="{{ home_url }}">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if '/invite' in request.path %}active{% endif %}" href="{% url 'invite' %}">Manage</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">Profile</a>
                         </li>
                         <li class="nav-item">

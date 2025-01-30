@@ -27,3 +27,5 @@ wcwidth==0.2.13
 django_debug_toolbar==4.4.6
 gunicorn==23.*
 strenum==0.4.15
+pytest==8.3.4
+pytest-django==4.9.0
