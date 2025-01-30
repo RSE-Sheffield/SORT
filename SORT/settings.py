@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "django_bootstrap5",
     "django_extensions",
     "debug_toolbar",
+    "django_plotly_dash.apps.DjangoPlotlyDashConfig",
     # apps created by FA:
     "home",
     "survey",
@@ -80,6 +81,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+
 ]
 
 ROOT_URLCONF = "SORT.urls"
@@ -194,3 +196,9 @@ SESSION_COOKIE_SECURE = cast_to_boolean(
     os.getenv("DJANGO_SESSION_COOKIE_SECURE", not DEBUG)
 )
 CSRF_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_CSRF_COOKIE_SECURE", not DEBUG))
+
+PLOTLY_DASH = {
+    "http_route": "django_plotly_dash",
+}
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
