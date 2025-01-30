@@ -10,11 +10,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from home.models import Project
 from .mixins import TokenAuthenticationMixin
-
+from .dashboard import dash_app
+import json
 from .forms import create_dynamic_formset, InvitationForm
 from .models import Survey, SurveyResponse
 from .models import Invitation
 from .misc import test_survey_config
+from collections import defaultdict
 
 import logging
 logger = logging.getLogger(__name__)
@@ -27,14 +29,65 @@ class SurveyView(LoginRequiredMixin, View):
     login_url = '/login/'  # redirect to login if not authenticated
 
     def get(self, request, pk):
+        print("GET method called")
         return self.render_survey_page(request, pk)
 
     def post(self, request, pk):
+        print("POST method called")
         return self.render_survey_page(request, pk)
+
+    def get_survey_metrics(self, responses):
+        section_averages = {}
+        response_list = []
+
+        for response in responses:
+            answers = response.answers
+
+            response_data = {
+                'model': 'survey.surveyresponse',
+                'pk': response.pk,
+                'fields': {
+                    'survey': response.survey_id,
+                    'answers': response.answers
+                }
+            }
+            response_list.append(response_data)
+
+            response_section_averages = {}
+            for section_name, section_data in answers.items():
+                if section_name != 'consent':
+                    values = [
+                        value for value in section_data.values()
+                        if isinstance(value, (int, float)) and not isinstance(value, bool)
+                    ]
+                    if values:
+                        response_section_averages[section_name] = round(sum(values) / len(values), 1)
+
+            for section_name, avg in response_section_averages.items():
+                if section_name not in section_averages:
+                    section_averages[section_name] = []
+                section_averages[section_name].append(avg)
+
+
+        final_averages = {
+            section: round(sum(values) / len(values), 1)
+            for section, values in section_averages.items()
+        }
+
+        return {
+            'section_averages': final_averages,
+            'survey_responses': response_list
+        }
 
     def render_survey_page(self, request, pk):
         context = {}
         survey = get_object_or_404(Survey, pk=pk)
+
+        responses = survey.survey_response.all()
+
+        metrics = self.get_survey_metrics(responses)
+
+        dash_app.initial_arguments = metrics
 
         context["survey"] = survey
 
