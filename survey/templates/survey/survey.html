@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load plotly_dash %}
+
 {% block content %}
     <div class="container mx-auto px-4 py-8 mt-4">
         <nav aria-label="breadcrumb">
@@ -15,27 +17,14 @@
             </ol>
         </nav>
     </div>
-    <div class="container mx-auto px-4 py-8">
-        <h3>{{ survey.name }}</h3>
-        <p>{{ survey.description }}</p>
-        <ul>
-            <li>
-                <a href="{% url "invite" %}">Send an invitation</a>
-            </li>
-            <li>
-                Link to fill in survey <a href="{% url 'survey_response' survey.id 'notoken' %}">{% url 'survey_response' survey.id 'notoken' %}</a>
-            </li>
-        </ul>
-        <div>
-            <h2>Survey configuration</h2>
-            <p>Configure you survey here</p>
-            <a href="{% url "survey_configure" survey.id%}" class="btn btn-primary">Configure</a>
-        </div>
-        <div>
-            <h2>Responses</h2>
-            <ul>
-                {% for survey_response in survey.survey_response.all %}<li>{{ survey_response.answers }}</li>{% endfor %}
-            </ul>
+    <div class="card custom-card shadow-sm my-4" style="width: 90%; padding: 20px;">
+        <h4>{{ survey.name }} Dashboard</h4>
+
+        <div style="; width: 100%; padding: 20px;">
+            {% plotly_app name="SurveyDashboard" ratio=1 %}
         </div>
     </div>
+
+
+
 {% endblock %}
