@@ -181,7 +181,7 @@ INTERNAL_IPS = [
     "127.0.0.1",
     # ...
 ]
-AUTH_USER_MODEL = 'home.User' # FA: replace username with email as unique identifiers
+AUTH_USER_MODEL = 'home.User'  # FA: replace username with email as unique identifiers
 
 # FA: for production:
 
@@ -194,3 +194,20 @@ SESSION_COOKIE_SECURE = cast_to_boolean(
     os.getenv("DJANGO_SESSION_COOKIE_SECURE", not DEBUG)
 )
 CSRF_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_CSRF_COOKIE_SECURE", not DEBUG))
+
+# Logging
+# https://docs.djangoproject.com/en/5.1/topics/logging/
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    # Send log messages to the standard output, which will be sent to the Gunicorn service logs
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": os.getenv("DJANGO_LOG_LEVEL", "WARNING"),
+    },
+}

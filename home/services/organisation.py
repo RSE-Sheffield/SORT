@@ -29,6 +29,8 @@ class OrganisationService(BasePermissionService):
         return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
 
     def can_edit(self, user: User, organisation: Organisation) -> bool:
+        if user.is_superuser:
+            return True
         role = self.get_user_role(user, organisation)
         return role == ROLE_ADMIN
 
@@ -90,18 +92,17 @@ class OrganisationService(BasePermissionService):
 
         org = Organisation.objects.create(name=name, description=description)
         self.add_user_to_organisation(
-            user=user, organisation=org, role=ROLE_ADMIN, added_by=user
+            user=user, new_user=user, organisation=org, role=ROLE_ADMIN
         )
         return org
 
-    @requires_permission("edit")
+    @requires_permission("edit", obj_param="organisation")
     def add_user_to_organisation(
         self,
         user: User,
         organisation: Organisation,
         new_user: User,
         role: Literal["ADMIN", "PROJECT_MANAGER"],
-        added_by: User,
     ) -> OrganisationMembership:
         """Add a user to an organisation with specified role"""
         if role not in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]:
@@ -110,7 +111,7 @@ class OrganisationService(BasePermissionService):
             )
 
         return OrganisationMembership.objects.create(
-            user=new_user, organisation=organisation, role=role, added_by=added_by
+            user=new_user, organisation=organisation, role=role
         )
 
     @requires_permission("edit")

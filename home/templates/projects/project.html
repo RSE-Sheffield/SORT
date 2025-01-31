@@ -1,11 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-    <div class="container mx-auto px-4 py-8 mt-4">
+<div class="container mx-auto px-4 py-8 mt-4">
+    <div class="d-flex justify-content-between align-items-center">
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="{% url 'home' %}">Home</a>
-                </li>
+            <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item" aria-current="page">
                     <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
                 </li>
@@ -15,12 +13,14 @@
             </ol>
         </nav>
         <div class="ms-auto">
-      {% load search_tags %}
-      {% search_bar placeholder="Search surveys..." %}
+            {% load search_tags %}
+            {% search_bar placeholder="Search surveys..." %}
+        </div>
     </div>
-    </div>
+</div>
     <div class="container mx-auto px-4 py-8">
         <h1>{{ project.name }}</h1>
+        <p>{{ project.description }}</p>
         <div class="w-100 d-flex justify-content-between align-items-center mt-3 mb-6">
             <h2 class="text-2xl font-bold d-inline-block">Surveys</h2>
             {% if can_create %}
@@ -35,9 +35,9 @@
             {% for survey in surveys %}
                 <div class="card w-100">
                     <div class="card-body">
-                        <h5 class="card-title">{{ survey.name }}</h5>
+                        <h3 class="card-title">{{ survey.name }}</h3>
                         <div class="card-text">
-                            <span>Responses: {{ project.surveys.count }}</span>
+                            <span>Responses: {{ project.surveys.count|default:0  }}</span>
                         </div>
                         <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
                             <a href="{% url 'survey' survey.id %}">

@@ -2,10 +2,10 @@
 # https://github.com/jhinch/nginx-linter
 name: Lint NGINX config files
 on:
-  pull_request:
   push:
     branches:
      - main
+     - dev
 jobs:
   lint:
     runs-on: ubuntu-24.04

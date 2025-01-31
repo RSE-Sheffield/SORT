@@ -19,7 +19,8 @@
     <body>
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">SORT</a>
+                {% url 'home' as home_url %}
+                <a class="navbar-brand" href="{{ home_url }}"><img src="/static/images/sort_logo_placeholder.png" alt="Self-assessment of organisational readiness tool logo" height="30rem" /></a>
                 <button class="navbar-toggler"
                         type="button"
                         data-bs-toggle="collapse"
@@ -32,16 +33,22 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link " href="{% url 'home' %}">Home</a>
+                            <a class="nav-link {% if request.path == invite_url %}active{% endif %}" href="{{ home_url }}">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'invite' %}">Manage</a>
+                            <a class="nav-link {% if '/invite' in request.path %}active{% endif %}" href="{% url 'invite' %}">Manage</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                            <a class="nav-link {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">Profile</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'myorganisation' %}">My Organisation</a>
+                            {% url 'organisation_create' as organisation_create_url %}
+                            <a class="nav-link 
+                                {% if '/myorganisation' in request.path %}active{% endif %} 
+                                {% if '/projects' in request.path %}active{% endif %} 
+                                {% if '/survey' in request.path %}active{% endif %} 
+                                {% if '/completion' in request.path %}active{% endif %}"
+                                href="{% url 'myorganisation' %}">My Organisation</a>
                         </li>
                         {% if user.is_authenticated %}
                             <li class="nav-item">
@@ -77,6 +84,9 @@
                 {% block content %}<!-- Content  here -->{% endblock %}
             </div>
         </main>
+
+        {% include 'footer.html' %}
+        
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </body>
