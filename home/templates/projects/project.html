@@ -5,10 +5,10 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                    <i class="bx bxs-buildings" alt=""></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
                 </li>
                 <li class="breadcrumb-item active" aria-current="page">
-                    <i class="bx bxs-folder-open"></i> Project: {{ project.name }}
+                    <i class="bx bxs-folder-open" alt=""></i> Project: {{ project.name }}
                 </li>
             </ol>
         </nav>
@@ -26,7 +26,7 @@
             {% if can_create %}
                 <a href="{% url 'survey_create' project.id %}">
                     <button type="button" class="btn btn-primary">
-                        <i class="bx bx-chart"></i> Create survey
+                        <i class="bx bx-chart" alt=""></i> Create survey
                     </button>
                 </a>
             {% endif %}
@@ -42,7 +42,7 @@
                         <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
                             <a href="{% url 'survey' survey.id %}">
                                 <button type="button" class="btn btn-dark">
-                                    <i class="bx bxs-chart"></i> View
+                                    <i class="bx bxs-chart" alt=""></i> View
                                 </button>
                             </a>
                         </div>

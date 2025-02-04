@@ -4,13 +4,13 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                    <i class="bx bxs-buildings" alt=""></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-folder-open"></i> <a href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
+                    <i class="bx bxs-folder-open" alt=""></i> <a href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
                 </li>
                 <li class="breadcrumb-item active" aria-current="page">
-                    <i class="bx bxs-chart"></i> Survey: {{ survey.name }}
+                    <i class="bx bxs-chart" alt=""></i> Survey: {{ survey.name }}
                 </li>
             </ol>
         </nav>

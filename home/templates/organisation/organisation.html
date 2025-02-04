@@ -6,7 +6,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item active" aria-current="page">
-                    <i class="bx bxs-buildings"></i> My Organisation
+                    <i class="bx bxs-buildings" alt=""></i> My Organisation
                 </li>
             </ol>
         </nav>
@@ -26,7 +26,7 @@
       {% if can_create %}
         <a href="{% url 'project_create' organisation.id %}">
           <button type="button" class="btn btn-primary">
-            <i class="bx bxs-folder-plus"></i> Create project
+            <i class="bx bxs-folder-plus" alt=""></i> Create project
           </button>
         </a>
       {% endif %}
@@ -46,13 +46,13 @@
               {% if can_edit|get_item:project.id %}
                 <a href="{% url 'project-edit' project.id %}">
                   <button type="button" class="btn btn-light">
-                    <i class="bx bxs-edit"></i> Edit
+                    <i class="bx bxs-edit" alt=""></i> Edit
                   </button>
                 </a>
               {% endif %}
               <a href="{% url 'project' project.id %}">
                 <button type="button" class="btn btn-dark">
-                  <i class="bx bxs-folder-open"></i> View
+                  <i class="bx bxs-folder-open" alt=""></i> View
                 </button>
               </a>
             </div>
