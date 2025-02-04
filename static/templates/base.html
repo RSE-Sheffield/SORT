@@ -33,13 +33,13 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link {% if request.path == invite_url %}active{% endif %}" href="{{ home_url }}">Home</a>
+                            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ home_url }}"><i class="bx bxs-home"></i>Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if '/invite' in request.path %}active{% endif %}" href="{% url 'invite' %}">Manage</a>
+                            <a class="nav-link {% if '/invite' in request.path %}active{% endif %}" href="{% url 'invite' %}"><i class="bx bxs-cog"></i>Manage</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">Profile</a>
+                            <a class="nav-link {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}"><i class="bx bxs-user"></i>Profile</a>
                         </li>
                         <li class="nav-item">
                             {% url 'organisation_create' as organisation_create_url %}
@@ -48,7 +48,7 @@
                                 {% if '/projects' in request.path %}active{% endif %} 
                                 {% if '/survey' in request.path %}active{% endif %} 
                                 {% if '/completion' in request.path %}active{% endif %}"
-                                href="{% url 'myorganisation' %}">My Organisation</a>
+                                href="{% url 'myorganisation' %}"><i class="bx bxs-buildings"></i>My Organisation</a>
                         </li>
                         {% if user.is_authenticated %}
                             <li class="nav-item">
@@ -57,7 +57,7 @@
                                       method="POST"
                                       style="display: inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="nav-link btn btn-link">Logout</button>
+                                    <button type="submit" class="nav-link btn btn-link btn-primary">Logout</button>
                                 </form>
                             </li>
                         {% endif %}
