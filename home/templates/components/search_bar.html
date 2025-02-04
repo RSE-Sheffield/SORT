@@ -7,14 +7,18 @@
             {% endif %}
         {% endfor %}
         {{ search_form.q }}
-        <div class="">
+        <!-- <div class="w-100"> -->
             <button type="submit" class="btn btn-primary">
-                <i class="bx bxs-search inline-img" alt=""></i> 
+                <!-- <i class="bx bxs-search" alt=""></i>  -->
                 Search
             </button>
-        </div>
-        {% if current_search %}
-            <a href="{{ search_url }}" class="btn btn-outline-secondary">Clear</a>
-        {% endif %}
+        
+            {% if current_search %}
+                <a href="{{ search_url }}" class="btn btn-outline-secondary">
+                    <!-- <i class="bx bxs-undo" alt=""></i>  -->
+                    Clear</a>
+            {% endif %}
+        <!-- </div> -->
     </form>
+
 </html>
