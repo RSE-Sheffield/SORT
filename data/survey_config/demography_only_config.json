@@ -1,0 +1,10 @@
+{
+  "sections": [
+    {
+      "title": "Demographic",
+      "type": "demographic",
+      "description": "Please fill in your demographic information",
+      "fields": []
+    }
+  ]
+}

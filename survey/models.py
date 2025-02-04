@@ -11,6 +11,8 @@ class Survey(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     survey_config = models.JSONField(null=True)
+    consent_config = models.JSONField(null=True)
+    demography_config = models.JSONField(null=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
 
     def __str__(self):

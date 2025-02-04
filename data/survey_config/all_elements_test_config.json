@@ -1,0 +1,106 @@
+{
+  "sections": [
+    {
+      "title": "Welcome",
+      "type": "consent",
+      "description": "Welcolme desc",
+      "fields": [
+        {
+          "type": "radio",
+          "name": "consent",
+          "label": "Your agreement to complete the survey",
+          "required": true,
+          "sublabels": [],
+          "options": [
+              "Yes, I agree to complete the survey",
+              "No I do not agree"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Section 1",
+      "type": "sort",
+      "description": "Desc 1",
+      "fields": [
+        {
+          "type": "text",
+          "name": "text_field",
+          "label": "Text field"
+        },
+        {
+          "type": "textarea",
+          "name": "textarea_field",
+          "label": "Textarea field"
+        },
+        {
+          "type": "checkbox",
+          "name": "checkbox_field",
+          "label": "Checkbox field",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ]
+        },
+        {
+          "type": "radio",
+          "name": "radio_field",
+          "label": "Radio field",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ]
+        },
+        {
+          "type": "likert",
+          "name": "likert_field",
+          "label": "Likert table",
+          "sublabels": [
+            "Q1 Why",
+            "Q2 What",
+            "Q3 When"
+          ],
+          "options": [
+            "1", "2", "3", "4"
+          ]
+        }
+
+      ]
+    },
+    {
+      "title": "Section 2",
+      "type": "sort",
+      "description": "Desc 2",
+      "fields": [
+        {
+          "type": "text",
+          "name": "text_field",
+          "label": "Text field"
+        },
+        {
+          "type": "textarea",
+          "name": "textarea_field",
+          "label": "Textarea field"
+        },
+        {
+          "type": "checkbox",
+          "name": "checkbox_field",
+          "label": "Checkbox field",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ]
+        },
+        {
+          "type": "radio",
+          "name": "radio_field",
+          "label": "Radio field",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ]
+        }
+      ]
+    }
+  ]
+}
