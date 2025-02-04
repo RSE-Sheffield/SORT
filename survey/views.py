@@ -7,16 +7,12 @@ from django.views.generic import FormView, TemplateView, DetailView
 from django.views.generic.edit import CreateView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-
 from home.models import Project
-from .mixins import TokenAuthenticationMixin
-from .dashboard import dash_app
-import json
+from .dashboards import dash_app
 from .forms import create_dynamic_formset, InvitationForm
 from .models import Survey, SurveyResponse
 from .models import Invitation
 from .misc import test_survey_config
-from collections import defaultdict
 
 import logging
 logger = logging.getLogger(__name__)
@@ -55,7 +51,7 @@ class SurveyView(LoginRequiredMixin, View):
 
             response_section_averages = {}
             for section_name, section_data in answers.items():
-                if section_name != 'consent':
+                if section_name != 'consent' and isinstance(section_data, dict):
                     values = [
                         value for value in section_data.values()
                         if isinstance(value, (int, float)) and not isinstance(value, bool)
@@ -67,7 +63,6 @@ class SurveyView(LoginRequiredMixin, View):
                 if section_name not in section_averages:
                     section_averages[section_name] = []
                 section_averages[section_name].append(avg)
-
 
         final_averages = {
             section: round(sum(values) / len(values), 1)

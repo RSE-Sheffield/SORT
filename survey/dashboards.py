@@ -16,7 +16,10 @@ THEME = {
     'bg_color': '#f8f9fa'
 }
 
-dash_app = DjangoDash('SurveyDashboard', external_stylesheets=[dbc.themes.BOOTSTRAP])
+dash_app = DjangoDash('SurveyDashboard',
+                      external_stylesheets=[dbc.themes.BOOTSTRAP],
+                      external_scripts=['https://cdn.plot.ly/plotly-2.20.0.min.js'] # This line is needed for graphs
+                      )
 
 
 def get_category_and_colour(score):
@@ -302,19 +305,12 @@ dash_app.layout = html.Div([
                                    'fontWeight': 'normal',
                                    'padding': '20px',
                                }),
-                        # dcc.Graph(
-                        #     figure={},
-                        #     id='section-breakdown-chart',
-                        #     config={'displayModeBar': False},
-                        #     style={
-                        #         'height': '500px',
-                        #         'backgroundColor': 'white',
-                        #         'borderRadius': '1rem',
-                        #         'boxShadow': '1px 1px 20px rgba(0, 0, 0, 0.2)',
-                        #         'padding': '20px'
-                        #     }
-                        # )
-                    ], style={'marginTop': '30px'})
+                        dcc.Graph(
+                            figure={},
+                            id='section-breakdown-chart',
+                            config={'displayModeBar': False},
+                        )
+                    ], style={'marginTop': '5px'})
                 ])
         ]),
     ], fluid=True)
@@ -458,26 +454,34 @@ def update_matrix_styles(data):
 
     return styles
 
-# TODO: figure out why figures/bar charts aren't rendering on the page
-#
-# @dash_app.callback(
-#     Output('section-breakdown-chart', 'figure'),
-#     [Input('stored-data', 'data')]
-# )
-# def update_section_breakdown_chart(data):
-#
-#     df = pd.DataFrame([
-#         {'Section': k.replace('_', ' ').title(), 'Average Score': v}
-#         for k, v in data['section_averages'].items()
-#     ])
-#
-#     # Create bar plot using Graph Objects
-#     fig = go.Figure(
-#         data=[go.Bar(
-#             x=df['Section'],
-#             y=df['Average Score'],
-#
-#         )]
-#     )
-#
-#     return fig
+@dash_app.callback(
+    Output('section-breakdown-chart', 'figure'),
+    [Input('stored-data', 'data')]
+)
+def update_section_breakdown_chart(data):
+    if not data:
+        return {}
+
+    df = pd.DataFrame([
+        {'Section': k.replace('_', ' ').title(), 'Average Score': v}
+        for k, v in data['section_averages'].items()
+    ]).sort_values(by='Average Score', ascending=False)
+
+    figure = {
+        'data': [{
+            'type': 'bar',
+            'x': df['Section'].tolist(),
+            'y': df['Average Score'].tolist(),
+            'marker': {'color': 'rgb(26, 118, 255)'}
+        }],
+        'layout': {
+            'height': 400,
+            'xaxis': {'title': 'Section'},
+            'yaxis': {'title': 'Average Score'},
+            'margin': {'l': 50, 'r': 50, 't': 30, 'b': 50},
+            'paper_bgcolor': 'white',
+            'plot_bgcolor': 'white'
+        }
+    }
+
+    return figure

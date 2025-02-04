@@ -197,8 +197,4 @@ SESSION_COOKIE_SECURE = cast_to_boolean(
 )
 CSRF_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_CSRF_COOKIE_SECURE", not DEBUG))
 
-PLOTLY_DASH = {
-    "http_route": "django_plotly_dash",
-}
-
 X_FRAME_OPTIONS = 'SAMEORIGIN'
