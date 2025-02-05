@@ -27,7 +27,7 @@
                 <div class="mb-3 mt-3">
                     <p>First, configure you survey here. You are able to add and customise demographic questions asked
                         in the survey.</p>
-                    <a href="{% url "survey_configure" survey.id %}" class="btn btn-primary">Configure the survey</a>
+                    <a href="{% url 'survey_configure' survey.id %}" class="btn btn-primary"><i class="bx bxs-cog" alt=""></i> Configure the survey</a>
                 </div>
 
                 <div class="mb-3 mt-3">
@@ -35,7 +35,7 @@
                     <p>Invite your participants using the follow link</p>
                     <ul>
                         <li>
-                            <a href="{% url "invite" %}">Send an invitation</a>
+                            <a href="{% url 'invite' %}">Send an invitation</a>
                         </li>
                         <li>
                             Link to fill in survey <a
