@@ -1,5 +1,6 @@
 :root {
     --primary-colour: #440099;
+    --primary-colour-lg: #7C4DB8;
     --primary-bg-colour: #DACCEB;
     --primary-dark-colour: #131e29;
 }
@@ -21,9 +22,14 @@ header {
     color: white;
     background-color: var(--primary-colour);
     font-weight: bold;
-
 }
 
+.navbar {
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
 .navbar, .navbar a {
     background-color: var(--primary-dark-colour);
     color: lightgrey;
@@ -36,7 +42,6 @@ header {
     /* font-weight: bold; */
     filter: brightness(1.0);
 }
-
 
 .container {
     display: flex;
@@ -56,7 +61,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .text-center a {
-    color: #7C4DB8;
+    color: var(--primary-colour-lg);
     text-decoration: none;
 }
 
@@ -110,6 +115,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary, .btn-primary:hover {
+    background-color: var(--primary-colour-lg);
     color: white !important;
 }
 
