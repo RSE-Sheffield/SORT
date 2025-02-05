@@ -1,0 +1,22 @@
+{
+  "sections": [
+    {
+      "title": "Welcome",
+      "type": "consent",
+      "description": "Welcome to the study",
+      "fields": [
+        {
+          "type": "radio",
+          "name": "consent",
+          "label": "Your agreement to complete the survey",
+          "required": true,
+          "sublabels": [],
+          "options": [
+              "Yes, I agree to complete the survey",
+              "No, I do not agree"
+          ]
+        }
+      ]
+    }
+  ]
+}
