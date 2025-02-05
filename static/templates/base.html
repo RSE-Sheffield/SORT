@@ -17,10 +17,28 @@
         {% block extra_css %}{% endblock %}
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-light">
-            <div class="container-fluid">
-                {% url 'home' as home_url %}
-                <a class="navbar-brand" href="{{ home_url }}"><img src="/static/images/sort_logo_placeholder.png" alt="Self-assessment of organisational readiness tool logo" height="30rem" /></a>
+
+        <header>
+            <div class="px-3 py-2 bg-light">
+                <div class="container">
+                    <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+                        {% url 'home' as home_url %}
+                        <a class="navbar-brand" href="{{ home_url }}"><img src="/static/images/sort_logo_placeholder.png" alt="Self-assessment of organisational readiness tool logo" height="30rem" /></a>
+                    </div>
+                </div>
+            </div>
+            <div class="px-3 py-2 subheader">
+                <div class="container">
+                    <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+                        Self-assessment of Organisational Readiness Tool
+                    </div>
+                </div>
+            </div>
+        </header>
+
+
+        <nav class="navbar navbar-expand navbar-dark">
+            <div class="container d-flex flex-wrap">
                 <button class="navbar-toggler"
                         type="button"
                         data-bs-toggle="collapse"
@@ -33,7 +51,7 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link {% if request.path == invite_url %}active{% endif %}" href="{{ home_url }}">Home</a>
+                            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ home_url }}">Home</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if '/invite' in request.path %}active{% endif %}" href="{% url 'invite' %}">Manage</a>
@@ -50,14 +68,16 @@
                                 {% if '/completion' in request.path %}active{% endif %}"
                                 href="{% url 'myorganisation' %}">My Organisation</a>
                         </li>
+                    </ul>
+                    <ul class="navbar-nav me-auto">
                         {% if user.is_authenticated %}
                             <li class="nav-item">
                                 <form id="logout-form"
-                                      action="{% url 'logout' %}"
-                                      method="POST"
-                                      style="display: inline">
+                                    action="{% url 'logout' %}"
+                                    method="POST"
+                                    style="display: inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="nav-link btn btn-link">Logout</button>
+                                    <button type="submit" class="nav-link btn btn-link btn-primary">Logout</button>
                                 </form>
                             </li>
                         {% endif %}
@@ -65,6 +85,8 @@
                 </div>
             </div>
         </nav>
+
+
         <main>
             <div class="card-body">
                 {% if messages %}
