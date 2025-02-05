@@ -36,9 +36,6 @@
                             <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ home_url }}"><i class="bx bxs-home" alt=""></i>Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if '/invite' in request.path %}active{% endif %}" href="{% url 'invite' %}"><i class="bx bxs-cog" alt=""></i>Manage</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}"><i class="bx bxs-user" alt=""></i>Profile</a>
                         </li>
                         <li class="nav-item">

@@ -32,16 +32,68 @@
 
                 <div class="mb-3 mt-3">
                     <h3>Invite your participants</h3>
-                    <p>Invite your participants using the follow link</p>
-                    <ul>
-                        <li>
-                            <a href="{% url 'invite' %}">Send an invitation</a>
-                        </li>
-                        <li>
-                            Link to fill in survey <a
-                                href="{% url 'survey_response' survey.id 'notoken' %}">{% url 'survey_response' survey.id 'notoken' %}</a>
-                        </li>
-                    </ul>
+
+                    {% if invite_link %}
+                        <p>Invite your participants using the follow link:</p>
+
+
+                        <div class="row">
+                            <div class="col-lg-10">
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">Invitation link</span>
+                                    </div>
+                                    <input type="text" id="invitation_link" class="form-control" disabled
+                                           value="{{ invite_link }}"/>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="button"
+                                                onclick="copyInviteLink()"><i
+                                                class='bx bx-clipboard'></i> <span id="copyBtnText">Copy</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <script>
+                                  function copyInviteLink() {
+                                    let copyBtnTextElem = document.getElementById("copyBtnText");
+                                    let link = document.getElementById("invitation_link").value;
+                                    navigator.clipboard.writeText(link);
+                                    copyBtnTextElem.innerHTML = "Copied";
+                                    setTimeout(()=>{
+                                      copyBtnTextElem.innerHTML = "Copy";
+                                    }, 2000);
+                                  }
+                                </script>
+
+                            </div>
+                            <div class="col-lg-2 text-end">
+                                <form method="POST" action="{% url 'suvey_create_invite' survey.id %}">
+                                    {% csrf_token %}
+                                    <input type="submit" class="btn btn-primary" name="generate_token"
+                                           value="Regenerate invitation"/>
+                                </form>
+                            </div>
+                        </div>
+
+
+                        <p>Or send an invitation by email:</p>
+
+                        <a href="{% url 'invite' survey.id %}" class="btn btn-primary">Send an invitation</a>
+
+                    {% else %}
+                        <p>
+                            Geneate an invitation link for your participants to fill in the survey:
+                        </p>
+                        <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
+                            {% csrf_token %}
+                            <input type="submit" name="generate_token" value="Generate invitation"
+                                   class="btn btn-primary"/>
+                        </form>
+
+
+                    {% endif %}
+
+
                 </div>
 
             </div>
