@@ -18,11 +18,24 @@
         </nav>
     </div>
     <div class="container mx-auto px-4 py-8">
-        <h1>{{ survey.name }}</h1>
-        <p>{{ survey.description }}</p>
         <div class="card mb-3">
             <div class="card-header">
-                <h2>Configure your survey and invite participants</h2>
+                <h1>{{ survey.name }}</h1>
+            </div>
+            <div class="card-body">
+                <p><strong>Survey description:</strong></p>
+                <p>{{ survey.description }}</p>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            You can follow the five steps below to carry out the survey:
+        </div>
+
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>1. Configure Your Survey</h2>
             </div>
             <div class="card-body">
                 <div class="mb-3 mt-3">
@@ -30,6 +43,15 @@
                         in the survey.</p>
                     <a href="{% url "survey_configure" survey.id %}" class="btn btn-primary">Configure the survey</a>
                 </div>
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>2. Invite Your Participants</h2>
+            </div>
+            <div class="card-body">
+                {% if invite_link %}
+                <p>Invite your participants using the follow link:</p>
 
                 <div class="mb-3 mt-3">
                     <h3>Invite your participants</h3>
@@ -93,41 +115,60 @@
                                 </script>
 
                             </div>
-                            <div class="col-lg-2 text-end">
-                                <form method="POST" action="{% url 'suvey_create_invite' survey.id %}">
-                                    {% csrf_token %}
-                                    <input type="submit" class="btn btn-primary" name="generate_token"
-                                           value="Regenerate invitation"/>
-                                </form>
+                            <input type="text" id="invitation_link" class="form-control" disabled
+                                   value="{{ invite_link }}"/>
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="button"
+                                        onclick="copyInviteLink()"><i
+                                        class='bx bx-clipboard'></i> <span id="copyBtnText">Copy</span>
+                                </button>
                             </div>
                         </div>
 
+                        <script>
+                          function copyInviteLink() {
+                            let copyBtnTextElem = document.getElementById("copyBtnText");
+                            let link = document.getElementById("invitation_link").value;
+                            navigator.clipboard.writeText(link);
+                            copyBtnTextElem.innerHTML = "Copied";
+                            setTimeout(()=>{
+                              copyBtnTextElem.innerHTML = "Copy";
+                            }, 2000);
+                          }
+                        </script>
 
-                        <p>Or send an invitation by email:</p>
-
-                        <a href="{% url 'invite' survey.id %}" class="btn btn-primary">Send an invitation</a>
-
-                    {% else %}
-                        <p>
-                            Geneate an invitation link for your participants to fill in the survey:
-                        </p>
-                        <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
+                    </div>
+                    <div class="col-lg-2 text-end">
+                        <form method="POST" action="{% url 'suvey_create_invite' survey.id %}">
                             {% csrf_token %}
-                            <input type="submit" name="generate_token" value="Generate invitation"
-                                   class="btn btn-primary"/>
+                            <input type="submit" class="btn btn-primary" name="generate_token"
+                                   value="Regenerate invitation"/>
                         </form>
-
-
-                    {% endif %}
-
-
+                    </div>
                 </div>
 
+
+                <p>Or send an invitation by email:</p>
+
+                <a href="{% url 'invite' survey.id %}" class="btn btn-primary">Send an invitation</a>
+
+            {% else %}
+                <p>
+                    Geneate an invitation link for your participants to fill in the survey:
+                </p>
+                <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
+                    {% csrf_token %}
+                    <input type="submit" name="generate_token" value="Generate invitation"
+                           class="btn btn-primary"/>
+                </form>
+
+
+            {% endif %}
             </div>
         </div>
         <div class="card mb-3">
             <div class="card-header">
-                <h2>Survey responses</h2>
+                <h2>3. View Survey Responses</h2>
             </div>
             <div class="card-body">
 
@@ -135,14 +176,14 @@
         </div>
         <div class="card mb-3">
             <div class="card-header">
-                <h2>Gather Evidence</h2>
+                <h2>4. Gather Evidence</h2>
             </div>
             <div class="card-body">
             </div>
         </div>
         <div class="card mb-3">
             <div class="card-header">
-                <h2>Improvement Plan</h2>
+                <h2>5. Make an Improvement Plan</h2>
             </div>
             <div class="card-body">
             </div>

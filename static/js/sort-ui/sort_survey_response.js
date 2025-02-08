@@ -1,1 +1,1 @@
-import{o as e}from"./misc.svelte.B04U5awM.js";import{a as o}from"./SurveyResponseApp.BjagR_1k.js";e(o,{target:document.getElementById("app")});
+import{u as e}from"./SurveyConfigurator.333uxl4W.js";import{a as t}from"./SurveyResponseApp.DptfFRkl.js";e(t,{target:document.getElementById("app")});

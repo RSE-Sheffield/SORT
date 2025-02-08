@@ -3,8 +3,8 @@
     import * as _ from 'lodash';
     import defaultConsentConfigs from '../../../data/survey_config/consent_only_config.json';
     import defaultDemographicConfigs from '../../../data/survey_config/demography_only_config.json';
-    import SurveyConfigurator from "./lib/SurveyConfigurator.svelte";
-    import {getDataInElem} from "./lib/misc.svelte";
+    import SurveyConfigurator from "./lib/components/SurveyConfigurator.svelte";
+    import {getDataInElem} from "./lib/misc.svelte.js";
 
     //Import data from other script blocks on page (for django)
     //otherwise use the default config
@@ -15,16 +15,16 @@
 
     let consentConfigStr = $derived(JSON.stringify(consentConfig))
     let demographyConfigStr = $derived(JSON.stringify(demographyConfig))
-
-    $inspect(consentConfig);
-    $inspect(demographyConfig);
 </script>
 
 
 <div class="card mb-3">
     <div class="card-body">
         <h2>Configure your welcome and consent page</h2>
-        <p></p>
+        <p>
+            The introduction page of your survey page can be configured below. We've provided a default consent page which
+            can be freely customised.
+        </p>
 
         <SurveyConfigurator bind:config={consentConfig}
                             sectionTypeEditable={false}
@@ -35,8 +35,17 @@
 </div>
 <div class="card mb-3">
     <div class="card-body">
-        <h2>Configure your demographys page</h2>
-        <p></p>
+        <h2>SORT Survey Questions</h2>
+        <p>SORT questions are automatically added to your survey.</p>
+    </div>
+</div>
+<div class="card mb-3">
+    <div class="card-body">
+        <h2>Configure your demographic page</h2>
+        <p>
+            The demographic page of your survey can be configured below. We've provided some example demographic
+            questions which can be freely customised.
+        </p>
         <SurveyConfigurator bind:config={demographyConfig}
                             sectionTypeEditable={false}
                             sectionEditable={false}

@@ -54,9 +54,14 @@
 
     export function validate() {
         console.log("Validating section");
-        for (let i in fieldComponents) {
-            fieldComponents[i].validate();
+        let sectionValid = true;
+        for (let i = 0; i < fieldComponents.length; i++) {
+            if(!fieldComponents[i].validate()){
+                sectionValid = false;
+            }
         }
+
+        return sectionValid;
     }
 
     export function getValue(){
@@ -163,3 +168,5 @@
         {/if}
     </div>
 </div>
+
+
