@@ -25,6 +25,13 @@
             <div class="card-body">
                 <p><strong>Survey description:</strong></p>
                 <p>{{ survey.description }}</p>
+                <div class="d-flex justify-content-between mt-3">
+                    <div></div>
+                    <div></div>
+                    <div>
+                        <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger">Delete survey</a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -51,119 +58,86 @@
             </div>
             <div class="card-body">
                 {% if invite_link %}
-                <p>Invite your participants using the follow link:</p>
+                    <p>Invite your participants using the follow link:</p>
 
-                <div class="mb-3 mt-3">
-                    <h3>Invite your participants</h3>
-
-                    {% if invite_link %}
-                        <p>Invite your participants using the follow link:</p>
-
-
-                        <div class="row">
-                            <div class="col-lg-10">
-                                <div class="input-group mb-3">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">Invitation link</span>
-                                    </div>
-                                    <input type="text" id="invitation_link" class="form-control" disabled
-                                           value="{{ invite_link }}"/>
-                                    <div class="input-group-append">
-                                        <button class="btn btn-primary" type="button"
-                                                onclick="copyInviteLink()"><i
-                                                class='bx bx-clipboard'></i> <span id="copyBtnText">Copy</span>
-                                        </button>
-                                    </div>
+                    <div class="row">
+                        <div class="col-lg-10">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Invitation link</span>
                                 </div>
-                                <div class="d-flex mb-3">
-                                    <div class="card" style="width: 20em" id="survey_invite_qr_code_card">
-                                        {% qr_from_text invite_link image_format="png" size="s" alt_text="Survey invitation link" class_names="card-img-top"%}
-                                        <div class="card-body">
-                                            <div class="card-text text-center">
-                                                <button onclick="downloadQRCode()" class="btn btn-primary">
-                                                    Download invitation QR code
-                                                </button>
-                                            </div>
-
+                                <input type="text" id="invitation_link" class="form-control" disabled
+                                       value="{{ invite_link }}"/>
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="button"
+                                            onclick="copyInviteLink()"><i
+                                            class='bx bx-clipboard'></i> <span id="copyBtnText">Copy</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <div class="card" style="width: 20em" id="survey_invite_qr_code_card">
+                                    {% qr_from_text invite_link image_format="png" size="s" alt_text="Survey invitation link" class_names="card-img-top" %}
+                                    <div class="card-body">
+                                        <div class="card-text text-center">
+                                            <button onclick="downloadQRCode()" class="btn btn-primary">
+                                                Download invitation QR code
+                                            </button>
                                         </div>
+
                                     </div>
                                 </div>
-
-
-                                <script>
-                                  function copyInviteLink() {
-                                    let copyBtnTextElem = document.getElementById("copyBtnText");
-                                    let link = document.getElementById("invitation_link").value;
-                                    navigator.clipboard.writeText(link);
-                                    copyBtnTextElem.innerHTML = "Copied";
-                                    setTimeout(() => {
-                                      copyBtnTextElem.innerHTML = "Copy";
-                                    }, 2000);
-                                  }
-
-                                  function downloadQRCode(){
-                                    let qrCodeCard = document.getElementById("survey_invite_qr_code_card");
-                                    console.log(qrCodeCard.firstElementChild);
-                                    let element = document.createElement('a');
-                                    element.setAttribute('href', qrCodeCard.firstElementChild.src);
-                                    element.setAttribute('download', "survey_invite.png");
-                                    element.style.display = 'none';
-                                    document.body.appendChild(element);
-                                    element.click();
-                                    document.body.removeChild(element);
-                                  }
-                                </script>
-
                             </div>
-                            <input type="text" id="invitation_link" class="form-control" disabled
-                                   value="{{ invite_link }}"/>
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button"
-                                        onclick="copyInviteLink()"><i
-                                        class='bx bx-clipboard'></i> <span id="copyBtnText">Copy</span>
-                                </button>
-                            </div>
+
+
+                            <script>
+                              function copyInviteLink() {
+                                let copyBtnTextElem = document.getElementById("copyBtnText");
+                                let link = document.getElementById("invitation_link").value;
+                                navigator.clipboard.writeText(link);
+                                copyBtnTextElem.innerHTML = "Copied";
+                                setTimeout(() => {
+                                  copyBtnTextElem.innerHTML = "Copy";
+                                }, 2000);
+                              }
+
+                              function downloadQRCode() {
+                                let qrCodeCard = document.getElementById("survey_invite_qr_code_card");
+                                console.log(qrCodeCard.firstElementChild);
+                                let element = document.createElement('a');
+                                element.setAttribute('href', qrCodeCard.firstElementChild.src);
+                                element.setAttribute('download', "survey_invite.png");
+                                element.style.display = 'none';
+                                document.body.appendChild(element);
+                                element.click();
+                                document.body.removeChild(element);
+                              }
+                            </script>
                         </div>
-
-                        <script>
-                          function copyInviteLink() {
-                            let copyBtnTextElem = document.getElementById("copyBtnText");
-                            let link = document.getElementById("invitation_link").value;
-                            navigator.clipboard.writeText(link);
-                            copyBtnTextElem.innerHTML = "Copied";
-                            setTimeout(()=>{
-                              copyBtnTextElem.innerHTML = "Copy";
-                            }, 2000);
-                          }
-                        </script>
-
+                        <div class="col-lg-2 text-end">
+                            <form method="POST" action="{% url 'suvey_create_invite' survey.id %}">
+                                {% csrf_token %}
+                                <input type="submit" class="btn btn-primary" name="generate_token"
+                                       value="Regenerate invitation"/>
+                            </form>
+                        </div>
                     </div>
-                    <div class="col-lg-2 text-end">
-                        <form method="POST" action="{% url 'suvey_create_invite' survey.id %}">
-                            {% csrf_token %}
-                            <input type="submit" class="btn btn-primary" name="generate_token"
-                                   value="Regenerate invitation"/>
-                        </form>
-                    </div>
-                </div>
 
 
-                <p>Or send an invitation by email:</p>
+                    <p>Or send an invitation by email:</p>
 
-                <a href="{% url 'invite' survey.id %}" class="btn btn-primary">Send an invitation</a>
+                    <a href="{% url 'invite' survey.id %}" class="btn btn-primary">Send an invitation</a>
 
-            {% else %}
-                <p>
-                    Geneate an invitation link for your participants to fill in the survey:
-                </p>
-                <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
-                    {% csrf_token %}
-                    <input type="submit" name="generate_token" value="Generate invitation"
-                           class="btn btn-primary"/>
-                </form>
-
-
-            {% endif %}
+                {% else %}
+                    <p>
+                        Geneate an invitation link for your participants to fill in the survey:
+                    </p>
+                    <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
+                        {% csrf_token %}
+                        <input type="submit" name="generate_token" value="Generate invitation"
+                               class="btn btn-primary"/>
+                    </form>
+                {% endif %}
             </div>
         </div>
         <div class="card mb-3">

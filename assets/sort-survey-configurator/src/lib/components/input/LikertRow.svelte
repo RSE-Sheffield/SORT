@@ -25,7 +25,7 @@
 
 <td>
     <span class={{"is-valid": isValid, "is-invalid": isInvalid}}>{config.sublabels[sublabelIndex]}</span>
-    <span class="invalid-feedback">A value must be selectd</span>
+    <span class="invalid-feedback">A value must be selected</span>
 </td>
 {#each config.options as option, optionIndex }
     <td>

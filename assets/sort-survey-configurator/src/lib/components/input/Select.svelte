@@ -31,7 +31,7 @@
         {/each}
     </select>
     <div class="invalid-feedback">
-        An item must be selectd.
+        An item must be selected.
     </div>
 </div>
 

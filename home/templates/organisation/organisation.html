@@ -44,7 +44,7 @@
 
             <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
               {% if can_edit|get_item:project.id %}
-                <a href="{% url 'project-edit' project.id %}">
+                <a href="{% url 'project_edit' project.id %}">
                   <button type="button" class="btn btn-light">
                     <i class="bx bxs-edit"></i> Edit
                   </button>
