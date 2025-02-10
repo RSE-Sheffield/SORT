@@ -64,6 +64,7 @@ python manage.py createsuperuser
 ```bash
 DJANGO_SECRET_KEY=your_secret_key
 DJANGO_DEBUG=True
+DJANGO_ALLOWED_HOSTS=127.0.0.1
 ```
 
 ---
@@ -77,11 +78,7 @@ The app will be available at http://127.0.0.1:8000.
 
 ---
 
-8. Import data using the [`loaddata`](https://docs.djangoproject.com/en/5.1/ref/django-admin/#django-admin-loaddata) command
-
-```bash
-python manage.py loaddata data\questionnaires.json data\questionnaires.json
-```
+8. Import test data by following the instructions as [`data/README.md`](./data/README.md).
 
 # Deployment
 
