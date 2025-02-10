@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "django_bootstrap5",
     "django_extensions",
     "debug_toolbar",
+    "qr_code",
     # apps created by FA:
     "home",
     "survey",
