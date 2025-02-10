@@ -142,7 +142,26 @@
         </div>
         <div class="card mb-3">
             <div class="card-header">
-                <h2>3. View Survey Responses</h2>
+                <h2>Generate mock responses</h2>
+            </div>
+            <div class="card-body">
+                <p>Note: Dont' forget to configure the form first, go to survey configuration page and press
+                    Submit at the bottom. This is because the survey_config field is blank by default.</p>
+                <form method="POST" action="{% url 'survey_mock_responses' survey.pk  %}">
+                    {% csrf_token %}
+                    <label>
+                        Number for mock responses to generate
+                        <input type="number" name="num_responses" class="form-control"/>
+                    </label>
+
+                    <input type="submit" name="submit" value="Submit" class="btn btn-primary">
+                </form>
+
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>3. Survey responses</h2>
             </div>
             <div class="card-body">
 

@@ -1,4 +1,5 @@
 import json
+import random
 from typing import Any
 
 from django.shortcuts import get_object_or_404
@@ -98,6 +99,61 @@ class SurveyService(BasePermissionService):
 
         # Add new invite token
         return Invitation.objects.create(survey=survey)
+
+    def generate_mock_responses(self, survey: Survey, num_responses):
+        """
+        Generate a number of mock responses
+        """
+        for i in range(num_responses):
+            self.accept_response(survey,
+                                 responseValues=self.generate_mock_response(survey.survey_config))
+
+
+
+    def generate_mock_response(self, survey_config):
+        output_data = []
+
+        for section in survey_config["sections"]:
+            section_data_output = []
+            for field in section["fields"]:
+                section_data_output.append(self.generate_random_field_value(field))
+
+            output_data.append(section_data_output)
+
+        return output_data
+
+
+    def generate_random_field_value(self, field_config):
+        type = field_config["type"]
+        if type == "radio" or type == "select":
+            # Pick one option
+            num_options = len(field_config["options"])
+            option_index = random.randint(0, num_options-1)
+            return str(field_config["options"][option_index])
+        elif type == "checkbox" :
+            # Pick one random option
+            num_options = len(field_config["options"])
+            option_index = random.randint(0, num_options-1)
+            return [str(field_config["options"][option_index])]
+        elif type == "likert":
+            likert_output = []
+            # Pick something
+            for sublabel in field_config["sublabels"]:
+                num_options = len(field_config["options"])
+                option_index = random.randint(0, num_options - 1)
+                likert_output.append(str(field_config["options"][option_index]))
+            return likert_output
+
+        else:
+            return f"Test string for field {field_config['label']}"
+
+
+
+
+
+
+
+
 
 
 
