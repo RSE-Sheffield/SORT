@@ -64,7 +64,7 @@ python manage.py createsuperuser
 ```bash
 DJANGO_SECRET_KEY=your_secret_key
 DJANGO_DEBUG=True
-DJANGO_ALLOWED_HOSTS=127.0.0.1
+DJANGO_ALLOWED_HOSTS=127.0.0.1 localhost
 ```
 
 ---
