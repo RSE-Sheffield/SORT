@@ -1,9 +1,11 @@
 # Import test data
 
-Run the [`loaddata` command](https://docs.djangoproject.com/en/5.1/ref/django-admin/#loaddata).
+Run the [`loaddata` command](https://docs.djangoproject.com/en/5.1/ref/django-admin/#loaddata) to load in all
+of the mocked test data:
+.
 
 ```bash
-python manage.py loaddata ./data/001_users.json ./data/002_organisations.json ./data/003_memberships.json ./data/004_projects.json ./data/005_project_organisations.json ./data/006_project_managers.json ./data/007_surveys.json ./data/008_survey_responses.json
+python manage.py loaddata ./data/*.json
 ```
 
 The password for users is their respective role name in lowercases.
