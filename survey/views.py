@@ -112,6 +112,23 @@ class SurveyConfigureView(LoginRequiredMixin, View):
                       template_name="survey/survey_configure.html",
                       context=context)
 
+class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
+    login_url = '/login/'
+
+    def post(self, request: HttpRequest, pk: int):
+        if "num_responses" in request.POST:
+            num_responses = int(request.POST["num_responses"])
+            survey = Survey.objects.get(pk=pk)
+            survey_service.generate_mock_responses(survey, num_responses)
+            messages.success(request,f"Generated {num_responses} mock responses")
+        else:
+            messages.error(request, "Could not generate mock responses")
+
+
+        return redirect("survey", pk=pk)
+
+
+
 
 # TODO: Add TokenAuthenticationMixin after re-enabling the token
 class SurveyResponseView(View):
