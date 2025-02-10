@@ -18,11 +18,14 @@
         </nav>
     </div>
     <div class="card custom-card shadow-sm my-4" style="width: 90%; padding: 20px;">
-        <h4>{{ survey.name }} Dashboard</h4>
+        <h4 style="font-weight: normal;">{{ survey.name }} Dashboard</h4>
+
 
         <div style="; width: 100%; padding: 20px;">
-            {% plotly_app name="SurveyDashboard" ratio=1 %}
+            {% plotly_direct name="SurveyDashboard"  %}
         </div>
+
+
     </div>
 
 
