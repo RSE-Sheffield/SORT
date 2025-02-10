@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base_manager.html" %}
 {% load project_filters %}
 {% block content %}
 <div class="container mx-auto px-4 py-8 mt-4">
@@ -44,7 +44,7 @@
 
             <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
               {% if can_edit|get_item:project.id %}
-                <a href="{% url 'project-edit' project.id %}">
+                <a href="{% url 'project_edit' project.id %}">
                   <button type="button" class="btn btn-light">
                     <i class="bx bxs-edit"></i> Edit
                   </button>

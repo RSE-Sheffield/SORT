@@ -6,14 +6,12 @@
       "description": "Welcolme desc",
       "fields": [
         {
-          "type": "radio",
-          "name": "consent",
+          "type": "checkbox",
           "label": "Your agreement to complete the survey",
           "required": true,
           "sublabels": [],
           "options": [
-              "Yes, I agree to complete the survey",
-              "No I do not agree"
+              "Yes, I agree to complete the survey"
           ]
         }
       ]
@@ -25,17 +23,14 @@
       "fields": [
         {
           "type": "text",
-          "name": "text_field",
           "label": "Text field"
         },
         {
           "type": "textarea",
-          "name": "textarea_field",
           "label": "Textarea field"
         },
         {
           "type": "checkbox",
-          "name": "checkbox_field",
           "label": "Checkbox field",
           "options": [
             "Option 1",
@@ -44,7 +39,6 @@
         },
         {
           "type": "radio",
-          "name": "radio_field",
           "label": "Radio field",
           "options": [
             "Option 1",
@@ -52,8 +46,15 @@
           ]
         },
         {
+          "type": "select",
+          "label": "Select field",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ]
+        },
+        {
           "type": "likert",
-          "name": "likert_field",
           "label": "Likert table",
           "sublabels": [
             "Q1 Why",
@@ -74,17 +75,14 @@
       "fields": [
         {
           "type": "text",
-          "name": "text_field",
           "label": "Text field"
         },
         {
           "type": "textarea",
-          "name": "textarea_field",
           "label": "Textarea field"
         },
         {
           "type": "checkbox",
-          "name": "checkbox_field",
           "label": "Checkbox field",
           "options": [
             "Option 1",
@@ -93,7 +91,6 @@
         },
         {
           "type": "radio",
-          "name": "radio_field",
           "label": "Radio field",
           "options": [
             "Option 1",

@@ -15,7 +15,7 @@ function init(el){
 {#if hasFocus}
 <input class="form-control" bind:value={value} onfocusout={()=> {setFocus(false)}} use:init/>
 {:else}
-{value} <button class="btn btn-link " onclick={()=>{setFocus(true)}} title="Edit text"><i class='bx bxs-edit-alt' ></i></button>
+{value} <button class="btn btn-link " onclick={()=>{setFocus(true)}} title="Edit text" aria-label="Edit text"><i class='bx bxs-edit-alt' ></i></button>
 {/if}
 
 
