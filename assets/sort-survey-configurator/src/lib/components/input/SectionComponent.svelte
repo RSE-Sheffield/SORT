@@ -22,13 +22,14 @@
 
 
     let {
-        config = $bindable(getDefaultSectionConfig()),
+        config = $bindable(),
+        value = $bindable(),
         editable = false,
         sectionTypeEditable = true,
         displaySectionType=true,
-        value = $bindable(),
-        onEditRequest = (fieldIndex: number, doEdit: boolean) => {
-        }
+        sectionIndex = -1,
+        onMoveRequest = null,
+        onDeleteSectionRequest = ()=>{},
     } = $props();
 
     //Insert missing keys
@@ -72,24 +73,6 @@
         return { name: config.title, fields: fieldValues};
     }
 
-    export function stopEditingAll() {
-        for (let i = 0; i < fieldComponents.length; i++) {
-            fieldComponents[i].endEdit();
-        }
-    }
-
-    export function startEditAtIndex(fieldIndex) {
-        for (let i = 0; i < fieldComponents.length; i++) {
-            if(i == fieldIndex){
-                fieldComponents[fieldIndex].beginEdit();
-            }
-            else{
-                fieldComponents[i].endEdit();
-            }
-
-        }
-
-    }
 
     function addField() {
         config.fields.push(getDefaultFieldConfig())
@@ -104,9 +87,27 @@
     }
 
 
+    function handleMoveRequest(srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex){
+        if(onMoveRequest){
+            onMoveRequest(srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex);
+        }
+    }
+
+
 </script>
 
-<div class="card mb-3">
+<div role="group" class="card mb-3"
+     ondragover={(e) => {
+       e.preventDefault();
+       e.dataTransfer.dropEffect = "move";
+     }}
+     ondrop={(e) =>{
+       e.preventDefault();
+       e.stopPropagation();
+       const moveSource = JSON.parse(e.dataTransfer.getData("application/json"));
+       onMoveRequest(moveSource.section, moveSource.field, sectionIndex, -1);
+     }}
+>
     <div class="card-body">
         <div class="row">
             <div class="col-8">
@@ -154,17 +155,24 @@
                 <InputComponent
                         bind:config={config.fields[index]}
                         editable={editable}
-                        onEditRequest={(startEdit)=>{onEditRequest(index, startEdit)}}
                         onDuplicateRequest={()=>{duplicateField(index)}}
                         onDeleteRequest={()=>{deleteField(index)}}
                         bind:value={fieldValues[index]}
                         bind:this={_fieldComponents[index]}
+                        sectionIndex={sectionIndex}
+                        fieldIndex={index}
+                        onMoveRequest={handleMoveRequest}
                 />
             </div>
         {/each}
 
         {#if editable}
-            <button class="btn btn-primary" onclick={addField}>Add field</button>
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-primary" onclick={addField}>Add field</button>
+                <div></div>
+                <button class="btn btn-danger" onclick={() => {onDeleteSectionRequest()}}>Delete section</button>
+            </div>
+
         {/if}
     </div>
 </div>

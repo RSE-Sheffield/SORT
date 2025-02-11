@@ -1,14 +1,18 @@
 <script lang="ts">
 
+    import * as _ from "lodash"
     import SectionComponent, {getDefaultSectionConfig} from "./input/SectionComponent.svelte";
 
     let {
-        config = $bindable({sections: []}),
+        config = $bindable(),
         editable = true,
         sectionTypeEditable = true,
         sectionEditable = true,
-
     } = $props();
+
+    if(config == null || config === undefined){
+        config = {}
+    }
 
     if(!("sections" in config)){
         config.sections = [];
@@ -19,28 +23,32 @@
     let _sectionComponents = $state([]);
     let sectionComponents = $derived(_sectionComponents.filter(Boolean));
 
-    function checkCurrentEditor(sectionIndex: number, fieldIndex: number, doEdit: boolean) {
-        for (let i = 0; i < sectionComponents.length; i++) {
-            if(doEdit){
-                if(i == sectionIndex){
-                sectionComponents[i].startEditAtIndex(fieldIndex);
-                }else{
-                    sectionComponents[i].stopEditingAll();
-                }
-            }
-            else{
-                sectionComponents[i].stopEditingAll();
-            }
-
-
-        }
-    }
-
     function addSection() {
         config.sections.push(getDefaultSectionConfig());
     }
 
+    function deleteSection(index){
+        config.sections.splice(index, 1);
+    }
 
+    function handleMoveRequest(srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex){
+        if(!editable || srcSectionIndex < 0 || destSectionIndex < 0 || srcFieldIndex < 0)
+            return;
+
+        if(destFieldIndex >= 0){
+            // Move within or between sections with existing elements
+            let fieldItem = _.cloneDeep(config.sections[srcSectionIndex].fields[srcFieldIndex]);
+            config.sections[srcSectionIndex].fields.splice(srcFieldIndex, 1);
+            config.sections[destSectionIndex].fields.splice(destFieldIndex, 0, fieldItem)
+
+        }
+        else {
+            // Move to an empty section
+            let fieldItem = _.cloneDeep(config.sections[srcSectionIndex].fields[srcFieldIndex]);
+            config.sections[srcSectionIndex].fields.splice(srcFieldIndex, 1);
+            config.sections[destSectionIndex].fields = [...config.sections[destSectionIndex].fields, fieldItem];
+        }
+    }
 
 
 </script>
@@ -50,9 +58,11 @@
 {#each config.sections as section, index (index)}
     <SectionComponent bind:config={config.sections[index]}
                       editable={editable}
-                      onEditRequest={(fieldIndex, doEdit)=>{checkCurrentEditor(index, fieldIndex, doEdit)}}
                       sectionTypeEditable={sectionTypeEditable}
                       bind:this={_sectionComponents[index]}
+                      sectionIndex={index}
+                      onMoveRequest={handleMoveRequest}
+                      onDeleteSectionRequest={()=>{deleteSection(index)}}
     />
 {/each}
 
