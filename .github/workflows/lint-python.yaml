@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - dev
 jobs:
   lint:
     runs-on: ubuntu-24.04
@@ -13,7 +14,7 @@ jobs:
         run: pip install black flake8 isort
       - name: Lint Python code
         run: |
-          dirs="SORT home survey invites"
+          dirs="SORT home survey"
           isort $dirs --skip-glob '*/migrations/*'
           black $dirs --exclude '/migrations/'
           flake8 $dirs --exclude '*/migrations/*'

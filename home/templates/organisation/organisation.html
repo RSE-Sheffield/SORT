@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base_manager.html" %}
 {% load project_filters %}
 {% block content %}
 <div class="container mx-auto px-4 py-8 mt-4">
@@ -38,13 +38,13 @@
               <div class="flex flex-wrap gap-2 mb-3">
                 {% for org in project_orgs|get_item:project.id %}<span class="badge text-bg-primary">{{ org.name }}</span>{% endfor %}
               </div>
-            <h3 class="card-title">{{ project.name }}</h3>
-            <h4 class="card-title">{{ project.description}}</h4>
-            <h5 class="card-title">Surveys: {{ project.survey_count }}</h5>
+            <p class="h5 card-title">{{ project.name }}</p>
+            <p class="h6 card-title">{{ project.description }}</p>
+            <p class="h7 card-title">Surveys: {{ project.survey_count }}</p>
 
             <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
               {% if can_edit|get_item:project.id %}
-                <a href="{% url 'project-edit' project.id %}">
+                <a href="{% url 'project_edit' project.id %}">
                   <button type="button" class="btn btn-light">
                     <i class="bx bxs-edit"></i> Edit
                   </button>

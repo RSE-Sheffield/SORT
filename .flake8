@@ -1,3 +1,10 @@
 # https://flake8.pycqa.org/en/latest/user/configuration.html
 [flake8]
+exclude =
+    .git,
+    __pycache__,
+    migrations,
+    settings.py,
+    venv,
+    env
 max-line-length = 120

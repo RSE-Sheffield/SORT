@@ -93,7 +93,7 @@ class OrganisationService(BasePermissionService):
 
         org = Organisation.objects.create(name=name, description=description)
         self.add_user_to_organisation(
-            user=user, new_user=user, organisation=org, role=ROLE_ADMIN
+            user=user, added_by=user, organisation=org, role=ROLE_ADMIN
         )
         return org
 
@@ -101,6 +101,7 @@ class OrganisationService(BasePermissionService):
     def add_user_to_organisation(
         self,
         user: User,
+        added_by: User,
         organisation: Organisation,
         role: Literal["ADMIN", "PROJECT_MANAGER"],
     ) -> OrganisationMembership:

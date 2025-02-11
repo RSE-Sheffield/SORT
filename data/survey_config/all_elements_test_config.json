@@ -1,0 +1,103 @@
+{
+  "sections": [
+    {
+      "title": "Welcome",
+      "type": "consent",
+      "description": "Welcolme desc",
+      "fields": [
+        {
+          "type": "checkbox",
+          "label": "Your agreement to complete the survey",
+          "required": true,
+          "sublabels": [],
+          "options": [
+              "Yes, I agree to complete the survey"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Section 1",
+      "type": "sort",
+      "description": "Desc 1",
+      "fields": [
+        {
+          "type": "text",
+          "label": "Text field"
+        },
+        {
+          "type": "textarea",
+          "label": "Textarea field"
+        },
+        {
+          "type": "checkbox",
+          "label": "Checkbox field",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ]
+        },
+        {
+          "type": "radio",
+          "label": "Radio field",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ]
+        },
+        {
+          "type": "select",
+          "label": "Select field",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ]
+        },
+        {
+          "type": "likert",
+          "label": "Likert table",
+          "sublabels": [
+            "Q1 Why",
+            "Q2 What",
+            "Q3 When"
+          ],
+          "options": [
+            "1", "2", "3", "4"
+          ]
+        }
+
+      ]
+    },
+    {
+      "title": "Section 2",
+      "type": "sort",
+      "description": "Desc 2",
+      "fields": [
+        {
+          "type": "text",
+          "label": "Text field"
+        },
+        {
+          "type": "textarea",
+          "label": "Textarea field"
+        },
+        {
+          "type": "checkbox",
+          "label": "Checkbox field",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ]
+        },
+        {
+          "type": "radio",
+          "label": "Radio field",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ]
+        }
+      ]
+    }
+  ]
+}

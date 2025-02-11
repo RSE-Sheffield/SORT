@@ -1,16 +1,50 @@
-# Svelte + TS + Vite
+# SORT Survey Widgets
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+UI Widgets for configuring SORT forms
 
-## Recommended IDE Setup
+## Dependencies
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+- nodejs (20.x)
+- vite
+- svelte
 
-## Need an official Svelte framework?
+## Overview
+TBC
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+## Installation
 
-## Technical considerations
+First install [nodejs](https://nodejs.org/en) on your machine. For linux I've found [nvm](https://github.com/nvm-sh/nvm)
+is good as it allows you to install multiple versions of node and select between them.
+
+Navigate to the folder `/assets/sort-survey-configurator`.
+
+Install dependencies using `npm install`
+
+
+## Previewing the components live
+
+To preview the components (separate from the website) run the following command:
+
+```
+npm run dev
+```
+
+This will start a local dev server where the component can be previewed.
+
+
+## Building the components
+
+Build by running:
+
+```
+npm run build
+```
+
+This will build the widgets into the `/static/js/sort-ui` folder which can then be imported by the django templates.
+
+
+## Technical considerations ()
+Instructions below came pre-generated, leaving this here for now in case it's useful:
 
 **Why use this over SvelteKit?**
 

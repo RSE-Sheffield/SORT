@@ -9,17 +9,17 @@ export default defineConfig({
       },
     })],
   build: {
-    target: "esnext",
+
     rollupOptions: {
       input: {
-        index: "./src/main.ts",
+        sort_survey_config: "./src/main.ts",
+        sort_survey_cd: "./src/survey_config_consent_demography.ts",
+        sort_survey_response: "./src/survey_response.ts"
       },
-      // single
       output: {
-        format: "umd",
         chunkFileNames: `[name].[hash].js`,
-        entryFileNames: "[name].umd.js", // <--
-        dir: "dist",
+        entryFileNames: "[name].js",
+        dir: "../../static/js/sort-ui",
       },
     },
   },
