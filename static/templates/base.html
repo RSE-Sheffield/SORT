@@ -18,71 +18,7 @@
     </head>
     <body>
 
-        <header>
-            <div class="px-3 py-2 bg-light">
-                <div class="container">
-                    {% url 'home' as home_url %}
-                    <a class="navbar-brand" href="{{ home_url }}"><img src="/static/images/sort_logo_placeholder.png" alt="Self-assessment of organisational readiness tool logo" height="30rem" /></a>
-                </div>
-            </div>
-            <div class="px-3 py-2 subheader">
-                <div class="container">
-                    The Self-Assessment of Organisational Readiness Tool
-                </div>
-            </div>
-        </header>
-
-        <nav class="navbar navbar-expand-lg navbar-dark">
-            <div class="container">
-                <div class="container-fluid">
-                    <button 
-                        class="navbar-toggler" 
-                        type="button" 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#navbarSupportedContent" 
-                        aria-controls="navbarSupportedContent" 
-                        aria-expanded="false" 
-                        aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="navbar-nav me-auto">
-                            <li class="nav-item">
-                                <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ home_url }}">Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if '/invite' in request.path %}active{% endif %}" href="{% url 'invite' %}">Manage</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">Profile</a>
-                            </li>
-                            <li class="nav-item">
-                                {% url 'organisation_create' as organisation_create_url %}
-                                <a class="nav-link 
-                                    {% if '/myorganisation' in request.path %}active{% endif %} 
-                                    {% if '/projects' in request.path %}active{% endif %} 
-                                    {% if '/survey' in request.path %}active{% endif %} 
-                                    {% if '/completion' in request.path %}active{% endif %}"
-                                    href="{% url 'myorganisation' %}">My Organisation</a>
-                            </li>
-                        </ul>
-                        <ul class="navbar-nav">
-                            {% if user.is_authenticated %}
-                                <li class="nav-item">
-                                    <form id="logout-form"
-                                        action="{% url 'logout' %}"
-                                        method="POST"
-                                        style="display: inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="nav-link btn btn-link btn-primary">Logout</button>
-                                    </form>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </nav>
+        {% include 'header.html' %}
 
         {% block navitems %}<!-- Content  here -->{% endblock %}
         <main>
