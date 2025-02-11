@@ -58,7 +58,6 @@ class LoginInterfaceView(LoginView):
 
 class HomeView(LoginRequiredMixin, View):
     template_name = "home/welcome.html"
-    login_url = "login"
 
     def get(self, request):
         return render(request, self.template_name, {})

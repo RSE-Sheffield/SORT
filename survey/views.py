@@ -35,7 +35,6 @@ class SurveyView(LoginRequiredMixin, View):
     Manager's view of a survey to be sent out. The manager is able to
     configure what fields are included in the survey on this page.
     """
-    login_url = '/login/'  # redirect to login if not authenticated
 
     def get(self, request: HttpRequest, pk: int):
         return self.render_survey_page(request, pk)
@@ -56,7 +55,6 @@ class SurveyCreateView(LoginRequiredMixin, CreateView):
     model = Survey
     template_name = "survey/create.html"
     fields = ["name", "description"]
-    login_url = '/login/'
 
     def get_success_url(self):
         return self.object.get_absolute_url()
@@ -86,7 +84,6 @@ class SurveyDeleteView(LoginRequiredMixin, DeleteView):
 
 
 class SurveyConfigureView(LoginRequiredMixin, View):
-    login_url = '/login/'
 
     def get(self, request: HttpRequest, pk: int):
         return self.render_survey_config_view(request, pk, is_post=False)
@@ -113,7 +110,6 @@ class SurveyConfigureView(LoginRequiredMixin, View):
                       context=context)
 
 class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
-    login_url = '/login/'
 
     def post(self, request: HttpRequest, pk: int):
         if "num_responses" in request.POST:
@@ -196,7 +192,6 @@ class CompletionView(View):
 
 
 class SurveyCreateInviteView(LoginRequiredMixin, View):
-    login_url = '/login/'
 
     def post(self, request: HttpRequest, pk: int):
         survey = get_object_or_404(Survey, pk=pk)
