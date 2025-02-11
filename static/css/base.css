@@ -29,17 +29,16 @@ header {
     left: 0;
     right: 0;
     z-index: 1000;
-}
-.navbar, .navbar a {
     background-color: var(--primary-dark-colour);
+}
+
+.navbar a {
     color: lightgrey;
-    /* filter: brightness(0.8); */
 }
 
 .nav-link:hover,
 .nav-link.active {
     color: white !important;
-    /* font-weight: bold; */
     filter: brightness(1.0);
 }
 
@@ -103,19 +102,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-    /* background-color: #6933AD !important;
-    border-color: #6933AD !important; */
     background-color: var(--primary-colour) !important;
     border-color: var(--primary-colour) !important;
 }
 
 .btn-primary:hover {
-    background-color: var(--primary-colour) !important;
-    border-color: var(--primary-colour) !important;
+    background-color: var(--primary-colour-lg) !important;
+    border-color: var(--primary-colour-lg) !important;
 }
 
 .btn-primary, .btn-primary:hover {
-    background-color: var(--primary-colour-lg);
     color: white !important;
 }
 
