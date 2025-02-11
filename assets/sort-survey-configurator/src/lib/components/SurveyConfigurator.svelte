@@ -19,29 +19,6 @@
     let _sectionComponents = $state([]);
     let sectionComponents = $derived(_sectionComponents.filter(Boolean));
 
-
-
-    export function validate() {
-        // for (let i in sectionComponents) {
-        //     sectionComponents[i].validate();
-        // }
-    }
-
-    export function getValue(){
-        let sectionValues = [];
-        for (let i = 0; i < sectionComponents.length; i++) {
-            sectionValues.push(sectionComponents[i].getValue())
-        }
-
-        download("formValues.json", JSON.stringify(sectionValues, null, 2));
-
-        return sectionValues;
-    }
-
-    export function getConfig() {
-        download("config.json", JSON.stringify(config, null, 2));
-    }
-
     function checkCurrentEditor(sectionIndex: number, fieldIndex: number, doEdit: boolean) {
         for (let i = 0; i < sectionComponents.length; i++) {
             if(doEdit){
@@ -63,18 +40,7 @@
         config.sections.push(getDefaultSectionConfig());
     }
 
-    function download(filename, text) {
-        var element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-        element.setAttribute('download', filename);
 
-        element.style.display = 'none';
-        document.body.appendChild(element);
-
-        element.click();
-
-        document.body.removeChild(element);
-    }
 
 
 </script>

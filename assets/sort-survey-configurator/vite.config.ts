@@ -9,7 +9,7 @@ export default defineConfig({
       },
     })],
   build: {
-    target: "esnext",
+
     rollupOptions: {
       input: {
         sort_survey_config: "./src/main.ts",

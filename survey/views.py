@@ -1,14 +1,15 @@
 import json
+from audioop import reverse
 from multiprocessing.managers import Token
 
 from IPython.utils.coloransi import value
 from django.core.mail import send_mail
-from django.http import HttpRequest, Http404
+from django.http import HttpRequest, Http404, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.functional import unpickle_lazyobject
 from django.views import View
-from django.views.generic import FormView, TemplateView, DetailView, UpdateView
+from django.views.generic import FormView, TemplateView, DetailView, UpdateView, DeleteView
 from django.views.generic.edit import CreateView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -66,6 +67,23 @@ class SurveyCreateView(LoginRequiredMixin, CreateView):
         survey_service.create_survey(self.object, project)
         return result
 
+class SurveyDeleteView(LoginRequiredMixin, DeleteView):
+    model = Survey
+    template_name = "survey/delete.html"
+    context_object_name = "survey"
+
+    def form_valid(self, form):
+        if survey_service.can_delete(self.request.user, self.object):
+            messages.info(self.request, f"Survey {self.object.name} deleted")
+            return super().form_valid(form)
+        else:
+            messages.error(self.request, "You do not have permission to delete this survey.")
+            return redirect("survey",  pk = self.object.pk)
+
+    def get_success_url(self):
+        project_pk = self.object.project.pk
+        return reverse_lazy("project", kwargs={"project_id": project_pk})
+
 
 class SurveyConfigureView(LoginRequiredMixin, View):
     login_url = '/login/'
@@ -93,6 +111,23 @@ class SurveyConfigureView(LoginRequiredMixin, View):
         return render(request=request,
                       template_name="survey/survey_configure.html",
                       context=context)
+
+class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
+    login_url = '/login/'
+
+    def post(self, request: HttpRequest, pk: int):
+        if "num_responses" in request.POST:
+            num_responses = int(request.POST["num_responses"])
+            survey = Survey.objects.get(pk=pk)
+            survey_service.generate_mock_responses(survey, num_responses)
+            messages.success(request,f"Generated {num_responses} mock responses")
+        else:
+            messages.error(request, "Could not generate mock responses")
+
+
+        return redirect("survey", pk=pk)
+
+
 
 
 # TODO: Add TokenAuthenticationMixin after re-enabling the token

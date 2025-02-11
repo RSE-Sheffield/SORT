@@ -23,7 +23,7 @@
          {/if}
      </span>
      <input class="form-control" type="text" bind:value={options[index]} />
-    <button class="btn btn-outline-danger" onclick={()=>{deleteOption(index)}}><i class='bx bx-x' ></i></button>
+    <button class="btn btn-outline-danger" onclick={()=>{deleteOption(index)}} aria-label="Delete option" title="Delete option"><i class='bx bx-x' ></i></button>
 </div>
 {/each}
 <div>

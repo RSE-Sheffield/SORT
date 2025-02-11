@@ -102,6 +102,15 @@ class ProjectService(BasePermissionService):
         )
         return project
 
+    def delete_project(self, user: User, project: Project):
+        if not self.can_delete(user, project):
+            raise PermissionDenied("User cannot delete projects")
+
+        parent_org = project.organisations.first()
+        project.delete()
+        return parent_org
+
+
     @requires_permission("edit", "project")
     def grant_permission(
         self,
