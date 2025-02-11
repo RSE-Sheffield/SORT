@@ -29,7 +29,7 @@
                     <div></div>
                     <div></div>
                     <div>
-                        <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger">Delete survey</a>
+                        <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger"><i class="bx bxs-trash" alt=""></i>Delete survey</a>
                     </div>
                 </div>
             </div>
@@ -135,7 +135,7 @@
                     <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
                         {% csrf_token %}
                         <input type="submit" name="generate_token" value="Generate invitation"
-                               class="btn btn-primary"/>
+                               class="btn btn-primary"></input>
                     </form>
                 {% endif %}
             </div>
