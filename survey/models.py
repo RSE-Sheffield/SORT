@@ -1,5 +1,7 @@
 import secrets
 from django.db import models
+from django.db.utils import IntegrityError
+from django.http import HttpRequest
 from django.urls import reverse
 from django.utils import timezone
 from home.models import Project
@@ -21,6 +23,21 @@ class Survey(models.Model):
     def get_absolute_url(self):
         return reverse("survey", kwargs={"pk": self.pk})
 
+    def current_invite_token(self):
+        for invite in self.invitation_set.all():
+            if not invite.is_expired() and not invite.used:
+                return invite.token
+        return None
+
+    def get_invite_link(self, request: HttpRequest):
+        token = self.current_invite_token()
+        if token is not None:
+            return request.build_absolute_uri("/survey_response/"+token)
+
+        return None
+
+
+
 
 class SurveyResponse(models.Model):
     """
@@ -31,7 +48,8 @@ class SurveyResponse(models.Model):
     answers = models.JSONField()
 
     def get_absolute_url(self, token):
-        return reverse('survey', kwargs={'pk': self.pk, 'token': token})
+        return reverse('survey', kwargs={"pk": self.survey.pk})
+
 
 
 
@@ -46,9 +64,20 @@ class Invitation(models.Model):
         return f"Invitation for {self.survey.name}"
 
     def save(self, *args, **kwargs):
+
         if not self.token:
-            self.token = secrets.token_urlsafe(32)
+            # Try a new token until it doesn't clash with an existing one
+            num_token_tries = 0
+            max_token_tries = 50
+            while num_token_tries < max_token_tries:
+                token = secrets.token_urlsafe(32)
+                if Invitation.objects.filter(token=token).count() < 1:
+                    self.token = token
+                    break
+                num_token_tries += 1
+
         super().save(*args, **kwargs)
 
     def is_expired(self):
         return timezone.now() > self.created_at + timezone.timedelta(days=7)
+
