@@ -244,8 +244,8 @@
                 </div>
 
                 <div>
-                    <button class="btn btn-primary" onclick={() => {onDuplicateRequest()}}>Duplicate</button>
-                    <button class="btn btn-danger" onclick={() => {onDeleteRequest()}}>Delete</button>
+                    <button class="btn btn-primary" onclick={() => {onDuplicateRequest()}}><i class="bx bxs-duplicate"></i> Duplicate</button>
+                    <button class="btn btn-danger" onclick={() => {onDeleteRequest()}}><i class="bx bxs-trash"></i> Delete</button>
                 </div>
 
 

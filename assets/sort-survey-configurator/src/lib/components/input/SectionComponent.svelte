@@ -164,7 +164,7 @@
         {/each}
 
         {#if editable}
-            <button class="btn btn-primary" onclick={addField}>Add field</button>
+            <button class="btn btn-primary" onclick={addField}><i class="bx bx-plus"></i> Add field</button>
         {/if}
     </div>
 </div>

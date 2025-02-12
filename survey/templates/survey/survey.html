@@ -5,14 +5,14 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-buildings" alt=""></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-folder-open" alt=""></i> <a
+                    <i class="bx bxs-folder-open"></i> <a
                         href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
                 </li>
                 <li class="breadcrumb-item active" aria-current="page">
-                    <i class="bx bxs-chart" alt=""></i> Survey: {{ survey.name }}
+                    <i class="bx bxs-chart"></i> Survey: {{ survey.name }}
                 </li>
             </ol>
         </nav>
@@ -29,7 +29,7 @@
                     <div></div>
                     <div></div>
                     <div>
-                        <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger"><i class="bx bxs-trash" alt=""></i>Delete survey</a>
+                        <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger"><i class="bx bxs-trash"></i>Delete survey</a>
                     </div>
                 </div>
             </div>
@@ -48,7 +48,7 @@
                 <div class="mb-3 mt-3">
                     <p>First, configure you survey here. You are able to add and customise demographic questions asked
                         in the survey.</p>
-                    <a href="{% url 'survey_configure' survey.id %}" class="btn btn-primary"><i class="bx bxs-cog" alt=""></i> Configure the survey</a>
+                    <a href="{% url 'survey_configure' survey.id %}" class="btn btn-primary"><i class="bx bxs-cog"></i> Configure the survey</a>
                 </div>
             </div>
         </div>
