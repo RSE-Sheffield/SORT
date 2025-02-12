@@ -95,3 +95,25 @@ export function getUniqueIDArray(length: number) {
 export function getUniqueName(): string {
     return generateUniqueAndCheck(namePrefix, generateLength, uniqueNameSet);
 }
+
+
+/**
+ * Action callback for when the user click outside of the specified element
+ * @param node
+ * @param handler
+ */
+export function clickOutside(node: HTMLElement, handler: Function){
+    const handleClick = (event: MouseEvent) => {
+		if (event.target && !node.contains(event.target as Element)) {
+            handler();
+		}
+	};
+
+	document.addEventListener('click', handleClick, true);
+
+	return {
+		destroy() {
+			document.removeEventListener('click', handleClick, true);
+		}
+	};
+}
