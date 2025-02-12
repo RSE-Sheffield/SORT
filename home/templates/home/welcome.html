@@ -21,11 +21,9 @@
                             {% endif %}
                             {% if user.organisation_set.first %}
                                 <p class="card-text">Your organisation is {{ user.organisation_set.first.name }}.</p>
-                                {% if user.organisation_set %}
-                                    <p class="card-text">
-                                        View the <a href="{% url 'organisation_create' %}">My Organisation</a> page to create, view or delete your Projects. Use this page to also create, configure and delete your surveys and manage their invitations.
-                                    </p>
-                                {% endif %}
+                                <p class="card-text">
+                                    View the <a href="{% url 'organisation_create' %}">My Organisation</a> page to create, view or delete your Projects. Use this page to also create, configure and delete your surveys and manage their invitations.
+                                </p>
                             {% else %}
                                 <p class="card-text">You are currently not part of an organisation.
                                     Click to <a href="{% url 'organisation_create' %}">create your first organisation.</a>
