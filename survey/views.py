@@ -135,6 +135,29 @@ class SurveyExportView(LoginRequiredMixin, View):
         return response
 
 
+section_titles = [
+            "A. Releasing Potential",
+            "B. Embedding Research",
+            "C. Linkages and Leadership",
+            "D. Inclusive research delivery",
+            "E. Digital enabled research"
+        ]
+
+class SurveyEvidenceGatheringView(LoginRequiredMixin, View):
+    def get(self, request: HttpRequest, pk: int):
+        survey = Survey.objects.get(pk=pk)
+        context = {"survey": survey}
+        context["section_titles"] = section_titles
+        return render(request=request, template_name="survey/evidence_gathering.html", context=context)
+
+class SurveyImprovementPlanView(LoginRequiredMixin, View):
+    def get(self, request: HttpRequest, pk: int):
+        survey = Survey.objects.get(pk=pk)
+        context = {"survey": survey}
+        context["section_titles"] = section_titles
+        return render(request=request, template_name="survey/improvement_plan.html", context=context)
+
+
 
 # TODO: Add TokenAuthenticationMixin after re-enabling the token
 class SurveyResponseView(View):

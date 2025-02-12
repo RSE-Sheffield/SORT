@@ -10,6 +10,9 @@ urlpatterns = [
 
     path('survey/<int:pk>/export', views.SurveyExportView.as_view(), name='survey_export'),
 
+    path('survey/<int:pk>/evidence_gathering', views.SurveyEvidenceGatheringView.as_view(), name='survey_evidence_gathering'),
+    path('survey/<int:pk>/improvement_plan', views.SurveyImprovementPlanView.as_view(), name='survey_improvement_plan'),
+
     path('survey/create/<int:project_id>', views.SurveyCreateView.as_view(), name='survey_create'),
 
     path('completion/', views.CompletionView.as_view(), name='completion_page'),

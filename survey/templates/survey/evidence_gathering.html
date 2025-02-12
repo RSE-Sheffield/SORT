@@ -1,0 +1,84 @@
+{% extends 'base_manager.html' %}
+{% load static %}
+{% block content %}
+    <!-- Include stylesheet -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet"/>
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-folder-open"></i> <a
+                        href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-chart"></i> <a href="{% url 'survey' survey.id %}"> Survey: {{ survey.name }}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class='bx bx-collection'></i> Gather evidence
+                </li>
+            </ol>
+        </nav>
+    </div>
+    <div class="container mx-auto px-4 py-8">
+        <h1><i class='bx bx-collection'></i> Gather evidence</h1>
+        <p>Once you have collected enough responses, use this section to gather evidence in support of the survey results.</p>
+
+        {% for section_title in section_titles %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3>{{ section_title }}</h3>
+                </div>
+                <div class="card-body">
+                    <p>
+                        This section demonstrates an overall maturity score of 2 out of 4, placing it at the 'Planned'
+                        level. Opportunities for improvement are identified in question B4, and B1.
+                    </p>
+                    <img src="{% static 'images/example_response_graph.png' %}">
+
+                    <p>
+                        In support of the survey result, please gather the evidence for this section in the text box below.
+                        Possible evidence includes:
+
+                    </p>
+                    <ul>
+                        <li>
+                            Published report
+                        </li>
+                        <li>
+                            Planning document for the initatives
+                        </li>
+                        <li>
+                            etc.
+                        </li>
+
+                    </ul>
+
+                    <!-- Create the editor container -->
+                    <div id="evidence_editor_{{ forloop.counter0 }}">
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        <!-- Include the Quill library -->
+        <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+
+        <!-- Initialize Quill editor -->
+        <script>
+          let quillInstances = [];
+          for(let i = 0 ;i < 5; i++){
+            quillInstances.push(new Quill('#evidence_editor_'+i, {
+            theme: 'snow',
+              placeholder: "Please enter evidence for this section here..."
+            }));
+          }
+
+        </script>
+    </div>
+{% endblock %}

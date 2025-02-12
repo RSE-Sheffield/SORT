@@ -1,0 +1,91 @@
+{% extends 'base_manager.html' %}
+{% load static %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-folder-open"></i> <a href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-chart"></i> <a href="{% url 'survey' survey.id %}"> Survey: {{ survey.name }}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class='bx bxs-file-plus'></i> Improvement plan
+                </li>
+            </ol>
+        </nav>
+    </div>
+    <div class="container mx-auto px-4 py-8">
+        <h1><i class='bx bxs-file-plus'></i> Improvement plan</h1>
+        <p>Use this section to create an improvement plan after collecting survey responses and gathering the evidence.</p>
+
+        {% for section_title in section_titles %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3>{{ section_title }}</h3>
+                </div>
+                <div class="card-body">
+                    <p>
+                        This section demonstrates an overall maturity score of 2 out of 4, placing it at the 'Planned'
+                        level. Opportunities for improvement are identified in question B4, and B1.
+                    </p>
+                    <img src="{% static 'images/example_response_graph.png' %}">
+
+                    <p>
+                        You have gathered the following evidence in support of the survey results:
+
+                    </p>
+                    <ul>
+                        <li>
+                            <a href="">2024_planning_report.docx</a>
+                        </li>
+                        <li>
+                            <a href="">evidence.pdf</a>
+                        </li>
+                    </ul>
+
+                    <h3>Improvement plan</h3>
+                    <p>
+                        In the table below, list a plan of action you intend to take in the upcoming period using
+                        SMART objectives (Specific, Measurable, Achievable, Relevant and Time-bound).
+                    </p>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Current position</th>
+                                <th scope="col">Proposed action</th>
+                                <th scope="col">Measurable outcomes</th>
+                                <th scope="col">Person responsible</th>
+                                <th scope="col">Deadline</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">1</th>
+                                <td>Planned</td>
+                                <td>An action</td>
+                                <td>Evidence document</td>
+                                <td>Twin</td>
+                                <td>12 September 2025</td>
+
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endfor %}
+
+
+
+        </script>
+    </div>
+{% endblock %}
