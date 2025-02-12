@@ -167,10 +167,11 @@
         {/each}
 
         {#if editable}
+
             <div class="d-flex justify-content-between">
-                <button class="btn btn-primary" onclick={addField}>Add field</button>
+                <button class="btn btn-primary" onclick={addField}><i class="bx bx-plus"></i> Add field</button>
                 <div></div>
-                <button class="btn btn-danger" onclick={() => {onDeleteSectionRequest()}}>Delete section</button>
+                <button class="btn btn-danger" onclick={() => {onDeleteSectionRequest()}}><i class="bx bxs-trash"></i> Delete section</button>
             </div>
 
         {/if}

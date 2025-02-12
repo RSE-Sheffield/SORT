@@ -27,5 +27,5 @@
 </div>
 {/each}
 <div>
-    <button class="btn btn-primary btn-sm" onclick={addOption}>Add option</button>
+    <button class="btn btn-primary btn-sm" onclick={addOption}><i class="bx bx-plus"></i> Add option</button>
 </div>

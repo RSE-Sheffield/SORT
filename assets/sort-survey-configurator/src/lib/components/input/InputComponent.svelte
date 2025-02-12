@@ -272,7 +272,6 @@
                 </div>
             {/if}
 
-
             <div class="form-check form-switch mb-3">
                 <label class="form-label">
                     Required
