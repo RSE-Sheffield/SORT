@@ -10,7 +10,7 @@ from django.contrib.auth.views import (
     PasswordResetCompleteView,
 )
 from django.views.generic import ListView, DetailView
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views import View
 from django.urls import reverse_lazy, reverse
@@ -58,7 +58,6 @@ class LoginInterfaceView(LoginView):
 
 class HomeView(LoginRequiredMixin, View):
     template_name = "home/welcome.html"
-    login_url = "login"
 
     def get(self, request):
         return render(request, self.template_name, {})
@@ -327,3 +326,20 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
         except PermissionDenied:
             messages.error(self.request, "Permission denied")
             return redirect("myorganisation")
+
+class ProjectDeleteView(LoginRequiredMixin, DeleteView):
+    model = Project
+    template_name = "projects/delete.html"
+    context_object_name = "project"
+
+    def form_valid(self, form):
+        if project_service.can_delete(self.request.user, self.object):
+            messages.info(self.request, f"Project {self.object.name} has been deleted.")
+            return super().form_valid(form)
+        else:
+            messages.error(self.request, "You don't have permission to delete this project.")
+            return redirect("project", project_id=self.object.id)
+
+    def get_success_url(self):
+        return reverse_lazy("myorganisation")
+

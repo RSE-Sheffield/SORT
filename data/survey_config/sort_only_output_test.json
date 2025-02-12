@@ -1,0 +1,116 @@
+[
+  {
+    "name": "A. Releasing Potential",
+    "fields": [
+      {
+        "name": "releasing_potential",
+        "value": [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      },
+      {
+        "name": "releasing_potential_comments",
+        "value": "Test A23"
+      }
+    ]
+  },
+  {
+    "name": "Embedding Research",
+    "fields": [
+      {
+        "name": "embedding_research",
+        "value": [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      },
+      {
+        "name": "embedding_research_comments",
+        "value": "Test B6"
+      }
+    ]
+  },
+  {
+    "name": "C. Linkages and Leadership",
+    "fields": [
+      {
+        "name": "linkages_and_leadership",
+        "value": [
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      },
+      {
+        "name": "linkages_and_leadership_comments",
+        "value": "Test C5"
+      }
+    ]
+  },
+  {
+    "name": "D. Inclusive research delivery",
+    "fields": [
+      {
+        "name": "inclusive_research_delivery",
+        "value": [
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      },
+      {
+        "name": "inclusive_research_delivery_comments",
+        "value": "Test D5"
+      }
+    ]
+  },
+  {
+    "name": "E. Digital enabled research",
+    "fields": [
+      {
+        "name": "digital_enabled_research",
+        "value": [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      },
+      {
+        "name": "digital_enabled_research_comments",
+        "value": "Test E10"
+      }
+    ]
+  }
+]

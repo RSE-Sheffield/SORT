@@ -1,0 +1,32 @@
+{% extends "base_manager.html" %}
+{% block content %}
+    <div class="container">
+        <div class="d-flex justify-content-center">
+            <div class="card  m-3">
+                <div class="card-header text-bg-danger">
+                    <h2>Deleting survey {{ survey.name }}</h2>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Are you sure you want to delete {{ survey.name }}? All of the
+                        survey's associated data will also be deleted.
+                    </p>
+                    <div class="d-flex">
+                        <div>
+                            <a href="{% url 'survey' survey.pk%}" class="btn btn-secondary me-4">Cancel</a>
+                        </div>
+                        <div>
+                            <form method="POST">
+                                {% csrf_token %}
+                                <input type="submit" class="btn btn-danger" value="Delete"/>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock %}
