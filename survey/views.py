@@ -7,9 +7,7 @@ from django.core.mail import send_mail
 from django.http import HttpRequest, Http404, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.utils.functional import unpickle_lazyobject
 from django.views import View
-from django.views.generic import FormView, TemplateView, DetailView
 from django.views.generic import FormView, TemplateView, DetailView, UpdateView, DeleteView
 from django.views.generic.edit import CreateView
 from django.contrib import messages
@@ -33,11 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 class SurveyView(LoginRequiredMixin, View):
-    """
-    Manager's view of a survey to be sent out. The manager is able to
-    configure what fields are included in the survey on this page.
-    """
-    login_url = '/login/'  # redirect to login if not authenticated
+    login_url = '/login/'
 
     def get(self, request, pk):
         print("GET method called")
@@ -53,35 +47,33 @@ class SurveyView(LoginRequiredMixin, View):
 
         for response in responses:
             answers = response.answers
-
             response_data = {
                 'model': 'survey.surveyresponse',
                 'pk': response.pk,
                 'fields': {
                     'survey': response.survey_id,
-                    'answers': response.answers
+                    'answers': answers
                 }
             }
             response_list.append(response_data)
 
-            response_section_averages = {}
-            for section_name, section_data in answers.items():
-                if section_name != 'consent' and isinstance(section_data, dict):
-                    values = [
-                        value for value in section_data.values()
-                        if isinstance(value, (int, float)) and not isinstance(value, bool)
-                    ]
-                    if values:
-                        response_section_averages[section_name] = round(sum(values) / len(values), 1)
+            for section_idx, section_values in enumerate(answers):
+                section_name = f'section_{section_idx + 1}'
+                numeric_values = [
+                    value for value in section_values
+                    if isinstance(value, (int, float)) and not isinstance(value, bool)
+                ]
 
-            for section_name, avg in response_section_averages.items():
-                if section_name not in section_averages:
-                    section_averages[section_name] = []
-                section_averages[section_name].append(avg)
+                if numeric_values:
+                    if section_name not in section_averages:
+                        section_averages[section_name] = []
+                    section_average = round(sum(numeric_values) / len(numeric_values), 1)
+                    section_averages[section_name].append(section_average)
 
         final_averages = {
             section: round(sum(values) / len(values), 1)
             for section, values in section_averages.items()
+            if values
         }
 
         return {
@@ -92,15 +84,15 @@ class SurveyView(LoginRequiredMixin, View):
     def render_survey_page(self, request, pk):
         context = {}
         survey = get_object_or_404(Survey, pk=pk)
-
         responses = survey.survey_response.all()
 
-        metrics = self.get_survey_metrics(responses)
+        context["has_responses"] = responses.exists()
 
-        dash_app.initial_arguments = metrics
+        if context["has_responses"]:
+            metrics = self.get_survey_metrics(responses)
+            dash_app.initial_arguments = metrics
 
         context["survey"] = survey
-
         return render(request, 'survey/survey.html', context)
 
 class SurveyCreateView(LoginRequiredMixin, CreateView):
@@ -134,7 +126,6 @@ class SurveyDeleteView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         project_pk = self.object.project.pk
         return reverse_lazy("project", kwargs={"project_id": project_pk})
-
 
 class SurveyConfigureView(LoginRequiredMixin, View):
     login_url = '/login/'
@@ -178,16 +169,6 @@ class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
 
         return redirect("survey", pk=pk)
 
-
-
-class SurveyConfigureView(LoginRequiredMixin, DetailView):
-    model = Survey
-    template_name = "survey/survey_configure.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["testdata"] = ["one", "two", "three"]
-        return context
 
 # TODO: Add TokenAuthenticationMixin after re-enabling the token
 class SurveyResponseView(View):
