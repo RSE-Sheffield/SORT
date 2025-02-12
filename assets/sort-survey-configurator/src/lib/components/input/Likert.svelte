@@ -37,8 +37,8 @@
 </script>
 
 <div class="form-label">
-    {config.label}
-    {#if config.required}<span style="color: red">*</span>{/if}
+    {config.label}{#if config.required}<span style="color: red">*</span>{/if}
+    {#if config.description || config.description.length > 0}<p class="form-text">{config.description}</p>{/if}
     <table class="table table-striped" style="width: 100%;">
         <thead>
         <tr>
