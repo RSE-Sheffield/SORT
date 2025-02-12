@@ -19,8 +19,8 @@
 
 </script>
 <div class="col-12">
-    <label class="form-label" for={componentId}>{config.label}</label>
-    {#if config.required}<span style="color: red">*</span>{/if}
+    <label class="form-label" for={componentId}>{config.label}{#if config.required}<span style="color: red">*</span>{/if}</label>
+    {#if config.description || config.description.length > 0}<p class="form-text">{config.description}</p>{/if}
     <select class={{"form-select": true,"is-valid": isValid, "is-invalid": isInvalid}}
             bind:value={value}
             required={config.required}

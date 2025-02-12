@@ -8,10 +8,14 @@
         {
           "type": "text",
           "label": "What is your age",
-          "description": "Question description",
           "required": true,
           "sublabels": [],
-          "options": []
+          "options": [],
+          "enforceValueConstraints": false,
+          "maxNumChar": 500,
+          "minNumValue": 0,
+          "maxNumValue": 100,
+          "textType": "INTEGER_TEXT"
         },
         {
           "type": "radio",
@@ -24,15 +28,18 @@
         {
           "type": "text",
           "label": "How long have you been working in your current organisation? (Number of years)",
-          "description": "Question description",
           "required": true,
           "sublabels": [],
-          "options": []
+          "options": [],
+          "enforceValueConstraints": false,
+          "maxNumChar": 500,
+          "minNumValue": 0,
+          "maxNumValue": 100,
+          "textType": "INTEGER_TEXT"
         },
         {
           "type": "radio",
           "label": "What is your current Band/Grade",
-          "description": "Question description",
           "required": true,
           "sublabels": [],
           "options": ["Band 5 ", "Band 6", "Band 7", "Band 8", "Band 9"]
@@ -40,7 +47,6 @@
         {
           "type": "radio",
           "label": "Please indicate your highest qualification",
-          "description": "Question description",
           "required": true,
           "sublabels": [],
           "options": ["Diploma", "Degree", "Masters", "PhD/Doctorate"]
@@ -48,7 +54,6 @@
         {
           "type": "radio",
           "label": "What is your ethnicity?",
-          "description": "Question description",
           "required": true,
           "sublabels": [],
           "options": [

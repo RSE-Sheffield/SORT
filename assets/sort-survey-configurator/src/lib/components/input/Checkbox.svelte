@@ -24,8 +24,8 @@
   }
 </script>
 <div class={{"form-label":true }}>
-    {config.label}
-    {#if config.required}<span style="color: red">*</span>{/if}
+    {config.label}{#if config.required}<span style="color: red">*</span>{/if}
+    {#if config.description || config.description.length > 0}<p class="form-text">{config.description}</p>{/if}
     {#each config.options as option, index}
         <div class="form-check">
             <input class={{"form-check-input": true, "is-valid": isValid, "is-invalid": isInvalid}}

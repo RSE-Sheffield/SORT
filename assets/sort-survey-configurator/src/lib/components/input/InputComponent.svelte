@@ -5,7 +5,7 @@
         return {
             type: "text",
             label: "New Question",
-            description: "Question description",
+            description: "",
             required: true,
             sublabels: [], // Subquestions for likert
             options: [], // Options for Checkbox, Radio, Select and Likert
