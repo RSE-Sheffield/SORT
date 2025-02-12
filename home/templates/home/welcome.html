@@ -21,6 +21,36 @@
                             {% endif %}
                             {% if user.organisation_set.first %}
                                 <p class="card-text">Your organisation is {{ user.organisation_set.first.name }}.</p>
+                                {% if projects.count > 0 %}
+                                    You currently have {{ projects.count }} project(s):
+                                    <ul>
+                                        {% for project in projects %}
+                                        <li>
+                                            <p>{{ project.name }}</p>
+                                            <ul>
+                                                {% for project in projects %}
+                                                    <li>
+                                                        Survey name: x responses
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    You currently have 0 projects. To get started, please follow these steps:
+                                    <ul>
+                                        <li>
+                                            Navigate to <a href="{% url 'organisation_create' %}">My Organisation</a>
+                                        </li>
+                                        <li>
+                                            Create a project
+                                        </li>
+                                        <li>
+                                            Edit the project to create a survey
+                                        </li>
+                                    </ul>
+                                {% endif %}
                                 <p class="card-text">
                                     View the <a href="{% url 'organisation_create' %}">My Organisation</a> page to create, view or delete your Projects. Use this page to also create, configure and delete your surveys and manage their invitations.
                                 </p>

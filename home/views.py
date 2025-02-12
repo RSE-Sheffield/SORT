@@ -60,7 +60,9 @@ class HomeView(LoginRequiredMixin, View):
     template_name = "home/welcome.html"
 
     def get(self, request):
-        return render(request, self.template_name, {})
+        projects = project_service.get_user_projects(request.user)
+        print(dict(projects=projects))
+        return render(request, self.template_name, dict(projects=projects))
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
