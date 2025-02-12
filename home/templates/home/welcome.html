@@ -22,7 +22,7 @@
                                <p class="card-text">Your organisation is {{ user.organisation_set.first.name }}.</p>
                            {% else %}
                                <p class="card-text">You are currently not part of an organisation. Click
-                                   <a href="{% url 'organisation_create' %}">here</a> to create your first organisation.
+                                   Click to <a href="{% url 'organisation_create' %}">create your first organisation.</a>
                                </p>
                            {% endif %}
                        </div>
