@@ -28,9 +28,11 @@
                             {% url 'organisation_create' as organisation_create_url %}
                             <a class="nav-link 
                                 {% if '/myorganisation' in request.path %}active{% endif %} 
+                                {% if '/organisation' in request.path %}active{% endif %}
                                 {% if '/projects' in request.path %}active{% endif %} 
                                 {% if '/survey' in request.path %}active{% endif %} 
-                                {% if '/completion' in request.path %}active{% endif %}"
+                                {% if '/completion' in request.path %}active{% endif %}
+                                {% if '/invite' in request.path %}active{% endif %}"
                                 href="{% url 'myorganisation' %}">My Organisation</a>
                         </li>
                     </ul>
