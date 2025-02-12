@@ -76,13 +76,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-    background-color: #6933AD !important;
-    border-color: #6933AD !important;
+    background-color: #440099 !important;
+    border-color: #440099 !important;
 }
 
 .btn-primary:hover {
-    background-color: #440099 !important;
-    border-color: #440099 !important;
+    background-color: #6933AD !important;
+    border-color: #6933AD !important;
 }
 
 .btn-primary, .btn-primary:hover {
