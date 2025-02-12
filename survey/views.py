@@ -1,10 +1,11 @@
 import json
+
 from audioop import reverse
 from multiprocessing.managers import Token
 
 from IPython.utils.coloransi import value
 from django.core.mail import send_mail
-from django.http import HttpRequest, Http404, HttpResponseRedirect
+from django.http import HttpRequest, Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.functional import unpickle_lazyobject
@@ -124,6 +125,14 @@ class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
 
         return redirect("survey", pk=pk)
 
+class SurveyExportView(LoginRequiredMixin, View):
+    def get(self, request: HttpRequest, pk: int):
+        survey = Survey.objects.get(pk=pk)
+        output_csv = survey_service.export_csv(survey)
+        response =  HttpResponse(output_csv, content_type="text/csv")
+        file_name = f"survey_{survey.id}.csv"
+        response["Content-Disposition"] = f"inline; filename={file_name}"
+        return response
 
 
 

@@ -8,6 +8,7 @@ urlpatterns = [
 
     path('survey/<int:pk>/mock_responses', views.SurveyGenerateMockResponsesView.as_view(), name='survey_mock_responses'),
 
+    path('survey/<int:pk>/export', views.SurveyExportView.as_view(), name='survey_export'),
 
     path('survey/create/<int:project_id>', views.SurveyCreateView.as_view(), name='survey_create'),
 
