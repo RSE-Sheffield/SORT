@@ -1,7 +1,5 @@
-{% extends 'base.html' %}
-{% load plotly_dash %}
-
 {% extends 'base_manager.html' %}
+{% load plotly_dash %}
 {% load qr_code %}
 {% block content %}
     <div class="container mx-auto px-4 py-8 mt-4">
@@ -20,12 +18,7 @@
             </ol>
         </nav>
     </div>
-    <div class="card custom-card shadow-sm my-4" style="width: 90%; padding: 20px;">
-        <h4 style="font-weight: normal;">{{ survey.name }} Dashboard</h4>
 
-
-        <div style="; width: 100%; padding: 20px;">
-            {% plotly_direct name="SurveyDashboard"  %}
     <div class="container mx-auto px-4 py-8">
         <div class="card mb-3">
             <div class="card-header">
@@ -48,7 +41,6 @@
             You can follow the five steps below to carry out the survey:
         </div>
 
-
         <div class="card mb-3">
             <div class="card-header">
                 <h2>1. Configure Your Survey</h2>
@@ -61,6 +53,7 @@
                 </div>
             </div>
         </div>
+
         <div class="card mb-3">
             <div class="card-header">
                 <h2>2. Invite Your Participants</h2>
@@ -93,34 +86,32 @@
                                                 Download invitation QR code
                                             </button>
                                         </div>
-
                                     </div>
                                 </div>
                             </div>
 
-
                             <script>
-                              function copyInviteLink() {
-                                let copyBtnTextElem = document.getElementById("copyBtnText");
-                                let link = document.getElementById("invitation_link").value;
-                                navigator.clipboard.writeText(link);
-                                copyBtnTextElem.innerHTML = "Copied";
-                                setTimeout(() => {
-                                  copyBtnTextElem.innerHTML = "Copy";
-                                }, 2000);
-                              }
+                                function copyInviteLink() {
+                                    let copyBtnTextElem = document.getElementById("copyBtnText");
+                                    let link = document.getElementById("invitation_link").value;
+                                    navigator.clipboard.writeText(link);
+                                    copyBtnTextElem.innerHTML = "Copied";
+                                    setTimeout(() => {
+                                        copyBtnTextElem.innerHTML = "Copy";
+                                    }, 2000);
+                                }
 
-                              function downloadQRCode() {
-                                let qrCodeCard = document.getElementById("survey_invite_qr_code_card");
-                                console.log(qrCodeCard.firstElementChild);
-                                let element = document.createElement('a');
-                                element.setAttribute('href', qrCodeCard.firstElementChild.src);
-                                element.setAttribute('download', "survey_invite.png");
-                                element.style.display = 'none';
-                                document.body.appendChild(element);
-                                element.click();
-                                document.body.removeChild(element);
-                              }
+                                function downloadQRCode() {
+                                    let qrCodeCard = document.getElementById("survey_invite_qr_code_card");
+                                    console.log(qrCodeCard.firstElementChild);
+                                    let element = document.createElement('a');
+                                    element.setAttribute('href', qrCodeCard.firstElementChild.src);
+                                    element.setAttribute('download', "survey_invite.png");
+                                    element.style.display = 'none';
+                                    document.body.appendChild(element);
+                                    element.click();
+                                    document.body.removeChild(element);
+                                }
                             </script>
                         </div>
                         <div class="col-lg-2 text-end">
@@ -132,9 +123,7 @@
                         </div>
                     </div>
 
-
                     <p>Or send an invitation by email:</p>
-
                     <a href="{% url 'invite' survey.id %}" class="btn btn-primary">Send an invitation</a>
 
                 {% else %}
@@ -149,6 +138,7 @@
                 {% endif %}
             </div>
         </div>
+
         <div class="card mb-3">
             <div class="card-header">
                 <h2>Generate mock responses</h2>
@@ -156,7 +146,7 @@
             <div class="card-body">
                 <p>Note: Dont' forget to configure the form first, go to survey configuration page and press
                     Submit at the bottom. This is because the survey_config field is blank by default.</p>
-                <form method="POST" action="{% url 'survey_mock_responses' survey.pk  %}">
+                <form method="POST" action="{% url 'survey_mock_responses' survey.pk %}">
                     {% csrf_token %}
                     <label>
                         Number for mock responses to generate
@@ -165,35 +155,35 @@
 
                     <input type="submit" name="submit" value="Submit" class="btn btn-primary">
                 </form>
-
             </div>
         </div>
+
         <div class="card mb-3">
             <div class="card-header">
                 <h2>3. Survey responses</h2>
             </div>
-            <div class="card-body">
-
-            </div>
-        </div>
-        <div class="card mb-3">
-            <div class="card-header">
-                <h2>4. Gather Evidence</h2>
-            </div>
-            <div class="card-body">
-            </div>
-        </div>
-        <div class="card mb-3">
-            <div class="card-header">
-                <h2>5. Make an Improvement Plan</h2>
-            </div>
-            <div class="card-body">
+            <div class="card-body"
+                 style="display: flex; justify-content: center; align-items: center; flex-direction: column; ">
+                {% if has_responses %}
+                    <div style="width: 100%; padding: 20px; text-align: center;>
+                        {% plotly_direct name="SurveyDashboard" %}
+                    </div>
+                {% else %}
+                    <p class="alert alert-info" style="text-align: center;">No responses have been collected yet.</p>
+                {% endif %}
             </div>
         </div>
 
+             <div class="card mb-2">
+                <div class="card-header">
+                    <h2>4. Gather Evidence</h2>
+                </div>
 
-    </div>
+            </div>
 
-
-
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h2>5. Make an Improvement Plan</h2>
+                </div>
+            </div>
 {% endblock %}
