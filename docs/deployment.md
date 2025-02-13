@@ -328,6 +328,12 @@ View [Gunicorn logs](https://docs.gunicorn.org/en/stable/settings.html#logging)
  sudo journalctl -u gunicorn.service --follow
 ```
 
+nginx service logs
+
+```bash
+sudo journalctl -u nginx.service
+```
+
 # Control
 
 The services are controlled using [`systemd`](https://systemd.io/), which is the service management system on Ubuntu 24. To launch services:
