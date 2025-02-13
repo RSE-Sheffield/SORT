@@ -31,7 +31,7 @@
                     <div></div>
                     <div></div>
                     <div>
-                        <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger">Delete survey</a>
+                        <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger"><i class="bx bxs-trash"></i>Delete survey</a>
                     </div>
                 </div>
             </div>
@@ -49,7 +49,7 @@
                 <div class="mb-3 mt-3">
                     <p>First, configure you survey here. You are able to add and customise demographic questions asked
                         in the survey.</p>
-                    <a href="{% url "survey_configure" survey.id %}" class="btn btn-primary">Configure the survey</a>
+                    <a href="{% url 'survey_configure' survey.id %}" class="btn btn-primary"><i class="bx bxs-cog"></i> Configure the survey</a>
                 </div>
             </div>
         </div>
@@ -133,7 +133,7 @@
                     <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
                         {% csrf_token %}
                         <input type="submit" name="generate_token" value="Generate invitation"
-                               class="btn btn-primary"/>
+                               class="btn btn-primary"></input>
                     </form>
                 {% endif %}
             </div>

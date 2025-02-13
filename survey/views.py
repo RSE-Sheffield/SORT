@@ -150,7 +150,8 @@ class SurveyConfigureView(LoginRequiredMixin, View):
                 consent_config = json.loads(request.POST.get("consent_config", None))
                 demography_config = json.loads(request.POST.get("demography_config", None))
                 survey_service.update_consent_demography_config(survey, consent_config, demography_config)
-                # TODO: Return success message
+                messages.info(request, "Survey configuration saved")
+                return redirect("survey", pk=survey.pk)
 
         return render(request=request,
                       template_name="survey/survey_configure.html",
@@ -232,7 +233,6 @@ class CompletionView(View):
     """
 
     def get(self, request):
-        messages.info(request, "You have completed the survey.")
         return render(request, "survey/completion.html")
 
 
