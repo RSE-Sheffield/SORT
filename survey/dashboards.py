@@ -9,7 +9,7 @@ import os
 from django.conf import settings
 from scipy import stats
 
-colour_palette = ["#d7191c", "#fdae61", "#ffffbf", "#91bfdb", "#2c7bb6"]
+colour_palette = ["#d7191c", "#fdae61", "#abd9e9", "#74add1", "#2c7bb6"]
 
 sort_config_path = os.path.join(settings.BASE_DIR, 'data', 'survey_config', 'sort_only_config.json')
 demographic_config_path = os.path.join(settings.BASE_DIR, 'data', 'survey_config', 'demography_only_config.json')
@@ -72,31 +72,28 @@ dash_app = DjangoDash('SurveyDashboard',
                       external_stylesheets=[dbc.themes.BOOTSTRAP],
                       external_scripts=['https://cdn.plot.ly/plotly-2.20.0.min.js']  # This line is needed for graphs
                       )
-
-
 def get_category_and_colour(score):
     # Round down to nearest integer
     score_int = int(np.floor(score))
 
     # Category mappings
     categories = {
-        0: "Not yet planned",
+        0: "Not Yet Planned",
         1: "Planned",
-        2: "Early progress",
+        2: "Early Progress",
         3: "Substantial Progress",
         4: "Established"
     }
 
     colours = {
-        0: "#d7191c",  # colour-blind safe red
-        1: "#fdae61",  # colour-blind safe orange
-        2: "#ffffbf",  # colour-blind safe yellow
-        3: "#91bfdb",  # colour-blind safe light blue
-        4: "#2c7bb6"  # colour-blind safe dark blue
+        0: "#d7191c",  # color-blind safe red
+        1: "#fdae61",  # color-blind safe orange
+        2: "#abd9e9",  # changed to a more visible light blue
+        3: "#74add1",  # adjusted medium blue
+        4: "#2c7bb6"   # color-blind safe dark blue
     }
 
     return categories[score_int], colours[score_int]
-
 
 # Define the dashboard layout
 dash_app.layout = html.Div([
@@ -249,7 +246,7 @@ dash_app.layout = html.Div([
             dbc.Col([
                 dbc.Card([
                     dbc.CardBody([
-                        html.H6("Average Score",
+                        html.H6("Average Survey Score",
                                 style={
                                     'fontFamily': THEME['font_family'],
                                     'color': THEME['text_color'],
@@ -275,7 +272,6 @@ dash_app.layout = html.Div([
         # Section A
         dbc.Row([
             dbc.Col([
-
                 dbc.Card([
                     dbc.CardHeader([
                         html.H5("Section A: Releasing Potential",
@@ -294,7 +290,6 @@ dash_app.layout = html.Div([
                                      'fontFamily': THEME['font_family'],
                                      'fontSize': '15px',
                                      'lineHeight': '1.6',
-
                                  })
                     ])
                 ], style={
@@ -313,46 +308,49 @@ dash_app.layout = html.Div([
                     ])
                 ], style={
                     'borderRadius': '10px',
-                    'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)',
+                    'marginBottom': '20px'
                 })
             ], width=12)
         ], style={'marginTop': '20px', 'marginBottom': '20px'}),
 
-        dbc.CardBody([
-            dash_table.DataTable(
-                id='section-a-stats',
-                columns=[
-                    {'name': 'Statistic', 'id': 'statistic'},
-                    {'name': 'Value', 'id': 'value'}
-                ],
-                style_table={
-                    'width': '100%',
-                    'borderRadius': '1rem',
-                    'overflow': 'hidden',
-                    'border': '1px solid #ddd',
-                    'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)',
-                },
-                style_cell={
-                    'textAlign': 'center',
-                    'padding': '10px',
-                    'fontFamily': THEME['font_family'],
-                    'fontSize': '15px',
-                    'border': '1px solid #ddd',
-                    'minWidth': '0px',
-                    'maxWidth': 'none',
-                    'whiteSpace': 'normal',
-                    'height': 'auto'
-                },
-                style_header={
-                    'backgroundColor': 'white',
-                    'fontWeight': 'bold',
-                    'border': '1px solid #ddd',
-                    'whiteSpace': 'normal',
-                    'height': 'auto',
-                    'fontSize': '16px'
-                }
-            )
-        ]),
+        dbc.Row([
+            dbc.Col([
+                dash_table.DataTable(
+                    id='section-a-stats',
+                    columns=[
+                        {'name': 'Statistic', 'id': 'statistic'},
+                        {'name': 'Value', 'id': 'value'}
+                    ],
+                    style_table={
+                        'width': '100%',
+                        'borderRadius': '1rem',
+                        'overflow': 'hidden',
+                        'border': '1px solid #ddd',
+                        'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)',
+                    },
+                    style_cell={
+                        'textAlign': 'center',
+                        'padding': '10px',
+                        'fontFamily': THEME['font_family'],
+                        'fontSize': '15px',
+                        'border': '1px solid #ddd',
+                        'minWidth': '0px',
+                        'maxWidth': 'none',
+                        'whiteSpace': 'normal',
+                        'height': 'auto'
+                    },
+                    style_header={
+                        'backgroundColor': 'white',
+                        'fontWeight': 'bold',
+                        'border': '1px solid #ddd',
+                        'whiteSpace': 'normal',
+                        'height': 'auto',
+                        'fontSize': '16px'
+                    }
+                )
+            ], width=12)
+        ], style={'marginBottom': '20px'}),
 
         # Section B
         dbc.Row([
@@ -399,41 +397,43 @@ dash_app.layout = html.Div([
             ], width=12)
         ], style={'marginTop': '20px', 'marginBottom': '20px'}),
 
-dbc.CardBody([
-            dash_table.DataTable(
-                id='section-b-stats',
-                columns=[
-                    {'name': 'Statistic', 'id': 'statistic'},
-                    {'name': 'Value', 'id': 'value'}
-                ],
-                style_table={
-                    'width': '100%',
-                    'borderRadius': '1rem',
-                    'overflow': 'hidden',
-                    'border': '1px solid #ddd',
-                    'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)',
-                },
-                style_cell={
-                    'textAlign': 'center',
-                    'padding': '10px',
-                    'fontFamily': THEME['font_family'],
-                    'fontSize': '15px',
-                    'border': '1px solid #ddd',
-                    'minWidth': '0px',
-                    'maxWidth': 'none',
-                    'whiteSpace': 'normal',
-                    'height': 'auto'
-                },
-                style_header={
-                    'backgroundColor': 'white',
-                    'fontWeight': 'bold',
-                    'border': '1px solid #ddd',
-                    'whiteSpace': 'normal',
-                    'height': 'auto',
-                    'fontSize': '16px'
-                }
-            )
-        ]),
+        dbc.Row([
+            dbc.Col([
+                dash_table.DataTable(
+                    id='section-b-stats',
+                    columns=[
+                        {'name': 'Statistic', 'id': 'statistic'},
+                        {'name': 'Value', 'id': 'value'}
+                    ],
+                    style_table={
+                        'width': '100%',
+                        'borderRadius': '1rem',
+                        'overflow': 'hidden',
+                        'border': '1px solid #ddd',
+                        'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)',
+                    },
+                    style_cell={
+                        'textAlign': 'center',
+                        'padding': '10px',
+                        'fontFamily': THEME['font_family'],
+                        'fontSize': '15px',
+                        'border': '1px solid #ddd',
+                        'minWidth': '0px',
+                        'maxWidth': 'none',
+                        'whiteSpace': 'normal',
+                        'height': 'auto'
+                    },
+                    style_header={
+                        'backgroundColor': 'white',
+                        'fontWeight': 'bold',
+                        'border': '1px solid #ddd',
+                        'whiteSpace': 'normal',
+                        'height': 'auto',
+                        'fontSize': '16px'
+                    }
+                )
+            ], width=12)
+        ], style={'marginBottom': '20px'}),
 
         # Section C
         dbc.Row([
@@ -480,42 +480,43 @@ dbc.CardBody([
             ], width=12)
         ], style={'marginTop': '20px', 'marginBottom': '20px'}),
 
-
-dbc.CardBody([
-            dash_table.DataTable(
-                id='section-c-stats',
-                columns=[
-                    {'name': 'Statistic', 'id': 'statistic'},
-                    {'name': 'Value', 'id': 'value'}
-                ],
-                style_table={
-                    'width': '100%',
-                    'borderRadius': '1rem',
-                    'overflow': 'hidden',
-                    'border': '1px solid #ddd',
-                    'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)',
-                },
-                style_cell={
-                    'textAlign': 'center',
-                    'padding': '10px',
-                    'fontFamily': THEME['font_family'],
-                    'fontSize': '15px',
-                    'border': '1px solid #ddd',
-                    'minWidth': '0px',
-                    'maxWidth': 'none',
-                    'whiteSpace': 'normal',
-                    'height': 'auto'
-                },
-                style_header={
-                    'backgroundColor': 'white',
-                    'fontWeight': 'bold',
-                    'border': '1px solid #ddd',
-                    'whiteSpace': 'normal',
-                    'height': 'auto',
-                    'fontSize': '16px'
-                }
-            )
-        ]),
+        dbc.Row([
+            dbc.Col([
+                dash_table.DataTable(
+                    id='section-c-stats',
+                    columns=[
+                        {'name': 'Statistic', 'id': 'statistic'},
+                        {'name': 'Value', 'id': 'value'}
+                    ],
+                    style_table={
+                        'width': '100%',
+                        'borderRadius': '1rem',
+                        'overflow': 'hidden',
+                        'border': '1px solid #ddd',
+                        'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)',
+                    },
+                    style_cell={
+                        'textAlign': 'center',
+                        'padding': '10px',
+                        'fontFamily': THEME['font_family'],
+                        'fontSize': '15px',
+                        'border': '1px solid #ddd',
+                        'minWidth': '0px',
+                        'maxWidth': 'none',
+                        'whiteSpace': 'normal',
+                        'height': 'auto'
+                    },
+                    style_header={
+                        'backgroundColor': 'white',
+                        'fontWeight': 'bold',
+                        'border': '1px solid #ddd',
+                        'whiteSpace': 'normal',
+                        'height': 'auto',
+                        'fontSize': '16px'
+                    }
+                )
+            ], width=12)
+        ], style={'marginBottom': '20px'}),
 
         # Section D
         dbc.Row([
@@ -562,41 +563,43 @@ dbc.CardBody([
             ], width=12)
         ], style={'marginTop': '20px', 'marginBottom': '20px'}),
 
-dbc.CardBody([
-            dash_table.DataTable(
-                id='section-d-stats',
-                columns=[
-                    {'name': 'Statistic', 'id': 'statistic'},
-                    {'name': 'Value', 'id': 'value'}
-                ],
-                style_table={
-                    'width': '100%',
-                    'borderRadius': '1rem',
-                    'overflow': 'hidden',
-                    'border': '1px solid #ddd',
-                    'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)',
-                },
-                style_cell={
-                    'textAlign': 'center',
-                    'padding': '10px',
-                    'fontFamily': THEME['font_family'],
-                    'fontSize': '15px',
-                    'border': '1px solid #ddd',
-                    'minWidth': '0px',
-                    'maxWidth': 'none',
-                    'whiteSpace': 'normal',
-                    'height': 'auto'
-                },
-                style_header={
-                    'backgroundColor': 'white',
-                    'fontWeight': 'bold',
-                    'border': '1px solid #ddd',
-                    'whiteSpace': 'normal',
-                    'height': 'auto',
-                    'fontSize': '16px'
-                }
-            )
-        ]),
+        dbc.Row([
+            dbc.Col([
+                dash_table.DataTable(
+                    id='section-d-stats',
+                    columns=[
+                        {'name': 'Statistic', 'id': 'statistic'},
+                        {'name': 'Value', 'id': 'value'}
+                    ],
+                    style_table={
+                        'width': '100%',
+                        'borderRadius': '1rem',
+                        'overflow': 'hidden',
+                        'border': '1px solid #ddd',
+                        'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)',
+                    },
+                    style_cell={
+                        'textAlign': 'center',
+                        'padding': '10px',
+                        'fontFamily': THEME['font_family'],
+                        'fontSize': '15px',
+                        'border': '1px solid #ddd',
+                        'minWidth': '0px',
+                        'maxWidth': 'none',
+                        'whiteSpace': 'normal',
+                        'height': 'auto'
+                    },
+                    style_header={
+                        'backgroundColor': 'white',
+                        'fontWeight': 'bold',
+                        'border': '1px solid #ddd',
+                        'whiteSpace': 'normal',
+                        'height': 'auto',
+                        'fontSize': '16px'
+                    }
+                )
+            ], width=12)
+        ], style={'marginBottom': '20px'}),
 
         # Section E
         dbc.Row([
@@ -644,41 +647,43 @@ dbc.CardBody([
         ], style={'marginTop': '20px', 'marginBottom': '20px'}
         ),
 
-    dbc.CardBody([
-            dash_table.DataTable(
-                id='section-e-stats',
-                columns=[
-                    {'name': 'Statistic', 'id': 'statistic'},
-                    {'name': 'Value', 'id': 'value'}
-                ],
-                style_table={
-                    'width': '100%',
-                    'borderRadius': '1rem',
-                    'overflow': 'hidden',
-                    'border': '1px solid #ddd',
-                    'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)',
-                },
-                style_cell={
-                    'textAlign': 'center',
-                    'padding': '10px',
-                    'fontFamily': THEME['font_family'],
-                    'fontSize': '15px',
-                    'border': '1px solid #ddd',
-                    'minWidth': '0px',
-                    'maxWidth': 'none',
-                    'whiteSpace': 'normal',
-                    'height': 'auto'
-                },
-                style_header={
-                    'backgroundColor': 'white',
-                    'fontWeight': 'bold',
-                    'border': '1px solid #ddd',
-                    'whiteSpace': 'normal',
-                    'height': 'auto',
-                    'fontSize': '16px'
-                }
-            )
-        ]),
+        dbc.Row([
+            dbc.Col([
+                dash_table.DataTable(
+                    id='section-e-stats',
+                    columns=[
+                        {'name': 'Statistic', 'id': 'statistic'},
+                        {'name': 'Value', 'id': 'value'}
+                    ],
+                    style_table={
+                        'width': '100%',
+                        'borderRadius': '1rem',
+                        'overflow': 'hidden',
+                        'border': '1px solid #ddd',
+                        'boxShadow': '0 2px 4px rgba(0, 0, 0, 0.1)',
+                    },
+                    style_cell={
+                        'textAlign': 'center',
+                        'padding': '10px',
+                        'fontFamily': THEME['font_family'],
+                        'fontSize': '15px',
+                        'border': '1px solid #ddd',
+                        'minWidth': '0px',
+                        'maxWidth': 'none',
+                        'whiteSpace': 'normal',
+                        'height': 'auto'
+                    },
+                    style_header={
+                        'backgroundColor': 'white',
+                        'fontWeight': 'bold',
+                        'border': '1px solid #ddd',
+                        'whiteSpace': 'normal',
+                        'height': 'auto',
+                        'fontSize': '16px'
+                    }
+                )
+            ], width=12)
+        ], style={'marginBottom': '20px'}),
 
         dbc.Row([
             dbc.Col([
@@ -792,12 +797,12 @@ dbc.CardBody([
                         dash_table.DataTable(
                             id='ranking-matrix',
                             columns=[
-                                {'name': '', 'id': 'survey', 'width': '15%'},
-                                {'name': 'Releasing Potential', 'id': 'releasing_potential', 'width': '17%'},
-                                {'name': 'Embedding Research', 'id': 'embedding_research', 'width': '17%'},
-                                {'name': 'Linkages and Leadership', 'id': 'linkages_leadership', 'width': '17%'},
-                                {'name': 'Inclusive Research', 'id': 'inclusive_research', 'width': '17%'},
-                                {'name': 'Digital Capability', 'id': 'digital_capability', 'width': '17%'}
+                                {'name': '', 'id': 'survey'},
+                                {'name': 'Releasing Potential', 'id': 'releasing_potential'},
+                                {'name': 'Embedding Research', 'id': 'embedding_research'},
+                                {'name': 'Linkages and Leadership', 'id': 'linkages_leadership'},
+                                {'name': 'Inclusive Research', 'id': 'inclusive_research'},
+                                {'name': 'Digital Capability', 'id': 'digital_capability'}
                             ],
                             style_table={
                                 'width': '100%',
@@ -805,14 +810,15 @@ dbc.CardBody([
                             },
                             style_cell={
                                 'textAlign': 'center',
-                                'padding': '10px',
+                                'padding': '8px',
                                 'fontFamily': THEME['font_family'],
-                                'fontSize': '15px',
+                                'fontSize': '14px',
                                 'border': '1px solid #ddd',
-                                'minWidth': '0px',
-                                'maxWidth': 'none',
                                 'whiteSpace': 'normal',
-                                'height': 'auto'
+                                'height': 'auto',
+                                'maxWidth': '0',
+                                'overflow': 'hidden',
+                                'textOverflow': 'ellipsis'
                             },
                             style_header={
                                 'backgroundColor': 'white',
@@ -823,89 +829,46 @@ dbc.CardBody([
                             }
                         ),
 
+
                         html.Div([
                             html.Div([
-                                html.Span(style={
-                                    'display': 'inline-block',
-                                    'width': '15px',
-                                    'height': '15px',
-                                    'backgroundColor': '#d7191c',
-                                    'marginRight': '5px',
-                                    'verticalAlign': 'middle'
-                                }),
-                                html.Span('Not Yet Planned', style={
-                                    'fontFamily': THEME['font_family'],
-                                    'fontSize': '12px',
-                                    'marginRight': '10px',
-                                    'verticalAlign': 'middle'
-                                })
-                            ], style={'display': 'inline-block', 'marginRight': '10px'}),
-                            html.Div([
-                                html.Span(style={
-                                    'display': 'inline-block',
-                                    'width': '15px',
-                                    'height': '15px',
-                                    'backgroundColor': '#fdae61',
-                                    'marginRight': '5px',
-                                    'verticalAlign': 'middle'
-                                }),
-                                html.Span('Planned', style={
-                                    'fontFamily': THEME['font_family'],
-                                    'fontSize': '12px',
-                                    'marginRight': '10px',
-                                    'verticalAlign': 'middle'
-                                })
-                            ], style={'display': 'inline-block', 'marginRight': '10px'}),
-                            html.Div([
-                                html.Span(style={
-                                    'display': 'inline-block',
-                                    'width': '15px',
-                                    'height': '15px',
-                                    'backgroundColor': '#ffffbf',
-                                    'marginRight': '5px',
-                                    'verticalAlign': 'middle'
-                                }),
-                                html.Span('Early Progress', style={
-                                    'fontFamily': THEME['font_family'],
-                                    'fontSize': '12px',
-                                    'marginRight': '10px',
-                                    'verticalAlign': 'middle'
-                                })
-                            ], style={'display': 'inline-block', 'marginRight': '10px'}),
-                            html.Div([
-                                html.Span(style={
-                                    'display': 'inline-block',
-                                    'width': '15px',
-                                    'height': '15px',
-                                    'backgroundColor': '#91bfdb',
-                                    'marginRight': '5px',
-                                    'verticalAlign': 'middle'
-                                }),
-                                html.Span('Substantial Progress', style={
-                                    'fontFamily': THEME['font_family'],
-                                    'fontSize': '12px',
-                                    'marginRight': '10px',
-                                    'verticalAlign': 'middle'
-                                })
-                            ], style={'display': 'inline-block', 'marginRight': '10px'}),
-                            html.Div([
-                                html.Span(style={
-                                    'display': 'inline-block',
-                                    'width': '15px',
-                                    'height': '15px',
-                                    'backgroundColor': '#2c7bb6',
-                                    'marginRight': '5px',
-                                    'verticalAlign': 'middle'
-                                }),
-                                html.Span('Established', style={
-                                    'fontFamily': THEME['font_family'],
-                                    'fontSize': '12px',
-                                    'verticalAlign': 'middle'
-                                })
-                            ], style={'display': 'inline-block'})
+                                *[html.Div([
+                                    html.Span(style={
+                                        'display': 'inline-block',
+                                        'width': '12px',
+                                        'height': '12px',
+                                        'backgroundColor': color,
+                                        'marginRight': '4px',
+                                        'verticalAlign': 'middle'
+                                    }),
+                                    html.Span(label, style={
+                                        'fontFamily': THEME['font_family'],
+                                        'fontSize': '12px',
+                                        'verticalAlign': 'middle'
+                                    })
+                                ], style={
+                                    'display': 'inline-flex',
+                                    'alignItems': 'center',
+                                    'marginRight': '8px',
+                                    'marginBottom': '8px',
+                                    'flexShrink': 0
+                                }) for label, color in [
+                                    ('Not Yet Planned', '#d7191c'),
+                                    ('Planned', '#fdae61'),
+                                    ('Early Progress', '#abd9e9'),
+                                    ('Substantial Progress', '#74add1'),
+                                    ('Established', '#2c7bb6')
+                                ]]
+                            ], style={
+                                'display': 'flex',
+                                'flexWrap': 'wrap',
+                                'justifyContent': 'center',
+                                'alignItems': 'center',
+                                'gap': '8px'
+                            })
                         ], style={
-                            'textAlign': 'center',
-                            'marginTop': '20px'
+                            'marginTop': '16px',
+                            'width': '100%'
                         })
                     ])
                 ], style={
@@ -914,8 +877,7 @@ dbc.CardBody([
                     'marginBottom': '20px'
                 })
             ], width=12)
-        ],
-            style={'marginTop': '20px', 'marginBottom': '20px'}),
+        ], style={'marginTop': '20px', 'marginBottom': '20px'})
 
     ], fluid=True)
 ])
@@ -996,7 +958,6 @@ def get_section_data(response, section_idx):
 
 
 def create_section_summary(data, section_idx):
-
     if not data or 'survey_responses' not in data:
         return []
     scores = []
@@ -1076,8 +1037,8 @@ def update_matrix_styles(data):
     categories = {
         'Not Yet Planned': '#d7191c',
         'Planned': '#fdae61',
-        'Early Progress': '#ffffbf',
-        'Substantial Progress': '#91bfdb',
+        'Early Progress': '#abd9e9',
+        'Substantial Progress': '#74add1',
         'Established': '#2c7bb6'
     }
 
@@ -1271,10 +1232,10 @@ def create_section_figure(data, section_idx):
         ),
         xaxis=dict(
             title="Questions",
-            showgrid=True,
+            showgrid=False,
             gridcolor='rgba(0,0,0,0.1)',
             tickangle=45,
-            rangeslider=dict(visible=False) # TODO: fix scroll bar for section A charts
+            rangeslider=dict(visible=False)  # TODO: fix scroll bar for section A charts
         ),
         yaxis=dict(
             title="Number of Responses",
@@ -1375,12 +1336,18 @@ def create_demographic_chart(data, question_label, sort_by_value=False):
             family=THEME['font_family'],
             size=13
         ),
-        textposition='auto',
+        textposition='inside',
     )])
 
     fig.update_layout(
-        height=400,
-        margin=dict(l=20, r=20, t=40, b=20),
+        autosize=True,
+        margin=dict(
+            l=50,
+            r=50,
+            t=30,
+            b=30,
+            pad=0
+        ),
         paper_bgcolor='white',
         plot_bgcolor='white',
         font=dict(
@@ -1390,10 +1357,15 @@ def create_demographic_chart(data, question_label, sort_by_value=False):
         showlegend=True,
         legend=dict(
             orientation="h",
-            yanchor="bottom",
-            y=-0.6,
+            yanchor="top",
+            y=-0.1,
             xanchor="center",
-            x=0.5,
+            x=0.5
+        ),
+
+        uniformtext=dict(
+            mode='hide',
+            minsize=12
         )
     )
 
@@ -1433,17 +1405,19 @@ def update_ethnicity_chart(data):
 
 
 def get_maturity_level(score):
-    rounded_score = round(score)
-    if rounded_score == 5:
-        return "Established"
-    elif rounded_score == 4:
-        return "Substantial Progress"
-    elif rounded_score == 3:
-        return "Early Progress"
-    elif rounded_score == 2:
-        return "Planned"
-    else:
-        return "Not Yet Planned"
+    score_int = int(np.floor(score))
+
+    score_int = max(0, min(4, score_int))
+
+    categories = {
+        0: "Not yet Planned",
+        1: "Planned",
+        2: "Early Progress",
+        3: "Substantial Progress",
+        4: "Established"
+    }
+
+    return categories[score_int]
 
 
 def create_section_summary(data, section_idx):
@@ -1476,8 +1450,8 @@ def create_section_summary(data, section_idx):
 
     question_analysis = {}
     for q_id, scores in question_scores.items():
-        high_scores = sum(1 for s in scores if s >= 4)
-        low_scores = sum(1 for s in scores if s <= 3)
+        high_scores = sum(1 for s in scores if s >= 3)
+        low_scores = sum(1 for s in scores if s <= 2)
         total_scores = len(scores)
 
         question_analysis[q_id] = {
@@ -1502,7 +1476,7 @@ def create_section_summary(data, section_idx):
 
     overview = (
         f"Section {section_letter} demonstrates an overall maturity score of "
-        f"{round(section_avg)} out of 5, placing it at the <b>'{maturity_level}'</b> level. "
+        f"{round(section_avg)} out of 4, placing it at the <b>'{maturity_level}'</b> level. "
     )
     summary_parts.append(overview)
 
@@ -1516,7 +1490,6 @@ def create_section_summary(data, section_idx):
         development = f"Opportunities for improvement are identified in {questions_text}. "
         summary_parts.append(development)
 
-
     if maturity_level in ["Established", "Substantial Progress"]:
         recommendation = (
             "To maintain and build upon this strong performance, focus on sustaining "
@@ -1528,7 +1501,6 @@ def create_section_summary(data, section_idx):
             "approaches and implementing systematic improvements across identified areas. "
         )
     summary_parts.append(recommendation)
-
 
     full_summary = f"<p>{''.join(summary_parts)}</p>"
 
@@ -1598,6 +1570,8 @@ def update_section_e_summary(data):
         dcc.Markdown(create_section_summary(data, section_idx=5),
                      dangerously_allow_html=True)
     ])
+
+
 def calculate_section_stats(data, section_idx):
     all_scores = []
     for response in data['survey_responses']:
@@ -1631,6 +1605,7 @@ def calculate_section_stats(data, section_idx):
 def update_section_a_stats(data):
     return calculate_section_stats(data, 1)
 
+
 @dash_app.callback(
     Output('section-b-stats', 'data'),
     [Input('stored-data', 'data')]
@@ -1654,12 +1629,14 @@ def update_section_c_stats(data):
 def update_section_d_stats(data):
     return calculate_section_stats(data, 1)
 
+
 @dash_app.callback(
     Output('section-e-stats', 'data'),
     [Input('stored-data', 'data')]
 )
 def update_section_e_stats(data):
     return calculate_section_stats(data, 1)
+
 
 @dash_app.callback(
     [Output('gender-filter', 'options'),
@@ -1704,5 +1681,4 @@ def update_filter_options(data):
 def clear_filters(n_clicks):
     return None, None, None, None
 
-
-#TODO: add HTML button for exporting PDF
+# TODO: add HTML button for exporting PDF
