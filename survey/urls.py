@@ -8,6 +8,7 @@ urlpatterns = [
     path('survey/<int:pk>/delete/', views.SurveyDeleteView.as_view(), name='survey_delete'),
     path('survey/<int:pk>/create_invite', views.SurveyCreateInviteView.as_view(), name='suvey_create_invite'),
     path('survey/<int:pk>/mock_responses', views.SurveyGenerateMockResponsesView.as_view(), name='survey_mock_responses'),
+    path('survey/<int:pk>/report', views.SurveyReportView.as_view(), name='survey_report'),
     path('survey/create/<int:project_id>', views.SurveyCreateView.as_view(), name='survey_create'),
     path('completion/', views.CompletionView.as_view(), name='completion_page'),
     path('survey_response/<str:token>', views.SurveyResponseView.as_view(), name='survey_response'),
