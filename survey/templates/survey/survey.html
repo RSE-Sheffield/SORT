@@ -38,7 +38,7 @@
         </div>
 
         <div class="mb-3">
-            You can follow the five steps below to carry out the survey:
+            You can follow the six steps below to carry out the survey:
         </div>
 
         <div class="card mb-3">
@@ -165,7 +165,7 @@
             <div class="card-body"
                  style="display: flex; justify-content: center; align-items: center; flex-direction: column; ">
                 {% if has_responses %}
-                    <div style="width: 100%; padding: 20px; text-align: center;>
+                    <div style="width: 100%; padding: 20px; text-align: center;">
                         {% plotly_direct name="SurveyDashboard" %}
                     </div>
                 {% else %}
@@ -186,4 +186,19 @@
                     <h2>5. Make an Improvement Plan</h2>
                 </div>
             </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h2>6. Report and data export</h2>
+                </div>
+                <div class="card-body">
+                    <p>You can generate a printable report of this survey or export survey data to a spreadsheet format here.</p>
+                    <div class="d-flex mt-3 mb-3">
+                        <a href="{% url 'survey_report' survey.id %}" class="btn btn-primary me-3">View report</a>
+                        <a href="{% url 'survey_report' survey.id %}" class="btn btn-primary">Export spreadsheet data</a>
+                    </div>
+                </div>
+            </div>
+
+    </div>
 {% endblock %}

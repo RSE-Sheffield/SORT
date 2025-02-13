@@ -171,6 +171,11 @@ class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
 
         return redirect("survey", pk=pk)
 
+class SurveyReportView(View):
+    def get(self, request: HttpRequest, pk: int):
+        survey = get_object_or_404(Survey, pk=pk)
+        context = {"survey": survey}
+        return render(request=request, template_name="survey/report.html", context=context)
 
 # TODO: Add TokenAuthenticationMixin after re-enabling the token
 class SurveyResponseView(View):
