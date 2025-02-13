@@ -1,4 +1,7 @@
+
+from io import  StringIO
 import json
+import csv
 import random
 from typing import Any
 
@@ -100,6 +103,58 @@ class SurveyService(BasePermissionService):
         # Add new invite token
         return Invitation.objects.create(survey=survey)
 
+
+    def export_csv(self, survey: Survey) -> str:
+        """
+        Flatten the survey form to export as CSV
+        Section titles are skipped
+        Likert sublabels are expanded into individual columns
+        """
+        survey_config = survey.survey_config
+
+        with StringIO() as f:
+            writer = csv.writer(f)
+
+            # Header
+            header_fields = []
+            for sIndex, section in enumerate(survey_config["sections"]):
+                for fIndex, field in enumerate(section["fields"]):
+                    if field["type"] == "likert":
+                        for fsIndex, sublabel in enumerate(field["sublabels"]):
+                            header_fields.append(sublabel)
+                    else:
+                        header_fields.append(field["label"])
+            writer.writerow(header_fields)
+
+            # Row values
+            for response in survey.survey_response.all():
+                answer = response.answers
+                row_values = []
+                for sIndex, section in enumerate(survey_config["sections"]):
+
+                    if sIndex >= len(answer):
+                        continue
+
+                    for fIndex, field in enumerate(section["fields"]):
+                        if fIndex >= len(answer[sIndex]):
+                            continue
+
+                        if field["type"] == "likert":
+                            for fsIndex, sublabel in enumerate(field["sublabels"]):
+                                row_values.append(answer[sIndex][fIndex][fsIndex])
+                        else:
+                            value = answer[sIndex][fIndex]
+                            if isinstance(value, list):
+                                row_values.append(",".join(value))
+                            else:
+                                row_values.append(value)
+
+                writer.writerow(row_values)
+
+            output_csv = f.getvalue()
+
+        return output_csv
+
     def generate_mock_responses(self, survey: Survey, num_responses):
         """
         Generate a number of mock responses
@@ -144,8 +199,22 @@ class SurveyService(BasePermissionService):
                 likert_output.append(str(field_config["options"][option_index]))
             return likert_output
 
+        elif type == "text":
+            if "textType" in field_config:
+                if field_config["textType"] == "INTEGER_TEXT":
+                    min_value = field_config["minNumValue"] if "minNumValue" in field_config else 0
+                    max_value = field_config["maxNumValue"] if "maxNumValue" in field_config else 100
+                    return str(random.randint(min_value, max_value))
+                elif field_config["textType"] == "DECIMALS_TEXT":
+                    min_value = field_config["minNumValue"] if "minNumValue" in field_config else 0
+                    max_value = field_config["maxNumValue"] if "maxNumValue" in field_config else 100
+                    return str(random.uniform(min_value, max_value))
+                elif field_config["textType"] == "EMAIL_TEXT":
+                    return "test@test.com"
+                else:
+                    return "Test plaintext field"
         else:
-            return f"Test string for field {field_config['label']}"
+            return f"Test string for textarea field {field_config['label']}"
 
 
 
