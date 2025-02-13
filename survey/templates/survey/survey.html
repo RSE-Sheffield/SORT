@@ -18,7 +18,6 @@
             </ol>
         </nav>
     </div>
-
     <div class="container mx-auto px-4 py-8">
         <div class="card mb-3">
             <div class="card-header">
@@ -83,7 +82,7 @@
                                     <div class="card-body">
                                         <div class="card-text text-center">
                                             <button onclick="downloadQRCode()" class="btn btn-primary">
-                                                Download invitation QR code
+                                                <i class='bx bx-download' ></i> Download invitation QR code
                                             </button>
                                         </div>
                                     </div>
@@ -117,14 +116,16 @@
                         <div class="col-lg-2 text-end">
                             <form method="POST" action="{% url 'suvey_create_invite' survey.id %}">
                                 {% csrf_token %}
-                                <input type="submit" class="btn btn-primary" name="generate_token"
-                                       value="Regenerate invitation"/>
+                                <button type="submit" class="btn btn-primary" name="generate_token"><i class='bx bx-repeat'></i> Re-generate invitation</button>
+
                             </form>
                         </div>
                     </div>
 
+
                     <p>Or send an invitation by email:</p>
-                    <a href="{% url 'invite' survey.id %}" class="btn btn-primary">Send an invitation</a>
+
+                    <a href="{% url 'invite' survey.id %}" class="btn btn-primary"><i class='bx bx-mail-send' ></i> Send an invitation</a>
 
                 {% else %}
                     <p>
@@ -138,7 +139,6 @@
                 {% endif %}
             </div>
         </div>
-
         <div class="card mb-3">
             <div class="card-header">
                 <h2>Generate mock responses</h2>
@@ -155,6 +155,9 @@
 
                     <input type="submit" name="submit" value="Submit" class="btn btn-primary">
                 </form>
+
+                <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download>Export</a>
+
             </div>
         </div>
 
@@ -173,32 +176,25 @@
                 {% endif %}
             </div>
         </div>
-
-             <div class="card mb-2">
-                <div class="card-header">
-                    <h2>4. Gather Evidence</h2>
-                </div>
-
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>4. Gather Evidence</h2>
             </div>
-
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h2>5. Make an Improvement Plan</h2>
-                </div>
+            <div class="card-body">
+                <p>Once you have collected enough responses, use this section to gather evidence in support of the survey results.</p>
+                <a href="{% url 'survey_evidence_gathering' survey.id %}" class="btn btn-primary"><i class='bx bx-collection' ></i> Gather evidence</a>
             </div>
-
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h2>6. Report and data export</h2>
-                </div>
-                <div class="card-body">
-                    <p>You can generate a printable report of this survey or export survey data to a spreadsheet format here.</p>
-                    <div class="d-flex mt-3 mb-3">
-                        <a href="{% url 'survey_report' survey.id %}" class="btn btn-primary me-3">View report</a>
-                        <a href="{% url 'survey_report' survey.id %}" class="btn btn-primary">Export spreadsheet data</a>
-                    </div>
-                </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>5. Make an Improvement Plan</h2>
             </div>
+            <div class="card-body">
+                <p>Use this section to create an improvement plan after collecting survey responses and gathering the evidence.</p>
+                <a href="{% url 'survey_improvement_plan' survey.id %}" class="btn btn-primary"><i class='bx bxs-file-plus'></i> Make an improvement plan</a>
+            </div>
+        </div>
+
 
     </div>
 {% endblock %}
