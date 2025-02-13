@@ -99,6 +99,7 @@ class SurveyView(LoginRequiredMixin, View):
             dash_app.initial_arguments = metrics
 
         context["survey"] = survey
+        context["invite_link"] = survey.get_invite_link(request)
         return render(request, 'survey/survey.html', context)
 
 class SurveyCreateView(LoginRequiredMixin, CreateView):

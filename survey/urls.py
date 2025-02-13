@@ -18,5 +18,5 @@ urlpatterns = [
     path('survey_response/<str:token>', views.SurveyResponseView.as_view(), name='survey_response'),
     path('survey_link_invalid/', views.SurveyLinkInvalidView.as_view(), name='survey_link_invalid'),
     path('invite/success/', views.SuccessInvitationView.as_view(), name='success_invitation'),
-
+    path('invite/<int:pk>', views.InvitationView.as_view(), name='invite'),
 ]
