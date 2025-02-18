@@ -19,53 +19,6 @@
         {% plotly_header %}
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-light">
-            <div class="container-fluid">
-                {% url 'home' as home_url %}
-                <a class="navbar-brand" href="{{ home_url }}">SORT</a>
-                <button class="navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#navbarNav"
-                        aria-controls="navbarNav"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == invite_url %}active{% endif %}" href="{{ home_url }}">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">Profile</a>
-                        </li>
-                        <li class="nav-item">
-                            {% url 'organisation_create' as organisation_create_url %}
-                            <a class="nav-link 
-                                {% if '/myorganisation' in request.path %}active{% endif %} 
-                                {% if '/projects' in request.path %}active{% endif %} 
-                                {% if '/survey' in request.path %}active{% endif %} 
-                                {% if '/completion' in request.path %}active{% endif %}"
-                                href="{% url 'myorganisation' %}">My Organisation</a>
-                        </li>
-                        {% if user.is_authenticated %}
-                            <li class="nav-item">
-                                <form id="logout-form"
-                                      action="{% url 'logout' %}"
-                                      method="POST"
-                                      style="display: inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="nav-link btn btn-link">Logout</button>
-                                </form>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </head>
-    <body>
         {% include 'header.html' %}
         {% block navitems %}<!-- Content  here -->{% endblock %}
         <main>

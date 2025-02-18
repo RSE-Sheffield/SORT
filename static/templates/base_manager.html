@@ -22,7 +22,7 @@
                             <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}"><i class="bx bxs-user"></i>Profile</a>
+                            <a class="nav-link {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}"></i>Profile</a>
                         </li>
                         <li class="nav-item">
                             {% url 'organisation_create' as organisation_create_url %}
