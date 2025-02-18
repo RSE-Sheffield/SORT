@@ -59,6 +59,10 @@ h1, h2, h3, h4, h5, h6 {
     border-top-right-radius: 1rem;
 }
 
+.card-text a {
+    color: var(--primary-colour-lg);
+}
+
 .text-center a {
     color: var(--primary-colour-lg);
     text-decoration: none;
