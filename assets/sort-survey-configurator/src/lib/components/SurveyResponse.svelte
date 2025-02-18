@@ -85,19 +85,16 @@
 </div>
 {/if}
 
-<div class="row">
-    <div class="col-1">
-        <button class="btn btn-primary" disabled={currentPage < 1} onclick={previousPage}>Previous</button>
-    </div>
-    <div class="col-1">
+<div class="d-flex">
+        <button class="btn btn-primary me-3"  disabled={currentPage < 1} onclick={previousPage}>&lt; Previous</button>
+
         {#if currentPage < config.sections.length - 1}
-            <button class="btn btn-primary" onclick={nextPage}>Next</button>
+            <button class="btn btn-primary" onclick={nextPage}>Next &gt;</button>
         {:else}
             <form method="post" onsubmit={onSubmitHandler}>
                 <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}"/>
                 <input type="hidden" name="value" value="{valueStr}"/>
-                <input type="submit" class="btn btn-primary" value="Submit"/>
+                <button type="submit" class="btn btn-primary">Submit <i class="bx bxs-send" ></i></button>
             </form>
         {/if}
-    </div>
 </div>

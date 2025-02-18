@@ -1,6 +1,8 @@
 :root {
     --primary-colour: #440099;
+    --primary-colour-lg: #7C4DB8;
     --primary-bg-colour: #DACCEB;
+    --primary-dark-colour: #131e29;
 }
 
 body {
@@ -16,16 +18,29 @@ header {
     z-index: 1000;
 }
 
+.subheader {
+    color: white;
+    background-color: var(--primary-colour);
+    font-weight: bold;
+}
+
 .navbar {
-    background-color: var(--primary-bg-colour);
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: var(--primary-dark-colour);
+}
+
+.navbar a {
+    color: lightgrey;
 }
 
 .nav-link:hover,
 .nav-link.active {
-    color: black !important;
-    filter: brightness(0.8);
+    color: white !important;
+    filter: brightness(1.0);
 }
-
 
 .container {
     display: flex;
@@ -45,7 +60,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .text-center a {
-    color: #7C4DB8;
+    color: var(--primary-colour-lg);
     text-decoration: none;
 }
 
@@ -87,13 +102,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-    background-color: #6933AD !important;
-    border-color: #6933AD !important;
+    background-color: var(--primary-colour) !important;
+    border-color: var(--primary-colour) !important;
 }
 
 .btn-primary:hover {
-    background-color: var(--primary-colour) !important;
-    border-color: var(--primary-colour) !important;
+    background-color: var(--primary-colour-lg) !important;
+    border-color: var(--primary-colour-lg) !important;
 }
 
 .btn-primary, .btn-primary:hover {
