@@ -58,11 +58,34 @@ class LoginInterfaceView(LoginView):
 
 class HomeView(LoginRequiredMixin, View):
     template_name = "home/welcome.html"
+    context_object_name = "projects"
 
     def get(self, request):
         projects = project_service.get_user_projects(request.user)
         print(dict(projects=projects))
         return render(request, self.template_name, dict(projects=projects))
+    
+    # def get_context_data(self, request):
+    #     context = super().get_context_data(request)
+    #     user = self.request.user
+    #     projects = context["projects"]
+    #     user_role = self.organisation.get_user_role(user)
+
+    #     context.update({
+    #         "organisation": self.organisation,
+    #         "can_edit": {
+    #             project.id: project_service.can_edit(user, project)
+    #             for project in projects
+    #         },
+    #         "can_create": project_service.can_create(user),
+    #         "is_admin": user_role == ROLE_ADMIN,
+    #         "is_project_manager": user_role == ROLE_PROJECT_MANAGER,
+    #         "project_orgs": organisation_service.get_user_accessible_organisations(
+    #             projects, user
+    #         ),
+    #         "current_search": self.request.GET.get('q', '')
+    #     })
+    #     return context
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
