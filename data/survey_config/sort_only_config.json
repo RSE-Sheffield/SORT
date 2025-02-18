@@ -47,15 +47,14 @@
           "type": "textarea",
           "name": "releasing_potential_comments",
           "label": "A23. If you would like to add any comments with regards to any of the statements in section above (Releasing Potential), please write below.",
-          "description": "Question description",
-          "required": true,
+          "required": false,
           "sublabels": [],
           "options": []
         }
       ]
     },
     {
-      "title": "Embedding Research",
+      "title": "B. Embedding Research",
       "type": "sort",
       "description": "This includes reducing barriers to research related activities by providing time and resources. It covers making research legitimate in the organisation, recognising the impact of research and midwives' contribution to research.",
       "fields": [
@@ -63,7 +62,6 @@
           "type": "likert",
           "name": "embedding_research",
           "label": "Our Organisation: (0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established)",
-          "description": "Question description",
           "required": true,
           "sublabels": [
             "B1.  provides protected time for clinical nurses to support research related activities",
@@ -84,8 +82,7 @@
           "type": "textarea",
           "name": "embedding_research_comments",
           "label": "B6. If you would like to add any comments with regards to any of the statements in the section above (Embedding Research), please write below.",
-          "description": "Question description",
-          "required": true,
+          "required": false,
           "sublabels": [],
           "options": []
         }
@@ -100,7 +97,6 @@
           "type": "likert",
           "name": "linkages_and_leadership",
           "label": "Our organisation: (0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established)",
-          "description": "Question description",
           "required": true,
           "sublabels": [
             "C1. take part in research leadership and advisory activities outside our organisation (for example, sitting on ethics committees; funding committees; editorial boards and reviewing papers)",
@@ -120,8 +116,7 @@
           "type": "textarea",
           "name": "linkages_and_leadership_comments",
           "label": "C5. If you would like to add any comments with regards to any of the statements in the section above (Linkages and Leadership), please write below.",
-          "description": "Question description",
-          "required": true,
+          "required": false,
           "sublabels": [],
           "options": []
         }
@@ -136,7 +131,6 @@
           "type": "likert",
           "name": "inclusive_research_delivery",
           "label": "Our organisation: (0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established)",
-          "description": "Question description",
           "required": true,
           "sublabels": [
             "D1. have skills to support Public and Patient Involvement and Engagement",
@@ -156,8 +150,7 @@
           "type": "textarea",
           "name": "inclusive_research_delivery_comments",
           "label": "D5. If you would like to add any comments with regards to any of the statements in the section above (Inclusive research delivery), please write below.",
-          "description": "Question description",
-          "required": true,
+          "required": false,
           "sublabels": [],
           "options": []
         }
@@ -172,7 +165,6 @@
           "type": "likert",
           "name": "digital_enabled_research",
           "label": "Our Organisation: (0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established",
-          "description": "Question description",
           "required": true,
           "sublabels": [
             "E1. provides training for nurses to enable them to practise effectively in a digitally enabled environment",
@@ -197,8 +189,7 @@
           "type": "textarea",
           "name": "digital_enabled_research_comments",
           "label": "E10. If you would like to add any comments with regards to any of the statements in the section above (Digital enabled research), please write below.",
-          "description": "Question description",
-          "required": true,
+          "required": false,
           "sublabels": [],
           "options": []
         }
