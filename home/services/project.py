@@ -53,7 +53,7 @@ class ProjectService(BasePermissionService):
         if role == ROLE_ADMIN:
             return True
         elif role == ROLE_PROJECT_MANAGER:
-            return self.get_user_permission(project, user) is not None
+            return self.get_user_permission(user, project) is not None
 
         return False
 
@@ -63,7 +63,7 @@ class ProjectService(BasePermissionService):
         if role == ROLE_ADMIN:
             return True
         elif role == ROLE_PROJECT_MANAGER:
-            permission = self.get_user_permission(project, user)
+            permission = self.get_user_permission(user, project)
             return permission and permission.permission == "EDIT"
 
         return False

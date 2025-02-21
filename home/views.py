@@ -114,7 +114,8 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
 
     def get_queryset(self):
         queryset = organisation_service.get_organisation_projects(
-            self.organisation
+            self.organisation,
+            user=self.request.user,
         )
 
         search_query = self.request.GET.get('q')

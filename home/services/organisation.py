@@ -52,6 +52,9 @@ class OrganisationService(BasePermissionService):
 
     def get_user_organisation(self, user: User) -> Optional[Organisation]:
         """Get user's primary organisation"""
+        if not user or not user.is_authenticated:
+            return None
+        
         return user.organisation_set.first()
 
     def get_user_organisation_ids(self, user: User) -> Set[int]:
@@ -131,13 +134,30 @@ class OrganisationService(BasePermissionService):
         ).delete()
 
     def get_organisation_projects(
-        self, organisation: Organisation, with_metrics: bool = True
+        self, organisation: Organisation, user: User = None, with_metrics: bool = True
     ) -> QuerySet[Project]:
         """Get projects for an organisation with optional metrics"""
 
         projects = Project.objects.filter(
             projectorganisation__organisation=organisation
         )
+        
+        # filter projects based on role and permission
+        if user:
+            user_role = self.get_user_role(user, organisation)
+            
+            if user_role == ROLE_ADMIN:
+                pass
+            
+            elif user_role == ROLE_PROJECT_MANAGER:
+                project_ids = ProjectManagerPermission.objects.filter(
+                    user=user, project__in=projects
+                ).values_list("project_id", flat=True)
+                projects = projects.filter(id__in=project_ids)
+            
+            # no valid role
+            else:
+                projects = projects.none()
 
         if with_metrics:
             projects = projects.annotate(
