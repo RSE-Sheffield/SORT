@@ -9,7 +9,6 @@ from django.shortcuts import get_object_or_404
 
 from home.services import BasePermissionService
 from home.models import User, Project
-from home.services.base import requires_permission
 from survey.models import Invitation, Survey, SurveyResponse
 
 import logging

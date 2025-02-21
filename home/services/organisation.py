@@ -77,7 +77,7 @@ class OrganisationService(BasePermissionService):
             for project in projects
         }
 
-    @requires_permission("edit")
+    @requires_permission("edit", obj_param="organisation")
     def update_organisation(
         self, user: User, organisation: Organisation, data: Dict
     ) -> Organisation:
@@ -118,7 +118,7 @@ class OrganisationService(BasePermissionService):
             user=user, organisation=organisation, role=role, added_by=added_by
         )
 
-    @requires_permission("edit")
+    @requires_permission("edit", obj_param="organisation")
     def remove_user_from_organisation(
         self, user: User, organisation: Organisation, removed_user: User
     ) -> None:
@@ -167,7 +167,7 @@ class OrganisationService(BasePermissionService):
 
         return projects
 
-    @requires_permission("view")
+    @requires_permission("view", obj_param="organisation")
     def get_organisation_members(
         self, user: User, organisation: Organisation
     ) -> QuerySet[OrganisationMembership]:

@@ -85,7 +85,7 @@ class ProjectService(BasePermissionService):
         project.save()
         return project
 
-    @requires_permission("view")
+    @requires_permission("view", obj_param="project")
     def get_project(self, user: User, project: Project) -> Project:
         """Get project if user has permission"""
         return project
@@ -113,7 +113,7 @@ class ProjectService(BasePermissionService):
         project.delete()
         return parent_org
 
-    @requires_permission("edit", "project")
+    @requires_permission("edit", obj_param="project")
     def grant_permission(
         self,
         user: User,
@@ -138,7 +138,7 @@ class ProjectService(BasePermissionService):
             defaults={"granted_by": user, "permission": permission},
         )
 
-    @requires_permission("edit", "project")
+    @requires_permission("edit", obj_param="project")
     def revoke_permission(
         self, user: User, project: Project, project_manager: User
     ) -> None:
