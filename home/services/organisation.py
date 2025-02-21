@@ -45,7 +45,7 @@ class OrganisationService(BasePermissionService):
         role = self.get_user_role(user, organisation)
         return role == ROLE_ADMIN
 
-    @requires_permission("view")
+    @requires_permission("view", obj_param="organisation")
     def get_organisation(self, user: User, organisation: Organisation) -> Organisation:
         """Get organisation if user has permission"""
         return organisation
@@ -144,7 +144,7 @@ class OrganisationService(BasePermissionService):
                 survey_count=Count("survey__id", distinct=True),
                 manager_count=Count("projectmanagerpermission", distinct=True),
             )
-            
+
         return projects
 
     @requires_permission("view")
