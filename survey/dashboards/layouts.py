@@ -363,9 +363,23 @@ def create_dashboard_layout():
             dbc.Container(
                 [
                     create_filters_section(),
+                    dcc.Loading(
+                        id="loading-metrics",
+                        type="circle",
+                        children=create_metrics_section(),
+                    ),
                     create_metrics_section(),
+                    dcc.Loading(
+                        id="loading-ranking-matrix",
+                        type="circle",
+                        children=create_ranking_matrix(),
+                    ),
                     *[
-                        create_section_layout(section["letter"], section["title"])
+                        dcc.Loading(
+                            id=f"loading-section-{section['letter'].lower()}",
+                            type="circle",
+                            children=create_section_layout(section["letter"], section["title"]),
+                        )
                         for section in SECTIONS
                     ],
                 ],
