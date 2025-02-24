@@ -16,7 +16,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template.context_processors import csrf
 from home.models import Project
-from .dashboards import dash_app
+from .dashboards.dashboard import dash_app
 from survey.services import survey_service
 from .mixins import TokenAuthenticationMixin
 
