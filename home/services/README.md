@@ -11,7 +11,7 @@ The current implementation provides:
 
 Service classes can inherit from `BasePermissionService` to implement custom permission checks. The `requires_permission` decorator can be used to enforce access control at the method level.
 
-Why don't we use Django's built-in permissions system? The Django permissions system is designed for managing access to models and views within a Django application. It is not designed to handle complex permission requirements such as role-based access control (RBAC) across multiple resources. The custom permission management system provides more flexibility and control over access control requirements.
+Why don't we use Django's built-in permissions system? The Django permissions system is designed for managing (global) access to models and views within a Django application. It is not designed to handle complex permission requirements such as role-based access control (RBAC) across multiple resources. The custom permission management system provides more flexibility and control over access control requirements.
 
 ## Permission Model
 

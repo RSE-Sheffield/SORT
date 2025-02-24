@@ -3,9 +3,8 @@ Organisation service with integrated permissions
 """
 
 from typing import Optional, Dict, List, Set, Literal
-from django.db import transaction
-from django.db.models.query import QuerySet
-from django.db.models import Count
+from django.db.models.query import QuerySet, Prefetch
+from django.db.models import Count, Exists, OuterRef
 from django.core.exceptions import PermissionDenied
 from .base import BasePermissionService, requires_permission
 from ..models import (
@@ -138,34 +137,60 @@ class OrganisationService(BasePermissionService):
     ) -> QuerySet[Project]:
         """Get projects for an organisation with optional metrics"""
 
-        projects = Project.objects.filter(
+        base_query = Project.objects.filter(
             projectorganisation__organisation=organisation
         )
 
-        # filter projects based on role and permission
         if user:
-            user_role = self.get_user_role(user, organisation)
-
-            if user_role == ROLE_ADMIN:
-                pass
-
-            elif user_role == ROLE_PROJECT_MANAGER:
-                project_ids = ProjectManagerPermission.objects.filter(
-                    user=user, project__in=projects
-                ).values_list("project_id", flat=True)
-                projects = projects.filter(id__in=project_ids)
-
-            # no valid role
+            if user.is_superuser: # Superusers can view all projects
+                projects = base_query
             else:
-                projects = projects.none()
+                # Get user role
+                membership = OrganisationMembership.objects.filter(
+                    user=user,
+                    organisation=organisation
+                ).values('role').first()
+                
+                user_role = membership['role'] if membership else None
 
+                if user_role == ROLE_ADMIN:
+                    projects = base_query
+                elif user_role == ROLE_PROJECT_MANAGER:
+                    # Use EXISTS subquery instead of separate query and filter
+                    projects = base_query.filter(
+                        Exists(
+                            ProjectManagerPermission.objects.filter(
+                                user=user,
+                                project=OuterRef('pk')
+                            )
+                        )
+                    )
+                else: # User has no role
+                    return Project.objects.none()
+        else:
+            projects = base_query
+
+        # Add metrics
         if with_metrics:
             projects = projects.annotate(
-                survey_count=Count("survey__id", distinct=True),
-                manager_count=Count("projectmanagerpermission", distinct=True),
+                survey_count=Count(
+                    'survey__id',
+                    distinct=True
+                ),
+                manager_count=Count(
+                    'projectmanagerpermission',
+                    distinct=True
+                )
+            ).select_related(
+                'created_by'  # Add any other needed related fields
+            ).prefetch_related(
+                Prefetch(
+                    'projectmanagerpermission_set',
+                    queryset=ProjectManagerPermission.objects.select_related('user')
+                )
             )
 
-        return projects
+        return projects.order_by('-created_on')
 
     @requires_permission("view", obj_param="organisation")
     def get_organisation_members(

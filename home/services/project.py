@@ -20,7 +20,10 @@ class ProjectService(BasePermissionService):
     """Service for managing projects with integrated permissions"""
 
     def get_user_role(self, user: User, project: Project) -> Optional[str]:
-        """Get user's highest role across project's organisations"""
+        """
+        Get user's highest role across project's organisations
+        TODO: this assuming a project can be linked to multiple organisations, check if still the case
+        """
         project_orgs = project.organisations.all()
 
         # Check for admin role first
