@@ -69,6 +69,7 @@ class OrganisationService(BasePermissionService):
     ) -> Dict[int, List[Organisation]]:
         """Get organisations user has access to for each project"""
         user_org_ids = self.get_user_organisation_ids(user)
+        
         return {
             project.id: [
                 org for org in project.organisations.all() if org.id in user_org_ids
