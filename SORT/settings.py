@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     # apps created by FA:
     "home",
     "survey",
+    "survey.dashboards.apps.DashboardsConfig"
 ]
 
 MIDDLEWARE = [
