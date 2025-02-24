@@ -16,8 +16,8 @@ def requires_permission(permission_type: str, obj_param: str = "obj") -> Callabl
     Args:
         permission_type: Type of permission to check (view/create/edit/delete)
         obj_param: Name of the parameter that contains the object to check permissions against.
-        Example: `requires_permission("view", "proj")` will check if the user has view permission for the `proj` object
-        passed as the "project" parameter:
+        Example: `requires_permission("view", "proj")` will check if the user has view permission for the `Project` object
+        passed as the "proj" parameter:
 
         ```python
         @requires_permission("view", "proj")

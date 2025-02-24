@@ -54,7 +54,7 @@ class OrganisationService(BasePermissionService):
         """Get user's primary organisation"""
         if not user or not user.is_authenticated:
             return None
-        
+
         return user.organisation_set.first()
 
     def get_user_organisation_ids(self, user: User) -> Set[int]:
@@ -81,7 +81,7 @@ class OrganisationService(BasePermissionService):
     def update_organisation(
         self, user: User, organisation: Organisation, data: Dict
     ) -> Organisation:
-        """Update organization with provided data"""
+        """Update organisation with provided data"""
         for key, value in data.items():
             setattr(organisation, key, value)
         organisation.save()
@@ -90,7 +90,7 @@ class OrganisationService(BasePermissionService):
     def create_organisation(
         self, user: User, name: str, description: str = ""
     ) -> Organisation:
-        """Create a new organization"""
+        """Create a new organisation"""
         if not self.can_create(user):
             raise PermissionDenied("User cannot create organisations")
 
@@ -141,20 +141,20 @@ class OrganisationService(BasePermissionService):
         projects = Project.objects.filter(
             projectorganisation__organisation=organisation
         )
-        
+
         # filter projects based on role and permission
         if user:
             user_role = self.get_user_role(user, organisation)
-            
+
             if user_role == ROLE_ADMIN:
                 pass
-            
+
             elif user_role == ROLE_PROJECT_MANAGER:
                 project_ids = ProjectManagerPermission.objects.filter(
                     user=user, project__in=projects
                 ).values_list("project_id", flat=True)
                 projects = projects.filter(id__in=project_ids)
-            
+
             # no valid role
             else:
                 projects = projects.none()
