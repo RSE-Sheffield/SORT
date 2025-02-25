@@ -2,6 +2,7 @@ import os
 import json
 from django.conf import settings
 
+
 SORT_CONFIG_PATH = os.path.join(
     settings.BASE_DIR, "data", "survey_config", "sort_only_config.json"
 )
@@ -84,39 +85,40 @@ DEMOGRAPHIC_FIELDS = [
         "id": "gender",
         "label": "Your Gender",
         "placeholder": "Select Gender",
-        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][1],
+        "options": ["Male", "Female", "Non-binary", "Prefer not to say"],
         "index": 1
     },
-
     {
         "id": "age",
         "label": "Your Age",
         "placeholder": "Select Age",
-        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][2],
-        "index": 2 ,
-        "transform": get_age_group,
         "options": ["Under 25", "25-34", "35-44", "45-54", "55-64", "65+"],
+        "transform": get_age_group,
+        "index": 0
     },
-
     {
         "id": "band",
         "label": "What is your current Band/Grade",
         "placeholder": "Select Band/Grade",
-        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][3],
+        "options": ["Band 5", "Band 6", "Band 7", "Band 8", "Band 9"],
         "index": 3
     },
     {
         "id": "qualification",
         "label": "Please indicate your highest qualification",
         "placeholder": "Select Qualification",
-        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][4],
+        "options": ["Degree", "Masters", "PhD/Doctorate", "Diploma"],
         "index": 4
     },
     {
         "id": "ethnicity",
         "label": "What is your ethnicity?",
         "placeholder": "Select Ethnicity",
-        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][5],
+        "options": [
+            "White - British", "White - Irish", "White - Romany",
+            "Black British - African", "Black British - Caribbean",
+            "Mixed - Black African and White", "Mixed - other"
+        ],
         "index": 5
-    },
+    }
 ]

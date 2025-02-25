@@ -3,8 +3,7 @@ import plotly.graph_objects as go
 from collections import defaultdict
 from scipy import stats
 from .constants import MATURITY_LEVELS, GRAPH_LAYOUT, THEME, COLOUR_PALETTE
-
-from .config import SECTIONS, DEMOGRAPHIC_FIELDS, DEMOGRAPHIC_CONFIG
+from .config import SECTIONS, DEMOGRAPHIC_CONFIG, get_age_group
 
 
 def get_section_questions(section_idx):
@@ -34,12 +33,14 @@ def get_section_questions(section_idx):
 
 
 def process_section_data(response, section_idx):
-
-    if "fields" in response and "answers" in response["fields"]:
+    if 'answers' in response and len(response['answers']) > section_idx:
         try:
-            return response["fields"]["answers"][section_idx][0]
+            section_data = response['answers'][section_idx]
+            if isinstance(section_data, list) and section_data:
+                return section_data[0]
         except (IndexError, KeyError):
-            return []
+            pass
+
     return []
 
 
@@ -78,63 +79,70 @@ def get_maturity_level(score):
     return MATURITY_LEVELS[score_int]
 
 
+
 def filter_survey_data(survey_responses, filters):
+    """Filter survey responses based on demographic filters."""
+    if not filters:
+        return survey_responses
 
     filtered_responses = []
 
+    field_positions = {
+        'age': 0,
+        'gender': 1,
+        'band': 3,
+        'qualification': 4,
+        'ethnicity': 5
+    }
+
     for response in survey_responses:
-        if "fields" in response and "answers" in response["fields"]:
-            try:
-                demographics = response["fields"]["answers"][6]
+        if 'answers' not in response or len(response['answers']) < 7:
+            continue
 
-                matches_filters = True
+        try:
+            demographic_data = response['answers'][6]
 
-                for field in DEMOGRAPHIC_FIELDS:
+            # Check if response matches all filters
+            match = True
+            for filter_id, filter_value in filters.items():
+                position = field_positions.get(filter_id)
+                if position is None:
+                    continue
 
-                    filter_value = filters.get(field["id"])
+                # Special case for age which needs transformation
+                if filter_id == 'age':
+                    age_group = get_age_group(demographic_data[position])
+                    if age_group != filter_value:
+                        match = False
+                        break
+                # Direct comparison for other fields
+                elif demographic_data[position] != filter_value:
+                    match = False
+                    break
 
-                    if filter_value and filter_value.strip():
+            if match:
+                filtered_responses.append(response)
 
-                        field_idx = field["index"]
-
-                        if field_idx is not None and field_idx < len(demographics):
-
-                            demographic_value = demographics[field_idx]
-
-                            if field["id"] == "age" and "transform" in field:
-                                demographic_value = field["transform"](demographic_value)
-                                print(demographic_value)
-
-                            if demographic_value.strip().lower() != filter_value.strip().lower():
-                                matches_filters = False
-                                break
-                        else:
-                            print(f"Warning: Invalid index {field_idx} for field {field['id']}")
-                            matches_filters = False
-                            break
-
-                if matches_filters:
-                    filtered_responses.append(response)
-
-            except (IndexError, KeyError) as e:
-                print(f"Error processing response: {e}")
-                continue
+        except (IndexError, TypeError):
+            continue
 
     return filtered_responses
 
 
 def calculate_section_averages(responses):
-
     section_averages = {}
 
     for section in SECTIONS:
         section_scores = []
         for response in responses:
-            if "fields" in response and "answers" in response["fields"]:
-                section_data = response["fields"]["answers"][section["index"]][0]
-                scores = [float(score) for score in section_data if score.isdigit()]
-                if scores:
-                    section_scores.append(np.mean(scores))
+            if "answers" in response:
+                try:
+                    section_data = response["answers"][section["index"]][0]
+                    scores = [float(score) for score in section_data if score.isdigit()]
+                    if scores:
+                        section_scores.append(np.mean(scores))
+                except (IndexError, KeyError, TypeError):
+                    pass
 
         section_averages[section["id"]] = (
             np.mean(section_scores) if section_scores else 0
@@ -301,34 +309,30 @@ def create_section_figure(data, section_idx):
     return fig
 
 
-def create_demographic_chart(data, question_label):
 
+def create_demographic_chart(data, question_label):
     if not data or "survey_responses" not in data:
         return {}
 
-    # Get field index
     field_idx = get_demographic_field_index(question_label)
     if field_idx is None:
         return {}
 
-    # Count responses
     response_counts = defaultdict(int)
     for response in data["survey_responses"]:
-        if "fields" in response and "answers" in response["fields"]:
+        if "answers" in response:
             try:
-                answer = response["fields"]["answers"][6][field_idx].title()
+                answer = response["answers"][6][field_idx].title()
                 response_counts[answer] += 1
-            except (IndexError, KeyError):
-                continue
+            except (IndexError, KeyError, AttributeError):
+                pass
 
-    # Prepare data for pie chart
     if not response_counts:
         return {}
 
     labels = list(response_counts.keys())
     values = list(response_counts.values())
 
-    # Create pie chart
     fig = go.Figure(
         data=[
             go.Pie(
@@ -343,7 +347,6 @@ def create_demographic_chart(data, question_label):
         ]
     )
 
-    # Update layout
     fig.update_layout(
         autosize=True,
         margin=dict(l=50, r=50, t=30, b=30, pad=0),

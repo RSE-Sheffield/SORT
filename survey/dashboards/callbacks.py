@@ -13,6 +13,7 @@ from .constants import MATURITY_LEVELS, COLOUR_PALETTE
 from .config import SECTIONS, DEMOGRAPHIC_FIELDS
 
 
+
 def register_callbacks(dash_app):
     @dash_app.callback(
         Output("stored-data", "data"),
@@ -20,7 +21,7 @@ def register_callbacks(dash_app):
     )
     def update_stored_data(*filter_values):
 
-        all_responses = dash_app.initial_arguments.get("survey_responses", [])
+        all_responses = getattr(dash_app, 'survey_responses', [])
 
         filters = {
             field["id"]: value
@@ -42,12 +43,10 @@ def register_callbacks(dash_app):
         [Input("stored-data", "data")],
     )
     def update_filter_options(data):
-
         options = []
 
         for field in DEMOGRAPHIC_FIELDS:
             if field["id"] == "age":
-
                 options.append([
                     {"label": opt, "value": opt}
                     for opt in ["Under 25", "25-34", "35-44", "45-54", "55-64", "65+"]
@@ -56,7 +55,7 @@ def register_callbacks(dash_app):
 
                 options.append([
                     {"label": opt, "value": opt}
-                    for opt in field["config"]["options"]
+                    for opt in field["options"]
                 ])
 
         return options
@@ -80,8 +79,8 @@ def register_callbacks(dash_app):
         ],
         [Input("stored-data", "data")],
     )
+    # Modify update_metrics function
     def update_metrics(data):
-
         if not data or "survey_responses" not in data:
             return "0", "0%", "0.0"
 
@@ -90,18 +89,18 @@ def register_callbacks(dash_app):
             if total_responses == 0:
                 return "0", "0%", "0.0"
 
-            # Calculate completion rate
+            # Calculate completion rate - updated for new data structure
             completed = sum(
                 1
                 for response in data["survey_responses"]
-                if "fields" in response
-                and "answers" in response["fields"]
-                and len(response["fields"]["answers"]) >= 6
+                if "answers" in response and len(response["answers"]) >= 6
             )
+
             completion_rate = completed / total_responses * 100
 
             # Calculate average score
             all_scores = []
+
             for section in SECTIONS:
                 section_stats = calculate_section_statistics(data, section["index"])
                 if section_stats:
