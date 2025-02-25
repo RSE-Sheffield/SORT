@@ -102,6 +102,7 @@ TEXT_STYLE = {
 
 FILTERS = [
     {"id": "gender", "label": "Gender"},
+    {"id": "age", "label": "Age"},
     {"id": "band", "label": "Band/Grade"},
     {"id": "qualification", "label": "Qualification"},
     {"id": "ethnicity", "label": "Ethnicity"},

@@ -86,18 +86,36 @@ def filter_survey_data(survey_responses, filters):
         if "fields" in response and "answers" in response["fields"]:
             try:
                 demographics = response["fields"]["answers"][6]
+
                 matches_filters = True
 
                 for field in DEMOGRAPHIC_FIELDS:
+
                     filter_value = filters.get(field["id"])
-                    if filter_value:
-                        field_idx = get_demographic_field_index(field["label"])
-                        if demographics[field_idx] != filter_value:
+
+                    if filter_value and filter_value.strip():
+
+                        field_idx = field["index"]
+
+                        if field_idx is not None and field_idx < len(demographics):
+
+                            demographic_value = demographics[field_idx]
+
+                            if field["id"] == "age" and "transform" in field:
+                                demographic_value = field["transform"](demographic_value)
+                                print(demographic_value)
+
+                            if demographic_value.strip().lower() != filter_value.strip().lower():
+                                matches_filters = False
+                                break
+                        else:
+                            print(f"Warning: Invalid index {field_idx} for field {field['id']}")
                             matches_filters = False
                             break
 
                 if matches_filters:
                     filtered_responses.append(response)
+
             except (IndexError, KeyError) as e:
                 print(f"Error processing response: {e}")
                 continue
@@ -230,16 +248,6 @@ def get_demographic_field_index(field_label):
 
 
 def create_section_figure(data, section_idx):
-    """
-    Create a bar chart figure for a section breakdown.
-
-    Args:
-        data (dict): The survey data
-        section_idx (int): Index of the section
-
-    Returns:
-        dict: Plotly figure object
-    """
     if not data or "survey_responses" not in data:
         return {}
 
@@ -294,16 +302,7 @@ def create_section_figure(data, section_idx):
 
 
 def create_demographic_chart(data, question_label):
-    """
-    Create a pie chart for demographic breakdowns.
 
-    Args:
-        data (dict): The survey data
-        question_label (str): Label of the demographic question
-
-    Returns:
-        dict: Plotly figure object
-    """
     if not data or "survey_responses" not in data:
         return {}
 
@@ -335,7 +334,7 @@ def create_demographic_chart(data, question_label):
             go.Pie(
                 labels=labels,
                 values=values,
-                hole=0.3,  # Creates a donut chart
+                hole=0.3,
                 marker=dict(colors=COLOUR_PALETTE[: len(labels)]),
                 textinfo="value+percent",
                 textfont=dict(family=THEME["font_family"], size=13),

@@ -15,10 +15,29 @@ with open(SORT_CONFIG_PATH, "r") as f:
 with open(DEMOGRAPHIC_CONFIG_PATH, "r") as f:
     DEMOGRAPHIC_CONFIG = json.load(f)
 
+
 ALL_SECTIONS = {
     "sort": SURVEY_CONFIG["sections"],
     "demographic": DEMOGRAPHIC_CONFIG["sections"],
 }
+
+def get_age_group(age):
+    try:
+        age_num = int(age)
+        if age_num < 25:
+            return "Under 25"
+        elif age_num < 35:
+            return "25-34"
+        elif age_num < 45:
+            return "35-44"
+        elif age_num < 55:
+            return "45-54"
+        elif age_num < 65:
+            return "55-64"
+        else:
+            return "65+"
+    except (ValueError, TypeError):
+        return "Unknown age"
 
 # Survey sections configuration
 SECTIONS = [
@@ -65,24 +84,39 @@ DEMOGRAPHIC_FIELDS = [
         "id": "gender",
         "label": "Your Gender",
         "placeholder": "Select Gender",
-        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][0],
+        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][1],
+        "index": 1
     },
+
+    {
+        "id": "age",
+        "label": "Your Age",
+        "placeholder": "Select Age",
+        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][2],
+        "index": 2 ,
+        "transform": get_age_group,
+        "options": ["Under 25", "25-34", "35-44", "45-54", "55-64", "65+"],
+    },
+
     {
         "id": "band",
         "label": "What is your current Band/Grade",
         "placeholder": "Select Band/Grade",
-        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][1],
+        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][3],
+        "index": 3
     },
     {
         "id": "qualification",
         "label": "Please indicate your highest qualification",
         "placeholder": "Select Qualification",
-        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][2],
+        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][4],
+        "index": 4
     },
     {
         "id": "ethnicity",
         "label": "What is your ethnicity?",
         "placeholder": "Select Ethnicity",
-        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][3],
+        "config": DEMOGRAPHIC_CONFIG["sections"][0]["fields"][5],
+        "index": 5
     },
 ]

@@ -42,11 +42,24 @@ def register_callbacks(dash_app):
         [Input("stored-data", "data")],
     )
     def update_filter_options(data):
-        """Update filter dropdown options."""
-        return [
-            [{"label": opt, "value": opt} for opt in field["config"]["options"]]
-            for field in DEMOGRAPHIC_FIELDS
-        ]
+
+        options = []
+
+        for field in DEMOGRAPHIC_FIELDS:
+            if field["id"] == "age":
+
+                options.append([
+                    {"label": opt, "value": opt}
+                    for opt in ["Under 25", "25-34", "35-44", "45-54", "55-64", "65+"]
+                ])
+            else:
+
+                options.append([
+                    {"label": opt, "value": opt}
+                    for opt in field["config"]["options"]
+                ])
+
+        return options
 
     # Clear filters callback
     @dash_app.callback(
@@ -55,7 +68,7 @@ def register_callbacks(dash_app):
         prevent_initial_call=True,
     )
     def clear_filters(n_clicks):
-        """Clear all filter selections."""
+
         return [None] * len(DEMOGRAPHIC_FIELDS)
 
     # Metrics callbacks
@@ -68,7 +81,7 @@ def register_callbacks(dash_app):
         [Input("stored-data", "data")],
     )
     def update_metrics(data):
-        """Update key metrics display."""
+
         if not data or "survey_responses" not in data:
             return "0", "0%", "0.0"
 
@@ -121,7 +134,7 @@ def register_callbacks(dash_app):
             [Input("stored-data", "data")],
         )
         def update_section_breakdown(data, section=section):
-            """Update section breakdown graph."""
+
             return create_section_figure(data, section["index"])
 
         # Section statistics
@@ -130,7 +143,7 @@ def register_callbacks(dash_app):
             [Input("stored-data", "data")],
         )
         def update_section_stats(data, section=section):
-            """Update section statistics table."""
+
             return calculate_section_statistics(data, section["index"])
 
         # Section summary
@@ -157,13 +170,13 @@ def register_callbacks(dash_app):
             Output(f'{field["id"]}-chart', "figure"), [Input("stored-data", "data")]
         )
         def update_demographic_chart(data, field=field):
-            """Update demographic chart."""
+
             return create_demographic_chart(data, field["label"])
 
     # Ranking matrix callback
     @dash_app.callback(Output("ranking-matrix", "data"), [Input("stored-data", "data")])
     def update_ranking_matrix(data):
-        """Update the ranking matrix."""
+
         if not data or "section_averages" not in data:
             return []
 
@@ -185,7 +198,7 @@ def register_callbacks(dash_app):
         [Input("stored-data", "data")],
     )
     def update_matrix_styles(data):
-        """Update the ranking matrix styles."""
+
         if not data or "section_averages" not in data:
             return []
 

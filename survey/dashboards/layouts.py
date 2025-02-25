@@ -26,18 +26,21 @@ def create_filter_dropdown(filter_id, placeholder):
         placeholder=f"Select {placeholder}",
         clearable=True,
         className="mb-3",
+        style={"width": "100%"}
     )
 
 
 def create_filters_section():
-
     filter_columns = [
         dbc.Col(
             [
                 create_styled_label(f'{filter["label"]}:'),
                 create_filter_dropdown(filter["id"], filter["label"]),
             ],
-            width=3,
+            width=2,
+            className="px-2",
+            style={"minWidth":"230px"},
+
         )
         for filter in FILTERS
     ]
@@ -52,7 +55,13 @@ def create_filters_section():
                                 [
                                     html.Div(
                                         [
-                                            dbc.Row(filter_columns),
+
+                                            dbc.Row(
+                                                filter_columns,
+                                                className="justify-content-center",
+                                                style={"display": "flex", "flexWrap": "nowrap"}
+                                            ),
+
                                             dbc.Row(
                                                 [
                                                     dbc.Col(
@@ -72,7 +81,8 @@ def create_filters_section():
                                                         ],
                                                         width=12,
                                                     )
-                                                ]
+                                                ],
+                                                className="mt-3",
                                             ),
                                         ]
                                     )
@@ -363,16 +373,17 @@ def create_dashboard_layout():
             dbc.Container(
                 [
                     create_filters_section(),
+
                     dcc.Loading(
                         id="loading-metrics",
                         type="circle",
-                        children=create_metrics_section(),
                     ),
+
                     create_metrics_section(),
+
                     dcc.Loading(
                         id="loading-ranking-matrix",
-                        type="circle",
-                        children=create_ranking_matrix(),
+                        type="circle"
                     ),
                     *[
                         dcc.Loading(
