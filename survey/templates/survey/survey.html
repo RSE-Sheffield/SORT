@@ -30,7 +30,7 @@
                     <div></div>
                     <div></div>
                     <div>
-                        <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger"><i class="bx bxs-trash"></i>Delete survey</a>
+                        <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger"><i class="bx bxs-trash"></i> Delete survey</a>
                     </div>
                 </div>
             </div>
@@ -153,11 +153,10 @@
                         <input type="number" name="num_responses" class="form-control"/>
                     </label>
 
-                    <input type="submit" name="submit" value="Submit" class="btn btn-primary">
+                    <button type="submit" name="submit" value="Submit" class="btn btn-primary"><i class="bx bxs-send"></i> Submit</button>
                 </form>
 
-{#                <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download>Export</a>#}
-
+                <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download><i class="bx bx-export"></i> Export</a>
             </div>
         </div>
 

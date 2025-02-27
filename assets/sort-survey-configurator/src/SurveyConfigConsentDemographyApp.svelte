@@ -57,7 +57,7 @@
     <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}"/>
     <input type="hidden" name="consent_config" value="{consentConfigStr}"/>
     <input type="hidden" name="demography_config" value="{demographyConfigStr}"/>
-    <input type="submit" class="btn btn-primary" value="Save"/>
+    <button type="submit" name="submit" value="Submit" class="btn btn-primary"><i class="bx bx-save"></i> Save</button>
 </form>
 
 

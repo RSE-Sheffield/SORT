@@ -5,24 +5,28 @@
                {% if user.is_authenticated %}
                    <div class="card custom-card shadow-sm mb-4">
                        <div class="card-body">
-                           <h2 class="card-title">
-                               {% if user.first_name %}
-                                   {% if user.last_name %}
-                                       Welcome, {{ user.first_name }} {{ user.last_name }}!
-                                   {% else %}
-                                       Welcome, {{ user.first_name }}!
-                                   {% endif %}
-                               {% else %}
-                                   Welcome!
-                               {% endif %}
-                           </h2>
-                           {% if user.organisation_set.first %}
-                               <p class="card-text">Your organisation is {{ user.organisation_set.first.name }}.</p>
-                           {% else %}
-                               <p class="card-text">You are currently not part of an organisation. Click
-                                   <a href="{% url 'organisation_create' %}">here</a> to create your first organisation.
-                               </p>
-                           {% endif %}
+                            {% if user.first_name %}
+                                {% if user.last_name %}
+                                    <h2 class="card-title">Welcome, {{ user.first_name }} {{ user.last_name }}!</h2>
+                                {% else %}
+                                    <h2 class="card-title">Welcome, {{ user.first_name }}!</h2>
+                                {% endif %}
+                            {% else %}
+                                <h2 class="card-title">Welcome!</h2>
+                                <p class="card-text">Your name has not been set.
+                                Click to <a href="{% url 'profile' %}">update your profile.</a>
+                            </p>
+                            {% endif %}
+                            {% if user.organisation_set.first %}
+                                <p class="card-text">Your organisation is {{ user.organisation_set.first.name }}.</p>
+                                <p class="card-text">
+                                    View the <a href="{% url 'organisation_create' %}">My Organisation</a> page to create, view or delete your Projects. Use this page to also create, configure and delete your surveys and manage their invitations.
+                                </p>
+                            {% else %}
+                                <p class="card-text">You are currently not part of an organisation.
+                                    Click to <a href="{% url 'organisation_create' %}">create your first organisation.</a>
+                                </p>
+                            {% endif %}
                        </div>
                    </div>
                {% endif %}
