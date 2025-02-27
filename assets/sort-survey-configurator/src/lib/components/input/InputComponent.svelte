@@ -280,8 +280,8 @@
             </div>
 
             <div>
-                <button class="btn btn-primary" onclick={() => {onDuplicateRequest()}}>Duplicate</button>
-                <button class="btn btn-danger" onclick={() => {onDeleteRequest()}}>Delete</button>
+                <button class="btn btn-primary" onclick={() => {onDuplicateRequest()}}><i class="bx bx-duplicate"></i> Duplicate</button>
+                <button class="btn btn-danger" onclick={() => {onDeleteRequest()}}><i class="bx bx-trash"></i> Delete</button>
             </div>
         </div>
     </div>

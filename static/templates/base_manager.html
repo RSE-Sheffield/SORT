@@ -19,10 +19,10 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">Home</a>
+                            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}"><i class="bx bxs-home"></i> Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}"><i class="bx bxs-user"></i>Profile</a>
+                            <a class="nav-link {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}"><i class="bx bxs-user"></i> Profile</a>
                         </li>
                         <li class="nav-item">
                             {% url 'organisation_create' as organisation_create_url %}
@@ -33,7 +33,7 @@
                                 {% if '/survey' in request.path %}active{% endif %} 
                                 {% if '/completion' in request.path %}active{% endif %}
                                 {% if '/invite' in request.path %}active{% endif %}"
-                                href="{% url 'myorganisation' %}">My Organisation</a>
+                                href="{% url 'myorganisation' %}"><i class="bx bxs-buildings"></i> My Organisation</a>
                         </li>
                     </ul>
                     <ul class="navbar-nav">
@@ -44,7 +44,7 @@
                                     method="POST"
                                     style="display: inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="nav-link btn btn-link btn-primary">Logout</button>
+                                    <button type="submit" class="nav-link btn btn-link btn-primary"><i class="bx bxs-user-x"></i> Logout</button>
                                 </form>
                             </li>
                         {% endif %}
