@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Survey, SurveyResponse, Invitation
+
+from .models import Invitation, Survey, SurveyResponse
 
 
 class InvitationAdmin(admin.ModelAdmin):

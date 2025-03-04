@@ -32,10 +32,26 @@ urlpatterns = [
     ),
     # path('password_reset/expired/', views.PasswordResetExpiredView.as_view(), name='password_reset_expired'),
     path("myorganisation/", views.MyOrganisationView.as_view(), name="myorganisation"),
-    path("organisation/create/", views.OrganisationCreateView.as_view(), name="organisation_create"),
+    path(
+        "organisation/create/",
+        views.OrganisationCreateView.as_view(),
+        name="organisation_create",
+    ),
     # path("projects/create/", views.ProjectCreateView.as_view(), name="project_create"),
     path("projects/<int:project_id>/", views.ProjectView.as_view(), name="project"),
-    path("projects/create/<int:organisation_id>/", views.ProjectCreateView.as_view(), name="project_create"),
-    path("projects/<int:project_id>/edit", views.ProjectEditView.as_view(), name="project_edit"),
-    path("projects/<int:pk>/delete", views.ProjectDeleteView.as_view(), name="project_delete"),
+    path(
+        "projects/create/<int:organisation_id>/",
+        views.ProjectCreateView.as_view(),
+        name="project_create",
+    ),
+    path(
+        "projects/<int:project_id>/edit",
+        views.ProjectEditView.as_view(),
+        name="project_edit",
+    ),
+    path(
+        "projects/<int:pk>/delete",
+        views.ProjectDeleteView.as_view(),
+        name="project_delete",
+    ),
 ]
