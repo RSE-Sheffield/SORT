@@ -21,11 +21,11 @@ jobs:
           python -m pip install --upgrade pip
           # https://pip.pypa.io/en/stable/cli/pip_install/
           pip install --requirement requirements.txt
+      - name: Generate secret key
+        run: export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
       # https://docs.djangoproject.com/en/5.1/ref/django-admin/#check
       - name: Run Django system checks
         run: python manage.py check
       # https://docs.djangoproject.com/en/5.1/topics/testing/
       - name: Run Django test suites
-        run: |
-          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
-          python manage.py test
+        run: python manage.py test
