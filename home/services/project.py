@@ -22,7 +22,10 @@ class ProjectService(BasePermissionService):
     """Service for managing projects with integrated permissions"""
 
     def get_user_role(self, user: User, project: Project) -> Optional[str]:
-        """Get user's highest role across project's organisations"""
+        """
+        Get user's highest role across project's organisations
+        TODO: this assuming a project can be linked to multiple organisations, check if still the case
+        """
         project_orgs = project.organisations.all()
 
         # Check for admin role first
@@ -55,7 +58,7 @@ class ProjectService(BasePermissionService):
         if role == ROLE_ADMIN:
             return True
         elif role == ROLE_PROJECT_MANAGER:
-            return self.get_user_permission(project, user) is not None
+            return self.get_user_permission(user, project) is not None
 
         return False
 
@@ -65,7 +68,7 @@ class ProjectService(BasePermissionService):
         if role == ROLE_ADMIN:
             return True
         elif role == ROLE_PROJECT_MANAGER:
-            permission = self.get_user_permission(project, user)
+            permission = self.get_user_permission(user, project)
             return permission and permission.permission == "EDIT"
 
         return False
@@ -86,7 +89,7 @@ class ProjectService(BasePermissionService):
         project.save()
         return project
 
-    @requires_permission("view")
+    @requires_permission("view", obj_param="project")
     def get_project(self, user: User, project: Project) -> Project:
         """Get project if user has permission"""
         return project
@@ -114,7 +117,7 @@ class ProjectService(BasePermissionService):
         project.delete()
         return parent_org
 
-    @requires_permission("edit", "project")
+    @requires_permission("edit", obj_param="project")
     def grant_permission(
         self,
         user: User,
@@ -139,7 +142,7 @@ class ProjectService(BasePermissionService):
             defaults={"granted_by": user, "permission": permission},
         )
 
-    @requires_permission("edit", "project")
+    @requires_permission("edit", obj_param="project")
     def revoke_permission(
         self, user: User, project: Project, project_manager: User
     ) -> None:

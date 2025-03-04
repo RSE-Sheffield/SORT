@@ -6,7 +6,6 @@ from io import StringIO
 from typing import Any
 
 from django.shortcuts import get_object_or_404
-
 from home.models import Project, User
 from home.services import BasePermissionService
 from survey.models import Invitation, Survey, SurveyResponse

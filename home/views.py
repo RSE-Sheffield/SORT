@@ -112,9 +112,18 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.organisation = organisation_service.get_user_organisation(request.user)
+        
+        if not self.organisation:
+            messages.error(request, "You are not a member of any organisation.")
+            return redirect("organisation_create")
+            
 
     def get_queryset(self):
-        queryset = organisation_service.get_organisation_projects(self.organisation)
+
+        queryset = organisation_service.get_organisation_projects(
+            organisation=self.organisation,
+            user=self.request.user,
+        )
 
         search_query = self.request.GET.get("q")
         if search_query:
