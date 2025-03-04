@@ -3,11 +3,13 @@ from django.forms import BaseFormSet, formset_factory
 from strenum import StrEnum
 from django.core.validators import EmailValidator
 
+
 class InvitationForm(forms.Form):
     email = forms.EmailField(label='Participant Email',
                              max_length=100,
                              required=True,
                              validators=[EmailValidator()])
+
 
 class FormFieldType(StrEnum):
     CHAR = "char"
@@ -15,7 +17,6 @@ class FormFieldType(StrEnum):
     RADIO = "radio"
     CHECKBOX = "checkbox"
     LIKERT = "likert"
-
 
 
 def create_field_from_config(field_config: dict):
@@ -43,7 +44,6 @@ def create_field_from_config(field_config: dict):
         field.required = field_config["required"]
 
     return field
-
 
 
 def create_dynamic_formset(field_configs: list):

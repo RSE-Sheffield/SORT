@@ -81,7 +81,6 @@ class ProjectService(BasePermissionService):
         """Update project with provided data"""
         for key, value in data.items():
             setattr(project, key, value)
-            
         project.save()
         return project
 
@@ -90,8 +89,7 @@ class ProjectService(BasePermissionService):
         """Get project if user has permission"""
         return project
 
-    def create_project(
-        self, user: User, name: str, organisation: Organisation, description: str="") -> Project:
+    def create_project(self, user: User, name: str, organisation: Organisation, description: str = "") -> Project:
         """Create a new project"""
         if not self.can_create(user):
             raise PermissionDenied("User cannot create projects")
@@ -109,7 +107,6 @@ class ProjectService(BasePermissionService):
         parent_org = project.organisations.first()
         project.delete()
         return parent_org
-
 
     @requires_permission("edit", "project")
     def grant_permission(

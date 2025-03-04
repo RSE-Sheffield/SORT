@@ -1,28 +1,18 @@
 import json
-
-from audioop import reverse
-from multiprocessing.managers import Token
-
-from IPython.utils.coloransi import value
 from django.core.mail import send_mail
-from django.http import HttpRequest, Http404, HttpResponseRedirect, HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.utils.functional import unpickle_lazyobject
 from django.views import View
-from django.views.generic import FormView, TemplateView, DetailView, UpdateView, DeleteView
+from django.views.generic import FormView, TemplateView, DeleteView
 from django.views.generic.edit import CreateView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template.context_processors import csrf
 from home.models import Project
 from survey.services import survey_service
-from .mixins import TokenAuthenticationMixin
-
-from .forms import create_dynamic_formset, InvitationForm
-from .models import Survey, SurveyResponse
-from .models import Invitation
-from .misc import test_survey_config
+from .forms import InvitationForm
+from .models import Survey
 
 import logging
 
@@ -66,6 +56,7 @@ class SurveyCreateView(LoginRequiredMixin, CreateView):
         survey_service.create_survey(self.object, project)
         return result
 
+
 class SurveyDeleteView(LoginRequiredMixin, DeleteView):
     model = Survey
     template_name = "survey/delete.html"
@@ -77,7 +68,7 @@ class SurveyDeleteView(LoginRequiredMixin, DeleteView):
             return super().form_valid(form)
         else:
             messages.error(self.request, "You do not have permission to delete this survey.")
-            return redirect("survey",  pk = self.object.pk)
+            return redirect("survey", pk=self.object.pk)
 
     def get_success_url(self):
         project_pk = self.object.project.pk
@@ -111,6 +102,7 @@ class SurveyConfigureView(LoginRequiredMixin, View):
                       template_name="survey/survey_configure.html",
                       context=context)
 
+
 class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
 
     def post(self, request: HttpRequest, pk: int):
@@ -118,18 +110,18 @@ class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
             num_responses = int(request.POST["num_responses"])
             survey = Survey.objects.get(pk=pk)
             survey_service.generate_mock_responses(survey, num_responses)
-            messages.success(request,f"Generated {num_responses} mock responses")
+            messages.success(request, f"Generated {num_responses} mock responses")
         else:
             messages.error(request, "Could not generate mock responses")
 
-
         return redirect("survey", pk=pk)
+
 
 class SurveyExportView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int):
         survey = Survey.objects.get(pk=pk)
         output_csv = survey_service.export_csv(survey)
-        response =  HttpResponse(output_csv, content_type="text/csv")
+        response = HttpResponse(output_csv, content_type="text/csv")
         file_name = f"survey_{survey.id}.csv"
         response["Content-Disposition"] = f"inline; filename={file_name}"
         return response
@@ -143,6 +135,7 @@ section_titles = [
             "E. Digital enabled research"
         ]
 
+
 class SurveyEvidenceGatheringView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int):
         survey = Survey.objects.get(pk=pk)
@@ -150,13 +143,13 @@ class SurveyEvidenceGatheringView(LoginRequiredMixin, View):
         context["section_titles"] = section_titles
         return render(request=request, template_name="survey/evidence_gathering.html", context=context)
 
+
 class SurveyImprovementPlanView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int):
         survey = Survey.objects.get(pk=pk)
         context = {"survey": survey}
         context["section_titles"] = section_titles
         return render(request=request, template_name="survey/improvement_plan.html", context=context)
-
 
 
 # TODO: Add TokenAuthenticationMixin after re-enabling the token
@@ -200,7 +193,7 @@ class SurveyResponseView(View):
                           template_name='survey/survey_response.html',
                           context=context)
 
-        except InvalidInviteTokenException as e:
+        except InvalidInviteTokenException:
             return redirect('survey_link_invalid')
 
 
