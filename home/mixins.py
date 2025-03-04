@@ -1,7 +1,5 @@
 from django.shortcuts import redirect
-from django.urls import reverse_lazy
 
-from .models import User, Organisation
 
 class OrganisationRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
@@ -9,4 +7,3 @@ class OrganisationRequiredMixin:
             return super().dispatch(request, *args, **kwargs)
         else:
             return redirect("organisation_create")
-

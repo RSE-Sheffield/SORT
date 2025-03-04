@@ -1,6 +1,7 @@
 __author__ = "Farhad Allian"
 
 from django.shortcuts import redirect
+
 from survey.models import Invitation
 
 

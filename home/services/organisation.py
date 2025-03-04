@@ -1,20 +1,20 @@
 """
 Organisation service with integrated permissions
 """
-
-from typing import Optional, Dict, List, Set, Literal
-from django.db.models.query import QuerySet, Prefetch
-from django.db.models import Count, Exists, OuterRef
+from typing import Dict, List, Literal, Optional, Set
 from django.core.exceptions import PermissionDenied
-from .base import BasePermissionService, requires_permission
+from django.db.models import Count, Exists, OuterRef
+from django.db.models.query import QuerySet
+
+from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from ..models import (
     Organisation,
-    User,
     OrganisationMembership,
     Project,
     ProjectManagerPermission,
+    User,
 )
-from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
+from .base import BasePermissionService, requires_permission
 
 
 class OrganisationService(BasePermissionService):

@@ -1,0 +1,33 @@
+name: Run Django tests
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          # This should match the version used in production
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          # Update pip
+          python -m pip install --upgrade pip
+          # https://pip.pypa.io/en/stable/cli/pip_install/
+          pip install --requirement requirements.txt
+      # https://docs.djangoproject.com/en/5.1/ref/django-admin/#check
+      - name: Run Django system checks
+        run: |
+          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
+          python manage.py check
+      # https://docs.djangoproject.com/en/5.1/topics/testing/
+      - name: Run Django test suites
+        run: |
+          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
+          python manage.py test
