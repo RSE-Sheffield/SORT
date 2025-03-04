@@ -16,6 +16,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template.context_processors import csrf
 from home.models import Project
+from .dashboards.dashboard import dash_app
 from survey.services import survey_service
 from .mixins import TokenAuthenticationMixin
 
@@ -32,25 +33,74 @@ logger = logging.getLogger(__name__)
 
 
 class SurveyView(LoginRequiredMixin, View):
+    login_url = '/login/'
     """
     Manager's view of a survey to be sent out. The manager is able to
     configure what fields are included in the survey on this page.
     """
 
-    def get(self, request: HttpRequest, pk: int):
+    def get(self, request, pk):
+        print("GET method called")
         return self.render_survey_page(request, pk)
 
-    def post(self, request: HttpRequest, pk: int):
-        return self.render_survey_page(request, pk, is_post=True)
+    def post(self, request, pk):
+        print("POST method called")
+        return self.render_survey_page(request, pk)
 
-    def render_survey_page(self, request: HttpRequest, pk: int, is_post=False):
+    def get_survey_metrics(self, responses):
+        section_averages = {}
+        response_list = []
+
+        for response in responses:
+            answers = response.answers
+            response_data = {
+                'model': 'survey.surveyresponse',
+                'pk': response.pk,
+                'fields': {
+                    'survey': response.survey_id,
+                    'answers': answers
+                }
+            }
+            response_list.append(response_data)
+
+            for section_idx, section_values in enumerate(answers):
+                section_name = f'section_{section_idx + 1}'
+                numeric_values = [
+                    value for value in section_values
+                    if isinstance(value, (int, float)) and not isinstance(value, bool)
+                ]
+
+                if numeric_values:
+                    if section_name not in section_averages:
+                        section_averages[section_name] = []
+                    section_average = round(sum(numeric_values) / len(numeric_values), 1)
+                    section_averages[section_name].append(section_average)
+
+        final_averages = {
+            section: round(sum(values) / len(values), 1)
+            for section, values in section_averages.items()
+            if values
+        }
+
+        return {
+            'section_averages': final_averages,
+            'survey_responses': response_list
+        }
+
+    def render_survey_page(self, request, pk):
         context = {}
-        survey = survey_service.get_survey(survey_id=pk)
+        survey = get_object_or_404(Survey, pk=pk)
+        responses = survey.survey_response.all()
+
+        context["has_responses"] = responses.exists()
+
+        if context["has_responses"]:
+            metrics = self.get_survey_metrics(responses)
+            dash_app.initial_arguments = metrics
+
         context["survey"] = survey
         context["invite_link"] = survey.get_invite_link(request)
-
         return render(request, 'survey/survey.html', context)
-
 
 class SurveyCreateView(LoginRequiredMixin, CreateView):
     model = Survey
@@ -82,7 +132,6 @@ class SurveyDeleteView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         project_pk = self.object.project.pk
         return reverse_lazy("project", kwargs={"project_id": project_pk})
-
 
 class SurveyConfigureView(LoginRequiredMixin, View):
 
@@ -125,6 +174,11 @@ class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
 
         return redirect("survey", pk=pk)
 
+class SurveyReportView(View):
+    def get(self, request: HttpRequest, pk: int):
+        survey = get_object_or_404(Survey, pk=pk)
+        context = {"survey": survey}
+        return render(request=request, template_name="survey/report.html", context=context)
 class SurveyExportView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int):
         survey = Survey.objects.get(pk=pk)
