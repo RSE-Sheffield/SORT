@@ -1,17 +1,16 @@
-
-from io import StringIO
-import json
 import csv
+import json
+import logging
 import random
+from io import StringIO
 from typing import Any
 
 from django.shortcuts import get_object_or_404
 
+from home.models import Project, User
 from home.services import BasePermissionService
-from home.models import User, Project
 from survey.models import Invitation, Survey, SurveyResponse
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -55,20 +54,20 @@ class SurveyService(BasePermissionService):
 
         return survey
 
-    def update_consent_demography_config(self,
-                                         survey: Survey,
-                                         consent_config,
-                                         demography_config) -> Survey:
+    def update_consent_demography_config(
+        self, survey: Survey, consent_config, demography_config
+    ) -> Survey:
         survey.consent_config = consent_config
         survey.demography_config = demography_config
 
         with open("data/survey_config/sort_only_config.json") as f:
             sort_config = json.load(f)
-            merged_sections = survey.consent_config["sections"] + sort_config["sections"] + survey.demography_config[
-                "sections"]
-            survey.survey_config = {
-                "sections": merged_sections
-            }
+            merged_sections = (
+                survey.consent_config["sections"]
+                + sort_config["sections"]
+                + survey.demography_config["sections"]
+            )
+            survey.survey_config = {"sections": merged_sections}
         survey.save()
         return survey
 
@@ -156,8 +155,9 @@ class SurveyService(BasePermissionService):
         Generate a number of mock responses
         """
         for i in range(num_responses):
-            self.accept_response(survey,
-                                 responseValues=self.generate_mock_response(survey.survey_config))
+            self.accept_response(
+                survey, responseValues=self.generate_mock_response(survey.survey_config)
+            )
 
     def generate_mock_response(self, survey_config):
         output_data = []
@@ -176,12 +176,12 @@ class SurveyService(BasePermissionService):
         if type == "radio" or type == "select":
             # Pick one option
             num_options = len(field_config["options"])
-            option_index = random.randint(0, num_options-1)
+            option_index = random.randint(0, num_options - 1)
             return str(field_config["options"][option_index])
         elif type == "checkbox":
             # Pick one random option
             num_options = len(field_config["options"])
-            option_index = random.randint(0, num_options-1)
+            option_index = random.randint(0, num_options - 1)
             return [str(field_config["options"][option_index])]
         elif type == "likert":
             likert_output = []
@@ -195,12 +195,28 @@ class SurveyService(BasePermissionService):
         elif type == "text":
             if "textType" in field_config:
                 if field_config["textType"] == "INTEGER_TEXT":
-                    min_value = field_config["minNumValue"] if "minNumValue" in field_config else 0
-                    max_value = field_config["maxNumValue"] if "maxNumValue" in field_config else 100
+                    min_value = (
+                        field_config["minNumValue"]
+                        if "minNumValue" in field_config
+                        else 0
+                    )
+                    max_value = (
+                        field_config["maxNumValue"]
+                        if "maxNumValue" in field_config
+                        else 100
+                    )
                     return str(random.randint(min_value, max_value))
                 elif field_config["textType"] == "DECIMALS_TEXT":
-                    min_value = field_config["minNumValue"] if "minNumValue" in field_config else 0
-                    max_value = field_config["maxNumValue"] if "maxNumValue" in field_config else 100
+                    min_value = (
+                        field_config["minNumValue"]
+                        if "minNumValue" in field_config
+                        else 0
+                    )
+                    max_value = (
+                        field_config["maxNumValue"]
+                        if "maxNumValue" in field_config
+                        else 100
+                    )
                     return str(random.uniform(min_value, max_value))
                 elif field_config["textType"] == "EMAIL_TEXT":
                     return "test@test.com"
