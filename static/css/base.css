@@ -1,11 +1,14 @@
 :root {
     --primary-colour: #440099;
+    --primary-colour-lg: #7C4DB8;
     --primary-bg-colour: #DACCEB;
+    --primary-dark-colour: #131e29;
 }
 
 body {
     font-family: 'Source Sans Pro', sans-serif;
     background-color: #f8f9fa;
+    margin-bottom: 60px;
 }
 
 header {
@@ -15,16 +18,28 @@ header {
     z-index: 1000;
 }
 
-.navbar {
-    background-color: var(--primary-bg-colour);
+.subheader {
+    color: white;
+    background-color: var(--primary-colour);
+    font-weight: bold;
 }
 
-footer {
-    position: relative;
+.navbar {
+    top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
-    padding: 0 0; /
+    z-index: 1000;
+    background-color: var(--primary-dark-colour);
+}
+
+.navbar a {
+    color: lightgrey;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: white !important;
+    filter: brightness(1.0);
 }
 
 .container {
@@ -33,22 +48,23 @@ footer {
     flex-direction: column;
 }
 
-
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Source Sans Pro', sans-serif;
     line-height: 1.6;
     font-weight: normal
 }
 
-
 .card-header {
     border-top-left-radius: 1rem;
     border-top-right-radius: 1rem;
 }
 
+.card-text a {
+    color: var(--primary-colour-lg);
+}
 
 .text-center a {
-    color: #7C4DB8;
+    color: var(--primary-colour-lg);
     text-decoration: none;
 }
 
@@ -64,9 +80,7 @@ h1, h2, h3, h4, h5, h6 {
      flex-direction: column;
     align-items: center;
     margin: 0 auto;
-
 }
-
 
 .card-body.custom-card, .card.custom-card > .card-body {
     width: 100%;
@@ -74,7 +88,6 @@ h1, h2, h3, h4, h5, h6 {
      flex-direction: column;
     align-items: center;
     margin:0 auto;
-
 }
 
 .title-container {
@@ -93,24 +106,22 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-    background-color: #6933AD !important;
-    border-color: #6933AD !important;
+    background-color: var(--primary-colour) !important;
+    border-color: var(--primary-colour) !important;
 }
 
 .btn-primary:hover {
-    background-color: var(--primary-colour) !important;
-    border-color: var(--primary-colour) !important;
+    background-color: var(--primary-colour-lg) !important;
+    border-color: var(--primary-colour-lg) !important;
 }
 
 .btn-primary, .btn-primary:hover {
     color: white !important;
 }
 
-
 .full-height {
     height: 100vh;
 }
-
 
 .form-label {
     text-align: left !important;
@@ -118,7 +129,10 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 0.5rem;
 }
 
-
 .form-control {
     padding: 0.375rem 0.75rem;
+}
+
+.breadcrumb a {
+    color: var(--primary-colour);
 }

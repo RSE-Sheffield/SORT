@@ -1,0 +1,16 @@
+# Lint shell scripts
+# https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions
+# https://github.com/marketplace/actions/shell-linter
+name: Lint shell scripts
+on:
+  push:
+    branches: [ "main", "dev" ]
+jobs:
+  lint_shell:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azohra/shell-linter@v0.6.0
+        with:
+          severity: 'warning'
+          exclude-paths: 'LICENSE'

@@ -1,36 +1,46 @@
-{% extends "base.html" %}
+{% extends "base_manager.html" %}
 
 {% block content %}
-    <div class="container">
-        <form method="post">
-            {% csrf_token %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <div>
+            <h1>Profile</h1>
+            <p class="subtitle">Use the form below to update your profile details.</p>
+        </div>
 
-            <div class="mb-3">
-                <label for="id_first_name" class="form-label">First Name</label>
-                <input type="text" name="first_name" id="id_first_name" class="form-control"
-                       placeholder="Enter your first name" value="{{ user.first_name }}" required>
-            </div>
+        <div class="card custom-card shadow-sm my-4">
+            <div class="card-body">
+        
+                <form method="post">
+                    {% csrf_token %}
 
-            <div class="mb-3">
-                <label for="id_last_name" class="form-label">Last Name</label>
-                <input type="text" name="last_name" id="id_last_name" class="form-control"
-                       placeholder="Enter your last name" value="{{ user.last_name }}" required>
-            </div>
+                    <div class="mb-3">
+                        <label for="id_first_name" class="form-label">First Name</label>
+                        <input type="text" autocomplete="given-name" name="first_name" id="id_first_name" class="form-control"
+                            placeholder="Enter your first name" value="{{ user.first_name }}" required>
+                    </div>
 
-            <div class="mb-3">
-                <label for="id_email" class="form-label">Email Address</label>
-                <input type="email" name="email" id="id_email" class="form-control"
-                       placeholder="Enter your email address" value="{{ user.email }}" required>
-            </div>
+                    <div class="mb-3">
+                        <label for="id_last_name" class="form-label">Last Name</label>
+                        <input type="text" autocomplete="family-name" name="last_name" id="id_last_name" class="form-control"
+                            placeholder="Enter your last name" value="{{ user.last_name }}" required>
+                    </div>
 
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary" style="background-color: #6933AD; border: none;">
-                    Update Profile
-                </button>
-              <a href="{% url 'home' %}" class="btn btn-primary" style="background-color: #6933AD; border: none; margin-left: 10px;">
-                    Cancel
-                </a>
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">Email Address</label>
+                        <input type="email" autocomplete="email" name="email" id="id_email" class="form-control" 
+                            placeholder="Enter your email address" value="{{ user.email }}" required>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary" style="background-color: #6933AD; border: none;">
+                            <i class="bx bxs-user-check"></i> Update Profile
+                        </button>
+                        <!-- <a href="{% url 'home' %}" class="btn btn-primary" style="background-color: #6933AD; border: none; margin-left: 10px;">
+                            Cancel
+                        </a> -->
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 {% endblock %}

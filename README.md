@@ -17,7 +17,7 @@ Follow these steps to set up and run the app locally:
 
 Prerequisites
 
-- Python 3.10
+- Python 3.12
 - pip
 ---
 
@@ -62,8 +62,10 @@ python manage.py createsuperuser
 
 6. Create a `.env` file in the project root directory and add the following environment variables:
 
-```
+```bash
 DJANGO_SECRET_KEY=your_secret_key
+DJANGO_DEBUG=True
+DJANGO_ALLOWED_HOSTS=127.0.0.1 localhost
 ```
 
 ---
@@ -77,8 +79,8 @@ The app will be available at http://127.0.0.1:8000.
 
 ---
 
-8. Import data using the [`loaddata`](https://docs.djangoproject.com/en/5.1/ref/django-admin/#django-admin-loaddata) command
+8. Import test data by following the instructions as [`data/README.md`](./data/README.md).
 
-```bash
-python manage.py loaddata data\questionnaires.json data\questionnaires.json
-```
+# Deployment
+
+Please read [`docs/deployment.md`](docs/deployment.md).

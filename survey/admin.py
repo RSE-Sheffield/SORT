@@ -1,7 +1,14 @@
 from django.contrib import admin
 
-from .models import Answer, Question, Questionnaire
+from .models import Invitation, Survey, SurveyResponse
 
-admin.site.register(Questionnaire)
-admin.site.register(Question)
-admin.site.register(Answer)
+
+class InvitationAdmin(admin.ModelAdmin):
+    list_display = ("survey", "token", "created_at", "used")
+    search_fields = ("token",)
+    ordering = ("created_at",)
+
+
+admin.site.register(Survey)
+admin.site.register(SurveyResponse)
+admin.site.register(Invitation, InvitationAdmin)

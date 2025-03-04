@@ -1,12 +1,12 @@
-{% extends "base.html" %}
+{% extends "base_manager.html" %}
 {% load project_filters %}
 {% block content %}
   <div class="container mx-auto px-4 py-8">
     <div class="w-100 d-flex justify-content-between align-items-center mt-3 mb-6">
-      <h1 class="text-2xl font-bold d-inline-block">Studies</h1>
+      <h1 class="text-2xl font-bold d-inline-block">Projects</h1>
       {% if can_create %}
         <a href="todo">
-          <button type="button" class="btn btn-primary">Create study</button>
+          <button type="button" class="btn btn-primary">Create project</button>
         </a>
       {% endif %}
     </div>
@@ -14,7 +14,7 @@
       {% for project in projects %}
         <div class="card w-100">
           <div class="card-body">
-            <h5 class="card-title">{{ project.name }}</h5>
+            <h2 class="card-title">{{ project.name }}</h2>
             <div class="card-text">
               <div class="flex flex-wrap gap-2 mb-3">
                 {% for org in project_orgs|get_item:project.id %}<span class="badge text-bg-primary">{{ org.name }}</span>{% endfor %}
@@ -27,19 +27,19 @@
                   <button type="button" class="btn btn-light">Edit</button>
                 </a>
               {% endif %}
-              <a href="{% url 'projects' %}">
+              <a href="{% url 'project' project.id %}">
                 <button type="button" class="btn btn-dark">View</button>
               </a>
             </div>
           </div>
         </div>
       {% empty %}
-        <p class="text-gray-600">No studies found.</p>
+        <p class="text-gray-600">No projects found.</p>
       {% endfor %}
     </div>
     {% comment %} pagination {% endcomment %}
     {% if page_obj.has_other_pages %}
-      <nav aria-label="Study navigation" class="mt-3">
+      <nav aria-label="Project navigation" class="mt-3">
         <ul class="pagination justify-content-center">
           <!-- First Page -->
           {% if page_obj.has_previous %}

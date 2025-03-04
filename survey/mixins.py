@@ -2,7 +2,7 @@ __author__ = "Farhad Allian"
 
 from django.shortcuts import redirect
 
-from invites.models import Invitation
+from survey.models import Invitation
 
 
 class TokenAuthenticationMixin:

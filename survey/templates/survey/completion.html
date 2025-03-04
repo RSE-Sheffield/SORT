@@ -1,14 +1,14 @@
-{% extends "base.html" %}
+{% extends "base_anonymous.html" %}
 
 {% block content %}
-    <h3>Survey Completed!</h3>
+    <div class="container">
+        <h3>Survey Completed!</h3>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-success" role="alert">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
+        <div class="alert alert-success" role="alert">
+            Thank you for filling in the survey!
+        </div>
+    </div>
+
+
 
 {% endblock %}

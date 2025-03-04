@@ -1,57 +1,83 @@
+import secrets
+
 from django.db import models
+from django.http import HttpRequest
 from django.urls import reverse
+from django.utils import timezone
+
+from home.models import Project
 
 
-class Questionnaire(models.Model):
-    # Questionnaire data model
-    title = models.CharField(max_length=200)
-    description = models.TextField()
+class Survey(models.Model):
+    """
+    Represents a survey that will be sent out to a participant
+    """
+
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+    survey_config = models.JSONField(null=True)
+    consent_config = models.JSONField(null=True)
+    demography_config = models.JSONField(null=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
-        return self.title
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("survey", kwargs={"pk": self.pk})
+
+    def current_invite_token(self):
+        for invite in self.invitation_set.all():
+            if not invite.is_expired() and not invite.used:
+                return invite.token
+        return None
+
+    def get_invite_link(self, request: HttpRequest):
+        token = self.current_invite_token()
+        if token is not None:
+            return request.build_absolute_uri("/survey_response/" + token)
+
+        return None
+
+
+class SurveyResponse(models.Model):
+    """
+    Represents a single response to the survey from a participant
+    """
+
+    survey = models.ForeignKey(
+        Survey, related_name="survey_response", on_delete=models.CASCADE
+    )  # Many questions belong to one survey
+    answers = models.JSONField()
 
     def get_absolute_url(self, token):
-        return reverse("survey", kwargs={"pk": self.pk, "token": token})
+        return reverse("survey", kwargs={"pk": self.survey.pk})
 
 
-class Question(models.Model):
-    # Question data model
-    QUESTION_TYPE_CHOICES = [
-        ("text", "Text"),
-        ("multiple_choice", "Multiple Choice"),
-        ("rating", "Rating"),
-        ("boolean", "Agree/Disagree"),
-    ]
+class Invitation(models.Model):
 
-    questionnaire = models.ForeignKey(
-        Questionnaire, related_name="questions", on_delete=models.CASCADE
-    )  # Many questions belong to one questionnaire
-    question_text = models.CharField(max_length=500)
-    question_type = models.CharField(
-        max_length=50, choices=QUESTION_TYPE_CHOICES, default="multiple_choice"
-    )
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    token = models.CharField(max_length=64, unique=True, blank=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    used = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.question_text
+        return f"Invitation for {self.survey.name}"
 
+    def save(self, *args, **kwargs):
 
-class Answer(models.Model):
-    # User answer data model
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    answer_text = models.TextField(blank=True, null=True)
-    token = models.CharField(max_length=64, blank=True, editable=False)
-    submitted_at = models.DateTimeField(null=True)  #
+        if not self.token:
+            # Try a new token until it doesn't clash with an existing one
+            num_token_tries = 0
+            max_token_tries = 50
+            while num_token_tries < max_token_tries:
+                token = secrets.token_urlsafe(32)
+                if Invitation.objects.filter(token=token).count() < 1:
+                    self.token = token
+                    break
+                num_token_tries += 1
 
-    def __str__(self):
-        return f"Answer for {self.question.question_text}"
+        super().save(*args, **kwargs)
 
-
-class Comment(models.Model):
-    # Comments data model
-    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE)
-    token = models.CharField(max_length=64, blank=True, editable=False)
-    text = models.TextField()
-    submitted_at = models.DateTimeField(null=True)
-
-    def __str__(self):
-        return f"Comment on {self.questionnaire.title}"
+    def is_expired(self):
+        return timezone.now() > self.created_at + timezone.timedelta(days=7)

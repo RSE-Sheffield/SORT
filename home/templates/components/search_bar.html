@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+    <form method="get" action="{{ search_url }}" class="d-flex gap-2">
+        {% for key, value in current_params.items %}
+            {% if key != 'q' and key != 'page' %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+        {{ search_form.q }}
+        <button type="submit" class="btn btn-primary"><div class="d-flex flex-row align-items-center"><i class="bx bxs-search"></i> Search</div></button>
+        {% if current_search %}
+            <a href="{{ search_url }}" class="btn btn-light border"><div class="d-flex flex-row align-items-center"><i class="bx bxs-x-circle"></i> Clear</div></a>
+        {% endif %}
+    </form>
+
+</html>

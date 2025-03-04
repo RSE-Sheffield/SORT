@@ -1,0 +1,14 @@
+{% extends 'base_anonymous.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container mx-auto px-4 py-8 m-3">
+    <div id="app"></div>
+</div>
+{{ csrf | json_script:"csrf" }}
+{{ value | json_script:"responseValue" }}
+{{ survey.survey_config | json_script:"configData" }}
+<script type="module" src="{% static 'js/sort-ui/sort_survey_response.js' %}"></script>
+
+
+{% endblock %}

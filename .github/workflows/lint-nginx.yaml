@@ -1,0 +1,16 @@
+# GitHub Actions workflow for validating NGINX configuration files
+# https://github.com/jhinch/nginx-linter
+name: Lint NGINX config files
+on:
+  push:
+    branches: [ "main", "dev" ]
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install nginx-linter
+        run: npm install -g nginx-linter
+      - name: Run nginx linter
+        run: nginx-linter --include config/nginx/* --no-follow-includes

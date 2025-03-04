@@ -1,0 +1,16 @@
+name: Check Gunicorn config
+on:
+  push:
+    branches: [ "main", "dev" ]
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5.3.0
+      - name: Install Gunicorn
+        run: pip install gunicorn
+      - name: Check Gunicorn config
+        run: gunicorn --config ./gunicorn.conf.py --check-config SORT.wsgi:application

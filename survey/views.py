@@ -1,136 +1,272 @@
+import json
 import logging
 
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.mail import send_mail
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.context_processors import csrf
+from django.urls import reverse_lazy
 from django.views import View
+from django.views.generic import DeleteView, FormView, TemplateView
+from django.views.generic.edit import CreateView
 
-from invites.models import Invitation
+from home.models import Project
+from survey.services import survey_service
 
-from .forms import AnswerForm
-from .mixins import TokenAuthenticationMixin
-from .models import Answer, Comment, Questionnaire
+from .forms import InvitationForm
+from .models import Survey
+from .services.survey import InvalidInviteTokenException
 
 logger = logging.getLogger(__name__)
 
 
-class QuestionnaireView(TokenAuthenticationMixin, View):
-    login_url = "/login/"  # redirect to login if not authenticated
+class SurveyView(LoginRequiredMixin, View):
+    """
+    Manager's view of a survey to be sent out. The manager is able to
+    configure what fields are included in the survey on this page.
+    """
 
-    def get(self, request, pk, token):
-        # Retrieve the questionnaire
-        questionnaire = get_object_or_404(Questionnaire, pk=pk)
+    def get(self, request: HttpRequest, pk: int):
+        return self.render_survey_page(request, pk)
 
-        if not self.validate_token(token):
-            messages.error(request, "Invalid or expired invitation token.")
-            logger.error("Token validation failed.")
-            return redirect("completion_page")
+    def post(self, request: HttpRequest, pk: int):
+        return self.render_survey_page(request, pk, is_post=True)
 
-        form = AnswerForm(questionnaire=questionnaire)
-        question_numbers = list(enumerate(questionnaire.questions.all(), start=1))
+    def render_survey_page(self, request: HttpRequest, pk: int, is_post=False):
+        context = {}
+        survey = survey_service.get_survey(survey_id=pk)
+        context["survey"] = survey
+        context["invite_link"] = survey.get_invite_link(request)
 
-        rating_questions = questionnaire.questions.filter(question_type="rating")
-        legend_text = self.get_legend_text(rating_questions)
+        return render(request, "survey/survey.html", context)
+
+
+class SurveyCreateView(LoginRequiredMixin, CreateView):
+    model = Survey
+    template_name = "survey/create.html"
+    fields = ["name", "description"]
+
+    def get_success_url(self):
+        return self.object.get_absolute_url()
+
+    def form_valid(self, form):
+        result = super().form_valid(form)
+        project = Project.objects.get(pk=self.kwargs["project_id"])
+        survey_service.create_survey(self.object, project)
+        return result
+
+
+class SurveyDeleteView(LoginRequiredMixin, DeleteView):
+    model = Survey
+    template_name = "survey/delete.html"
+    context_object_name = "survey"
+
+    def form_valid(self, form):
+        if survey_service.can_delete(self.request.user, self.object):
+            messages.info(self.request, f"Survey {self.object.name} deleted")
+            return super().form_valid(form)
+        else:
+            messages.error(
+                self.request, "You do not have permission to delete this survey."
+            )
+            return redirect("survey", pk=self.object.pk)
+
+    def get_success_url(self):
+        project_pk = self.object.project.pk
+        return reverse_lazy("project", kwargs={"project_id": project_pk})
+
+
+class SurveyConfigureView(LoginRequiredMixin, View):
+
+    def get(self, request: HttpRequest, pk: int):
+        return self.render_survey_config_view(request, pk, is_post=False)
+
+    def post(self, request: HttpRequest, pk: int):
+        return self.render_survey_config_view(request, pk, is_post=True)
+
+    def render_survey_config_view(self, request: HttpRequest, pk: int, is_post: bool):
+        context = {}
+        # TODO: Error handling when object not found
+        survey = get_object_or_404(Survey, pk=pk)
+        context["survey"] = survey
+        context["csrf"] = str(csrf(self.request)["csrf_token"])
+
+        if is_post:
+            if "consent_config" in request.POST and "demography_config" in request.POST:
+                consent_config = json.loads(request.POST.get("consent_config", None))
+                demography_config = json.loads(
+                    request.POST.get("demography_config", None)
+                )
+                survey_service.update_consent_demography_config(
+                    survey, consent_config, demography_config
+                )
+                messages.info(request, "Survey configuration saved")
+                return redirect("survey", pk=survey.pk)
 
         return render(
-            request,
-            "survey/questionnaire.html",
-            {
-                "form": form,
-                "questionnaire": questionnaire,
-                "question_numbers": question_numbers,
-                "legend_text": legend_text,
-                "token": token,
-            },
+            request=request,
+            template_name="survey/survey_configure.html",
+            context=context,
         )
 
-    def post(self, request, pk, token):
-        logger.info("Received POST request for questionnaire and token")
-        questionnaire = get_object_or_404(Questionnaire, pk=pk)
-        form = AnswerForm(request.POST, questionnaire=questionnaire)
 
-        if form.is_valid():
-            if self.all_agree(form, questionnaire):
-                self.save_answers(form, questionnaire, token)
-                next_questionnaire = self.get_next_questionnaire(questionnaire)
+class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
 
-                if next_questionnaire:
-                    logger.info(
-                        f"Redirecting to next questionnaire: {next_questionnaire.pk}"
-                    )
-                    return redirect(
-                        "questionnaire", pk=next_questionnaire.pk, token=token
-                    )
-                else:
-                    logger.info(
-                        "No more questionnaires. Redirecting to completion page."
-                    )
+    def post(self, request: HttpRequest, pk: int):
+        if "num_responses" in request.POST:
+            num_responses = int(request.POST["num_responses"])
+            survey = Survey.objects.get(pk=pk)
+            survey_service.generate_mock_responses(survey, num_responses)
+            messages.success(request, f"Generated {num_responses} mock responses")
+        else:
+            messages.error(request, "Could not generate mock responses")
+
+        return redirect("survey", pk=pk)
+
+
+class SurveyExportView(LoginRequiredMixin, View):
+    def get(self, request: HttpRequest, pk: int):
+        survey = Survey.objects.get(pk=pk)
+        output_csv = survey_service.export_csv(survey)
+        response = HttpResponse(output_csv, content_type="text/csv")
+        file_name = f"survey_{survey.id}.csv"
+        response["Content-Disposition"] = f"inline; filename={file_name}"
+        return response
+
+
+section_titles = [
+    "A. Releasing Potential",
+    "B. Embedding Research",
+    "C. Linkages and Leadership",
+    "D. Inclusive research delivery",
+    "E. Digital enabled research",
+]
+
+
+class SurveyEvidenceGatheringView(LoginRequiredMixin, View):
+    def get(self, request: HttpRequest, pk: int):
+        survey = Survey.objects.get(pk=pk)
+        context = {"survey": survey}
+        context["section_titles"] = section_titles
+        return render(
+            request=request,
+            template_name="survey/evidence_gathering.html",
+            context=context,
+        )
+
+
+class SurveyImprovementPlanView(LoginRequiredMixin, View):
+    def get(self, request: HttpRequest, pk: int):
+        survey = Survey.objects.get(pk=pk)
+        context = {"survey": survey}
+        context["section_titles"] = section_titles
+        return render(
+            request=request,
+            template_name="survey/improvement_plan.html",
+            context=context,
+        )
+
+
+# TODO: Add TokenAuthenticationMixin after re-enabling the token
+class SurveyResponseView(View):
+    """
+    Participant's view of the survey. This view renders the survey configuration
+    allowing participant to fill in the survey form and send it for processing.
+    """
+
+    def get(self, request: HttpRequest, token: str):
+        return self.render_survey_response_page(request, token, is_post=False)
+
+    def post(self, request: HttpRequest, token: str):
+        return self.render_survey_response_page(request, token, is_post=True)
+
+    def render_survey_response_page(
+        self, request: HttpRequest, token: str, is_post: bool
+    ):
+
+        try:
+
+            survey = survey_service.get_survey_from_token(token)
+            # Context for rendering
+            context = {}
+
+            if is_post:
+                # Only process if it's a post request
+
+                # TODO: Server side value validation to make sure
+                if "value" in request.POST:
+                    responseValues = json.loads(request.POST.get("value", None))
+                    survey_service.accept_response(survey, responseValues)
+                    context["value"] = responseValues
                     return redirect("completion_page")
 
-            else:
-                messages.error(request, "You must agree to all statements to proceed.")
+            context["survey"] = survey
+            context["csrf"] = str(csrf(self.request)["csrf_token"])
 
-        context = {
-            "form": form,
-            "questionnaire": questionnaire,
-            "question_numbers": enumerate(questionnaire.questions.all(), start=1),
-            "token": token,
-        }
-        return render(request, "survey/questionnaire.html", context=context)
-
-    def all_agree(self, form, questionnaire):
-        if questionnaire.title == "Consent":
-            for question in questionnaire.questions.all():
-                answer_text = form.cleaned_data.get(f"question_{question.id}")
-                if answer_text != "agree":
-                    return False
-        return True
-
-    def save_answers(self, form, questionnaire, token):
-        for question in questionnaire.questions.all():
-            answer_text = form.cleaned_data.get(f"question_{question.id}")
-            Answer.objects.create(
-                question=question,
-                answer_text=answer_text,
-                token=token,
+            return render(
+                request=request,
+                template_name="survey/survey_response.html",
+                context=context,
             )
 
-        comment_text = form.cleaned_data.get("comments")
-        if comment_text:
-            Comment.objects.create(
-                text=comment_text,
-                questionnaire=questionnaire,
-                token=token,
-            )
+        except InvalidInviteTokenException:
+            return redirect("survey_link_invalid")
 
-    def get_legend_text(self, rating_questions):
-        if rating_questions.exists():
-            return (
-                "Our Organisation: (0=Not yet planned; 1=Planned;"
-                "2=Early progress; 3=Substantial Progress; 4=Established)"
-            )
-        return ""
 
-    def get_next_questionnaire(self, current_questionnaire):
-        next_questionnaire = (
-            Questionnaire.objects.exclude(title="Consent")
-            .filter(pk__gt=current_questionnaire.pk)
-            .order_by("pk")
-            .first()
-        )
-        return next_questionnaire
+class SurveyLinkInvalidView(View):
+    """
+    Shown when a participant is trying to access the SurveyResponseView using an
+    invalid pk or token.
+    """
 
-    def validate_token(self, token):
-
-        is_valid = Invitation.objects.filter(token=token).exists()
-
-        if is_valid:
-            logger.info("Token is valid.")
-        else:
-            logger.warning("Token is invalid or expired.")
-        return is_valid
+    def get(self, request):
+        return render(request, "survey/survey_link_invalid_view.html")
 
 
 class CompletionView(View):
+    """
+    Shown when a survey is completed by a participant.
+    """
+
     def get(self, request):
-        messages.info(request, "You have completed the survey.")
         return render(request, "survey/completion.html")
+
+
+class SurveyCreateInviteView(LoginRequiredMixin, View):
+
+    def post(self, request: HttpRequest, pk: int):
+        survey = get_object_or_404(Survey, pk=pk)
+        survey_service.create_invitation(survey)
+        return redirect("survey", pk=pk)
+
+
+class InvitationView(FormView):
+    model = Survey
+    template_name = "invitations/send_invitation.html"
+    form_class = InvitationForm
+    success_url = reverse_lazy("success_invitation")
+
+    def form_valid(self, form):
+        email = form.cleaned_data["email"]
+        survey = Survey.objects.get(pk=self.kwargs["pk"])
+        # Generate the survey link with the token
+        survey_link = survey.get_invite_link()
+
+        # Send the email
+        send_mail(
+            "Your Survey Invitation",
+            f"Click here to start the survey: {survey_link}",
+            "from@example.com",
+            [email],
+            fail_silently=False,
+        )
+
+        # Show success message
+        messages.success(self.request, f"Invitation sent to {email}.")
+        return super().form_valid(form)
+
+
+class SuccessInvitationView(LoginRequiredMixin, TemplateView):
+    template_name = "invitations/complete_invitation.html"

@@ -1,10 +1,12 @@
-from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin,
 )
-from survey.models import Questionnaire
+from django.db import models
+from django.urls import reverse
+
+from .constants import PERMISSION_CHOICES, PERMISSION_VIEW, ROLE_PROJECT_MANAGER, ROLES
 
 
 class UserManager(BaseUserManager):
@@ -53,7 +55,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Organisation(models.Model):
     name = models.CharField(max_length=200)
-    members = models.ManyToManyField(User, through="OrganisationMembership")
+    description = models.TextField(blank=True, null=True)
+    members = models.ManyToManyField(
+        User, through="OrganisationMembership", through_fields=("organisation", "user")
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -65,48 +70,30 @@ class Organisation(models.Model):
 
 
 class OrganisationMembership(models.Model):
-    ROLE_CHOICES = [
-        ("ADMIN", "Administrator"),
-        ("MEMBER", "Member"),
-        ("GUEST", "Guest"),
-    ]
-    """
-    ADMIN: Full control
-    MEMBER: Can view and edit projects
-    GUEST: Can view certain projects
-    """
-
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="GUEST")
+    role = models.CharField(max_length=20, choices=ROLES, default=ROLE_PROJECT_MANAGER)
     joined_at = models.DateTimeField(auto_now_add=True)
+    added_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="members_added", null=True
+    )
 
     class Meta:
         unique_together = ["user", "organisation"]
-        """ A user can only be a member of an organisation once """
+
 
 class Project(models.Model):
     name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
     organisations = models.ManyToManyField(Organisation, through="ProjectOrganisation")
-    """ A project can be associated with multiple organisations/teams """
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
-    surveys = models.ManyToManyField(Questionnaire, blank=True)
 
     def __str__(self):
         return self.name
 
-    def user_can_edit(self, user):
-        user_orgs = self.projectorganisation_set.filter(
-            organisation__organisationmembership__user=user,
-            organisation__organisationmembership__role__in=["ADMIN", "MEMBER"],
-        )
-        return user_orgs.exists()
-
-    def user_can_view(self, user):
-        return self.projectorganisation_set.filter(
-            organisation__organisationmembership__user=user
-        ).exists()
+    def get_absolute_url(self):
+        return reverse("project", kwargs={"project_id": self.pk})
 
 
 class ProjectOrganisation(models.Model):
@@ -117,3 +104,21 @@ class ProjectOrganisation(models.Model):
 
     class Meta:
         unique_together = ["project", "organisation"]
+
+
+class ProjectManagerPermission(models.Model):
+    """Defines the permission level for project managers within a project"""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    permission = models.CharField(
+        max_length=10, choices=PERMISSION_CHOICES, default=PERMISSION_VIEW
+    )
+    granted_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="granted_permissions"
+    )
+    granted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["user", "project"]
+        verbose_name_plural = "Project manager permissions"

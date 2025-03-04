@@ -1,9 +1,9 @@
 name: Run Django tests
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
 jobs:
   lint:
     runs-on: ubuntu-24.04
@@ -23,7 +23,9 @@ jobs:
           pip install --requirement requirements.txt
       # https://docs.djangoproject.com/en/5.1/ref/django-admin/#check
       - name: Run Django system checks
-        run: python manage.py check
+        run: |
+          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
+          python manage.py check
       # https://docs.djangoproject.com/en/5.1/topics/testing/
       - name: Run Django test suites
         run: |

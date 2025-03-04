@@ -1,0 +1,22 @@
+[
+  {
+    "model": "home.projectorganisation",
+    "pk": 1,
+    "fields": {
+      "project": 1,
+      "organisation": 1,
+      "added_by": 1,
+      "added_at": "2024-01-15T00:00:00Z"
+    }
+  },
+  {
+    "model": "home.projectorganisation",
+    "pk": 2,
+    "fields": {
+      "project": 1,
+      "organisation": 2,
+      "added_by": 1,
+      "added_at": "2024-01-15T00:00:00Z"
+    }
+  }
+]

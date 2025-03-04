@@ -1,0 +1,21 @@
+{
+  "sections": [
+    {
+      "title": "Welcome",
+      "type": "consent",
+      "description": "Welcome to the study",
+      "fields": [
+        {
+          "type": "checkbox",
+          "name": "consent",
+          "label": "Do you agreee to complete the survey?",
+          "required": true,
+          "sublabels": [],
+          "options": [
+              "Yes, I agree to complete the survey"
+          ]
+        }
+      ]
+    }
+  ]
+}

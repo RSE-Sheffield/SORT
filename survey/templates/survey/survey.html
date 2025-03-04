@@ -1,0 +1,193 @@
+{% extends 'base_manager.html' %}
+{% load qr_code %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-folder-open"></i> <a
+                        href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bx bxs-chart"></i> Survey: {{ survey.name }}
+                </li>
+            </ol>
+        </nav>
+    </div>
+    <div class="container mx-auto px-4 py-8">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h1>{{ survey.name }}</h1>
+            </div>
+            <div class="card-body">
+                <p><strong>Survey description:</strong></p>
+                <p>{{ survey.description }}</p>
+                <div class="d-flex justify-content-between mt-3">
+                    <div></div>
+                    <div></div>
+                    <div>
+                        <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger"><i class="bx bxs-trash"></i> Delete survey</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            You can follow the five steps below to carry out the survey:
+        </div>
+
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>1. Configure Your Survey</h2>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 mt-3">
+                    <p>First, configure you survey here. You are able to add and customise demographic questions asked
+                        in the survey.</p>
+                    <a href="{% url 'survey_configure' survey.id %}" class="btn btn-primary"><i class="bx bxs-cog"></i> Configure the survey</a>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>2. Invite Your Participants</h2>
+            </div>
+            <div class="card-body">
+                {% if invite_link %}
+                    <p>Invite your participants using the follow link:</p>
+
+                    <div class="row">
+                        <div class="col-lg-10">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Invitation link</span>
+                                </div>
+                                <input type="text" id="invitation_link" class="form-control" disabled
+                                       value="{{ invite_link }}"/>
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="button"
+                                            onclick="copyInviteLink()"><i
+                                            class='bx bx-clipboard'></i> <span id="copyBtnText">Copy</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <div class="card" style="width: 20em" id="survey_invite_qr_code_card">
+                                    {% qr_from_text invite_link image_format="png" size="s" alt_text="Survey invitation link" class_names="card-img-top" %}
+                                    <div class="card-body">
+                                        <div class="card-text text-center">
+                                            <button onclick="downloadQRCode()" class="btn btn-primary">
+                                                <i class='bx bx-download' ></i> Download invitation QR code
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <script>
+                              function copyInviteLink() {
+                                let copyBtnTextElem = document.getElementById("copyBtnText");
+                                let link = document.getElementById("invitation_link").value;
+                                navigator.clipboard.writeText(link);
+                                copyBtnTextElem.innerHTML = "Copied";
+                                setTimeout(() => {
+                                  copyBtnTextElem.innerHTML = "Copy";
+                                }, 2000);
+                              }
+
+                              function downloadQRCode() {
+                                let qrCodeCard = document.getElementById("survey_invite_qr_code_card");
+                                console.log(qrCodeCard.firstElementChild);
+                                let element = document.createElement('a');
+                                element.setAttribute('href', qrCodeCard.firstElementChild.src);
+                                element.setAttribute('download', "survey_invite.png");
+                                element.style.display = 'none';
+                                document.body.appendChild(element);
+                                element.click();
+                                document.body.removeChild(element);
+                              }
+                            </script>
+                        </div>
+                        <div class="col-lg-2 text-end">
+                            <form method="POST" action="{% url 'suvey_create_invite' survey.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary" name="generate_token"><i class='bx bx-repeat'></i> Re-generate invitation</button>
+
+                            </form>
+                        </div>
+                    </div>
+
+
+                    <p>Or send an invitation by email:</p>
+
+                    <a href="{% url 'invite' survey.id %}" class="btn btn-primary"><i class='bx bx-mail-send' ></i> Send an invitation</a>
+
+                {% else %}
+                    <p>
+                        Geneate an invitation link for your participants to fill in the survey:
+                    </p>
+                    <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
+                        {% csrf_token %}
+                        <input type="submit" name="generate_token" value="Generate invitation"
+                               class="btn btn-primary"></input>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>Generate mock responses</h2>
+            </div>
+            <div class="card-body">
+                <p>Note: Dont' forget to configure the form first, go to survey configuration page and press
+                    Submit at the bottom. This is because the survey_config field is blank by default.</p>
+                <form method="POST" action="{% url 'survey_mock_responses' survey.pk  %}">
+                    {% csrf_token %}
+                    <label>
+                        Number for mock responses to generate
+                        <input type="number" name="num_responses" class="form-control"/>
+                    </label>
+
+                    <button type="submit" name="submit" value="Submit" class="btn btn-primary"><i class="bx bxs-send"></i> Submit</button>
+                </form>
+
+                <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download><i class="bx bx-export"></i> Export</a>
+
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>3. Survey responses</h2>
+            </div>
+            <div class="card-body">
+
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>4. Gather Evidence</h2>
+            </div>
+            <div class="card-body">
+                <p>Once you have collected enough responses, use this section to gather evidence in support of the survey results.</p>
+                <a href="{% url 'survey_evidence_gathering' survey.id %}" class="btn btn-primary"><i class='bx bx-collection' ></i> Gather evidence</a>
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>5. Make an Improvement Plan</h2>
+            </div>
+            <div class="card-body">
+                <p>Use this section to create an improvement plan after collecting survey responses and gathering the evidence.</p>
+                <a href="{% url 'survey_improvement_plan' survey.id %}" class="btn btn-primary"><i class='bx bxs-file-plus'></i> Make an improvement plan</a>
+            </div>
+        </div>
+
+
+    </div>
+{% endblock %}
