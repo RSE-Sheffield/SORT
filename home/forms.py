@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 class ManagerSignupForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
@@ -66,10 +67,9 @@ class UserProfileForm(forms.ModelForm):
         return user
 
 
-
 class SearchBarForm(forms.Form):
     q = forms.CharField(required=False,
-                            widget=forms.TextInput(attrs={
+                        widget=forms.TextInput(attrs={
                                 'class': 'form-control',
                                 'placeholder': 'Search...',
                                 'aria-label': 'Search',

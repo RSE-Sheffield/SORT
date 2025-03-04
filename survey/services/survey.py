@@ -1,5 +1,5 @@
 
-from io import  StringIO
+from io import StringIO
 import json
 import csv
 import random
@@ -9,33 +9,34 @@ from django.shortcuts import get_object_or_404
 
 from home.services import BasePermissionService
 from home.models import User, Project
-from home.services.base import requires_permission
 from survey.models import Invitation, Survey, SurveyResponse
 
 import logging
 logger = logging.getLogger(__name__)
 
+
 class InvalidInviteTokenException(Exception):
     pass
+
 
 class SurveyService(BasePermissionService):
 
     def can_view(self, user: User, instance: Any) -> bool:
         return True
+
     def can_create(self, user: User) -> bool:
         # TODO: Requires checking that project
         return True
 
     def can_edit(self, user: User, instance: Any) -> bool:
         return True
+
     def can_delete(self, user: User, instance: Any) -> bool:
         return True
-
 
     def get_survey(self, survey_id: int) -> Survey:
         survey = get_object_or_404(Survey, pk=survey_id)
         return survey
-
 
     def create_survey(self, survey: Survey, project: Project) -> Survey:
         survey.project = project
@@ -86,12 +87,8 @@ class SurveyService(BasePermissionService):
 
         return invitation.survey
 
-
-
     def accept_response(self, survey: Survey, responseValues):
         SurveyResponse.objects.create(survey=survey, answers=responseValues)
-
-
 
     def create_invitation(self, survey: Survey) -> Invitation:
 
@@ -102,7 +99,6 @@ class SurveyService(BasePermissionService):
 
         # Add new invite token
         return Invitation.objects.create(survey=survey)
-
 
     def export_csv(self, survey: Survey) -> str:
         """
@@ -163,8 +159,6 @@ class SurveyService(BasePermissionService):
             self.accept_response(survey,
                                  responseValues=self.generate_mock_response(survey.survey_config))
 
-
-
     def generate_mock_response(self, survey_config):
         output_data = []
 
@@ -177,7 +171,6 @@ class SurveyService(BasePermissionService):
 
         return output_data
 
-
     def generate_random_field_value(self, field_config):
         type = field_config["type"]
         if type == "radio" or type == "select":
@@ -185,7 +178,7 @@ class SurveyService(BasePermissionService):
             num_options = len(field_config["options"])
             option_index = random.randint(0, num_options-1)
             return str(field_config["options"][option_index])
-        elif type == "checkbox" :
+        elif type == "checkbox":
             # Pick one random option
             num_options = len(field_config["options"])
             option_index = random.randint(0, num_options-1)
@@ -215,15 +208,3 @@ class SurveyService(BasePermissionService):
                     return "Test plaintext field"
         else:
             return f"Test string for textarea field {field_config['label']}"
-
-
-
-
-
-
-
-
-
-
-
-

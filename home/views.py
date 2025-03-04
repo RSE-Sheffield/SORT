@@ -9,17 +9,17 @@ from django.contrib.auth.views import (
     PasswordResetConfirmView,
     PasswordResetCompleteView,
 )
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views import View
 from django.urls import reverse_lazy, reverse
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Q
+from django.db.models import Q
 
 from survey.models import Survey
 from .mixins import OrganisationRequiredMixin
-from .models import Organisation, Project, OrganisationMembership, ProjectOrganisation
+from .models import Organisation, Project
 from .forms import ManagerSignupForm, ManagerLoginForm, UserProfileForm
 from .services import project_service, organisation_service
 from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
@@ -327,6 +327,7 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
             messages.error(self.request, "Permission denied")
             return redirect("myorganisation")
 
+
 class ProjectDeleteView(LoginRequiredMixin, DeleteView):
     model = Project
     template_name = "projects/delete.html"
@@ -342,4 +343,3 @@ class ProjectDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy("myorganisation")
-

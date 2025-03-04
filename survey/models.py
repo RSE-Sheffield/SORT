@@ -1,10 +1,10 @@
 import secrets
 from django.db import models
-from django.db.utils import IntegrityError
 from django.http import HttpRequest
 from django.urls import reverse
 from django.utils import timezone
 from home.models import Project
+
 
 class Survey(models.Model):
     """
@@ -37,20 +37,18 @@ class Survey(models.Model):
         return None
 
 
-
-
 class SurveyResponse(models.Model):
     """
     Represents a single response to the survey from a participant
     """
 
-    survey = models.ForeignKey(Survey, related_name='survey_response', on_delete=models.CASCADE)  # Many questions belong to one survey
+    survey = models.ForeignKey(Survey,
+                               related_name='survey_response',
+                               on_delete=models.CASCADE)  # Many questions belong to one survey
     answers = models.JSONField()
 
     def get_absolute_url(self, token):
         return reverse('survey', kwargs={"pk": self.survey.pk})
-
-
 
 
 class Invitation(models.Model):
@@ -80,4 +78,3 @@ class Invitation(models.Model):
 
     def is_expired(self):
         return timezone.now() > self.created_at + timezone.timedelta(days=7)
-

@@ -3,7 +3,6 @@ Organisation service with integrated permissions
 """
 
 from typing import Optional, Dict, List, Set, Literal
-from django.db import transaction
 from django.db.models.query import QuerySet
 from django.db.models import Count
 from django.core.exceptions import PermissionDenied
@@ -144,7 +143,6 @@ class OrganisationService(BasePermissionService):
                 survey_count=Count("survey__id", distinct=True),
                 manager_count=Count("projectmanagerpermission", distinct=True),
             )
-            
         return projects
 
     @requires_permission("view")

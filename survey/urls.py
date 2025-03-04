@@ -6,11 +6,15 @@ urlpatterns = [
     path('survey/<int:pk>/delete/', views.SurveyDeleteView.as_view(), name='survey_delete'),
     path('survey/<int:pk>/create_invite', views.SurveyCreateInviteView.as_view(), name='suvey_create_invite'),
 
-    path('survey/<int:pk>/mock_responses', views.SurveyGenerateMockResponsesView.as_view(), name='survey_mock_responses'),
+    path('survey/<int:pk>/mock_responses',
+         views.SurveyGenerateMockResponsesView.as_view(),
+         name='survey_mock_responses'),
 
     path('survey/<int:pk>/export', views.SurveyExportView.as_view(), name='survey_export'),
 
-    path('survey/<int:pk>/evidence_gathering', views.SurveyEvidenceGatheringView.as_view(), name='survey_evidence_gathering'),
+    path('survey/<int:pk>/evidence_gathering',
+         views.SurveyEvidenceGatheringView.as_view(),
+         name='survey_evidence_gathering'),
     path('survey/<int:pk>/improvement_plan', views.SurveyImprovementPlanView.as_view(), name='survey_improvement_plan'),
 
     path('survey/create/<int:project_id>', views.SurveyCreateView.as_view(), name='survey_create'),
