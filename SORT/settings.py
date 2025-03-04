@@ -45,14 +45,12 @@ LOGIN_URL = "/login/"
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-DEV_SECRET_KEY = "0ph*$dv&vs45q9&buic04d+zt_18!fm$x*ezm9%qdo6hm_fzx2"
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", DEV_SECRET_KEY)
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(os.getenv("DJANGO_DEBUG", "False"))
 
-if DEV_SECRET_KEY == SECRET_KEY and not DEBUG:
-    raise Exception("Development secret key is being used.")
+
 
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "sort-web-app.shef.ac.uk").split()
 
