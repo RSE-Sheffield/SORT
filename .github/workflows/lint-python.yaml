@@ -2,8 +2,6 @@ name: Lint Python code
 on:
   push:
     branches: [ "main", "dev" ]
-  pull_request:
-    branches: [ "main", "dev" ]
 jobs:
   lint:
     runs-on: ubuntu-24.04
