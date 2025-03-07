@@ -20,7 +20,10 @@ class ProjectService(BasePermissionService):
 
     def get_user_role(self, user: User, project: Project) -> Optional[str]:
         """Get user's role in the project's organisation"""
-        return project.organisation.get_user_role(user)
+        try:
+            return project.organisation.get_user_role(user)
+        except AttributeError:  # In case user is AnonymousUser or organisation method fails
+            return None
 
     def can_view(self, user: User, project: Project) -> bool:
         """All organization members can view projects"""

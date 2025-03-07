@@ -20,8 +20,11 @@ class OrganisationService(BasePermissionService):
     """Service for managing organisations with integrated permissions"""
 
     def get_user_role(self, user: User, organisation: Organisation) -> Optional[str]:
-        membership = organisation.organisationmembership_set.filter(user=user).first()
-        return membership.role if membership else None
+        try:
+            membership = organisation.organisationmembership_set.filter(user=user).first()
+            return membership.role if membership else None
+        except AttributeError:  # In case user is AnonymousUser
+            return None
 
     def can_view(self, user: User, organisation: Organisation) -> bool:
         role = self.get_user_role(user, organisation)
