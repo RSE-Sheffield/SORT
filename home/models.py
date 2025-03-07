@@ -55,7 +55,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Organisation(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-    members = models.ManyToManyField(User, through="OrganisationMembership", through_fields=("organisation", "user"))
+    members = models.ManyToManyField(
+        User, through="OrganisationMembership", through_fields=("organisation", "user")
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -71,7 +73,9 @@ class OrganisationMembership(models.Model):
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLES, default=ROLE_PROJECT_MANAGER)
     joined_at = models.DateTimeField(auto_now_add=True)
-    added_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="members_added", null=True)
+    added_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="members_added", null=True
+    )
 
     class Meta:
         unique_together = ["user", "organisation"]
@@ -80,7 +84,9 @@ class OrganisationMembership(models.Model):
 class Project(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    organisations = models.ManyToManyField(Organisation, through="ProjectOrganisation")
+    organisation = models.ForeignKey(
+        Organisation, on_delete=models.CASCADE, related_name="projects"
+    )
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
@@ -89,31 +95,3 @@ class Project(models.Model):
 
     def get_absolute_url(self):
         return reverse("project", kwargs={"project_id": self.pk})
-
-
-class ProjectOrganisation(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
-    added_at = models.DateTimeField(auto_now_add=True)
-    added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-
-    class Meta:
-        unique_together = ["project", "organisation"]
-
-
-class ProjectManagerPermission(models.Model):
-    """Defines the permission level for project managers within a project"""
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    permission = models.CharField(
-        max_length=10, choices=PERMISSION_CHOICES, default=PERMISSION_VIEW
-    )
-    granted_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="granted_permissions"
-    )
-    granted_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ["user", "project"]
-        verbose_name_plural = "Project manager permissions"

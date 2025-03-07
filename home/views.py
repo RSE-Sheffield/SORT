@@ -19,7 +19,7 @@ from django.db.models import Count, Q
 
 from survey.models import Survey
 from .mixins import OrganisationRequiredMixin
-from .models import Organisation, Project, OrganisationMembership, ProjectOrganisation
+from .models import Organisation, Project, OrganisationMembership
 from .forms import ManagerSignupForm, ManagerLoginForm, UserProfileForm
 from .services import project_service, organisation_service
 from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
@@ -146,9 +146,6 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
             "can_create": project_service.can_create(user),
             "is_admin": user_role == ROLE_ADMIN,
             "is_project_manager": user_role == ROLE_PROJECT_MANAGER,
-            "project_orgs": organisation_service.get_user_accessible_organisations(
-                projects, user
-            ),
             "current_search": self.request.GET.get('q', '')
         })
         return context
@@ -215,12 +212,13 @@ class ProjectView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         project = self.project
+        user_role = project.organisation.get_user_role(user)
 
         context.update(
             {
                 "project": project,
-                "can_create": project_service.can_edit(user, project),
-                "permission": project_service.get_user_permission(user, project),
+                "can_edit": project_service.can_edit(user, project),
+                "is_admin": user_role == ROLE_ADMIN,
                 "current_search": self.request.GET.get('q', '')
             }
         )
@@ -274,9 +272,7 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         project = get_object_or_404(
-            Project.objects.prefetch_related(
-                "organisations", "organisations__organisationmembership_set"
-            ),
+            Project.objects.select_related('organisation'),
             id=self.kwargs["project_id"],
         )
 
@@ -291,26 +287,13 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-
-        project_orgs = organisation_service.get_user_accessible_organisations(
-            [self.object], user
-        ).get(self.object.id, [])
-
-        # Get user's roles across organisations
-        user_roles = {
-            org.id: organisation_service.get_user_role(user, org)
-            for org in project_orgs
-        }
+        user_role = self.object.organisation.get_user_role(user)
 
         context.update(
             {
-                "project_orgs": project_orgs,
-                "can_manage_orgs": any(
-                    role == ROLE_ADMIN for role in user_roles.values()
-                ),
-                "is_project_manager": any(
-                    role == ROLE_PROJECT_MANAGER for role in user_roles.values()
-                ),
+                "organisation": self.object.organisation,
+                "is_admin": user_role == ROLE_ADMIN,
+                "is_project_manager": user_role == ROLE_PROJECT_MANAGER,
             }
         )
 
@@ -348,4 +331,3 @@ class ProjectDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy("myorganisation")
-
