@@ -136,6 +136,11 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
         user = self.request.user
         projects = context["projects"]
         user_role = self.organisation.get_user_role(user)
+        
+        # add survey count to each project
+        for project in projects:
+            project.survey_count = project.survey_set.count()
+        
 
         context.update(
             {
