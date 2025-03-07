@@ -33,7 +33,7 @@ def requires_permission(permission_type: str, obj_param: str) -> Callable:
             # Get the object to check permissions against
             if not obj_param:
                 raise ValueError("Object parameter name is required")
-            
+
             obj = kwargs.get(obj_param) or (args[0] if args else None)
             if not obj:
                 raise ValueError(f"Could not find object parameter: {obj_param}")

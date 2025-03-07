@@ -187,20 +187,27 @@ class ProjectView(LoginRequiredMixin, ListView):
     context_object_name = "surveys"
     paginate_by = 10
 
-    def dispatch(self, request, *args, **kwargs):
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        
         try:
-            self.project = Project.objects.get(id=self.kwargs["project_id"])
+            self.project = Project.objects.get(id=kwargs.get("project_id"))
         except Project.DoesNotExist:
+            self.project = None
+            
+    def get(self, request, *args, **kwargs):
+        if not hasattr(self, 'project') or not self.project:
             messages.error(request, "Project not found.")
             return redirect("myorganisation")
-
+            
         if not project_service.can_view(request.user, self.project):
             messages.error(
                 request,
                 f"You do not have permission to view the project {self.project.name}.",
             )
             return redirect("myorganisation")
-        return super().dispatch(request, *args, **kwargs)
+            
+        return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
         queryset = Survey.objects.filter(project_id=self.kwargs["project_id"])
@@ -219,13 +226,11 @@ class ProjectView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         project = self.project
-        user_role = project.organisation.get_user_role(user)
 
         context.update(
             {
                 "project": project,
                 "can_create": project_service.can_edit(user, project),
-                "permission": project_service.get_user_permission(user, project),
                 "current_search": self.request.GET.get("q", ""),
             }
         )
