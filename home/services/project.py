@@ -22,7 +22,9 @@ class ProjectService(BasePermissionService):
         """Get user's role in the project's organisation"""
         try:
             return project.organisation.get_user_role(user)
-        except AttributeError:  # In case user is AnonymousUser or organisation method fails
+        except (
+            AttributeError
+        ):  # In case user is AnonymousUser or organisation method fails
             return None
 
     def can_view(self, user: User, project: Project) -> bool:
@@ -31,14 +33,13 @@ class ProjectService(BasePermissionService):
         return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
 
     def can_edit(self, user: User, project: Project) -> bool:
-        """Only admins can edit projects"""
         role = self.get_user_role(user, project)
-        return role == ROLE_ADMIN
+        return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
 
     def can_create(self, user: User) -> bool:
-        """Only admins can create projects"""
         org = user.organisation_set.first()
-        return org and org.get_user_role(user) == ROLE_ADMIN
+        role = org.get_user_role(user)
+        return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
 
     def can_delete(self, user: User, project: Project) -> bool:
         """Only admins can delete projects"""

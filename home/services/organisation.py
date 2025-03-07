@@ -37,10 +37,10 @@ class OrganisationService(BasePermissionService):
         return role == ROLE_ADMIN
 
     def can_create(self, user: User) -> bool:
-        return user.is_superuser
+        return user.is_superuser or user.is_staff
 
-    def can_delete(self, user: User, organisation: Organisation) -> bool:
-        return user.is_superuser
+    def can_delete(self, user: User) -> bool:
+        return user.is_superuser or user.is_staff
 
     def can_manage_members(self, user: User, organisation: Organisation) -> bool:
         role = self.get_user_role(user, organisation)

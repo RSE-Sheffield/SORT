@@ -6,6 +6,7 @@ from io import StringIO
 from typing import Any
 
 from django.shortcuts import get_object_or_404
+from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from home.models import Project, User
 from home.services import BasePermissionService
 from survey.models import Invitation, Survey, SurveyResponse
@@ -19,18 +20,22 @@ class InvalidInviteTokenException(Exception):
 
 class SurveyService(BasePermissionService):
 
-    def can_view(self, user: User, instance: Any) -> bool:
-        return True
+    def can_view(self, user: User, survey: Survey) -> bool:
+        return self.can_create(user, survey)
 
-    def can_create(self, user: User) -> bool:
-        # TODO: Requires checking that project
-        return True
+    def can_create(self, user: User, survey: Survey) -> bool:
+        try:
+            role = survey.project.organisation.get_user_role(user)
+            return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
+        except AttributeError:
+            return False
+        
 
-    def can_edit(self, user: User, instance: Any) -> bool:
-        return True
+    def can_edit(self, user: User, survey: Survey) -> bool:
+        return self.can_create(user, survey)
 
-    def can_delete(self, user: User, instance: Any) -> bool:
-        return True
+    def can_delete(self, user: User, survey: Survey) -> bool:
+        return self.can_create(user, survey)
 
     def get_survey(self, survey_id: int) -> Survey:
         survey = get_object_or_404(Survey, pk=survey_id)

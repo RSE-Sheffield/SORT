@@ -57,7 +57,9 @@ def requires_permission(permission_type: str, obj_param: str) -> Callable:
 
 
 class BasePermissionService:
-    """Base service class with permission checks"""
+    """Base service class with permission checks.
+    'instance' can be replaced with a more descriptive name in subclasses, or can be ignored if not needed.
+    """
 
     def can_view(self, user: Any, instance: Any) -> bool:
         raise NotImplementedError
@@ -68,5 +70,5 @@ class BasePermissionService:
     def can_delete(self, user: Any, instance: Any) -> bool:
         raise NotImplementedError
 
-    def can_create(self, user: Any) -> bool:
+    def can_create(self, user: Any, instance: Any) -> bool:
         raise NotImplementedError
