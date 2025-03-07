@@ -147,9 +147,6 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
                 "can_create": project_service.can_create(user),
                 "is_admin": user_role == ROLE_ADMIN,
                 "is_project_manager": user_role == ROLE_PROJECT_MANAGER,
-                "project_orgs": organisation_service.get_user_accessible_organisations(
-                    projects, user
-                ),
                 "current_search": self.request.GET.get("q", ""),
             }
         )
