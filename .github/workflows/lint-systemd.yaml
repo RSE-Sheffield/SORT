@@ -3,9 +3,7 @@
 name: Lint systemd units
 on:
   push:
-    branches:
-     - main
-     - dev
+    branches: [ "main", "dev" ]
 jobs:
   lint:
     runs-on: ubuntu-24.04

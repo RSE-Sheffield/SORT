@@ -3,7 +3,8 @@ Base service and permission decorators
 """
 
 from functools import wraps
-from typing import TypeVar, Callable, Any
+from typing import Any, Callable, TypeVar
+
 from django.core.exceptions import PermissionDenied
 
 T = TypeVar("T")

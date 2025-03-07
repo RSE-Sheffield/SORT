@@ -1,11 +1,12 @@
-from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin,
 )
+from django.db import models
 from django.urls import reverse
-from .constants import ROLES, ROLE_PROJECT_MANAGER, PERMISSION_CHOICES, PERMISSION_VIEW
+
+from .constants import PERMISSION_CHOICES, PERMISSION_VIEW, ROLE_PROJECT_MANAGER, ROLES
 
 
 class UserManager(BaseUserManager):

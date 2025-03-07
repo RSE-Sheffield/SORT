@@ -1,3 +1,4 @@
+[![Run Django checks](https://github.com/RSE-Sheffield/SORT/actions/workflows/django-check.yaml/badge.svg)](https://github.com/RSE-Sheffield/SORT/actions/workflows/django-check.yaml)
 # SORT
 ### Self-Assessment of Organisational Readiness Tool
 

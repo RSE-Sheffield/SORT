@@ -4,14 +4,14 @@ Project service with integrated permissions
 
 from typing import Optional, Dict
 from django.db.models.query import QuerySet
-from .base import BasePermissionService, requires_permission
+
+from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from ..models import (
+    Organisation,
     Project,
     User,
-    Organisation,
 )
-from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
-from django.core.exceptions import PermissionDenied
+from .base import BasePermissionService, requires_permission
 
 
 class ProjectService(BasePermissionService):
@@ -46,7 +46,6 @@ class ProjectService(BasePermissionService):
         """Update project with provided data"""
         for key, value in data.items():
             setattr(project, key, value)
-
         project.save()
         return project
 

@@ -1,40 +1,40 @@
-
-from io import  StringIO
-import json
 import csv
+import json
+import logging
 import random
+from io import StringIO
 from typing import Any
 
 from django.shortcuts import get_object_or_404
-
+from home.models import Project, User
 from home.services import BasePermissionService
-from home.models import User, Project
 from survey.models import Invitation, Survey, SurveyResponse
 
-import logging
 logger = logging.getLogger(__name__)
+
 
 class InvalidInviteTokenException(Exception):
     pass
+
 
 class SurveyService(BasePermissionService):
 
     def can_view(self, user: User, instance: Any) -> bool:
         return True
+
     def can_create(self, user: User) -> bool:
         # TODO: Requires checking that project
         return True
 
     def can_edit(self, user: User, instance: Any) -> bool:
         return True
+
     def can_delete(self, user: User, instance: Any) -> bool:
         return True
-
 
     def get_survey(self, survey_id: int) -> Survey:
         survey = get_object_or_404(Survey, pk=survey_id)
         return survey
-
 
     def create_survey(self, survey: Survey, project: Project) -> Survey:
         survey.project = project
@@ -53,20 +53,20 @@ class SurveyService(BasePermissionService):
 
         return survey
 
-    def update_consent_demography_config(self,
-                                         survey: Survey,
-                                         consent_config,
-                                         demography_config) -> Survey:
+    def update_consent_demography_config(
+        self, survey: Survey, consent_config, demography_config
+    ) -> Survey:
         survey.consent_config = consent_config
         survey.demography_config = demography_config
 
         with open("data/survey_config/sort_only_config.json") as f:
             sort_config = json.load(f)
-            merged_sections = survey.consent_config["sections"] + sort_config["sections"] + survey.demography_config[
-                "sections"]
-            survey.survey_config = {
-                "sections": merged_sections
-            }
+            merged_sections = (
+                survey.consent_config["sections"]
+                + sort_config["sections"]
+                + survey.demography_config["sections"]
+            )
+            survey.survey_config = {"sections": merged_sections}
         survey.save()
         return survey
 
@@ -85,12 +85,8 @@ class SurveyService(BasePermissionService):
 
         return invitation.survey
 
-
-
     def accept_response(self, survey: Survey, responseValues):
         SurveyResponse.objects.create(survey=survey, answers=responseValues)
-
-
 
     def create_invitation(self, survey: Survey) -> Invitation:
 
@@ -101,7 +97,6 @@ class SurveyService(BasePermissionService):
 
         # Add new invite token
         return Invitation.objects.create(survey=survey)
-
 
     def export_csv(self, survey: Survey) -> str:
         """
@@ -159,10 +154,9 @@ class SurveyService(BasePermissionService):
         Generate a number of mock responses
         """
         for i in range(num_responses):
-            self.accept_response(survey,
-                                 responseValues=self.generate_mock_response(survey.survey_config))
-
-
+            self.accept_response(
+                survey, responseValues=self.generate_mock_response(survey.survey_config)
+            )
 
     def generate_mock_response(self, survey_config):
         output_data = []
@@ -176,18 +170,17 @@ class SurveyService(BasePermissionService):
 
         return output_data
 
-
     def generate_random_field_value(self, field_config):
         type = field_config["type"]
         if type == "radio" or type == "select":
             # Pick one option
             num_options = len(field_config["options"])
-            option_index = random.randint(0, num_options-1)
+            option_index = random.randint(0, num_options - 1)
             return str(field_config["options"][option_index])
-        elif type == "checkbox" :
+        elif type == "checkbox":
             # Pick one random option
             num_options = len(field_config["options"])
-            option_index = random.randint(0, num_options-1)
+            option_index = random.randint(0, num_options - 1)
             return [str(field_config["options"][option_index])]
         elif type == "likert":
             likert_output = []
@@ -201,12 +194,28 @@ class SurveyService(BasePermissionService):
         elif type == "text":
             if "textType" in field_config:
                 if field_config["textType"] == "INTEGER_TEXT":
-                    min_value = field_config["minNumValue"] if "minNumValue" in field_config else 0
-                    max_value = field_config["maxNumValue"] if "maxNumValue" in field_config else 100
+                    min_value = (
+                        field_config["minNumValue"]
+                        if "minNumValue" in field_config
+                        else 0
+                    )
+                    max_value = (
+                        field_config["maxNumValue"]
+                        if "maxNumValue" in field_config
+                        else 100
+                    )
                     return str(random.randint(min_value, max_value))
                 elif field_config["textType"] == "DECIMALS_TEXT":
-                    min_value = field_config["minNumValue"] if "minNumValue" in field_config else 0
-                    max_value = field_config["maxNumValue"] if "maxNumValue" in field_config else 100
+                    min_value = (
+                        field_config["minNumValue"]
+                        if "minNumValue" in field_config
+                        else 0
+                    )
+                    max_value = (
+                        field_config["maxNumValue"]
+                        if "maxNumValue" in field_config
+                        else 100
+                    )
                     return str(random.uniform(min_value, max_value))
                 elif field_config["textType"] == "EMAIL_TEXT":
                     return "test@test.com"
@@ -214,15 +223,3 @@ class SurveyService(BasePermissionService):
                     return "Test plaintext field"
         else:
             return f"Test string for textarea field {field_config['label']}"
-
-
-
-
-
-
-
-
-
-
-
-
