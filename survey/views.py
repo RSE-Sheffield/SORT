@@ -36,10 +36,9 @@ class SurveyView(LoginRequiredMixin, View):
 
     def render_survey_page(self, request: HttpRequest, pk: int, is_post=False):
         context = {}
-        survey = survey_service.get_survey(survey_id=pk)
+        survey = survey_service.get_survey(request.user, pk) # Check that we're allowed to get the survey
         context["survey"] = survey
         context["invite_link"] = survey.get_invite_link(request)
-
         return render(request, "survey/survey.html", context)
 
 
@@ -53,10 +52,9 @@ class SurveyCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         result = super().form_valid(form)
-        project = Project.objects.get(pk=self.kwargs["project_id"])
-        survey_service.create_survey(self.object, project)
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
+        survey_service.initialise_survey(self.request.user, project, self.object)
         return result
-
 
 class SurveyDeleteView(LoginRequiredMixin, DeleteView):
     model = Survey
@@ -118,7 +116,7 @@ class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
         if "num_responses" in request.POST:
             num_responses = int(request.POST["num_responses"])
             survey = Survey.objects.get(pk=pk)
-            survey_service.generate_mock_responses(survey, num_responses)
+            survey_service.generate_mock_responses(request.user, survey, num_responses)
             messages.success(request, f"Generated {num_responses} mock responses")
         else:
             messages.error(request, "Could not generate mock responses")
@@ -129,7 +127,7 @@ class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
 class SurveyExportView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int):
         survey = Survey.objects.get(pk=pk)
-        output_csv = survey_service.export_csv(survey)
+        output_csv = survey_service.export_csv(self.request.user, survey)
         response = HttpResponse(output_csv, content_type="text/csv")
         file_name = f"survey_{survey.id}.csv"
         response["Content-Disposition"] = f"inline; filename={file_name}"
@@ -238,7 +236,7 @@ class SurveyCreateInviteView(LoginRequiredMixin, View):
 
     def post(self, request: HttpRequest, pk: int):
         survey = get_object_or_404(Survey, pk=pk)
-        survey_service.create_invitation(survey)
+        survey_service.create_invitation(request.user, survey)
         return redirect("survey", pk=pk)
 
 

@@ -3,13 +3,16 @@ import json
 import logging
 import random
 from io import StringIO
-from typing import Any
+from typing import Any, Optional
 
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
-from home.models import Project, User
+from home.models import Project, User, Organisation
 from home.services import BasePermissionService
+from home.services.base import requires_permission
 from survey.models import Invitation, Survey, SurveyResponse
+from home.services import project_service
 
 logger = logging.getLogger(__name__)
 
@@ -20,28 +23,46 @@ class InvalidInviteTokenException(Exception):
 
 class SurveyService(BasePermissionService):
 
-    def can_view(self, user: User, survey: Survey) -> bool:
-        return self.can_create(user, survey)
-
-    def can_create(self, user: User, survey: Survey) -> bool:
+    def get_user_role(self, user: User, survey: Survey) -> Optional[str]:
+        """Get user's role in the project's organisation"""
         try:
-            role = survey.project.organisation.get_user_role(user)
-            return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
-        except AttributeError:
-            return False
-        
+            return survey.project.organisation.get_user_role(user)
+        except (
+            AttributeError
+        ):  # In case user is AnonymousUser or organisation method fails
+            return None
+
+    def can_view(self, user: User, survey: Survey) -> bool:
+        """ Must be a member of the organisation the survey belongs to in order to view """
+        role = self.get_user_role(user, survey)
+        return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
 
     def can_edit(self, user: User, survey: Survey) -> bool:
-        return self.can_create(user, survey)
+        """ Must be a member of the organisation the survey belongs to in order to edit """
+        role = self.get_user_role(user, survey)
+        return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
 
     def can_delete(self, user: User, survey: Survey) -> bool:
-        return self.can_create(user, survey)
+        """ Must be a member of the organisation the survey belongs to in order to delete """
+        role = self.get_user_role(user, survey)
+        return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
 
-    def get_survey(self, survey_id: int) -> Survey:
+    def can_create(self, user: User, project: Project) -> bool:
+        """ Must be a member of the organisation the survey belongs to in order to delete """
+        role = project_service.get_user_role(user, project)
+        return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
+
+
+    def get_survey(self, user: User, survey_id: int) -> Survey:
         survey = get_object_or_404(Survey, pk=survey_id)
-        return survey
+        if self.can_view(user, survey):
+            return survey
+        else:
+            raise PermissionDenied("Not allowed to view the survey")
 
-    def create_survey(self, survey: Survey, project: Project) -> Survey:
+    @requires_permission("create", obj_param="project")
+    def initialise_survey(self, user: User, project: Project, survey: Survey):
+
         survey.project = project
 
         # TODO: Make a proper loader function
@@ -56,8 +77,8 @@ class SurveyService(BasePermissionService):
         survey.survey_config = {}
         survey.save()
 
-        return survey
 
+    @requires_permission("edit", obj_param="survey")
     def update_consent_demography_config(
         self, survey: Survey, consent_config, demography_config
     ) -> Survey:
@@ -93,7 +114,8 @@ class SurveyService(BasePermissionService):
     def accept_response(self, survey: Survey, responseValues):
         SurveyResponse.objects.create(survey=survey, answers=responseValues)
 
-    def create_invitation(self, survey: Survey) -> Invitation:
+    @requires_permission("edit", obj_param="survey")
+    def create_invitation(self, user: User, survey: Survey) -> Invitation:
 
         # Invalidate all other invite tokens
         for invite in survey.invitation_set.all():
@@ -103,7 +125,8 @@ class SurveyService(BasePermissionService):
         # Add new invite token
         return Invitation.objects.create(survey=survey)
 
-    def export_csv(self, survey: Survey) -> str:
+    @requires_permission("view", obj_param="survey")
+    def export_csv(self, user: User, survey: Survey) -> str:
         """
         Flatten the survey form to export as CSV
         Section titles are skipped
@@ -154,7 +177,7 @@ class SurveyService(BasePermissionService):
 
         return output_csv
 
-    def generate_mock_responses(self, survey: Survey, num_responses):
+    def generate_mock_responses(self, user: User, survey: Survey, num_responses):
         """
         Generate a number of mock responses
         """
