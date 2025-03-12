@@ -14,4 +14,8 @@ class Migration(migrations.Migration):
             model_name="project",
             name="organisations",
         ),
+        # Delete ProjectOrganisation table
+        migrations.DeleteModel(
+            name="ProjectOrganisation",
+        ),
     ]
