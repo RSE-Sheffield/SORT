@@ -8,7 +8,8 @@
         {
           "type": "likert",
           "name": "releasing_potential",
-          "label": "Our organisation: (0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established)",
+          "label": "Our organisation:",
+          "description": "(0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established; NA=Unsure, unknown or not applicable)",
           "required": true,
           "sublabels": [
             "A1. has a system to talent spot and support individuals who are active in-service development/ QI to progress on to research",
@@ -39,9 +40,9 @@
             "1",
             "2",
             "3",
-            "4"
-          ],
-          "description": ""
+            "4",
+            "NA"
+          ]
         },
         {
           "type": "textarea",
@@ -61,7 +62,8 @@
         {
           "type": "likert",
           "name": "embedding_research",
-          "label": "Our Organisation: (0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established)",
+          "label": "Our Organisation:",
+          "description": "(0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established; NA=Unsure, unknown or not applicable)",
           "required": true,
           "sublabels": [
             "B1.  provides protected time for clinical nurses to support research related activities",
@@ -75,7 +77,8 @@
             "1",
             "2",
             "3",
-            "4"
+            "4",
+            "NA"
           ]
         },
         {
@@ -96,7 +99,8 @@
         {
           "type": "likert",
           "name": "linkages_and_leadership",
-          "label": "Our organisation: (0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established)",
+          "label": "Our organisation:",
+          "description": "(0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established; NA=Unsure, unknown or not applicable)",
           "required": true,
           "sublabels": [
             "C1. take part in research leadership and advisory activities outside our organisation (for example, sitting on ethics committees; funding committees; editorial boards and reviewing papers)",
@@ -109,7 +113,8 @@
             "1",
             "2",
             "3",
-            "4"
+            "4",
+            "NA"
           ]
         },
         {
@@ -130,7 +135,8 @@
         {
           "type": "likert",
           "name": "inclusive_research_delivery",
-          "label": "Our organisation: (0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established)",
+          "label": "Our organisation:",
+          "description": "(0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established; NA=Unsure, unknown or not applicable)",
           "required": true,
           "sublabels": [
             "D1. have skills to support Public and Patient Involvement and Engagement",
@@ -143,7 +149,8 @@
             "1",
             "2",
             "3",
-            "4"
+            "4",
+            "NA"
           ]
         },
         {
@@ -164,7 +171,8 @@
         {
           "type": "likert",
           "name": "digital_enabled_research",
-          "label": "Our Organisation: (0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established",
+          "label": "Our Organisation:",
+          "description": "(0=Not yet planned; 1=Planned; 2=Early progress; 3= Substantial Progress; 4=Established; NA=Unsure, unknown or not applicable)",
           "required": true,
           "sublabels": [
             "E1. provides training for nurses to enable them to practise effectively in a digitally enabled environment",
@@ -182,7 +190,8 @@
             "1",
             "2",
             "3",
-            "4"
+            "4",
+            "NA"
           ]
         },
         {

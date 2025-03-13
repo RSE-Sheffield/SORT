@@ -80,7 +80,7 @@ class SurveyService(BasePermissionService):
 
     @requires_permission("edit", obj_param="survey")
     def update_consent_demography_config(
-        self, survey: Survey, consent_config, demography_config
+        self,user: User, survey: Survey, consent_config, demography_config
     ) -> Survey:
         survey.consent_config = consent_config
         survey.demography_config = demography_config
