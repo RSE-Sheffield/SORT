@@ -112,9 +112,17 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.organisation = organisation_service.get_user_organisation(request.user)
+        
+        if not self.organisation:
+            messages.error(request, "You are not a member of any organisation.")
+            return redirect("organisation_create")
+            
 
     def get_queryset(self):
-        queryset = organisation_service.get_organisation_projects(self.organisation)
+        queryset = organisation_service.get_organisation_projects(
+            organisation=self.organisation,
+            user=self.request.user,
+        )
 
         search_query = self.request.GET.get("q")
         if search_query:
@@ -127,6 +135,11 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
         user = self.request.user
         projects = context["projects"]
         user_role = self.organisation.get_user_role(user)
+        
+        # add survey count to each project
+        for project in projects:
+            project.survey_count = project.survey_set.count()
+        
 
         context.update(
             {
@@ -135,12 +148,9 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
                     project.id: project_service.can_edit(user, project)
                     for project in projects
                 },
-                "can_create": project_service.can_create(user),
+                "can_create": project_service.can_create(user, self.organisation),
                 "is_admin": user_role == ROLE_ADMIN,
                 "is_project_manager": user_role == ROLE_PROJECT_MANAGER,
-                "project_orgs": organisation_service.get_user_accessible_organisations(
-                    projects, user
-                ),
                 "current_search": self.request.GET.get("q", ""),
             }
         )
@@ -176,20 +186,27 @@ class ProjectView(LoginRequiredMixin, ListView):
     context_object_name = "surveys"
     paginate_by = 10
 
-    def dispatch(self, request, *args, **kwargs):
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        
         try:
-            self.project = Project.objects.get(id=self.kwargs["project_id"])
+            self.project = Project.objects.get(id=kwargs.get("project_id"))
         except Project.DoesNotExist:
+            self.project = None
+            
+    def get(self, request, *args, **kwargs):
+        if not hasattr(self, 'project') or not self.project:
             messages.error(request, "Project not found.")
             return redirect("myorganisation")
-
+            
         if not project_service.can_view(request.user, self.project):
             messages.error(
                 request,
                 f"You do not have permission to view the project {self.project.name}.",
             )
             return redirect("myorganisation")
-        return super().dispatch(request, *args, **kwargs)
+            
+        return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
         queryset = Survey.objects.filter(project_id=self.kwargs["project_id"])
@@ -213,7 +230,6 @@ class ProjectView(LoginRequiredMixin, ListView):
             {
                 "project": project,
                 "can_create": project_service.can_edit(user, project),
-                "permission": project_service.get_user_permission(user, project),
                 "current_search": self.request.GET.get("q", ""),
             }
         )
@@ -231,7 +247,7 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
         organisation = Organisation.objects.get(id=self.kwargs["organisation_id"])
         context["organisation"] = organisation
 
-        if not project_service.can_create(self.request.user):
+        if not project_service.can_create(self.request.user, organisation):
             messages.error(
                 self.request,
                 "You don't have permission to create projects in this organisation.",
@@ -267,9 +283,7 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         project = get_object_or_404(
-            Project.objects.prefetch_related(
-                "organisations", "organisations__organisationmembership_set"
-            ),
+            Project.objects.select_related('organisation'),
             id=self.kwargs["project_id"],
         )
 
@@ -284,26 +298,13 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-
-        project_orgs = organisation_service.get_user_accessible_organisations(
-            [self.object], user
-        ).get(self.object.id, [])
-
-        # Get user's roles across organisations
-        user_roles = {
-            org.id: organisation_service.get_user_role(user, org)
-            for org in project_orgs
-        }
+        user_role = self.object.organisation.get_user_role(user)
 
         context.update(
             {
-                "project_orgs": project_orgs,
-                "can_manage_orgs": any(
-                    role == ROLE_ADMIN for role in user_roles.values()
-                ),
-                "is_project_manager": any(
-                    role == ROLE_PROJECT_MANAGER for role in user_roles.values()
-                ),
+                "organisation": self.object.organisation,
+                "is_admin": user_role == ROLE_ADMIN,
+                "is_project_manager": user_role == ROLE_PROJECT_MANAGER,
             }
         )
 
