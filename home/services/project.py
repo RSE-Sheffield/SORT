@@ -13,7 +13,7 @@ from ..models import (
     User,
 )
 from .base import BasePermissionService, requires_permission
-
+from .organisation import organisation_service
 
 class ProjectService(BasePermissionService):
     """Service for managing projects with integrated permissions"""
@@ -36,10 +36,11 @@ class ProjectService(BasePermissionService):
         role = self.get_user_role(user, project)
         return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
 
-    def can_create(self, user: User) -> bool:
-        org = user.organisation_set.first()
-        role = org.get_user_role(user)
+    def can_create(self, user: User, organisation: Organisation) -> bool:
+        """ Needs to be at least a member of an organisation to create a project """
+        role = organisation_service.get_user_role(user, organisation)
         return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
+
 
     def can_delete(self, user: User, project: Project) -> bool:
         """Only admins can delete projects"""
@@ -59,11 +60,12 @@ class ProjectService(BasePermissionService):
         """Get project if user has permission"""
         return project
 
+    @requires_permission("create", obj_param="organisation")
     def create_project(
         self, user: User, name: str, organisation: Organisation, description: str = ""
     ) -> Project:
         """Create a new project"""
-        if not self.can_create(user):
+        if not self.can_create(user, organisation):
             raise PermissionDenied("User cannot create projects")
 
         project = Project.objects.create(
@@ -88,3 +90,5 @@ class ProjectService(BasePermissionService):
         # Get all organisations the user is a member of
         user_orgs = user.organisation_set.all()
         return Project.objects.filter(organisation__in=user_orgs)
+
+project_service = ProjectService()

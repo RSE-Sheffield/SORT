@@ -119,7 +119,6 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
             
 
     def get_queryset(self):
-
         queryset = organisation_service.get_organisation_projects(
             organisation=self.organisation,
             user=self.request.user,
@@ -149,7 +148,7 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
                     project.id: project_service.can_edit(user, project)
                     for project in projects
                 },
-                "can_create": project_service.can_create(user),
+                "can_create": project_service.can_create(user, self.organisation),
                 "is_admin": user_role == ROLE_ADMIN,
                 "is_project_manager": user_role == ROLE_PROJECT_MANAGER,
                 "current_search": self.request.GET.get("q", ""),
@@ -248,7 +247,7 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
         organisation = Organisation.objects.get(id=self.kwargs["organisation_id"])
         context["organisation"] = organisation
 
-        if not project_service.can_create(self.request.user):
+        if not project_service.can_create(self.request.user, organisation):
             messages.error(
                 self.request,
                 "You don't have permission to create projects in this organisation.",

@@ -22,8 +22,4 @@ class Migration(migrations.Migration):
         migrations.DeleteModel(
             name="ProjectManagerPermission",
         ),
-        # Delete ProjectOrganisation table
-        migrations.DeleteModel(
-            name="ProjectOrganisation",
-        ),
     ]
