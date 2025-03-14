@@ -8,6 +8,7 @@ from django.core.exceptions import PermissionDenied
 from home.services import OrganisationService
 from home.models import Organisation
 from home.constants import ROLES
+from .model_factory import UserFactory
 
 User = get_user_model()
 
@@ -17,7 +18,7 @@ class OrganisationServiceTestCase(TestCase):
     def setUp(self):
         self.service = OrganisationService()
         # Create fake users for testing purposes
-        self.user = User.objects.create_user(first_name="John", last_name="Doe", email="john.doe@sort-online.org")
+        self.user = UserFactory()
         self.superuser = User.objects.create_superuser(first_name="Janet", last_name="Smith",
                                                        email="janet.smith@sort-online.org")
 
@@ -62,4 +63,9 @@ class OrganisationServiceTestCase(TestCase):
         self.service.can_manage_members(user=user, organisation=organisation)
         self.service.can_create(user=user)
         self.service.get_user_organisation(user=user)
+
+        # Check member exists in that organisation
         self.assertEqual({organisation.pk}, self.service.get_user_organisation_ids(user=user))
+        org_membership = OrganisationMembership.objects.filter(user=user, organisation=organisation).first()
+        self.assertEqual(org_membership.user.pk, user.pk)
+        self.assertEqual(org_membership.organisation.pk, organisation.pk)

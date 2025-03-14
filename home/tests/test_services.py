@@ -33,10 +33,6 @@ class OrganisationServiceTest(django.test.TestCase):
         self.assertTrue(isinstance(created_org, Organisation))
         # Check the org exists
         self.assertEqual(Organisation.objects.filter(name=org_name).count(), 1)
-        # Check member exist in organisation
-        org_membership = OrganisationMembership.objects.filter(user=manager, organisation=created_org).first()
-        self.assertEqual(org_membership.user.pk, manager.pk)
-        self.assertEqual(org_membership.organisation.pk, created_org.pk)
 
     def test_update_organisation(self):
         new_values = {
@@ -69,7 +65,6 @@ class OrganisationServiceTest(django.test.TestCase):
                                                           organisation=self.org,
                                                           role=ROLE_ADMIN)
 
-
     def test_remove_user_from_organisation(self):
         # Add manager3 and check that they're a member
         OrganisationMembership.objects.create(user=self.manager3, organisation=self.org, role=ROLE_PROJECT_MANAGER)
@@ -96,6 +91,7 @@ class OrganisationServiceTest(django.test.TestCase):
 
         with self.assertRaises(PermissionDenied):
             organisation_service.get_organisation_members(self.manager3, self.org)
+
 
 class ServicesPermissionsTest(django.test.TestCase):
     """
@@ -161,9 +157,3 @@ class ServicesPermissionsTest(django.test.TestCase):
     def test_survey_delete_permission(self):
         self.assertTrue(survey_service.can_delete(self.manager1, self.survey), "Manager cannot delete own survey")
         self.assertFalse(survey_service.can_delete(self.manager2, self.survey), "Manager can delete other survey")
-
-
-class ProjectServiceTest(django.test.TestCase):
-
-    def test_create_project(self):
-        pass
