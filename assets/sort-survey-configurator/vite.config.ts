@@ -8,7 +8,13 @@ export default defineConfig({
         customElement: true,
       },
     })],
+  server: {
+    cors: {
+      origin: "http://localhost:8000"
+    }
+  },
   build: {
+    manifest: true,
 
     rollupOptions: {
       input: {
@@ -19,7 +25,7 @@ export default defineConfig({
       output: {
         chunkFileNames: `[name].[hash].js`,
         entryFileNames: "[name].js",
-        dir: "../../static/js/sort-ui",
+        dir: "../../static/sort-ui",
       },
     },
   },
