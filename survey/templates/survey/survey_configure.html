@@ -1,5 +1,6 @@
 {% extends 'base_manager.html' %}
 {% load static %}
+{% load vite_integration %}
 {% block content %}
     <div class="container mx-auto px-4 py-8 mt-4">
         <nav aria-label="breadcrumb">
@@ -33,5 +34,8 @@
     {{ survey.consent_config | json_script:"consentConfig" }}
     {{ survey.demography_config | json_script:"demographyConfig" }}
     {{ survey.survey_config | json_script:"configData" }}
-    <script type="module" src="{% static 'js/sort-ui/sort_survey_cd.js' %}"></script>
+    {% vite_client %}
+    {% vite_asset "src/survey_config_consent_demography.ts" %}
+
+
 {% endblock %}

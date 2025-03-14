@@ -1,5 +1,6 @@
 {% extends 'base_anonymous.html' %}
 {% load static %}
+{% load vite_integration %}
 {% block content %}
 
 <div class="container mx-auto px-4 py-8 m-3">
@@ -8,7 +9,9 @@
 {{ csrf | json_script:"csrf" }}
 {{ value | json_script:"responseValue" }}
 {{ survey.survey_config | json_script:"configData" }}
-<script type="module" src="{% static 'js/sort-ui/sort_survey_response.js' %}"></script>
+{% vite_client %}
+{% vite_asset 'src/survey_response.ts' %}
+
 
 
 {% endblock %}
