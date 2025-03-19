@@ -14,4 +14,4 @@ class SurveyServiceTestCase(django.test.TestCase):
         Anonymous user can view a survey
         """
         anonymous_user = django.contrib.auth.models.AnonymousUser()
-        self.assertTrue(self.service.can_view(user=anonymous_user, instance=Survey.objects.create()))
+        self.assertTrue(self.service.can_view(user=anonymous_user, survey=Survey.objects.create()))

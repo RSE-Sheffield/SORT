@@ -5,7 +5,8 @@ on:
   pull_request:
     branches: [ "main", "dev" ]
 jobs:
-  lint:
+  django-test:
+    name: Run Django automated checks and tests
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
