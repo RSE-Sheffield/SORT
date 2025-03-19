@@ -15,7 +15,7 @@ from .constants import PASSWORD
 User = get_user_model()
 
 
-class ProjectTestCase(django.test.TestCase):
+class ProjectViewTestCase(django.test.TestCase):
 
     def setUp(self):
         self.project_service = ProjectService()
