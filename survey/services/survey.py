@@ -28,7 +28,7 @@ class SurveyService(BasePermissionService):
         try:
             return survey.project.organisation.get_user_role(user)
         except (
-            AttributeError
+                AttributeError
         ):  # In case user is AnonymousUser or organisation method fails
             return None
 
@@ -52,7 +52,6 @@ class SurveyService(BasePermissionService):
         role = project_service.get_user_role(user, project)
         return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
 
-
     def get_survey(self, user: User, survey_id: int) -> Survey:
         survey = get_object_or_404(Survey, pk=survey_id)
         if self.can_view(user, survey):
@@ -74,13 +73,12 @@ class SurveyService(BasePermissionService):
             demo_config = json.load(f)
             survey.demography_config = demo_config
 
-        survey.survey_config = {}
+        survey.survey_config = dict(sections=list())
         survey.save()
-
 
     @requires_permission("edit", obj_param="survey")
     def update_consent_demography_config(
-        self, survey: Survey, consent_config, demography_config
+            self, user: User, survey: Survey, consent_config, demography_config
     ) -> Survey:
         survey.consent_config = consent_config
         survey.demography_config = demography_config
@@ -88,9 +86,9 @@ class SurveyService(BasePermissionService):
         with open("data/survey_config/sort_only_config.json") as f:
             sort_config = json.load(f)
             merged_sections = (
-                survey.consent_config["sections"]
-                + sort_config["sections"]
-                + survey.demography_config["sections"]
+                    survey.consent_config["sections"]
+                    + sort_config["sections"]
+                    + survey.demography_config["sections"]
             )
             survey.survey_config = {"sections": merged_sections}
         survey.save()

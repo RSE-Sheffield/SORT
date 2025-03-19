@@ -39,6 +39,7 @@ class SurveyServiceTestCase(django.test.TestCase):
 
         # Create a survey
         self.survey = Survey.objects.create(project=self.project)
+
         self.invitation = Invitation.objects.create(survey=self.survey)
 
         # Save
@@ -132,5 +133,6 @@ class SurveyServiceTestCase(django.test.TestCase):
         self.assertFalse(used_values[-1])
 
     def test_export_csv(self):
+        self.service.initialise_survey(user=self.user, project=self.project, survey=self.survey)
         csv_data = self.service.export_csv(user=self.user, survey=self.survey)
         self.assertIsInstance(csv_data, str)
