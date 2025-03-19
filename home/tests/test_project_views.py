@@ -3,11 +3,14 @@ Test project views
 """
 
 from http import HTTPStatus
+
 import django.test
 import django.urls
 from django.contrib.auth import get_user_model
-from home.services import ProjectService, OrganisationService
-from constants import PASSWORD
+
+from home.services import OrganisationService, ProjectService
+
+from .constants import PASSWORD
 
 User = get_user_model()
 

@@ -17,7 +17,7 @@ jobs:
           python-version: "3.12"
           cache: "pip"
       - name: Install dependencies
-        run: pip install --requirement requirements.txt
+        run: pip install --requirement requirements.txt --requirement requirements-dev.txt
       # https://docs.djangoproject.com/en/5.1/ref/django-admin/#check
       - name: Run Django system checks
         run: |

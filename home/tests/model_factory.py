@@ -1,5 +1,11 @@
+"""
+Create dummy object and fixtures for testing.
+
+https://factoryboy.readthedocs.io/en/stable/
+"""
+
+import django.contrib.auth
 import factory
-from django.contrib.auth import get_user_model
 
 from home.models import Organisation, Project
 from survey.models import Survey
@@ -7,7 +13,7 @@ from survey.models import Survey
 
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = get_user_model()
+        model = django.contrib.auth.get_user_model()
         django_get_or_create = ('email', 'first_name', 'last_name')
 
     email = factory.Sequence(lambda n: f'user{n}@sort.com')

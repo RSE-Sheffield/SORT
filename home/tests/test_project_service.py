@@ -2,12 +2,14 @@
 Test the project service
 """
 
-from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
-from home.services import ProjectService, OrganisationService
+from django.test import TestCase
+
 from home.models import Project
-from constants import PASSWORD
+from home.services import OrganisationService, ProjectService
+
+from .constants import PASSWORD
 
 User = get_user_model()
 

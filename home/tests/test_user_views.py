@@ -1,8 +1,14 @@
+"""
+Test user profile and authentication views
+"""
+
 from http import HTTPStatus
+
 import django.test
 import django.urls
 from django.contrib.auth import get_user_model
-from constants import PASSWORD
+
+from .constants import PASSWORD
 
 User = get_user_model()
 

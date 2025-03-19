@@ -4,11 +4,14 @@ Unit tests for organisation views
 
 from http import HTTPStatus
 
+import django.contrib.auth
 import django.test
 import django.urls
-import django.contrib.auth
+
 from home.models import Organisation
-from constants import PASSWORD
+
+from .constants import PASSWORD
+from .model_factory import OrganisationFactory
 
 User = django.contrib.auth.get_user_model()
 
@@ -31,6 +34,7 @@ class OrganisationViewTestCase(django.test.TestCase):
             email='janet.thompson@sheffield.ac.uk',
             password=PASSWORD,
         )
+        self.organisation = OrganisationFactory()
 
     def login(self):
         self.assertTrue(self.client.login(username=self.user.email, password=PASSWORD))
@@ -65,8 +69,8 @@ class OrganisationViewTestCase(django.test.TestCase):
         # Expect to be redirected to organisation view
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-        self.assertTrue(Organisation.objects.exists(), "No organisations exist")
-        self.assertEqual(Organisation.objects.count(), 1, "No organisation created")
+        self.assertTrue(Organisation.objects.filter(name=org["name"]).exists(), "No organisations exist")
+        self.assertEqual(Organisation.objects.filter(name=org["name"]).count(), 1, "No organisation created")
 
     def test_organisation_view(self):
         pass
