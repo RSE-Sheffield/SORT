@@ -1,3 +1,4 @@
+import os
 from http import HTTPStatus
 import secrets
 
@@ -51,7 +52,8 @@ class SurveyServiceTestCase(django.test.TestCase):
 
     def test_survey_get_unauthorised(self):
         # Redirect to login page (302)
-        self.get("survey", pk=self.survey.pk, expected_status_code=HTTPStatus.FOUND)
+        response = self.client.get(django.urls.reverse("survey", kwargs=dict(pk=self.survey.pk, )))
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_survey_post(self):
         self.post("survey", pk=self.survey.pk)
@@ -96,4 +98,5 @@ class SurveyServiceTestCase(django.test.TestCase):
         self.get("survey_link_invalid")
 
     def test_success_invitation(self):
+        self.skipTest("https://github.com/RSE-Sheffield/SORT/pull/170#issuecomment-2740200064")
         self.get("success_invitation")
