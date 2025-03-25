@@ -10,6 +10,11 @@ urlpatterns = [
         name="survey_configure",
     ),
     path(
+        "survey/<int:pk>/edit",
+        views.SurveyEditView.as_view(),
+        name="survey_edit",
+    ),
+    path(
         "survey/<int:pk>/delete/",
         views.SurveyDeleteView.as_view(),
         name="survey_delete",
