@@ -218,3 +218,11 @@ LOGGING = {
         "level": os.getenv("DJANGO_LOG_LEVEL", "WARNING"),
     },
 }
+
+
+# Plotly-dash settings to require authentication for all Dash views
+# https://django-plotly-dash.readthedocs.io/en/latest/access_control.html
+
+PLOTLY_DASH = {
+    "view_decorator": "django_plotly_dash.access.login_required"
+}
