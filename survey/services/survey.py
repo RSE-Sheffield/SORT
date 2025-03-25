@@ -1,43 +1,68 @@
-
-from io import  StringIO
-import json
 import csv
+import json
+import logging
 import random
-from typing import Any
+from io import StringIO
+from typing import Any, Optional
 
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
-
+from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
+from home.models import Project, User, Organisation
 from home.services import BasePermissionService
-from home.models import User, Project
 from home.services.base import requires_permission
 from survey.models import Invitation, Survey, SurveyResponse
+from home.services import project_service
 
-import logging
 logger = logging.getLogger(__name__)
+
 
 class InvalidInviteTokenException(Exception):
     pass
 
+
 class SurveyService(BasePermissionService):
 
-    def can_view(self, user: User, instance: Any) -> bool:
-        return True
-    def can_create(self, user: User) -> bool:
-        # TODO: Requires checking that project
-        return True
+    def get_user_role(self, user: User, survey: Survey) -> Optional[str]:
+        """Get user's role in the project's organisation"""
+        try:
+            return survey.project.organisation.get_user_role(user)
+        except (
+            AttributeError
+        ):  # In case user is AnonymousUser or organisation method fails
+            return None
 
-    def can_edit(self, user: User, instance: Any) -> bool:
-        return True
-    def can_delete(self, user: User, instance: Any) -> bool:
-        return True
+    def can_view(self, user: User, survey: Survey) -> bool:
+        """ Must be a member of the organisation the survey belongs to in order to view """
+        role = self.get_user_role(user, survey)
+        return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
+
+    def can_edit(self, user: User, survey: Survey) -> bool:
+        """ Must be a member of the organisation the survey belongs to in order to edit """
+        role = self.get_user_role(user, survey)
+        return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
+
+    def can_delete(self, user: User, survey: Survey) -> bool:
+        """ Must be a member of the organisation the survey belongs to in order to delete """
+        role = self.get_user_role(user, survey)
+        return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
+
+    def can_create(self, user: User, project: Project) -> bool:
+        """ Must be a member of the organisation the survey belongs to in order to delete """
+        role = project_service.get_user_role(user, project)
+        return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
 
 
-    def get_survey(self, survey_id: int) -> Survey:
+    def get_survey(self, user: User, survey_id: int) -> Survey:
         survey = get_object_or_404(Survey, pk=survey_id)
-        return survey
+        if self.can_view(user, survey):
+            return survey
+        else:
+            raise PermissionDenied("Not allowed to view the survey")
 
+    @requires_permission("create", obj_param="project")
+    def initialise_survey(self, user: User, project: Project, survey: Survey):
 
-    def create_survey(self, survey: Survey, project: Project) -> Survey:
         survey.project = project
 
         # TODO: Make a proper loader function
@@ -52,22 +77,22 @@ class SurveyService(BasePermissionService):
         survey.survey_config = {}
         survey.save()
 
-        return survey
 
-    def update_consent_demography_config(self,
-                                         survey: Survey,
-                                         consent_config,
-                                         demography_config) -> Survey:
+    @requires_permission("edit", obj_param="survey")
+    def update_consent_demography_config(
+        self, survey: Survey, consent_config, demography_config
+    ) -> Survey:
         survey.consent_config = consent_config
         survey.demography_config = demography_config
 
         with open("data/survey_config/sort_only_config.json") as f:
             sort_config = json.load(f)
-            merged_sections = survey.consent_config["sections"] + sort_config["sections"] + survey.demography_config[
-                "sections"]
-            survey.survey_config = {
-                "sections": merged_sections
-            }
+            merged_sections = (
+                survey.consent_config["sections"]
+                + sort_config["sections"]
+                + survey.demography_config["sections"]
+            )
+            survey.survey_config = {"sections": merged_sections}
         survey.save()
         return survey
 
@@ -86,14 +111,11 @@ class SurveyService(BasePermissionService):
 
         return invitation.survey
 
-
-
     def accept_response(self, survey: Survey, responseValues):
         SurveyResponse.objects.create(survey=survey, answers=responseValues)
 
-
-
-    def create_invitation(self, survey: Survey) -> Invitation:
+    @requires_permission("edit", obj_param="survey")
+    def create_invitation(self, user: User, survey: Survey) -> Invitation:
 
         # Invalidate all other invite tokens
         for invite in survey.invitation_set.all():
@@ -103,8 +125,8 @@ class SurveyService(BasePermissionService):
         # Add new invite token
         return Invitation.objects.create(survey=survey)
 
-
-    def export_csv(self, survey: Survey) -> str:
+    @requires_permission("view", obj_param="survey")
+    def export_csv(self, user: User, survey: Survey) -> str:
         """
         Flatten the survey form to export as CSV
         Section titles are skipped
@@ -155,15 +177,14 @@ class SurveyService(BasePermissionService):
 
         return output_csv
 
-    def generate_mock_responses(self, survey: Survey, num_responses):
+    def generate_mock_responses(self, user: User, survey: Survey, num_responses):
         """
         Generate a number of mock responses
         """
         for i in range(num_responses):
-            self.accept_response(survey,
-                                 responseValues=self.generate_mock_response(survey.survey_config))
-
-
+            self.accept_response(
+                survey, responseValues=self.generate_mock_response(survey.survey_config)
+            )
 
     def generate_mock_response(self, survey_config):
         output_data = []
@@ -177,18 +198,17 @@ class SurveyService(BasePermissionService):
 
         return output_data
 
-
     def generate_random_field_value(self, field_config):
         type = field_config["type"]
         if type == "radio" or type == "select":
             # Pick one option
             num_options = len(field_config["options"])
-            option_index = random.randint(0, num_options-1)
+            option_index = random.randint(0, num_options - 1)
             return str(field_config["options"][option_index])
-        elif type == "checkbox" :
+        elif type == "checkbox":
             # Pick one random option
             num_options = len(field_config["options"])
-            option_index = random.randint(0, num_options-1)
+            option_index = random.randint(0, num_options - 1)
             return [str(field_config["options"][option_index])]
         elif type == "likert":
             likert_output = []
@@ -202,12 +222,28 @@ class SurveyService(BasePermissionService):
         elif type == "text":
             if "textType" in field_config:
                 if field_config["textType"] == "INTEGER_TEXT":
-                    min_value = field_config["minNumValue"] if "minNumValue" in field_config else 0
-                    max_value = field_config["maxNumValue"] if "maxNumValue" in field_config else 100
+                    min_value = (
+                        field_config["minNumValue"]
+                        if "minNumValue" in field_config
+                        else 0
+                    )
+                    max_value = (
+                        field_config["maxNumValue"]
+                        if "maxNumValue" in field_config
+                        else 100
+                    )
                     return str(random.randint(min_value, max_value))
                 elif field_config["textType"] == "DECIMALS_TEXT":
-                    min_value = field_config["minNumValue"] if "minNumValue" in field_config else 0
-                    max_value = field_config["maxNumValue"] if "maxNumValue" in field_config else 100
+                    min_value = (
+                        field_config["minNumValue"]
+                        if "minNumValue" in field_config
+                        else 0
+                    )
+                    max_value = (
+                        field_config["maxNumValue"]
+                        if "maxNumValue" in field_config
+                        else 100
+                    )
                     return str(random.uniform(min_value, max_value))
                 elif field_config["textType"] == "EMAIL_TEXT":
                     return "test@test.com"
@@ -215,15 +251,3 @@ class SurveyService(BasePermissionService):
                     return "Test plaintext field"
         else:
             return f"Test string for textarea field {field_config['label']}"
-
-
-
-
-
-
-
-
-
-
-
-
