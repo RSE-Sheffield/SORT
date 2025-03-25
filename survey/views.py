@@ -148,7 +148,7 @@ class SurveyConfigureView(LoginRequiredMixin, View):
                 demography_config = json.loads(
                     request.POST.get("demography_config", None)
                 )
-                survey_service.update_consent_demography_config(
+                survey_service.update_consent_demography_config( request.user,
                     survey, consent_config, demography_config
                 )
                 messages.info(request, "Survey configuration saved")
