@@ -5,20 +5,29 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.context_processors import csrf
 from django.urls import reverse_lazy
 from django.views import View
+from django.views.generic import FormView, TemplateView, DeleteView
 from django.views.generic import DeleteView, FormView, TemplateView
 from django.views.generic.edit import CreateView
 
 from home.models import Project
-from .dashboards.dashboard import dash_app
 from survey.services import survey_service
+from .forms import InvitationForm
+from .models import Survey
+import logging
 
 from .forms import InvitationForm
 from .models import Survey
 from .services.survey import InvalidInviteTokenException
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseForbidden
+from .services.survey import SurveyService
+from survey.dashboards.dashboard import get_survey_dashboard
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +38,10 @@ class SurveyView(LoginRequiredMixin, View):
     Manager's view of a survey to be sent out. The manager is able to
     configure what fields are included in the survey on this page.
     """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.survey_service = SurveyService()
 
     def get(self, request: HttpRequest, pk: int):
         return self.render_survey_page(request, pk)
@@ -80,14 +93,13 @@ class SurveyView(LoginRequiredMixin, View):
     def render_survey_page(self, request, pk):
         context = {}
         survey = survey_service.get_survey(request.user, pk) # Check that we're allowed to get the survey
-        survey = get_object_or_404(Survey, pk=pk)
         responses = survey.survey_response.all()
 
         context["has_responses"] = responses.exists()
 
         if context["has_responses"]:
-            metrics = self.get_survey_metrics(responses)
-            dash_app.initial_arguments = metrics
+            get_survey_dashboard(survey.id) # Only get the survey for a given id
+            context["dashboard_name"] = f"SurveyDashboard_{survey.id}"
 
         context["survey"] = survey
         context["invite_link"] = survey.get_invite_link(request)

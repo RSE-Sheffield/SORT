@@ -168,7 +168,7 @@
                  style="display: flex; justify-content: center; align-items: center; flex-direction: column; ">
                 {% if has_responses %}
                     <div style="width: 100%; padding: 20px; text-align: center;">
-                        {% plotly_direct name="SurveyDashboard" %}
+                        {% plotly_direct name=dashboard_name %}
                     </div>
                 {% else %}
                     <p class="alert alert-info" style="text-align: center;">No responses have been collected yet.</p>
