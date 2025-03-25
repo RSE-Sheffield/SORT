@@ -1,46 +1,45 @@
 {% extends "base_manager.html" %}
 {% block content %}
-<div class="container mx-auto px-4 py-8 mt-4 mb-3">
-    <div class="d-flex justify-content-between align-items-center">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">
-                    <i class="bx bxs-folder-open"></i> Project: {{ project.name }}
-                </li>
-            </ol>
-        </nav>
-        <div class="ms-auto">
-            {% load search_tags %}
-            {% search_bar placeholder="Search surveys..." %}
+    {% load project_filters %}
+    <div class="container mx-auto px-4 py-8 mt-4 mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item" aria-current="page">
+                        <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="bx bxs-folder-open"></i> Project: {{ project.name }}
+                    </li>
+                </ol>
+            </nav>
         </div>
     </div>
-</div>
     <div class="container mx-auto px-4 py-8">
-        <div class="card">
-            <div class="card-header">
-                <h1>{{ project.name }}</h1>
-            </div>
-            <div class="card-body">
-                <p><strong>Project description:</strong></p>
-                <p>{{ project.description }}</p>
-                <div class="d-flex justify-content-between mt-3">
-                    <div></div>
-                    <div></div>
-                    <div>
-                        <a href="{% url 'project_delete' project.pk %}" class="btn btn-danger"><i class="bx bxs-trash"></i> Delete project</a>
-                    </div>
-                </div>
+    <div class="card">
+        <div class="card-header">
+            <h1>{{ project.name }}</h1>
+        </div>
+        <div class="card-body">
+            <p><strong>Project description:</strong></p>
+            <p>{{ project.description }}</p>
+            <div class="d-flex justify-content-between mt-3">
+                <div></div>
+                <div></div>
             </div>
         </div>
+    </div>
 
 
+    <div class="w-100 d-flex justify-content-between align-items-center mt-3 mb-6">
+        <h2 class="text-2xl font-bold d-inline-block">Surveys</h2>
 
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                {% load search_tags %}
+                {% search_bar placeholder="Search surveys..." %}
+            </div>
 
-        <div class="w-100 d-flex justify-content-between align-items-center mt-3 mb-6">
-            <h2 class="text-2xl font-bold d-inline-block">Surveys</h2>
             {% if can_create %}
                 <a href="{% url 'survey_create' project.id %}">
                     <button type="button" class="btn btn-primary">
@@ -49,26 +48,36 @@
                 </a>
             {% endif %}
         </div>
-        <div class="d-flex flex-column gap-3">
-            {% for survey in surveys %}
-                <div class="card w-100">
-                    <div class="card-body">
-                        <h3 class="card-title">{{ survey.name }}</h3>
-                        <div class="card-text">
-                            <span>Responses: {{ survey.survey_response.count | default:0  }}</span>
-                        </div>
-                        <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
-                            <a href="{% url 'survey' survey.id %}">
-                                <button type="button" class="btn btn-dark">
-                                    <i class="bx bxs-chart"></i> View
-                                </button>
-                            </a>
-                        </div>
-                    </div>
+    </div>
+    <div class="d-flex flex-column gap-3">
+        {% for survey in surveys %}
+            <div class="card w-100">
+            <div class="card-body">
+                <h3 class="card-title">{{ survey.name }}</h3>
+                <div class="card-text">
+                    <span>Responses: {{ survey.survey_response.count | default:0 }}</span>
                 </div>
-            {% empty %}
-                <p class="text-gray-600">No surveys found.</p>
-            {% endfor %}
+                <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
+                    {% if can_edit|get_item:survey.id %}
+                        <a href="{% url 'survey_edit' survey.id %}">
+                            <button type="button" class="btn btn-light">
+                                <i class="bx bxs-edit"></i> Edit
+                            </button>
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'survey' survey.id %}">
+                        <button type="button" class="btn btn-dark">
+                            <i class="bx bxs-chart"></i> View
+                        </button>
+                    </a>
+                    <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger">
+                        <i class="bx bxs-trash"></i> Delete survey
+                    </a>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-gray-600">No surveys found.</p>
+        {% endfor %}
         </div>
         {% comment %} pagination {% endcomment %}
         {% if page_obj.has_other_pages %}
