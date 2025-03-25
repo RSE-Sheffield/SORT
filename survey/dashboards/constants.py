@@ -1,3 +1,10 @@
+"""
+Constants settings for the survey dashboard
+
+This script defines the visual styling, colour palettes, maturity levels, and other
+constants used throughout the dashboard.
+"""
+
 THEME = {
     "primary": "#1192e8",
     "primary_bg": "#e5f6ff",

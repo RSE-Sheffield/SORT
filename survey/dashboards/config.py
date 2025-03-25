@@ -1,124 +1,107 @@
-import os
-import json
-from django.conf import settings
+"""
+Configuration parsers for the survey dashboard
 
+This module extracts structured configuration data from survey models for use
+in dashboard creation. It includes functions to process survey sections with
+proper labeling and to map demographic fields to standardised formats with
+any relevant transformations
+"""
 
-SORT_CONFIG_PATH = os.path.join(
-    settings.BASE_DIR, "data", "survey_config", "sort_only_config.json"
-)
-DEMOGRAPHIC_CONFIG_PATH = os.path.join(
-    settings.BASE_DIR, "data", "survey_config", "demography_only_config.json"
-)
+from .utils import get_age_group
 
-with open(SORT_CONFIG_PATH, "r") as f:
-    SURVEY_CONFIG = json.load(f)
+def get_sections_from_survey(survey):
+    """
+    Extract survey sections from the survey model's survey_config JSON field
+    """
+    if not survey or not hasattr(survey, 'survey_config') or not survey.survey_config:
+        print(f"Survey has no survey_config")
+        return []
 
-with open(DEMOGRAPHIC_CONFIG_PATH, "r") as f:
-    DEMOGRAPHIC_CONFIG = json.load(f)
-
-
-ALL_SECTIONS = {
-    "sort": SURVEY_CONFIG["sections"],
-    "demographic": DEMOGRAPHIC_CONFIG["sections"],
-}
-
-def get_age_group(age):
     try:
-        age_num = int(age)
-        if age_num < 25:
-            return "Under 25"
-        elif age_num < 35:
-            return "25-34"
-        elif age_num < 45:
-            return "35-44"
-        elif age_num < 55:
-            return "45-54"
-        elif age_num < 65:
-            return "55-64"
-        else:
-            return "65+"
-    except (ValueError, TypeError):
-        return "Unknown age"
+        survey_config = survey.survey_config
 
-# Survey sections configuration
-SECTIONS = [
-    {
-        "id": "releasing_potential",
-        "letter": "A",
-        "title": "Releasing Potential",
-        "index": 1,
-        "config": SURVEY_CONFIG["sections"][0],
-    },
-    {
-        "id": "embedding_research",
-        "letter": "B",
-        "title": "Embedding Research",
-        "index": 2,
-        "config": SURVEY_CONFIG["sections"][1],
-    },
-    {
-        "id": "linkages_leadership",
-        "letter": "C",
-        "title": "Linkages and Leadership",
-        "index": 3,
-        "config": SURVEY_CONFIG["sections"][2],
-    },
-    {
-        "id": "inclusive_research",
-        "letter": "D",
-        "title": "Inclusive Research",
-        "index": 4,
-        "config": SURVEY_CONFIG["sections"][3],
-    },
-    {
-        "id": "digital_capability",
-        "letter": "E",
-        "title": "Digital Capability",
-        "index": 5,
-        "config": SURVEY_CONFIG["sections"][4],
-    },
-]
+        sections = []
+        if "sections" in survey_config:
+            for idx, section in enumerate(survey_config["sections"]):
+                # Only process "sort" type sections
+                if section.get("type") == "sort":
+                    section_id = section.get("title", "").lower().replace(" ", "_").replace(".", "")
+                    if not section_id:
+                        section_id = f"section_{idx}"
+                    letter = section.get("title", "")[0] if section.get("title") else chr(65 + len(sections))
+                    sections.append({
+                        "id": section_id,
+                        "letter": letter,
+                        "title": section.get("title", "").split(". ", 1)[1] if ". " in section.get("title",
+                                                                                                   "") else section.get(
+                            "title", ""),
+                        "original_index": section.get("index", idx + 1),
+                        "index": len(sections),
+                        "config": section
+                    })
 
-# Demographic fields configuration
-DEMOGRAPHIC_FIELDS = [
-    {
-        "id": "gender",
-        "label": "Your Gender",
-        "placeholder": "Select Gender",
-        "options": ["Male", "Female", "Non-binary", "Prefer not to say"],
-        "index": 1
-    },
-    {
-        "id": "age",
-        "label": "Your Age",
-        "placeholder": "Select Age",
-        "options": ["Under 25", "25-34", "35-44", "45-54", "55-64", "65+"],
-        "transform": get_age_group,
-        "index": 0
-    },
-    {
-        "id": "band",
-        "label": "What is your current Band/Grade",
-        "placeholder": "Select Band/Grade",
-        "options": ["Band 5", "Band 6", "Band 7", "Band 8", "Band 9"],
-        "index": 3
-    },
-    {
-        "id": "qualification",
-        "label": "Please indicate your highest qualification",
-        "placeholder": "Select Qualification",
-        "options": ["Degree", "Masters", "PhD/Doctorate", "Diploma"],
-        "index": 4
-    },
-    {
-        "id": "ethnicity",
-        "label": "What is your ethnicity?",
-        "placeholder": "Select Ethnicity",
-        "options": [
-            "White - British", "White - Irish", "White - Romany",
-            "Black British - African", "Black British - Caribbean",
-            "Mixed - Black African and White", "Mixed - other"
-        ],
-        "index": 5
-    }
-]
+        print(f"Extracted {len(sections)} sections from survey_config")
+        return sections
+    except Exception as e:
+        print(f"Error in get_sections_from_survey: {str(e)}")
+        return []
+
+
+def get_demographic_fields_from_survey(survey):
+    """
+    Extracts the demographic fields directly from the survey model's demography_config JSON field
+    """
+    if not survey or not hasattr(survey, 'demography_config') or not survey.demography_config:
+        print(f"Survey has no demography_config")
+        return []
+
+    try:
+        demographic_fields = []
+
+        demography_config = survey.demography_config
+
+        demographic_section = None
+        for section in demography_config.get("sections", []):
+            if section.get("type") == "demographic":
+                demographic_section = section
+                break
+
+        if demographic_section:
+
+            field_mapping = {
+                "Your Gender": {"id": "gender", "index": 1},
+                "What is your age": {"id": "age", "index": 0},
+                "What is your current Band/Grade": {"id": "band", "index": 3},
+                "Please indicate your highest qualification": {"id": "qualification", "index": 4},
+                "What is your ethnicity?": {"id": "ethnicity", "index": 5}
+                #Ommited other mappings for brevity
+            }
+
+            for field in demographic_section.get("fields", []):
+                field_label = field.get("label")
+                if field_label in field_mapping:
+                    mapping = field_mapping[field_label]
+
+                    display_label = mapping["id"].title()
+
+                    options = field.get("options", [])
+                    if field_label == "What is your age":
+                        options = ["Under 25", "25-34", "35-44", "45-54", "55-64", "65+"]
+                        transform_func = get_age_group
+                    else:
+                        transform_func = None
+
+                    demographic_fields.append({
+                        "id": mapping["id"],
+                        "label": display_label,  #
+                        "original_label": field_label,
+                        "placeholder": f"Select {display_label}",
+                        "options": options,
+                        "transform": transform_func,
+                        "index": mapping["index"]
+                    })
+
+        return demographic_fields
+    except Exception as e:
+        print(f"Error in get_demographic_fields_from_survey: {e}")
+        return []
