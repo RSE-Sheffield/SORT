@@ -1,5 +1,7 @@
+import os
 import secrets
-
+import logging
+from django.conf import settings
 from django.db import models
 from django.http import HttpRequest
 from django.urls import reverse
@@ -7,6 +9,7 @@ from django.utils import timezone
 
 from home.models import Project
 
+logger = logging.getLogger(__name__)
 
 class Survey(models.Model):
     """
@@ -38,6 +41,35 @@ class Survey(models.Model):
             return request.build_absolute_uri("/survey_response/" + token)
 
         return None
+
+class SurveyEvidenceSection(models.Model):
+
+    """
+    The section_id always matches the section index in the survey.survey_config["sections"]
+    """
+    section_id = models.IntegerField(default=0, db_index=True)
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    title = models.TextField(blank=True, null=True)
+    text = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = [["survey", "section_id"]]
+
+
+
+def survey_file_upload_path(instance, filename):
+    return f"survey/{instance.survey.pk}/{filename}"
+
+class SurveyFile(models.Model):
+    file = models.FileField(upload_to=survey_file_upload_path, blank=True, null=True)
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name="files")
+
+def evidence_file_upload_path(instance, filename):
+    return f"survey_evidence/{instance.evidence_section.pk}/{filename}"
+
+class SurveyEvidenceFile(models.Model):
+    file = models.FileField(upload_to=evidence_file_upload_path, blank=True, null=True)
+    evidence_section = models.ForeignKey(SurveyEvidenceSection, on_delete=models.CASCADE, related_name="files")
 
 
 class SurveyResponse(models.Model):

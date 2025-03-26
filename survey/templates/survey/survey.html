@@ -178,10 +178,17 @@
                 <h2>4. Gather Evidence</h2>
             </div>
             <div class="card-body">
-                <p>Once you have collected enough responses, use this section to gather evidence in support of the
-                    survey results.</p>
-                <a href="{% url 'survey_evidence_gathering' survey.id %}" class="btn btn-primary"><i
-                        class='bx bx-collection'></i> Gather evidence</a>
+                <p>Once you have collected enough responses, use this section to gather evidence in support of the survey results.</p>
+
+                {% if first_evidence_section %}
+                    <a href="{% url 'survey_evidence_gathering' survey.id first_evidence_section.section_id %}" class="btn btn-primary"><i class='bx bx-collection' ></i> Gather evidence</a>
+
+                {% else %}
+                    <p>Survey must be configured before the section can be used.</p>
+
+                {% endif %}
+
+
             </div>
         </div>
         <div class="card mb-3">

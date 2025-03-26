@@ -36,8 +36,8 @@ header {
     color: lightgrey;
 }
 
-.nav-link:hover,
-.nav-link.active {
+#navbarSupportedContent .nav-link:hover,
+#navbarSupportedContent .nav-link.active {
     color: white !important;
     filter: brightness(1.0);
 }
