@@ -54,7 +54,7 @@ class SurveyServiceTestCase(django.test.TestCase):
 
     def test_survey_get_unauthorised(self):
         # Redirect to login page (302)
-        self.get("survey", expected_status_code=HTTPStatus.NOT_FOUND, login=False, pk=self.survey.pk)
+        self.get("survey", expected_status_code=HTTPStatus.FOUND, login=False, pk=self.survey.pk)
 
     def test_survey_post(self):
         self.post("survey", pk=self.survey.pk)
