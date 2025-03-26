@@ -35,14 +35,16 @@ class SurveyServiceTestCase(django.test.TestCase):
     def login(self):
         self.assertTrue(self.client.login(username=self.user.email, password=PASSWORD))
 
-    def get(self, view_name: str, expected_status_code: int = HTTPStatus.OK, **kwargs):
-        self.login()
+    def get(self, view_name: str, expected_status_code: int = HTTPStatus.OK, login: bool = True, **kwargs):
+        if login:
+            self.login()
         response = self.client.get(django.urls.reverse(view_name, kwargs=kwargs))
         self.assertEqual(response.status_code, expected_status_code)
         return response
 
-    def post(self, view_name: str, expected_status_code: int = HTTPStatus.OK, **kwargs):
-        self.login()
+    def post(self, view_name: str, expected_status_code: int = HTTPStatus.OK, login: bool = True, **kwargs):
+        if login:
+            self.login()
         response = self.client.post(django.urls.reverse(view_name, kwargs=kwargs))
         self.assertEqual(response.status_code, expected_status_code)
         return response
@@ -52,8 +54,7 @@ class SurveyServiceTestCase(django.test.TestCase):
 
     def test_survey_get_unauthorised(self):
         # Redirect to login page (302)
-        response = self.client.get(django.urls.reverse("survey", kwargs=dict(pk=self.survey.pk, )))
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        self.get("survey", expected_status_code=HTTPStatus.NOT_FOUND, login=False, pk=self.survey.pk)
 
     def test_survey_post(self):
         self.post("survey", pk=self.survey.pk)
