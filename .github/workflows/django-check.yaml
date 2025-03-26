@@ -31,5 +31,5 @@ jobs:
           # Iterate over Django apps with test directories
           for test_dir in **/tests
           do 
-            python manage.py test --verbosity 1 --parallel $test_dir
+            python manage.py test "$test_dir" --verbosity=1 --parallel=auto
           done
