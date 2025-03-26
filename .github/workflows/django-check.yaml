@@ -28,5 +28,8 @@ jobs:
       - name: Run Django test suites
         run: |
           export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
-          python manage.py test -v3 home/tests
-          python manage.py test -v3 survey/tests
+          # Iterate over Django apps with test directories
+          for test_dir in **/tests
+          do 
+            python manage.py test --verbosity 1 --parallel $test_dir
+          done

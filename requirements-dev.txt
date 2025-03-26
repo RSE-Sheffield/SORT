@@ -1,6 +1,7 @@
 factory-boy==3.3.*
 pytest==8.*
 pytest-django==4.9.*
+tblib==3.*
 django_debug_toolbar==4.4.*
 isort==6.*
 black==25.*
