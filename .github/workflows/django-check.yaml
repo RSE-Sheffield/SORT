@@ -31,5 +31,6 @@ jobs:
           # Iterate over Django apps with test directories
           for test_dir in **/tests
           do 
-            python manage.py test "$test_dir" --verbosity=1 --parallel=auto
+            echo "Testing $test_dir"
+            python manage.py test "$test_dir" --verbosity=2 --parallel=auto
           done
