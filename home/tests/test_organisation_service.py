@@ -4,18 +4,17 @@ Test the organisation service
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
-from django.test import TestCase
 
+import SORT.test.test_case
 from home.constants import ROLE_ADMIN, ROLES
 from home.models import Organisation, OrganisationMembership
 from home.services import OrganisationService
-
-from .model_factory import OrganisationFactory, UserFactory
+from SORT.test.model_factory import OrganisationFactory, UserFactory
 
 User = get_user_model()
 
 
-class OrganisationServiceTestCase(TestCase):
+class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
 
     def setUp(self):
         self.service = OrganisationService()
@@ -23,13 +22,17 @@ class OrganisationServiceTestCase(TestCase):
         # Create fake users for testing purposes
         self.user = UserFactory()
         self.manager = UserFactory()
-        self.superuser = User.objects.create_superuser(first_name="Janet", last_name="Smith",
-                                                       email="janet.smith@sort-online.org")
+        self.superuser = User.objects.create_superuser(
+            first_name="Janet", last_name="Smith", email="janet.smith@sort-online.org"
+        )
 
         # Set up a test organisation with the "manager" user as the administrator
         self.organisation = OrganisationFactory()
         OrganisationMembership.objects.create(
-            user=self.manager, organisation=self.organisation, role=ROLE_ADMIN, added_by=self.manager
+            user=self.manager,
+            organisation=self.organisation,
+            role=ROLE_ADMIN,
+            added_by=self.manager,
         )
 
     def test_create_organisation(self):
@@ -46,7 +49,10 @@ class OrganisationServiceTestCase(TestCase):
         )
 
         self.assertEqual(self.user, organisation.members.first(), "Incorrect user")
-        self.assertTrue(Organisation.objects.filter(name=name).exists(), "Organisation doesn't exist")
+        self.assertTrue(
+            Organisation.objects.filter(name=name).exists(),
+            "Organisation doesn't exist",
+        )
 
     def test_create_organisation_as_superuser(self):
         """
@@ -65,8 +71,15 @@ class OrganisationServiceTestCase(TestCase):
         self.assertTrue(isinstance(organisation, Organisation))
 
         # Ensure it worked and we created a new org.
-        self.assertTrue(Organisation.objects.filter(name=name).exists(), "No organisation with that name was created")
-        self.assertEqual(Organisation.objects.filter(name=name).count(), 1, "Unexpected number of organisations")
+        self.assertTrue(
+            Organisation.objects.filter(name=name).exists(),
+            "No organisation with that name was created",
+        )
+        self.assertEqual(
+            Organisation.objects.filter(name=name).count(),
+            1,
+            "Unexpected number of organisations",
+        )
 
         organisation = Organisation.objects.filter(name=name).first()
 
@@ -83,8 +96,12 @@ class OrganisationServiceTestCase(TestCase):
         self.service.get_user_organisation(user=user)
 
         # Check member exists in that organisation
-        self.assertEqual({organisation.pk}, self.service.get_user_organisation_ids(user=user))
-        org_membership = OrganisationMembership.objects.filter(user=user, organisation=organisation).first()
+        self.assertEqual(
+            {organisation.pk}, self.service.get_user_organisation_ids(user=user)
+        )
+        org_membership = OrganisationMembership.objects.filter(
+            user=user, organisation=organisation
+        ).first()
         self.assertEqual(org_membership.user.pk, user.pk)
         self.assertEqual(org_membership.organisation.pk, organisation.pk)
 
@@ -114,18 +131,22 @@ class OrganisationServiceTestCase(TestCase):
         """
         organisation = OrganisationFactory()
         # The first manager is an administrator
-        OrganisationMembership.objects.create(user=self.manager, organisation=organisation, role=ROLE_ADMIN)
+        OrganisationMembership.objects.create(
+            user=self.manager, organisation=organisation, role=ROLE_ADMIN
+        )
 
         # Add the second user
         self.service.add_user_to_organisation(
             user=self.manager,
             user_to_add=self.user,
             organisation=organisation,
-            role=ROLE_ADMIN
+            role=ROLE_ADMIN,
         )
 
         # Check organisation membership
-        membership = OrganisationMembership.objects.filter(user=self.user, organisation=organisation).first()
+        membership = OrganisationMembership.objects.filter(
+            user=self.user, organisation=organisation
+        ).first()
         self.assertEqual(membership.user, self.user)
         self.assertEqual(membership.organisation, organisation)
         self.assertEqual(membership.role, ROLE_ADMIN)
@@ -137,36 +158,60 @@ class OrganisationServiceTestCase(TestCase):
                 user=self.manager,
                 user_to_add=self.user,
                 organisation=organisation,
-                role=ROLE_ADMIN
+                role=ROLE_ADMIN,
             )
 
     def test_remove_user_from_organisation(self):
         self.assertEqual(
-            OrganisationMembership.objects.filter(user=self.manager, organisation=self.organisation).count(), 1)
+            OrganisationMembership.objects.filter(
+                user=self.manager, organisation=self.organisation
+            ).count(),
+            1,
+        )
 
         # Remove manager then check
-        self.service.remove_user_from_organisation(self.manager, self.organisation, self.manager)
+        self.service.remove_user_from_organisation(
+            self.manager, self.organisation, self.manager
+        )
         self.assertEqual(
-            OrganisationMembership.objects.filter(user=self.manager, organisation=self.organisation).count(), 0)
+            OrganisationMembership.objects.filter(
+                user=self.manager, organisation=self.organisation
+            ).count(),
+            0,
+        )
 
         with self.assertRaises(PermissionDenied):
-            self.service.remove_user_from_organisation(self.manager, self.organisation, removed_user=self.user)
+            self.service.remove_user_from_organisation(
+                self.manager, self.organisation, removed_user=self.user
+            )
 
         # Attempt "hostile takeover" by non-authorised user
         with self.assertRaises(PermissionDenied):
-            self.service.remove_user_from_organisation(self.user, self.organisation, removed_user=self.manager)
+            self.service.remove_user_from_organisation(
+                self.user, self.organisation, removed_user=self.manager
+            )
 
     def test_get_organisation_members(self):
-        self.assertEqual(self.service.get_organisation_members(self.manager, self.organisation).count(), 1)
+        self.assertEqual(
+            self.service.get_organisation_members(
+                self.manager, self.organisation
+            ).count(),
+            1,
+        )
 
         self.service.add_user_to_organisation(
             user=self.manager,
             user_to_add=self.user,
             organisation=self.organisation,
-            role=ROLE_ADMIN
+            role=ROLE_ADMIN,
         )
 
-        self.assertEqual(self.service.get_organisation_members(self.manager, self.organisation).count(), 2)
+        self.assertEqual(
+            self.service.get_organisation_members(
+                self.manager, self.organisation
+            ).count(),
+            2,
+        )
 
         # See if a random user can view the membership
         with self.assertRaises(PermissionDenied):

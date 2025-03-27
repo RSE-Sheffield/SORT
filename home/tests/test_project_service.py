@@ -4,8 +4,8 @@ Test the project service
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
-from django.test import TestCase
 
+import SORT.test.test_case
 from home.models import Project
 from home.services import OrganisationService, ProjectService
 
@@ -14,16 +14,24 @@ from .constants import PASSWORD
 User = get_user_model()
 
 
-class ProjectServiceTestCase(TestCase):
+class ProjectServiceTestCase(SORT.test.test_case.ServiceTestCase):
 
     def setUp(self):
         self.service = ProjectService()
 
         # Create fake users for testing purposes
         self.user = User.objects.create_user(
-            first_name="John", last_name="Doe", email="john.doe@sort-online.org", password=PASSWORD)
+            first_name="John",
+            last_name="Doe",
+            email="john.doe@sort-online.org",
+            password=PASSWORD,
+        )
         self.superuser = User.objects.create_superuser(
-            first_name="Janet", last_name="Smith", email="janet.smith@sort-online.org", password=PASSWORD)
+            first_name="Janet",
+            last_name="Smith",
+            email="janet.smith@sort-online.org",
+            password=PASSWORD,
+        )
 
         self.organisation = OrganisationService().create_organisation(
             user=self.superuser,

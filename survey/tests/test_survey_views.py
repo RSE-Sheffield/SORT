@@ -1,60 +1,41 @@
-import os
 from http import HTTPStatus
-import secrets
 
-import django.test
-import django.urls
 import django.contrib.auth
 
-from home.models import Project, Organisation
+import SORT.test.test_case
+from home.models import Project
 from home.services import OrganisationService
+from survey.models import Invitation, Survey
 from survey.services import SurveyService
-from survey.models import Survey, Invitation
 
 User = django.contrib.auth.get_user_model()
 
-PASSWORD = secrets.token_urlsafe()
 
-
-class SurveyServiceTestCase(django.test.TestCase):
+class SurveyServiceTestCase(SORT.test.test_case.ViewTestCase):
     def setUp(self):
-        # Initialise environment
-        self.user = User.objects.create_user(
-            first_name="John",
-            last_name="Doe",
-            email="john.doe@sort-online.org",
-            password=PASSWORD,
+        super().setUp()
+        organisation = OrganisationService().create_organisation(
+            user=self.user, name="Survey test org"
         )
-        organisation = OrganisationService().create_organisation(user=self.user, name="Survey test org")
         project = Project.objects.create(organisation=organisation)
 
         # Create survey
         self.survey = Survey.objects.create()
-        SurveyService().initialise_survey(user=self.user, project=project, survey=self.survey)
-
-    def login(self):
-        self.assertTrue(self.client.login(username=self.user.email, password=PASSWORD))
-
-    def get(self, view_name: str, expected_status_code: int = HTTPStatus.OK, login: bool = True, **kwargs):
-        if login:
-            self.login()
-        response = self.client.get(django.urls.reverse(view_name, kwargs=kwargs))
-        self.assertEqual(response.status_code, expected_status_code)
-        return response
-
-    def post(self, view_name: str, expected_status_code: int = HTTPStatus.OK, login: bool = True, **kwargs):
-        if login:
-            self.login()
-        response = self.client.post(django.urls.reverse(view_name, kwargs=kwargs))
-        self.assertEqual(response.status_code, expected_status_code)
-        return response
+        SurveyService().initialise_survey(
+            user=self.user, project=project, survey=self.survey
+        )
 
     def test_survey_get(self):
         self.get("survey", pk=self.survey.pk)
 
     def test_survey_get_unauthorised(self):
         # Redirect to login page (302)
-        self.get("survey", expected_status_code=HTTPStatus.FOUND, login=False, pk=self.survey.pk)
+        self.get(
+            "survey",
+            expected_status_code=HTTPStatus.FOUND,
+            login=False,
+            pk=self.survey.pk,
+        )
 
     def test_survey_post(self):
         self.post("survey", pk=self.survey.pk)
@@ -70,7 +51,9 @@ class SurveyServiceTestCase(django.test.TestCase):
 
     def test_survey_delete_post(self):
         # We expect a 302 redirect after deletion
-        self.post("survey_delete", pk=self.survey.pk, expected_status_code=HTTPStatus.FOUND)
+        self.post(
+            "survey_delete", pk=self.survey.pk, expected_status_code=HTTPStatus.FOUND
+        )
 
     def test_survey_configure_get(self):
         self.get("survey_configure", pk=self.survey.pk)
@@ -99,5 +82,7 @@ class SurveyServiceTestCase(django.test.TestCase):
         self.get("survey_link_invalid")
 
     def test_success_invitation(self):
-        self.skipTest("https://github.com/RSE-Sheffield/SORT/pull/170#issuecomment-2740200064")
+        self.skipTest(
+            "https://github.com/RSE-Sheffield/SORT/pull/170#issuecomment-2740200064"
+        )
         self.get("success_invitation")

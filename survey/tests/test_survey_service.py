@@ -8,16 +8,17 @@ import django.contrib.auth.models
 import django.core.exceptions
 import django.test
 
+import SORT.test.test_case
 from home.constants import ROLE_ADMIN
 from home.models import Project
 from home.services import OrganisationService
-from survey.models import Survey, Invitation
+from survey.models import Invitation, Survey
 from survey.services import SurveyService
 
 User = django.contrib.auth.get_user_model()
 
 
-class SurveyServiceTestCase(django.test.TestCase):
+class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
     def setUp(self):
         organisation_service = OrganisationService()
         self.service = SurveyService()
@@ -60,19 +61,25 @@ class SurveyServiceTestCase(django.test.TestCase):
         """
         Check that a user that isn't part of the organisation can't view a survey
         """
-        self.assertFalse(self.service.can_view(user=self.anonymous_user, survey=self.survey))
+        self.assertFalse(
+            self.service.can_view(user=self.anonymous_user, survey=self.survey)
+        )
 
     def test_can_edit(self):
         self.assertTrue(self.service.can_edit(user=self.user, survey=self.survey))
 
     def test_can_edit_unauthorised(self):
-        self.assertFalse(self.service.can_edit(user=self.anonymous_user, survey=self.survey))
+        self.assertFalse(
+            self.service.can_edit(user=self.anonymous_user, survey=self.survey)
+        )
 
     def test_can_delete(self):
         self.assertTrue(self.service.can_delete(user=self.user, survey=self.survey))
 
     def test_can_delete_unauthorised(self):
-        self.assertFalse(self.service.can_delete(user=self.anonymous_user, survey=self.survey))
+        self.assertFalse(
+            self.service.can_delete(user=self.anonymous_user, survey=self.survey)
+        )
 
     def test_can_create(self):
         self.assertTrue(self.service.can_create(self.user, self.project))
@@ -91,7 +98,9 @@ class SurveyServiceTestCase(django.test.TestCase):
             self.service.get_survey(user=self.anonymous_user, survey_id=self.survey.pk)
 
     def test_initialise_survey(self):
-        self.service.initialise_survey(user=self.user, project=self.project, survey=self.survey)
+        self.service.initialise_survey(
+            user=self.user, project=self.project, survey=self.survey
+        )
 
         self.assertIsInstance(self.survey.survey_config, dict)
         self.assertIsInstance(self.survey.consent_config, dict)
@@ -116,7 +125,9 @@ class SurveyServiceTestCase(django.test.TestCase):
         self.assertIsInstance(survey, Survey)
 
     def test_accept_response(self):
-        self.service.accept_response(survey=self.survey, responseValues=json.dumps("[]"))
+        self.service.accept_response(
+            survey=self.survey, responseValues=json.dumps("[]")
+        )
         self.assertTrue(self.survey.survey_response.exists())
 
     def test_create_invitation(self):
@@ -127,12 +138,14 @@ class SurveyServiceTestCase(django.test.TestCase):
 
         # The old invitations should be expired, except for the latest one
         # True, True, True, False
-        used_values = tuple(self.survey.invitation_set.values_list('used', flat=True))
+        used_values = tuple(self.survey.invitation_set.values_list("used", flat=True))
         for used in used_values[:-1]:
             self.assertTrue(used)
         self.assertFalse(used_values[-1])
 
     def test_export_csv(self):
-        self.service.initialise_survey(user=self.user, project=self.project, survey=self.survey)
+        self.service.initialise_survey(
+            user=self.user, project=self.project, survey=self.survey
+        )
         csv_data = self.service.export_csv(user=self.user, survey=self.survey)
         self.assertIsInstance(csv_data, str)

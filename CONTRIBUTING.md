@@ -81,17 +81,4 @@ We expect all contributors to follow the SORT [Code of Conduct](CODE_OF_CONDUCT.
 
 # Testing
 
-See: [Testing in Django](https://docs.djangoproject.com/en/5.1/topics/testing/) and
-further [Django testing examples](https://django-testing-docs.readthedocs.io/en/latest/index.html).
-
-There are unit tests in the `./tests` directory of each Django app. See [writing tests](https://docs.djangoproject.com/en/5.1/topics/testing/overview/#writing-tests).
-
-## Running unit tests
-
-[Running Django tests](https://docs.djangoproject.com/en/5.1/topics/testing/overview/#running-tests)
-
-```bash
-python manage.py test home/tests
-python manage.py test survey/tests
-```
-
+Please read the [testing documentation](docs/testing.md).

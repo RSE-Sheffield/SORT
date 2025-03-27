@@ -1,0 +1,94 @@
+"""
+A unit testing class for testing Django views.
+"""
+
+import secrets
+from http import HTTPStatus
+
+import django.contrib.auth
+import django.test
+import django.urls
+
+User = django.contrib.auth.get_user_model()
+PASSWORD = secrets.token_urlsafe()
+PASSWORD_SUPERUSER = secrets.token_urlsafe()
+
+
+class ViewTestCase(django.test.TestCase):
+    """
+    A test case for loading views using the Django test client.
+    """
+
+    def setUp(self):
+
+        # Initialise environment
+        self.user = User.objects.create_user(
+            first_name="John",
+            last_name="Doe",
+            email="john.doe@sort-online.org",
+            password=PASSWORD,
+        )
+        self.superuser = User.objects.create_superuser(
+            first_name="John",
+            last_name="Smith",
+            email="john.smith@sheffield.ac.uk",
+            password=PASSWORD_SUPERUSER,
+        )
+
+    def login(self):
+        """
+        Authenticate as a user.
+        """
+        self.assertTrue(self.client.login(username=self.user.email, password=PASSWORD))
+
+    def login_superuser(self):
+        """
+        Authenticate as a superuser.
+        """
+        self.assertTrue(
+            self.client.login(
+                username=self.superuser.email, password=PASSWORD_SUPERUSER
+            )
+        )
+
+    def get(
+        self,
+        view_name: str,
+        expected_status_code: int = HTTPStatus.OK,
+        login: bool = True,
+        **kwargs
+    ):
+        """
+        Helper method to make a GET request to one of the views in this app.
+
+        :param view_name: The name of the view as defined in urls.py
+        :param expected_status_code: The HTTP status code that should be returned
+        :param login: Whether to authenticate as a user before requesting the URL.
+        :param kwargs: Additional arguments to pass to the GET request
+        """
+        if login:
+            self.login()
+        response = self.client.get(django.urls.reverse(view_name, kwargs=kwargs))
+        self.assertEqual(response.status_code, expected_status_code)
+        return response
+
+    def post(
+        self,
+        view_name: str,
+        expected_status_code: int = HTTPStatus.OK,
+        login: bool = True,
+        **kwargs
+    ):
+        """
+        Helper method to make a POST request to one of the views in this app.
+
+        :param view_name: The name of the view as defined in urls.py
+        :param expected_status_code: The HTTP status code that should be returned
+        :param login: Whether to authenticate as a user before requesting the URL.
+        :param kwargs: Additional arguments to pass to the GET request
+        """
+        if login:
+            self.login()
+        response = self.client.post(django.urls.reverse(view_name, kwargs=kwargs))
+        self.assertEqual(response.status_code, expected_status_code)
+        return response

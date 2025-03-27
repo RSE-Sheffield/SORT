@@ -9,9 +9,9 @@ import django.test
 import django.urls
 
 from home.models import Organisation
+from SORT.test.model_factory import OrganisationFactory
 
 from .constants import PASSWORD
-from .model_factory import OrganisationFactory
 
 User = django.contrib.auth.get_user_model()
 
@@ -23,15 +23,15 @@ class OrganisationViewTestCase(django.test.TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            first_name='John',
-            last_name='Smith',
-            email='john.smith@sheffield.ac.uk',
+            first_name="John",
+            last_name="Smith",
+            email="john.smith@sheffield.ac.uk",
             password=PASSWORD,
         )
         self.superuser = User.objects.create_superuser(
-            first_name='Janet',
-            last_name='Thompson',
-            email='janet.thompson@sheffield.ac.uk',
+            first_name="Janet",
+            last_name="Thompson",
+            email="janet.thompson@sheffield.ac.uk",
             password=PASSWORD,
         )
         self.organisation = OrganisationFactory()
@@ -40,7 +40,9 @@ class OrganisationViewTestCase(django.test.TestCase):
         self.assertTrue(self.client.login(username=self.user.email, password=PASSWORD))
 
     def login_superuser(self):
-        self.assertTrue(self.client.login(username=self.superuser.email, password=PASSWORD))
+        self.assertTrue(
+            self.client.login(username=self.superuser.email, password=PASSWORD)
+        )
 
     def test_organisation_create_get(self):
         """
@@ -69,8 +71,15 @@ class OrganisationViewTestCase(django.test.TestCase):
         # Expect to be redirected to organisation view
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-        self.assertTrue(Organisation.objects.filter(name=org["name"]).exists(), "No organisations exist")
-        self.assertEqual(Organisation.objects.filter(name=org["name"]).count(), 1, "No organisation created")
+        self.assertTrue(
+            Organisation.objects.filter(name=org["name"]).exists(),
+            "No organisations exist",
+        )
+        self.assertEqual(
+            Organisation.objects.filter(name=org["name"]).count(),
+            1,
+            "No organisation created",
+        )
 
     def test_organisation_view(self):
         pass
