@@ -1,6 +1,7 @@
 name: Validate JSON files
 on:
   push:
+    branches: [ "main", "dev" ]
 jobs:
   lint:
     runs-on: ubuntu-24.04
