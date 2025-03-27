@@ -10,47 +10,23 @@ import django.urls
 
 from home.models import Organisation
 from SORT.test.model_factory import OrganisationFactory
-
-from .constants import PASSWORD
-
-User = django.contrib.auth.get_user_model()
+from SORT.test.test_case import ViewTestCase
 
 
-class OrganisationViewTestCase(django.test.TestCase):
+class OrganisationViewTestCase(ViewTestCase):
     """
     Test organisation views
     """
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            first_name="John",
-            last_name="Smith",
-            email="john.smith@sheffield.ac.uk",
-            password=PASSWORD,
-        )
-        self.superuser = User.objects.create_superuser(
-            first_name="Janet",
-            last_name="Thompson",
-            email="janet.thompson@sheffield.ac.uk",
-            password=PASSWORD,
-        )
+        super().setUp()
         self.organisation = OrganisationFactory()
-
-    def login(self):
-        self.assertTrue(self.client.login(username=self.user.email, password=PASSWORD))
-
-    def login_superuser(self):
-        self.assertTrue(
-            self.client.login(username=self.superuser.email, password=PASSWORD)
-        )
 
     def test_organisation_create_get(self):
         """
         Load the "Create an Organisation" form page
         """
-        self.login()
-        response = self.client.get(django.urls.reverse("organisation_create"))
-        assert response.status_code == HTTPStatus.OK, response.status_code
+        self.get("organisation_create")
 
     def test_organisation_create_post(self):
         """
@@ -82,4 +58,4 @@ class OrganisationViewTestCase(django.test.TestCase):
         )
 
     def test_organisation_view(self):
-        pass
+        self.skipTest("Not yet implemented")

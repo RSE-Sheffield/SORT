@@ -4,24 +4,21 @@ A unit testing class for testing Django views.
 
 from http import HTTPStatus
 
-import django.contrib.auth
 import django.test
 import django.urls
 
-from SORT.test.model_factory import UserFactory, SuperUserFactory
 from SORT.test.model_factory.user.constants import PASSWORD
 
-User = django.contrib.auth.get_user_model()
+from .base import SORTTestCase
 
 
-class ViewTestCase(django.test.TestCase):
+class ViewTestCase(SORTTestCase):
     """
     A test case for loading views using the Django test client.
     """
 
     def setUp(self):
-        self.user = UserFactory()
-        self.superuser = SuperUserFactory()
+        super().setUp()
 
     def login(self):
         """

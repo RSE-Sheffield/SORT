@@ -3,14 +3,16 @@ A unit testing class for testing SORT application services.
 """
 
 from typing import Optional
-import django.test
 from home.services.base import BasePermissionService
 
+from .base import SORTTestCase
 
-class ServiceTestCase(django.test.TestCase):
+
+class ServiceTestCase(SORTTestCase):
     """
     A test case for testing an application service layer.
     """
 
     def setUp(self):
+        super().setUp()
         self.service: Optional[BasePermissionService] = None

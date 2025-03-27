@@ -9,7 +9,7 @@ import SORT.test.test_case
 from home.constants import ROLE_ADMIN, ROLES
 from home.models import Organisation, OrganisationMembership
 from home.services import OrganisationService
-from SORT.test.model_factory import OrganisationFactory, SuperUserFactory, UserFactory
+from SORT.test.model_factory import OrganisationFactory, UserFactory
 
 User = get_user_model()
 
@@ -22,8 +22,7 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.organisation = OrganisationFactory()
         self.manager: User = self.organisation.members.first()
         self.manager.first_name = "Manager"
-        self.user = UserFactory()
-        self.superuser = SuperUserFactory()
+        self.another_user = UserFactory()
 
     def test_create_organisation(self):
         """
@@ -204,5 +203,4 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
 
         # See if a random user can view the membership
         with self.assertRaises(PermissionDenied):
-            another_user = UserFactory()
-            self.service.get_organisation_members(another_user, self.organisation)
+            self.service.get_organisation_members(self.another_user, self.organisation)
