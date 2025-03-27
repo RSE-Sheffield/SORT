@@ -13,6 +13,7 @@ from SORT.test.model_factory import OrganisationFactory
 class ProjectServiceTestCase(SORT.test.test_case.ServiceTestCase):
 
     def setUp(self):
+        super().setUp()
         self.service = ProjectService()
         self.organisation = OrganisationFactory()
         self.admin = self.organisation.members.first()
