@@ -9,7 +9,7 @@ import SORT.test.test_case
 from home.constants import ROLE_ADMIN, ROLES
 from home.models import Organisation, OrganisationMembership
 from home.services import OrganisationService
-from SORT.test.model_factory import OrganisationFactory, UserFactory
+from SORT.test.model_factory import OrganisationFactory, SuperUserFactory, UserFactory
 
 User = get_user_model()
 
@@ -17,23 +17,13 @@ User = get_user_model()
 class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
 
     def setUp(self):
+        super().setUp()
         self.service = OrganisationService()
-
-        # Create fake users for testing purposes
-        self.user = UserFactory()
-        self.manager = UserFactory()
-        self.superuser = User.objects.create_superuser(
-            first_name="Janet", last_name="Smith", email="janet.smith@sort-online.org"
-        )
-
-        # Set up a test organisation with the "manager" user as the administrator
         self.organisation = OrganisationFactory()
-        OrganisationMembership.objects.create(
-            user=self.manager,
-            organisation=self.organisation,
-            role=ROLE_ADMIN,
-            added_by=self.manager,
-        )
+        self.manager: User = self.organisation.members.first()
+        self.manager.first_name = "Manager"
+        self.user = UserFactory()
+        self.superuser = SuperUserFactory()
 
     def test_create_organisation(self):
         """
@@ -192,11 +182,9 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
             )
 
     def test_get_organisation_members(self):
+        members = self.service.get_organisation_members(self.manager, self.organisation)
         self.assertEqual(
-            self.service.get_organisation_members(
-                self.manager, self.organisation
-            ).count(),
-            1,
+            members.count(), 1, "Unexpected number of organisation members"
         )
 
         self.service.add_user_to_organisation(
@@ -211,6 +199,7 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
                 self.manager, self.organisation
             ).count(),
             2,
+            "Unexpected number of organisation members",
         )
 
         # See if a random user can view the membership

@@ -9,9 +9,10 @@ import django.contrib.auth
 import django.test
 import django.urls
 
+from SORT.test.model_factory import UserFactory, SuperUserFactory
+from SORT.test.model_factory.user.constants import PASSWORD
+
 User = django.contrib.auth.get_user_model()
-PASSWORD = secrets.token_urlsafe()
-PASSWORD_SUPERUSER = secrets.token_urlsafe()
 
 
 class ViewTestCase(django.test.TestCase):
@@ -20,26 +21,15 @@ class ViewTestCase(django.test.TestCase):
     """
 
     def setUp(self):
-
-        # Initialise environment
-        self.user = User.objects.create_user(
-            first_name="John",
-            last_name="Doe",
-            email="john.doe@sort-online.org",
-            password=PASSWORD,
-        )
-        self.superuser = User.objects.create_superuser(
-            first_name="John",
-            last_name="Smith",
-            email="john.smith@sheffield.ac.uk",
-            password=PASSWORD_SUPERUSER,
-        )
+        self.user = UserFactory()
+        self.superuser = SuperUserFactory()
 
     def login(self):
         """
         Authenticate as a user.
         """
-        self.assertTrue(self.client.login(username=self.user.email, password=PASSWORD))
+        self.assertTrue(self.client.login(username=self.user.email, password=PASSWORD),
+                        "Authentication failed")
 
     def login_superuser(self):
         """
@@ -47,16 +37,17 @@ class ViewTestCase(django.test.TestCase):
         """
         self.assertTrue(
             self.client.login(
-                username=self.superuser.email, password=PASSWORD_SUPERUSER
-            )
+                username=self.superuser.email,
+                password=PASSWORD,
+            ), "Authentication failed"
         )
 
     def get(
-        self,
-        view_name: str,
-        expected_status_code: int = HTTPStatus.OK,
-        login: bool = True,
-        **kwargs
+            self,
+            view_name: str,
+            expected_status_code: int = HTTPStatus.OK,
+            login: bool = True,
+            **kwargs
     ):
         """
         Helper method to make a GET request to one of the views in this app.
@@ -73,11 +64,11 @@ class ViewTestCase(django.test.TestCase):
         return response
 
     def post(
-        self,
-        view_name: str,
-        expected_status_code: int = HTTPStatus.OK,
-        login: bool = True,
-        **kwargs
+            self,
+            view_name: str,
+            expected_status_code: int = HTTPStatus.OK,
+            login: bool = True,
+            **kwargs
     ):
         """
         Helper method to make a POST request to one of the views in this app.

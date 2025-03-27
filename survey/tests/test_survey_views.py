@@ -2,10 +2,9 @@ from http import HTTPStatus
 
 import django.contrib.auth
 
+import SORT.test.model_factory
 import SORT.test.test_case
-from home.models import Project
-from home.services import OrganisationService
-from survey.models import Invitation, Survey
+from survey.models import Invitation
 from survey.services import SurveyService
 
 User = django.contrib.auth.get_user_model()
@@ -14,14 +13,13 @@ User = django.contrib.auth.get_user_model()
 class SurveyServiceTestCase(SORT.test.test_case.ViewTestCase):
     def setUp(self):
         super().setUp()
-        organisation = OrganisationService().create_organisation(
-            user=self.user, name="Survey test org"
-        )
-        project = Project.objects.create(organisation=organisation)
-
-        # Create survey
-        self.survey = Survey.objects.create()
-        SurveyService().initialise_survey(
+        self.service = SurveyService()
+        # Create fixtures
+        organisation = SORT.test.model_factory.OrganisationFactory()
+        project = SORT.test.model_factory.ProjectFactory(organisation=organisation)
+        self.user = organisation.members.first()
+        self.survey = SORT.test.model_factory.SurveyFactory()
+        self.service.initialise_survey(
             user=self.user, project=project, survey=self.survey
         )
 

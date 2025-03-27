@@ -8,10 +8,9 @@ import django.contrib.auth.models
 import django.core.exceptions
 import django.test
 
+import SORT.test.model_factory
 import SORT.test.test_case
 from home.constants import ROLE_ADMIN
-from home.models import Project
-from home.services import OrganisationService
 from survey.models import Invitation, Survey
 from survey.services import SurveyService
 
@@ -20,34 +19,16 @@ User = django.contrib.auth.get_user_model()
 
 class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
     def setUp(self):
-        organisation_service = OrganisationService()
         self.service = SurveyService()
-        self.user = User.objects.create_user(
-            first_name="John",
-            last_name="Doe",
-            email="john.doe@sort-online.org",
-        )
-        self.anonymous_user = User.objects.create_user(
-            first_name="Jane",
-            last_name="Doe",
-            email="jane.doe@sort-online.org",
-        )
-        self.organisation = organisation_service.create_organisation(
-            user=self.user,
-            name="Test organisation for survey service tests",
-        )
-        self.project = Project.objects.create(organisation=self.organisation)
 
-        # Create a survey
-        self.survey = Survey.objects.create(project=self.project)
-
-        self.invitation = Invitation.objects.create(survey=self.survey)
-
-        # Save
-        self.user.save()
-        self.survey.save()
-        self.project.save()
-        self.organisation.save()
+        self.anonymous_user = SORT.test.model_factory.UserFactory()
+        self.organisation = SORT.test.model_factory.OrganisationFactory()
+        self.user = self.organisation.members.first()
+        self.project = SORT.test.model_factory.ProjectFactory(
+            organisation=self.organisation
+        )
+        self.survey = SORT.test.model_factory.SurveyFactory(project=self.project)
+        self.invitation = SORT.test.model_factory.InvitationFactory(survey=self.survey)
 
     def test_get_user_role(self):
         role = self.service.get_user_role(user=self.user, survey=self.survey)

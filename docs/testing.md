@@ -1,9 +1,7 @@
 # SORT testing
 
-See: [Testing in Django](https://docs.djangoproject.com/en/5.1/topics/testing/) and
-further [Django testing examples](https://django-testing-docs.readthedocs.io/en/latest/index.html).
-
-There are unit tests in the `./tests` directory of each Django app. See [writing tests](https://docs.djangoproject.com/en/5.1/topics/testing/overview/#writing-tests).
+The test suite uses the Django testing tools. For more information, please read [Testing in Django](https://docs.djangoproject.com/en/5.1/topics/testing/) and
+the further [Django testing examples](https://django-testing-docs.readthedocs.io/en/latest/index.html).
 
 # Installation
 
@@ -17,14 +15,16 @@ pip install --upgrade --requirement requirements-dev.txt
 
 ## Running the test suite
 
-[Running Django tests](https://docs.djangoproject.com/en/5.1/topics/testing/overview/#running-tests)
+Pleaser read the [running tests](https://docs.djangoproject.com/en/5.1/topics/testing/overview/#running-tests) section of the Django documentation.
 
 ```bash
-python manage.py test home/tests --parallel=auto
-python manage.py test survey/tests --parallel=auto
+python manage.py test home/tests --parallel=auto --failfast
+python manage.py test survey/tests --parallel=auto --failfast
 ```
 
 # Writing tests
+
+Please read the Django [writing tests section](https://docs.djangoproject.com/en/5.1/topics/testing/overview/#writing-tests) of the Django documentation. There are unit tests in the `./tests` directory of each Django application.
 
 ## Tests
 
@@ -36,4 +36,4 @@ There are test case classes defined in the [`SORT.test.test_case`](SORT/test/tes
 
 ## Object factories
 
-There are factory utilitise that are used to create mock objects of our Django models for testing in the [`SORT.test.model_factory`](SORT/test/model_factory) module.
+There are factory utilities that are used to create mock objects of our Django models for testing in the [`SORT.test.model_factory`](SORT/test/model_factory) module. This uses the [Factory Boy](https://factoryboy.readthedocs.io/en/stable/index.html) library, which [supports the Django ORM](https://factoryboy.readthedocs.io/en/stable/orms.html#module-factory.django).

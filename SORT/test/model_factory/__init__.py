@@ -1,6 +1,8 @@
 from .organisation import OrganisationFactory
 from .project import ProjectFactory
 from .survey import SurveyFactory
-from .user import UserFactory
+from .user import UserFactory, SuperUserFactory
+from .invitation import InvitationFactory
 
-__all__ = ["UserFactory", "SurveyFactory", "OrganisationFactory", "ProjectFactory"]
+__all__ = ["InvitationFactory", "UserFactory", "SuperUserFactory", "SurveyFactory", "OrganisationFactory",
+           "ProjectFactory"]

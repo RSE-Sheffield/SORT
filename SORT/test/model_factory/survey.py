@@ -1,4 +1,4 @@
-import factory
+import factory.django
 
 from survey.models import Survey
 
