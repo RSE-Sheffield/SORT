@@ -60,58 +60,13 @@ class LoginInterfaceView(LoginView):
 class HomeView(LoginRequiredMixin, View):
     template_name = "home/welcome.html"
     context_object_name = "projects"
-
+    
     def get(self, request):
         user = self.request.user
-        projects = Project.objects.distinct()                   # all projects
-        print(projects)
-        # projects = project_service.get_user_projects(user)     # all project with user permissions (returns nothing)
-        projects = Project.objects.filter().distinct()
-        # for project in projects:
-        #     print(project)
-        print(dict(projects=projects))
+        # all projects for current user
+        projects = project_service.get_user_projects(user)      
+        print(projects[0])
         return render(request, self.template_name, dict(projects=projects))
-
-    # def get(self, request):
-    #     user = self.request.user
-    #     print("User:", user)
-    #     print("get_user_projects:", project_service.get_user_projects(request.user))
-    #     projects = {
-    #         #project.id: project_service.can_edit(user, project)
-    #         #for project in 
-    #         project_service.get_user_projects(request.user)
-    #     }
-    #     print("Projects", dict(projects=projects))
-    #     for project in projects:
-    #         print(project)
-    #         print(project_service.get_user_permission(user, project))
-
-    #     project_orgs = organisation_service.get_user_accessible_organisations(projects, user)
-    #     print("project_orgs", project_orgs)
-
-    #     return render(request, self.template_name, dict(projects=projects))
-    
-    # def get_context_data(self, request):
-    #     context = super().get_context_data(request)
-    #     user = self.request.user
-    #     projects = context["projects"]
-    #     user_role = self.organisation.get_user_role(user)
-
-    #     context.update({
-    #         "organisation": self.organisation,
-    #         "can_edit": {
-    #             project.id: project_service.can_edit(user, project)
-    #             for project in projects
-    #         },
-    #         "can_create": project_service.can_create(user),
-    #         "is_admin": user_role == ROLE_ADMIN,
-    #         "is_project_manager": user_role == ROLE_PROJECT_MANAGER,
-    #         "project_orgs": organisation_service.get_user_accessible_organisations(
-    #             projects, user
-    #         ),
-    #         "current_search": self.request.GET.get('q', '')
-    #     })
-    #     return context
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
