@@ -20,7 +20,6 @@ class ProjectServiceTestCase(SORT.test.test_case.ServiceTestCase):
     def test_create_project_permission_denied(self):
         """
         Test that a normal user can't create projects
-        Test that a normal user can't create projects
         """
 
         # This should raise a permission denied error
