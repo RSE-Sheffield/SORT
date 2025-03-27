@@ -33,7 +33,8 @@ jobs:
           do
             echo "Testing $test_dir"
             # https://docs.djangoproject.com/en/5.1/topics/testing/advanced/#integration-with-coverage-py
-            coverage run --source="." manage.py test "$test_dir" --verbosity=2 --parallel=auto
-            echo "## Coverage report" >> $GITHUB_STEP_SUMMARY
-            coverage report --format="markdown" >> $GITHUB_STEP_SUMMARY
+            coverage run --source="home,survey" manage.py test "$test_dir" --verbosity=2 --parallel=auto
           done
+          # Generate coverage report
+          echo "## Coverage report" >> $GITHUB_STEP_SUMMARY
+          coverage report --format="markdown" >> $GITHUB_STEP_SUMMARY

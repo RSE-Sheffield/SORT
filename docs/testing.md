@@ -15,12 +15,16 @@ pip install --upgrade --requirement requirements-dev.txt
 
 ## Running the test suite
 
-Pleaser read the [running tests](https://docs.djangoproject.com/en/5.1/topics/testing/overview/#running-tests) section of the Django documentation.
+Pleaser read the [running tests](https://docs.djangoproject.com/en/5.1/topics/testing/overview/#running-tests) section of the Django documentation.
 
 ```bash
 python manage.py test home/tests --parallel=auto --failfast
 python manage.py test survey/tests --parallel=auto --failfast
 ```
+
+## Coverage reports
+
+At the end of the GitHub Actions testing workflow, a coverage report will be generated using the [Coverage.py](https://coverage.readthedocs.io/) tool.
 
 # Writing tests
 
