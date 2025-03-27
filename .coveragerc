@@ -13,3 +13,4 @@ omit =
 [report]
 format = markdown
 skip_empty = true
+sort = Cover
