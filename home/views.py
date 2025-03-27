@@ -61,9 +61,34 @@ class HomeView(LoginRequiredMixin, View):
     context_object_name = "projects"
 
     def get(self, request):
-        projects = project_service.get_user_projects(request.user)
+        user = self.request.user
+        projects = Project.objects.distinct()                   # all projects
+        print(projects)
+        # projects = project_service.get_user_projects(user)     # all project with user permissions (returns nothing)
+        projects = Project.objects.filter().distinct()
+        # for project in projects:
+        #     print(project)
         print(dict(projects=projects))
         return render(request, self.template_name, dict(projects=projects))
+
+    # def get(self, request):
+    #     user = self.request.user
+    #     print("User:", user)
+    #     print("get_user_projects:", project_service.get_user_projects(request.user))
+    #     projects = {
+    #         #project.id: project_service.can_edit(user, project)
+    #         #for project in 
+    #         project_service.get_user_projects(request.user)
+    #     }
+    #     print("Projects", dict(projects=projects))
+    #     for project in projects:
+    #         print(project)
+    #         print(project_service.get_user_permission(user, project))
+
+    #     project_orgs = organisation_service.get_user_accessible_organisations(projects, user)
+    #     print("project_orgs", project_orgs)
+
+    #     return render(request, self.template_name, dict(projects=projects))
     
     # def get_context_data(self, request):
     #     context = super().get_context_data(request)

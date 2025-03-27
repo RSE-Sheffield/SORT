@@ -168,4 +168,3 @@ class ProjectService(BasePermissionService):
     def get_user_projects(self, user: User) -> QuerySet[Project]:
         """Get all projects a user has access to"""
         return Project.objects.filter(projectmanagerpermission__user=user).distinct()
-        #return Project.objects.distinct()
