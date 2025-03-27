@@ -1,26 +1,21 @@
 from http import HTTPStatus
 
-import django.contrib.auth
-
 import SORT.test.model_factory
 import SORT.test.test_case
 from survey.models import Invitation
 from survey.services import SurveyService
-
-User = django.contrib.auth.get_user_model()
 
 
 class SurveyServiceTestCase(SORT.test.test_case.ViewTestCase):
     def setUp(self):
         super().setUp()
         self.service = SurveyService()
-        # Create fixtures
-        organisation = SORT.test.model_factory.OrganisationFactory()
-        project = SORT.test.model_factory.ProjectFactory(organisation=organisation)
-        self.user = organisation.members.first()
         self.survey = SORT.test.model_factory.SurveyFactory()
+        self.project = self.survey.project
+        self.organisation = self.project.organisation
+        self.user = self.organisation.members.first()
         self.service.initialise_survey(
-            user=self.user, project=project, survey=self.survey
+            user=self.user, project=self.project, survey=self.survey
         )
 
     def test_survey_get(self):
