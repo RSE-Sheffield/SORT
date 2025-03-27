@@ -6,13 +6,8 @@ from http import HTTPStatus
 
 import django.test
 import django.urls
-from django.contrib.auth import get_user_model
 
 import SORT.test.test_case
-
-from .constants import PASSWORD
-
-User = get_user_model()
 
 
 class UserViewTestCase(SORT.test.test_case.ViewTestCase):

@@ -2,7 +2,6 @@
 A unit testing class for testing Django views.
 """
 
-import secrets
 from http import HTTPStatus
 
 import django.contrib.auth
