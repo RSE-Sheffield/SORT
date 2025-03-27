@@ -4,9 +4,6 @@ Test user profile and authentication views
 
 from http import HTTPStatus
 
-import django.test
-import django.urls
-
 import SORT.test.test_case
 
 
@@ -16,21 +13,21 @@ class UserViewTestCase(SORT.test.test_case.ViewTestCase):
         """
         Test the user profile page
         """
-        self.get("profile")
+        self.get("profile", login=True)
 
     def test_login_get(self):
-        response = self.client.get(django.urls.reverse("login"))
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.get("login", login=False)
 
     def test_login_post(self):
-        response = self.client.post(
-            django.urls.reverse("login"),
-            {"username": self.user.get_username(), "password": self.user.password},
+        self.post(
+            "login",
+            data=dict(
+                username=self.user.get_username(),
+                password=self.user.password,
+            ),
+            login=False,
         )
-        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_logout(self):
-        self.login()
-        response = self.client.post(django.urls.reverse("logout"))
         # Expect to be redirected
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        self.post("logout", expected_status_code=HTTPStatus.FOUND, login=True)

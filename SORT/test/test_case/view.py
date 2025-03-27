@@ -64,6 +64,7 @@ class ViewTestCase(SORTTestCase):
             view_name: str,
             expected_status_code: int = HTTPStatus.OK,
             login: bool = True,
+            data: dict = None,
             **kwargs
     ):
         """
@@ -74,8 +75,9 @@ class ViewTestCase(SORTTestCase):
         :param login: Whether to authenticate as a user before requesting the URL.
         :param kwargs: Additional arguments to pass to the GET request
         """
+        data = data or dict()
         if login:
             self.login()
-        response = self.client.post(django.urls.reverse(view_name, kwargs=kwargs))
+        response = self.client.post(django.urls.reverse(view_name, kwargs=kwargs), data=data)
         self.assertEqual(response.status_code, expected_status_code)
         return response
