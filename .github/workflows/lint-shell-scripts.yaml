@@ -4,9 +4,7 @@
 name: Lint shell scripts
 on:
   push:
-    branches:
-     - main
-     - dev
+    branches: [ "main", "dev" ]
 jobs:
   lint_shell:
     runs-on: ubuntu-24.04

@@ -35,12 +35,9 @@
       {% for project in projects %}
         <div class="card w-100">
           <div class="card-body">
-              <div class="flex flex-wrap gap-2 mb-3">
-                {% for org in project_orgs|get_item:project.id %}<span class="badge text-bg-primary">{{ org.name }}</span>{% endfor %}
-              </div>
             <p class="h5 card-title">{{ project.name }}</p>
-            <p class="h6 card-title">{{ project.description }}</p>
-            <p class="h7 card-title">Surveys: {{ project.survey_count }}</p>
+            <p class="h6 card-subtitle text-muted mb-2">{{ project.description|default_if_none:"No description provided." }}</p>
+            <p class="h7 card-text">Surveys: {{ project.survey_count }}</p>
 
             <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
               {% if can_edit|get_item:project.id %}

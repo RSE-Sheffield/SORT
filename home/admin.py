@@ -1,10 +1,10 @@
 from django.contrib import admin
+
 from .models import (
-    User,
     Organisation,
-    Project,
     OrganisationMembership,
-    ProjectOrganisation,
+    Project,
+    User,
 )
 
 
@@ -34,13 +34,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_filter = ("created_on",)
 
 
-class ProjectOrganisationAdmin(admin.ModelAdmin):
-    list_display = ("project", "organisation", "added_by", "added_at")
-    search_fields = ("project__name", "organisation__name")
-
-
 admin.site.register(User, UserAdmin)
 admin.site.register(Organisation, OrganisationAdmin)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(OrganisationMembership, OrganisationMembershipAdmin)
-admin.site.register(ProjectOrganisation, ProjectOrganisationAdmin)
