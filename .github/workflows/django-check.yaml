@@ -30,7 +30,9 @@ jobs:
           export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
           # Iterate over Django apps with test directories
           for test_dir in **/tests
-          do 
+          do
             echo "Testing $test_dir"
-            python manage.py test "$test_dir" --verbosity=2 --parallel=auto
+            # https://docs.djangoproject.com/en/5.1/topics/testing/advanced/#integration-with-coverage-py
+            coverage run --source="." manage.py test "$test_dir" --verbosity=2 --parallel=auto
+            coverage report >> $GITHUB_STEP_SUMMARY
           done
