@@ -65,7 +65,6 @@ class HomeView(LoginRequiredMixin, View):
         user = self.request.user
         # all projects for current user
         projects = project_service.get_user_projects(user)      
-        print(projects[0])
         return render(request, self.template_name, dict(projects=projects))
 
 
