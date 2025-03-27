@@ -134,8 +134,7 @@
                     </p>
                     <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
                         {% csrf_token %}
-                        <input type="submit" name="generate_token" value="Generate invitation"
-                               class="btn btn-primary"></input>
+                        <button type="submit" class="btn btn-primary" name="generate_token"><i class='bx bx-mail-send' ></i> Generate invitation</button>
                     </form>
                 {% endif %}
             </div>
