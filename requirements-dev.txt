@@ -1,5 +1,6 @@
 factory-boy==3.3.*
 tblib==3.*
+coverage==7.*
 django_debug_toolbar==4.4.*
 isort==6.*
 black==25.*
