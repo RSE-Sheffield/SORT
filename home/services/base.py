@@ -3,11 +3,9 @@ Base service and permission decorators
 """
 
 from functools import wraps
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable
 
 from django.core.exceptions import PermissionDenied
-
-T = TypeVar("T")
 
 
 def requires_permission(permission_type: str, obj_param: str) -> Callable:
@@ -17,14 +15,16 @@ def requires_permission(permission_type: str, obj_param: str) -> Callable:
     Args:
         permission_type: Type of permission to check (view/create/edit/delete)
         obj_param: Name of the parameter that contains the object to check permissions against.
-        Example: `requires_permission("view", "proj")` will check if the user has view permission for the `Project` object
+
+    Example:
+        `requires_permission("view", "proj")` will check if the user has view permission for the `Project` object
         passed as the "proj" parameter:
 
-        ```python
-        @requires_permission("view", "proj")
-        def get_project(self, user: User, proj: Project) -> Project:
-            return project
-        ```
+    ```python
+    @requires_permission("view", "proj")
+    def get_project(self, user: User, proj: Project) -> Project:
+        return project
+    ```
     """
 
     def decorator(func: Callable) -> Callable:
