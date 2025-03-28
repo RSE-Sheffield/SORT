@@ -125,3 +125,7 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         )
         csv_data = self.service.export_csv(user=self.admin, survey=self.survey)
         self.assertIsInstance(csv_data, str)
+
+    def test_mock_responses(self):
+        self.skipTest("Not yet implemented")
+        self.service.generate_mock_responses(user=self.admin, survey=self.survey, num_responses=3)
