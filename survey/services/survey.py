@@ -55,7 +55,7 @@ class SurveyService(BasePermissionService):
         return survey
 
     def update_consent_demography_config(
-            self, survey: Survey, consent_config, demography_config
+        self, survey: Survey, consent_config, demography_config
     ) -> Survey:
         survey.consent_config = consent_config
         survey.demography_config = demography_config
@@ -63,9 +63,9 @@ class SurveyService(BasePermissionService):
         with open("data/survey_config/sort_only_config.json") as f:
             sort_config = json.load(f)
             merged_sections = (
-                    survey.consent_config["sections"]
-                    + sort_config["sections"]
-                    + survey.demography_config["sections"]
+                survey.consent_config["sections"]
+                + sort_config["sections"]
+                + survey.demography_config["sections"]
             )
             survey.survey_config = {"sections": merged_sections}
         survey.save()
