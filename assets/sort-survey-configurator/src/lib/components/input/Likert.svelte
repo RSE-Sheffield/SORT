@@ -42,7 +42,7 @@
     <table class="table table-striped" style="width: 100%;">
         <thead>
         <tr>
-            <th></th>
+            <th>Statement</th>
             {#each config.options as option}
                 <th scope="col">{option}</th>
             {/each}
