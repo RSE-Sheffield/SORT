@@ -24,6 +24,7 @@ from .forms import ManagerLoginForm, ManagerSignupForm, UserProfileForm
 from .mixins import OrganisationRequiredMixin
 from .models import Organisation, Project
 from .services import organisation_service, project_service
+from survey.services import survey_service
 
 User = get_user_model()
 
@@ -225,12 +226,18 @@ class ProjectView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         project = self.project
+        surveys = context["surveys"]
+
+        can_edit = {}
+        for survey in surveys:
+            can_edit[survey.id] = survey_service.can_edit(user, survey)
 
         context.update(
             {
                 "project": project,
                 "can_create": project_service.can_edit(user, project),
                 "current_search": self.request.GET.get("q", ""),
+                "can_edit": can_edit,
             }
         )
 
