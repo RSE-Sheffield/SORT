@@ -22,7 +22,8 @@
     <div class="card-body">
         <h2>Configure your welcome and consent page</h2>
         <p>
-            The introduction page of your survey page can be configured below. We've provided a default consent page which
+            The introduction page of your survey page can be configured below. We've provided a default consent page
+            which
             can be freely customised.
         </p>
 
@@ -46,6 +47,11 @@
             The demographic page of your survey can be configured below. We've provided some example demographic
             questions which can be freely customised.
         </p>
+        <div class="alert alert-warning" role="alert">
+            <i class='bx bxs-error' ></i> Please avoid collecting personally identifiable information. If needed, instead of
+            collecting names, emails or addresses, it is recommended to collect IDs that can be used to identify
+            participants from within the your organisation instead.
+        </div>
         <SurveyConfigurator bind:config={demographyConfig}
                             sectionTypeEditable={false}
                             sectionEditable={false}
