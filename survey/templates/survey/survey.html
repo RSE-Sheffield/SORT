@@ -147,7 +147,7 @@
                 <h2>Generate mock responses</h2>
             </div>
             <div class="card-body">
-                <p>Note: Dont' forget to configure the form first, go to survey configuration page and press
+                <p>Note: Don't forget to configure the form first, go to survey configuration page and press
                     Submit at the bottom. This is because the survey_config field is blank by default.</p>
                 <form method="POST" action="{% url 'survey_mock_responses' survey.pk %}">
                     {% csrf_token %}

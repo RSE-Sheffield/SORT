@@ -47,9 +47,6 @@ class UserProfileForm(forms.ModelForm):
         if email == self.instance.email:
             return email
 
-        if email == self.instance.email:
-            return email
-
         if User.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
             raise forms.ValidationError("This email is already in use.")
         return email

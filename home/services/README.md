@@ -1,6 +1,6 @@
 # Permission Management
 
-This folder implements a permission management system that provides role-based access control (RBAC) for organisations and projects. The system implements a flexible permissions model with support for admin and project manager roles, along with granular view/edit permissions at both organisation and project levels.
+This folder implements a permission management system that provides **role-based access control** (RBAC) for organisations and projects. The system implements a flexible permissions model with support for admin and project manager roles, along with granular view/edit permissions at both organisation and project levels.
 
 ## Implementation
 
@@ -19,15 +19,15 @@ Why don't we use Django's built-in permissions system? The Django permissions sy
 
 For simplicity, the system supports two roles:
 
-- Admin: Full access to organisation and its projects
-- Project Manager: Limited access based on granted permissions. A PM can be granted view and edit permissions for multiple projects within an organisation.
+- **Admin**: Full access to organisation and its projects
+- **Project Manager** (PM): Limited access based on granted permissions. A PM can be granted view and edit permissions for multiple projects within an organisation.
 
 ### Permission Levels
 
-View: Read-only access
-Edit: Ability to modify resources
-Delete: Ability to remove resources
-Create: Ability to create new resources
+* **View**: Read-only access
+* **Edit**: Ability to modify resources
+* **Delete**: Ability to remove resources
+* **Create**: Ability to create new resources
 
 
 ## Usage
@@ -43,7 +43,7 @@ The `requires_permission` decorator can be used to enforce access control at the
 
 ## Future Improvements
 
-The current permission system utilises a decorator-based approach with service-level checks, centred around `@requires_permission` and role verification methods. Its strength lies in simplicity and maintainability - the decorator pattern makes permissions explicit, while centralised service logic ensures consistent enforcement across the application. This design fits well with the service-oriented architecture and makes permission checks reusable across different views.
+The current permission system utilises a decorator-based approach with service-level checks, centred around `@requires_permission` and role verification methods. Its strength lies in simplicity and maintainability&mdash;the decorator pattern makes permissions explicit, while centralised service logic ensures consistent enforcement across the application. This design fits well with the **service-oriented architecture** and makes permission checks reusable across different views.
 
 However, the system has notable limitations. Performance can be a concern due to multiple database queries per check with no built-in caching. The hardcoded roles (_Admin_ and _Project Manager_) make it inflexible for custom permission schemes. Some code duplication exists across services, and testing requires some mocking setups.
 
