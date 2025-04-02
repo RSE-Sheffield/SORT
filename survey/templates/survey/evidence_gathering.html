@@ -50,26 +50,25 @@
                 <h3>{{ section_config.title }}</h3>
             </div>
             <div>
-
                 <h5>Survey summary</h5>
 
                 <p>
                     This section demonstrates an overall maturity score of 2 out of 4, placing it at the 'Planned'
                     level. Opportunities for improvement are identified in question B4, and B1.
                 </p>
+                <!-- This is a placeholder image. -->
                 <img src="{% static 'images/example_response_graph.png' %}">
 
                 <p>
                     In support of the survey result, please gather the evidence for this section in the text box below.
                     Possible evidence includes:
-
                 </p>
                 <ul>
                     <li>
                         Published report
                     </li>
                     <li>
-                        Planning document for the initatives
+                        Planning document for the initiatives
                     </li>
                     <li>
                         etc.
@@ -125,27 +124,27 @@
         <!-- Initialize Quill editor -->
         <script>
 
-          const evidenceInputField = document.getElementById("evidence_input_field")
-          const quillInstance = new Quill('#evidence_editor', {
-            theme: 'snow',
-            placeholder: "Please enter evidence for this section here...",
-          });
+            const evidenceInputField = document.getElementById("evidence_input_field")
+            const quillInstance = new Quill('#evidence_editor', {
+                theme: 'snow',
+                placeholder: "Please enter evidence for this section here...",
+            });
 
-          if (
-            evidenceInputField.value !== null &&
-            evidenceInputField.value !== undefined &&
-            evidenceInputField.value.length > 0) {
-            try {
-              quillInstance.setContents(JSON.parse(evidenceInputField.value));
-            } catch (error) {
-              // We can just ignore parse error and leave it blank
-              console.log("Could not convert text field value to quill contents", evidenceInputField.value)
+            if (
+                evidenceInputField.value !== null &&
+                evidenceInputField.value !== undefined &&
+                evidenceInputField.value.length > 0) {
+                try {
+                    quillInstance.setContents(JSON.parse(evidenceInputField.value));
+                } catch (error) {
+                    // We can just ignore parse error and leave it blank
+                    console.log("Could not convert text field value to quill contents", evidenceInputField.value)
+                }
             }
-          }
 
-          quillInstance.on('text-change', (delta, oldDelta, source) => {
-            evidenceInputField.value = JSON.stringify(quillInstance.getContents());
-          });
+            quillInstance.on('text-change', (delta, oldDelta, source) => {
+                evidenceInputField.value = JSON.stringify(quillInstance.getContents());
+            });
 
         </script>
     </div>

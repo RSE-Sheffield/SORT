@@ -53,8 +53,6 @@ class SurveyView(LoginRequiredMixin, View):
         return render(request, "survey/survey.html", context)
 
 
-
-
 class SurveyCreateView(LoginRequiredMixin, CreateView):
     model = Survey
     template_name = "survey/create.html"
@@ -68,6 +66,7 @@ class SurveyCreateView(LoginRequiredMixin, CreateView):
         project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         survey_service.initialise_survey(self.request.user, project, self.object)
         return result
+
 
 class SurveyEditView(LoginRequiredMixin, UpdateView):
     model = Survey
@@ -88,6 +87,7 @@ class SurveyEditView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         project_pk = self.object.project.pk
         return reverse_lazy("project", kwargs={"project_id": project_pk})
+
 
 class SurveyDeleteView(LoginRequiredMixin, DeleteView):
     model = Survey
@@ -133,9 +133,9 @@ class SurveyConfigureView(LoginRequiredMixin, View):
                 demography_config = json.loads(
                     request.POST.get("demography_config", None)
                 )
-                survey_service.update_consent_demography_config( request.user,
-                    survey, consent_config, demography_config
-                )
+                survey_service.update_consent_demography_config(request.user,
+                                                                survey, consent_config, demography_config
+                                                                )
                 messages.info(request, "Survey configuration saved")
                 return redirect("survey", pk=survey.pk)
 
@@ -187,8 +187,8 @@ class SurveyEvidenceGatheringView(LoginRequiredMixin, View):
 
         files_list = []
         for file in evidence_section.files.all():
-            delete_url = reverse("survey_evidence_remove_file", kwargs={"pk":file.pk})
-            file_url = reverse("survey_evidence_file", kwargs={"pk":file.pk})
+            delete_url = reverse("survey_evidence_remove_file", kwargs={"pk": file.pk})
+            file_url = reverse("survey_evidence_file", kwargs={"pk": file.pk})
             files_list.append({
                 "name": os.path.basename(file.file.name),
                 "deleteUrl": delete_url,
@@ -210,6 +210,7 @@ class SurveyEvidenceGatheringView(LoginRequiredMixin, View):
             context=context,
         )
 
+
 class SurveyEvidenceUpdateView(LoginRequiredMixin, View):
     def post(self, request: HttpRequest, pk: int, section_id: int):
         survey = Survey.objects.get(pk=pk)
@@ -221,7 +222,6 @@ class SurveyEvidenceUpdateView(LoginRequiredMixin, View):
                                                    text=request.POST["text"])
 
         return redirect(request.META["HTTP_REFERER"])
-
 
 
 class SurveyFileUploadView(LoginRequiredMixin, View):
@@ -251,11 +251,13 @@ class SurveyEvidenceFileUploadView(LoginRequiredMixin, View):
 
         return redirect(request.META["HTTP_REFERER"])
 
+
 class SurveyEvidenceFileDeleteView(LoginRequiredMixin, View):
     def post(self, request: HttpRequest, pk: int):
         evidence_file = SurveyEvidenceFile.objects.get(pk=pk)
         survey_service.remove_evidence_file(request.user, evidence_file.evidence_section.survey, evidence_file)
         return redirect(request.META["HTTP_REFERER"])
+
 
 class SurveyEvidenceFileView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int):
@@ -265,10 +267,10 @@ class SurveyEvidenceFileView(LoginRequiredMixin, View):
         file_path = evidence_file.file.path
         file = open(file_path, "rb")
 
-        type, encoding = mimetypes.guess_type(file_path)
-        if type is None:
-            type = "application/octet-stream"
-        response = HttpResponse(content=file, content_type=type)
+        content_type, encoding = mimetypes.guess_type(file_path)
+        if content_type is None:
+            content_type = "application/octet-stream"
+        response = HttpResponse(content=file, content_type=content_type)
         response['Content-Disposition'] = f"filename={evidence_file.file.name}"
         return response
 
