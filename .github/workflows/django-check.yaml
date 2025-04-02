@@ -19,16 +19,22 @@ jobs:
           cache: "pip"
       - name: Install dependencies
         run: pip install --requirement requirements.txt --requirement requirements-dev.txt
-      # https://docs.djangoproject.com/en/5.1/ref/django-admin/#check
-      - name: Run Django system checks
-        run: |
-          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
-          python manage.py check
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'v22.x'
+          cache: 'npm'
+          cache-dependency-path: 'assets/sort-survey-configurator/package-lock.json'
       - name: Install JavaScript package
         run: |
           cd assets/sort-survey-configurator
           npm install
           npm run build
+      # https://docs.djangoproject.com/en/5.1/ref/django-admin/#check
+      - name: Run Django system checks
+        run: |
+          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
+          python manage.py check
       # https://docs.djangoproject.com/en/5.1/topics/testing/
       - name: Run Django test suites
         run: |
