@@ -11,6 +11,7 @@ from home.models import Project
 
 logger = logging.getLogger(__name__)
 
+
 class Survey(models.Model):
     """
     Represents a survey that will be sent out to a participant
@@ -42,8 +43,8 @@ class Survey(models.Model):
 
         return None
 
-class SurveyEvidenceSection(models.Model):
 
+class SurveyEvidenceSection(models.Model):
     """
     The section_id always matches the section index in the survey.survey_config["sections"]
     """
@@ -56,16 +57,18 @@ class SurveyEvidenceSection(models.Model):
         unique_together = [["survey", "section_id"]]
 
 
-
 def survey_file_upload_path(instance, filename):
     return f"survey/{instance.survey.pk}/{filename}"
+
 
 class SurveyFile(models.Model):
     file = models.FileField(upload_to=survey_file_upload_path, blank=True, null=True)
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name="files")
 
+
 def evidence_file_upload_path(instance, filename):
     return f"survey_evidence/{instance.evidence_section.pk}/{filename}"
+
 
 class SurveyEvidenceFile(models.Model):
     file = models.FileField(upload_to=evidence_file_upload_path, blank=True, null=True)
@@ -87,7 +90,6 @@ class SurveyResponse(models.Model):
 
 
 class Invitation(models.Model):
-
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
     token = models.CharField(max_length=64, unique=True, blank=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
