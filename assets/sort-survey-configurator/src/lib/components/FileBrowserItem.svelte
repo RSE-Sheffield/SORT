@@ -47,23 +47,24 @@
     <div></div>
     <div class="flex-fill d-flex justify-content-end">
         {#if stringContainsExtension(file.name, supportedExtensions)}
-        <button
-                class="btn btn-primary me-3"
-                onclick={handlePreviewToggle}
-                >
-            {#if previewEnabled}
-                <i class='bx bxs-hide' ></i> Close preview
-            {:else }
-                <i class='bx bxs-show' ></i> Preview
-            {/if}
-        </button>
+            <button
+                    class="btn btn-primary me-3"
+                    onclick={handlePreviewToggle}
+            >
+                {#if previewEnabled}
+                    <i class='bx bxs-hide'></i> Close preview
+                {:else }
+                    <i class='bx bxs-show'></i> Preview
+                {/if}
+            </button>
         {:else}
-            <button class="btn btn-primary me-3" disabled title="Preview for this file is not available, please download it">
-            <i class='bx bxs-hide' ></i> No preview
-        </button>
+            <button class="btn btn-primary me-3" disabled
+                    title="Preview for this file is not available, please download it">
+                <i class='bx bxs-hide'></i> No preview
+            </button>
         {/if}
 
-        <a href={file.fileUrl} class="btn btn-primary me-3">
+        <a href={file.fileUrl} class="btn btn-primary me-3" download>
             <i class='bx bx-cloud-download'></i> Download</a>
         <form action={file.deleteUrl} method="post">
             <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}"/>
@@ -76,7 +77,7 @@
         {#if stringContainsExtension(file.name, imgExtensions)}
             <img src={file.fileUrl} style="width:100%; height: 100%"/>
         {:else if stringContainsExtension(file.name, pdfExtension)}
-            <embed src={file.fileUrl} style="width: 100%; height: auto; min-height: 50em" />
+            <embed src={file.fileUrl} style="width: 100%; height: auto; min-height: 50em"/>
         {:else if stringContainsExtension(file.name, fetchExtensions)}
             {fileContent}
         {:else}
