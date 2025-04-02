@@ -29,9 +29,9 @@ class OrganisationMembershipAdmin(admin.ModelAdmin):
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ("name", "created_by", "created_on")
+    list_display = ("name", "created_by", "created_at")
     search_fields = ("name",)
-    list_filter = ("created_on",)
+    list_filter = ("created_at",)
 
 
 admin.site.register(User, UserAdmin)

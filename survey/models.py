@@ -19,6 +19,7 @@ class Survey(models.Model):
     consent_config = models.JSONField(null=True)
     demography_config = models.JSONField(null=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -49,6 +50,7 @@ class SurveyResponse(models.Model):
         Survey, related_name="survey_response", on_delete=models.CASCADE
     )  # Many questions belong to one survey
     answers = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def get_absolute_url(self, token):
         return reverse("survey", kwargs={"pk": self.survey.pk})
