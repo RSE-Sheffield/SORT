@@ -48,13 +48,16 @@ class SurveyEvidenceSection(models.Model):
     """
     The section_id always matches the section index in the survey.survey_config["sections"]
     """
-    section_id = models.IntegerField(default=0, db_index=True)
+    section_id = models.IntegerField(default=0)
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
     title = models.TextField(blank=True, null=True)
     text = models.TextField(blank=True, null=True)
 
     class Meta:
         unique_together = [["survey", "section_id"]]
+        indexes = [
+            models.Index(fields=["section_id"]),
+        ]
 
 
 def survey_file_upload_path(instance, filename):
