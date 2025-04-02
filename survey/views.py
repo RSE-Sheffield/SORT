@@ -10,7 +10,7 @@ from django.template.context_processors import csrf
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import DeleteView, FormView, TemplateView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 
 from home.models import Project
 from survey.services import survey_service
@@ -39,7 +39,12 @@ class SurveyView(LoginRequiredMixin, View):
         survey = survey_service.get_survey(request.user, pk) # Check that we're allowed to get the survey
         context["survey"] = survey
         context["invite_link"] = survey.get_invite_link(request)
+        context["can_edit"] = {
+            survey.id: survey_service.can_edit(request.user, survey)
+        }
         return render(request, "survey/survey.html", context)
+
+
 
 
 class SurveyCreateView(LoginRequiredMixin, CreateView):
@@ -55,6 +60,26 @@ class SurveyCreateView(LoginRequiredMixin, CreateView):
         project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         survey_service.initialise_survey(self.request.user, project, self.object)
         return result
+
+class SurveyEditView(LoginRequiredMixin, UpdateView):
+    model = Survey
+    template_name = "survey/edit.html"
+    fields = ["name", "description"]
+    context_object_name = "survey"
+
+    def form_valid(self, form):
+        if survey_service.can_edit(self.request.user, self.object):
+            messages.info(self.request, f"Survey {self.object.name} updated")
+            return super().form_valid(form)
+        else:
+            messages.error(
+                self.request, "You do not have permission to edit this survey."
+            )
+            return redirect("survey", pk=self.object.pk)
+
+    def get_success_url(self):
+        project_pk = self.object.project.pk
+        return reverse_lazy("project", kwargs={"project_id": project_pk})
 
 class SurveyDeleteView(LoginRequiredMixin, DeleteView):
     model = Survey
@@ -90,6 +115,9 @@ class SurveyConfigureView(LoginRequiredMixin, View):
         survey = get_object_or_404(Survey, pk=pk)
         context["survey"] = survey
         context["csrf"] = str(csrf(self.request)["csrf_token"])
+        context["can_edit"] = {
+            survey.id: survey_service.can_edit(request.user, survey)
+        }
 
         if is_post:
             if "consent_config" in request.POST and "demography_config" in request.POST:

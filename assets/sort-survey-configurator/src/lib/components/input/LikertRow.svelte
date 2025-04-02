@@ -35,6 +35,7 @@
                    value={option}
                    bind:group={value}
                    required={config.required}
+                   placeholder={option}
             />
         </div>
     </td>

@@ -45,7 +45,6 @@ class OrganisationService(BasePermissionService):
         else:
             return False
 
-
     def can_delete(self, user: User, organisation: Organisation) -> bool:
         if user.is_superuser:
             return True
@@ -78,7 +77,7 @@ class OrganisationService(BasePermissionService):
 
     @requires_permission("edit", obj_param="organisation")
     def update_organisation(
-        self, user: User, organisation: Organisation, data: Dict
+            self, user: User, organisation: Organisation, data: Dict
     ) -> Organisation:
         """Update organisation with provided data"""
         for key, value in data.items():
@@ -87,14 +86,14 @@ class OrganisationService(BasePermissionService):
         return organisation
 
     def create_organisation(
-        self, user: User, name: str, description: str = ""
+            self, user: User, name: str, description: str = None
     ) -> Organisation:
         """
         Create a new organisation, and add the creator to it.
         Anyone who has a login should be able to create an organisation
         """
 
-        org = Organisation.objects.create(name=name, description=description)
+        org = Organisation.objects.create(name=name, description=description or "")
         OrganisationMembership.objects.create(
             user=user, organisation=org, role=ROLE_ADMIN, added_by=user
         )
@@ -102,11 +101,11 @@ class OrganisationService(BasePermissionService):
 
     @requires_permission("edit", obj_param="organisation")
     def add_user_to_organisation(
-        self,
-        user: User,
-        user_to_add: User,
-        organisation: Organisation,
-        role: str,
+            self,
+            user: User,
+            user_to_add: User,
+            organisation: Organisation,
+            role: str,
     ) -> OrganisationMembership:
         """Add a user to an organisation with specified role"""
         if role not in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]:
@@ -120,16 +119,15 @@ class OrganisationService(BasePermissionService):
 
     @requires_permission("edit", obj_param="organisation")
     def remove_user_from_organisation(
-        self, user: User, organisation: Organisation, removed_user: User
+            self, user: User, organisation: Organisation, removed_user: User
     ) -> None:
         """Remove user from organisation"""
         OrganisationMembership.objects.filter(
             user=removed_user, organisation=organisation
         ).delete()
 
-
     def get_organisation_projects(
-        self, organisation: Organisation, user: User = None, with_metrics: bool = True
+            self, organisation: Organisation, user: User = None, with_metrics: bool = True
     ) -> QuerySet[Project]:
         """Get projects for an organisation with optional metrics"""
         if not self.can_view(user, organisation):
@@ -147,7 +145,7 @@ class OrganisationService(BasePermissionService):
 
     @requires_permission("view", obj_param="organisation")
     def get_organisation_members(
-        self, user: User, organisation: Organisation
+            self, user: User, organisation: Organisation
     ) -> QuerySet[OrganisationMembership]:
         """Get all members of an organisation with their roles"""
         return OrganisationMembership.objects.filter(

@@ -16,6 +16,6 @@ jobs:
           python-version: "3.12"
           cache: "pip"
       - name: Install Gunicorn
-        run: pip install gunicorn
+        run: pip install gunicorn django
       - name: Check Gunicorn config
         run: gunicorn --config ./gunicorn.conf.py --check-config SORT.wsgi:application
