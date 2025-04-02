@@ -27,6 +27,7 @@ jobs:
       - name: Install JavaScript package
         run: |
           cd assets/sort-survey-configurator
+          npm install
           npm run build
       # https://docs.djangoproject.com/en/5.1/topics/testing/
       - name: Run Django test suites
