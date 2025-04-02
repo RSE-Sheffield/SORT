@@ -6,10 +6,12 @@ from urllib.parse import urljoin
 from django.conf import settings
 from django.utils.safestring import mark_safe
 from django.contrib.staticfiles import finders
-from django.templatetags.static import  static
+from django.templatetags.static import static
+
 logger = logging.getLogger(__name__)
 
 register = template.Library()
+
 
 @register.simple_tag
 def vite_client():
@@ -21,8 +23,6 @@ def vite_client():
         return mark_safe(f"<script type = 'module' src = '{vite_client_path}'> </script>")
 
     return ""
-
-
 
 
 @register.simple_tag

@@ -24,6 +24,10 @@ jobs:
         run: |
           export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
           python manage.py check
+      - name: Install JavaScript package
+        run: |
+          cd assets/sort-survey-configurator
+          npm run build
       # https://docs.djangoproject.com/en/5.1/topics/testing/
       - name: Run Django test suites
         run: |
