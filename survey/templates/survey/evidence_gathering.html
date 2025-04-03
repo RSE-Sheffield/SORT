@@ -59,25 +59,10 @@
                 <!-- This is a placeholder image. -->
                 <img src="{% static 'images/example_response_graph.png' %}">
 
-                <p>
-                    In support of the survey result, please gather the evidence for this section in the text box below.
-                    Possible evidence includes:
-                </p>
-                <ul>
-                    <li>
-                        Published report
-                    </li>
-                    <li>
-                        Planning document for the initiatives
-                    </li>
-                    <li>
-                        etc.
-                    </li>
-
-                </ul>
 
                 <h5>Evidence statement</h5>
-
+                <p>In support of the survey result, please gather the evidence for this section in the text box
+                    below.</p>
                 <!-- Create the editor container -->
                 <div id="evidence_editor" class="mb-3"></div>
                 <form
@@ -91,6 +76,22 @@
                 </form>
 
                 <h5>Attached evidence</h5>
+                <p>
+                    Files and reports can be included as evidence, some examples include:
+
+
+                </p>
+                <ul>
+                    <li>
+                        Published report
+                    </li>
+                    <li>
+                        Planning document for the initatives
+                    </li>
+                    <li>
+                        etc.
+                    </li>
+                </ul>
 
                 <form action="{% url 'survey_evidence_add_file' survey.id evidence_section.section_id %}"
                       method="post"
