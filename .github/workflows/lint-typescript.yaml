@@ -12,11 +12,16 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4.2.2
-    - name: Install modules
-      run: yarn
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 'v22.x'
+        cache: 'npm'
+        cache-dependency-path: 'assets/sort-survey-configurator/package-lock.json'
     # https://eslint.org/docs/latest/use/command-line-interface
     # We also need the Svelte linter https://sveltejs.github.io/eslint-plugin-svelte/
     # This could be improved by using a configuration file
     # https://eslint.org/docs/latest/use/configure/configuration-files#configuration-file
     - name: Run ESLint
+      working-directory: assets/sort-survey-configurator
       run: eslint assets/**/src/ --ext .js,.jsx,.ts,.tsx
