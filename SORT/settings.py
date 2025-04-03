@@ -184,6 +184,7 @@ INTERNAL_IPS = [
 ]
 AUTH_USER_MODEL = "home.User"  # FA: replace username with email as unique identifiers
 
+
 # Vite integration
 VITE_BASE_URL = "http://localhost:5173" # Url of vite dev server
 VITE_STATIC_DIR= "sort-ui" # Path to vite-generated asset directory in the static folder
@@ -193,7 +194,13 @@ VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, ".vite/manifest.json")
 
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
 STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT")
+
+# File uploading
+MEDIA_ROOT = os.getenv("DJANGO_MEDIA_ROOT", BASE_DIR / "uploads")
+MEDIA_SUPPORTED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf", ".doc", ".docx", ".txt", ".csv", ".json"]
 
 # Security settings
 SESSION_COOKIE_SECURE = cast_to_boolean(

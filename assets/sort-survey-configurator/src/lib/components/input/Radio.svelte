@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import {getUniqueIDArray} from "../../misc.svelte.ts";
 
   let {config, value = $bindable()} = $props();

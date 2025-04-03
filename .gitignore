@@ -1,7 +1,7 @@
 # Generatd files
 # Ignore generated vite bundled files, these should be generated at deploy time
 /static/sort-ui
-
+/uploads/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

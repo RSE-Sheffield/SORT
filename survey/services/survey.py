@@ -1,17 +1,25 @@
 import csv
+import string
 import json
 import logging
+import os.path
 import random
+from datetime import datetime
 from io import StringIO
-from typing import Any, Optional
+from sys import prefix
+from typing import Any, Optional, Dict
 
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
+from django.core.files.uploadedfile import UploadedFile
+from django.core.files.uploadhandler import UploadFileException
 from django.shortcuts import get_object_or_404
 from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from home.models import Project, User, Organisation
 from home.services import BasePermissionService
 from home.services.base import requires_permission
-from survey.models import Invitation, Survey, SurveyResponse
+from survey.models import Invitation, Survey, SurveyResponse, SurveyFile, SurveyEvidenceFile, \
+    SurveyEvidenceSection
 from home.services import project_service
 
 logger = logging.getLogger(__name__)
@@ -28,7 +36,7 @@ class SurveyService(BasePermissionService):
         try:
             return survey.project.organisation.get_user_role(user)
         except (
-            AttributeError
+                AttributeError
         ):  # In case user is AnonymousUser or organisation method fails
             return None
 
@@ -51,7 +59,6 @@ class SurveyService(BasePermissionService):
         """ Must be a member of the organisation the survey belongs to in order to delete """
         role = project_service.get_user_role(user, project)
         return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
-
 
     def get_survey(self, user: User, survey_id: int) -> Survey:
         survey = get_object_or_404(Survey, pk=survey_id)
@@ -77,10 +84,9 @@ class SurveyService(BasePermissionService):
         survey.survey_config = {}
         survey.save()
 
-
     @requires_permission("edit", obj_param="survey")
     def update_consent_demography_config(
-        self,user: User, survey: Survey, consent_config, demography_config
+            self, user: User, survey: Survey, consent_config, demography_config
     ) -> Survey:
         survey.consent_config = consent_config
         survey.demography_config = demography_config
@@ -88,13 +94,30 @@ class SurveyService(BasePermissionService):
         with open("data/survey_config/sort_only_config.json") as f:
             sort_config = json.load(f)
             merged_sections = (
-                survey.consent_config["sections"]
-                + sort_config["sections"]
-                + survey.demography_config["sections"]
+                    survey.consent_config["sections"]
+                    + sort_config["sections"]
+                    + survey.demography_config["sections"]
             )
             survey.survey_config = {"sections": merged_sections}
+
         survey.save()
+
+        self._create_survey_evidence_sections(survey)
         return survey
+
+    @requires_permission("edit", obj_param="survey")
+    def update_evidence_section(self, user: User, survey: Survey, evidence_section: SurveyEvidenceSection, text):
+        evidence_section.text = text
+        evidence_section.save()
+
+    def _create_survey_evidence_sections(self, survey: Survey, clear_existing_sections: bool = True):
+        if clear_existing_sections:
+            for evidence_section in SurveyEvidenceSection.objects.filter(survey=survey):
+                evidence_section.delete()  # Delete all previous section first
+
+        for section_index, section in enumerate(survey.survey_config["sections"]):
+            if section["type"] == "sort":
+                SurveyEvidenceSection.objects.create(survey=survey, section_id=section_index, title=section["title"])
 
     def get_survey_from_token(self, token: str) -> Survey:
         invitations = Invitation.objects.filter(token=token)
@@ -176,6 +199,50 @@ class SurveyService(BasePermissionService):
             output_csv = f.getvalue()
 
         return output_csv
+
+    def _is_extension_supported(self, file_name: str) -> bool:
+        for extension in settings.MEDIA_SUPPORTED_EXTENSIONS:
+            if file_name.lower().endswith(extension):
+                return True
+        return False
+
+    @requires_permission("edit", obj_param="survey")
+    def add_uploaded_files(self, user: User, survey: Survey, files: Dict[str, UploadedFile]):
+
+        for field_name, uploaded_file in files.items():
+            if not self._is_extension_supported(uploaded_file.name):
+                raise UploadFileException("File extension not supported, must be one of " +
+                                          ",".join(settings.MEDIA_SUPPORTED_EXTENSIONS))
+
+        for field_name, uploaded_file in files.items():
+            survey_file = SurveyFile.objects.create(survey=survey)
+            survey_file.file = uploaded_file
+            survey_file.save()
+
+    @requires_permission("edit", obj_param="survey")
+    def add_uploaded_files_to_evidence_section(self,
+                                               user: User,
+                                               survey: Survey,
+                                               evidence_section: SurveyEvidenceSection,
+                                               files: Dict[str, UploadedFile]):
+
+        for field_name, uploaded_file in files.items():
+            if not self._is_extension_supported(uploaded_file.name):
+                raise UploadFileException("File extension not supported, must be one of " +
+                                          " ,".join(settings.MEDIA_SUPPORTED_EXTENSIONS))
+
+        for field_name, uploaded_file in files.items():
+            evidence_file = SurveyEvidenceFile.objects.create(evidence_section=evidence_section)
+            evidence_file.file = uploaded_file
+            evidence_file.save()
+
+    @requires_permission("edit", obj_param="survey")
+    def remove_file(self, user: User, survey: Survey, file: SurveyFile):
+        file.delete()
+
+    @requires_permission("edit", obj_param="survey")
+    def remove_evidence_file(self, user: User, survey: Survey, file: SurveyEvidenceFile):
+        file.delete()
 
     def generate_mock_responses(self, user: User, survey: Survey, num_responses):
         """
