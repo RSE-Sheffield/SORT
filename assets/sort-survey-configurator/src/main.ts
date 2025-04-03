@@ -1,10 +1,9 @@
-import { mount } from 'svelte'
+import {mount} from 'svelte'
 import App from './App.svelte'
-import SurveyConfigConsentDemographyApp from "./SurveyConfigConsentDemographyApp.svelte";
-import SurveyResponseApp from "./SurveyResponseApp.svelte";
 
+// Mount the Svelte application into the HTML DOM in <div id="app" />
 const app = mount(App, {
-        target: document.getElementById('app')!,
-    });
+  target: document.getElementById('app')!,
+});
 
 export default app;
