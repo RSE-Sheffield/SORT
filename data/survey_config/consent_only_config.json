@@ -8,7 +8,7 @@
         {
           "type": "checkbox",
           "name": "consent",
-          "label": "Do you agreee to complete the survey?",
+          "label": "Do you agree to complete the survey?",
           "required": true,
           "sublabels": [],
           "options": [

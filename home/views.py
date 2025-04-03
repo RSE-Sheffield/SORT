@@ -24,6 +24,7 @@ from .forms import ManagerLoginForm, ManagerSignupForm, UserProfileForm
 from .mixins import OrganisationRequiredMixin
 from .models import Organisation, Project
 from .services import organisation_service, project_service
+from survey.services import survey_service
 
 User = get_user_model()
 
@@ -70,7 +71,13 @@ class ProfileView(LoginRequiredMixin, UpdateView):
     template_name = "home/profile.html"
     success_url = reverse_lazy("profile")
 
-    def get_object(self):
+    def get_object(self, queryset=None) -> User:
+        """
+        Get the current user.
+        """
+        # We only ever want to be able to retrieve the authenticated user
+        if queryset is not None:
+            raise ValueError("queryset is not None")
         return self.request.user
 
     def form_valid(self, form):
@@ -112,11 +119,10 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.organisation = organisation_service.get_user_organisation(request.user)
-        
+
         if not self.organisation:
             messages.error(request, "You are not a member of any organisation.")
             return redirect("organisation_create")
-            
 
     def get_queryset(self):
         queryset = organisation_service.get_organisation_projects(
@@ -135,11 +141,10 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
         user = self.request.user
         projects = context["projects"]
         user_role = self.organisation.get_user_role(user)
-        
+
         # add survey count to each project
         for project in projects:
             project.survey_count = project.survey_set.count()
-        
 
         context.update(
             {
@@ -188,24 +193,24 @@ class ProjectView(LoginRequiredMixin, ListView):
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
-        
+
         try:
             self.project = Project.objects.get(id=kwargs.get("project_id"))
         except Project.DoesNotExist:
             self.project = None
-            
+
     def get(self, request, *args, **kwargs):
         if not hasattr(self, 'project') or not self.project:
             messages.error(request, "Project not found.")
             return redirect("myorganisation")
-            
+
         if not project_service.can_view(request.user, self.project):
             messages.error(
                 request,
                 f"You do not have permission to view the project {self.project.name}.",
             )
             return redirect("myorganisation")
-            
+
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
@@ -225,12 +230,18 @@ class ProjectView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         project = self.project
+        surveys = context["surveys"]
+
+        can_edit = {}
+        for survey in surveys:
+            can_edit[survey.id] = survey_service.can_edit(user, survey)
 
         context.update(
             {
                 "project": project,
                 "can_create": project_service.can_edit(user, project),
                 "current_search": self.request.GET.get("q", ""),
+                "can_edit": can_edit,
             }
         )
 

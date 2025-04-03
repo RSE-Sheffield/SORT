@@ -2,6 +2,7 @@
 {% load plotly_dash %}
 {% load qr_code %}
 {% block content %}
+{% load project_filters %}
     <div class="container mx-auto px-4 py-8 mt-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
@@ -29,9 +30,6 @@
                 <div class="d-flex justify-content-between mt-3">
                     <div></div>
                     <div></div>
-                    <div>
-                        <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger"><i class="bx bxs-trash"></i> Delete survey</a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -48,7 +46,8 @@
                 <div class="mb-3 mt-3">
                     <p>First, configure you survey here. You are able to add and customise demographic questions asked
                         in the survey.</p>
-                    <a href="{% url 'survey_configure' survey.id %}" class="btn btn-primary"><i class="bx bxs-cog"></i> Configure the survey</a>
+                    <a href="{% url 'survey_configure' survey.id %}" class="btn btn-primary"><i class="bx bxs-cog"></i>
+                        Configure the survey</a>
                 </div>
             </div>
         </div>
@@ -82,7 +81,7 @@
                                     <div class="card-body">
                                         <div class="card-text text-center">
                                             <button onclick="downloadQRCode()" class="btn btn-primary">
-                                                <i class='bx bx-download' ></i> Download invitation QR code
+                                                <i class='bx bx-download'></i> Download invitation QR code
                                             </button>
                                         </div>
                                     </div>
@@ -116,7 +115,9 @@
                         <div class="col-lg-2 text-end">
                             <form method="POST" action="{% url 'suvey_create_invite' survey.id %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-primary" name="generate_token"><i class='bx bx-repeat'></i> Re-generate invitation</button>
+                                <button type="submit" class="btn btn-primary" name="generate_token"><i
+                                        class='bx bx-repeat'></i> Re-generate invitation
+                                </button>
 
                             </form>
                         </div>
@@ -125,7 +126,8 @@
 
                     <p>Or send an invitation by email:</p>
 
-                    <a href="{% url 'invite' survey.id %}" class="btn btn-primary"><i class='bx bx-mail-send' ></i> Send an invitation</a>
+                    <a href="{% url 'invite' survey.id %}" class="btn btn-primary"><i class='bx bx-mail-send'></i> Send
+                        an invitation</a>
 
                 {% else %}
                     <p>
@@ -133,8 +135,7 @@
                     </p>
                     <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
                         {% csrf_token %}
-                        <input type="submit" name="generate_token" value="Generate invitation"
-                               class="btn btn-primary"></input>
+                        <button type="submit" class="btn btn-primary" name="generate_token"><i class='bx bx-mail-send' ></i> Generate invitation</button>
                     </form>
                 {% endif %}
             </div>
@@ -153,10 +154,13 @@
                         <input type="number" name="num_responses" class="form-control"/>
                     </label>
 
-                    <button type="submit" name="submit" value="Submit" class="btn btn-primary"><i class="bx bxs-send"></i> Submit</button>
+                    <button type="submit" name="submit" value="Submit" class="btn btn-primary"><i
+                            class="bx bxs-send"></i> Submit
+                    </button>
                 </form>
 
-                <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download><i class="bx bx-export"></i> Export</a>
+                <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download><i
+                        class="bx bx-export"></i> Export</a>
             </div>
         </div>
 
@@ -181,7 +185,16 @@
             </div>
             <div class="card-body">
                 <p>Once you have collected enough responses, use this section to gather evidence in support of the survey results.</p>
-                <a href="{% url 'survey_evidence_gathering' survey.id %}" class="btn btn-primary"><i class='bx bx-collection' ></i> Gather evidence</a>
+
+                {% if first_evidence_section %}
+                    <a href="{% url 'survey_evidence_gathering' survey.id first_evidence_section.section_id %}" class="btn btn-primary"><i class='bx bx-collection' ></i> Gather evidence</a>
+
+                {% else %}
+                    <p>Survey must be configured before the section can be used.</p>
+
+                {% endif %}
+
+
             </div>
         </div>
         <div class="card mb-3">
@@ -189,8 +202,10 @@
                 <h2>5. Make an Improvement Plan</h2>
             </div>
             <div class="card-body">
-                <p>Use this section to create an improvement plan after collecting survey responses and gathering the evidence.</p>
-                <a href="{% url 'survey_improvement_plan' survey.id %}" class="btn btn-primary"><i class='bx bxs-file-plus'></i> Make an improvement plan</a>
+                <p>Use this section to create an improvement plan after collecting survey responses and gathering the
+                    evidence.</p>
+                <a href="{% url 'survey_improvement_plan' survey.id %}" class="btn btn-primary"><i
+                        class='bx bxs-file-plus'></i> Make an improvement plan</a>
             </div>
         </div>
 

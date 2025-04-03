@@ -1,5 +1,6 @@
 {% extends 'base_manager.html' %}
 {% load static %}
+{% load vite_integration %}
 {% block content %}
     <!-- Include stylesheet -->
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet"/>
@@ -27,57 +28,123 @@
     </div>
     <div class="container mx-auto px-4 py-8">
         <h1><i class='bx bx-collection'></i> Gather evidence</h1>
-        <p>Once you have collected enough responses, use this section to gather evidence in support of the survey results.</p>
+        <p>Once you have collected enough responses, use this section to gather evidence in support of the survey
+            results.</p>
 
-        {% for section_title in section_titles %}
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h3>{{ section_title }}</h3>
-                </div>
-                <div class="card-body">
-                    <p>
-                        This section demonstrates an overall maturity score of 2 out of 4, placing it at the 'Planned'
-                        level. Opportunities for improvement are identified in question B4, and B1.
-                    </p>
-                    <img src="{% static 'images/example_response_graph.png' %}">
 
-                    <p>
-                        In support of the survey result, please gather the evidence for this section in the text box below.
-                        Possible evidence includes:
+        <ul class="nav nav-tabs">
+            {% for section in sections %}
+                <li class="nav-item">
+                    <a class="nav-link {% if section.section_id == evidence_section.section_id %}active{% endif %}"
+                       aria-current="page"
+                       href="{% url "survey_evidence_gathering" survey.id section.section_id %}"
+                    >
+                        {{ section.title }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
 
-                    </p>
-                    <ul>
-                        <li>
-                            Published report
-                        </li>
-                        <li>
-                            Planning document for the initatives
-                        </li>
-                        <li>
-                            etc.
-                        </li>
-
-                    </ul>
-
-                    <!-- Create the editor container -->
-                    <div id="evidence_editor_{{ forloop.counter0 }}">
-                    </div>
-                </div>
+        <div class="mb-3 pt-3 ps-3 pe-3">
+            <div>
+                <h3>{{ section_config.title }}</h3>
             </div>
-        {% endfor %}
+            <div>
+                <h5>Survey summary</h5>
+
+                <p>
+                    This section demonstrates an overall maturity score of 2 out of 4, placing it at the 'Planned'
+                    level. Opportunities for improvement are identified in question B4, and B1.
+                </p>
+                <!-- This is a placeholder image. -->
+                <img src="{% static 'images/example_response_graph.png' %}">
+
+                <p>
+                    In support of the survey result, please gather the evidence for this section in the text box below.
+                    Possible evidence includes:
+                </p>
+                <ul>
+                    <li>
+                        Published report
+                    </li>
+                    <li>
+                        Planning document for the initiatives
+                    </li>
+                    <li>
+                        etc.
+                    </li>
+
+                </ul>
+
+                <h5>Evidence statement</h5>
+
+                <!-- Create the editor container -->
+                <div id="evidence_editor" class="mb-3"></div>
+                <form
+                        action="{% url 'survey_evidence_gathering_update' survey.id evidence_section.section_id %}"
+                        method="post"
+                >
+                    {% csrf_token %}
+                    <input type="hidden" id="evidence_input_field" name="text"
+                           {% if evidence_section.text is not None %}value="{{ evidence_section.text }}"{% endif %}/>
+                    <button type="submit" name="submit" class="btn btn-primary mb-3">Save statement</button>
+                </form>
+
+                <h5>Attached evidence</h5>
+
+                <form action="{% url 'survey_evidence_add_file' survey.id evidence_section.section_id %}"
+                      method="post"
+                      enctype="multipart/form-data"
+                      class="mb-3"
+                >
+
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="file" name="file" class="form-control"/>
+                        <button type="submit" name="submit" class="btn btn-primary">Upload file</button>
+                    </div>
+                </form>
+
+
+                {# Svelte file preview browser #}
+                <div class="sort-file-browser"></div>
+
+            </div>
+        </div>
+
+        {{ csrf | json_script:"csrf" }}
+        {{ files_list | json_script:"filesListData" }}
+        {% vite_client %}
+        {% vite_asset "src/file_browser.ts" %}
+
 
         <!-- Include the Quill library -->
         <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
 
         <!-- Initialize Quill editor -->
         <script>
-          let quillInstances = [];
-          for(let i = 0 ;i < 5; i++){
-            quillInstances.push(new Quill('#evidence_editor_'+i, {
-            theme: 'snow',
-              placeholder: "Please enter evidence for this section here..."
-            }));
-          }
+
+            const evidenceInputField = document.getElementById("evidence_input_field")
+            const quillInstance = new Quill('#evidence_editor', {
+                theme: 'snow',
+                placeholder: "Please enter evidence for this section here...",
+            });
+
+            if (
+                evidenceInputField.value !== null &&
+                evidenceInputField.value !== undefined &&
+                evidenceInputField.value.length > 0) {
+                try {
+                    quillInstance.setContents(JSON.parse(evidenceInputField.value));
+                } catch (error) {
+                    // We can just ignore parse error and leave it blank
+                    console.log("Could not convert text field value to quill contents", evidenceInputField.value)
+                }
+            }
+
+            quillInstance.on('text-change', (delta, oldDelta, source) => {
+                evidenceInputField.value = JSON.stringify(quillInstance.getContents());
+            });
 
         </script>
     </div>

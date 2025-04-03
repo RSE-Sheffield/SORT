@@ -8,6 +8,7 @@
     import SurveyConfigurator from "./lib/components/SurveyConfigurator.svelte";
     import SurveyResponse from "./lib/components/SurveyResponse.svelte";
     import {download} from "./lib/misc.svelte.js";
+    import SurveyConfigConsentDemographyApp from "./SurveyConfigConsentDemographyApp.svelte";
 
     //Import data from other script blocks on page (for django)
     //otherwise use the default config
@@ -42,13 +43,27 @@
         download("values.json", JSON.stringify(responseValue, null, 2))
     }
 
+
+    let page = $state(0);
+
 </script>
 <nav class="navbar navbar-expand-lg bg-body-tertiary mb-3">
     <div class="container-fluid">
         <h2>SORT UI Dev test page</h2>
     </div>
+    <div class="collapse navbar-collapse">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="/" onclick={(e)=> {e.preventDefault(); e.stopPropagation(); page = 0;}}>Main</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/" onclick={(e)=>{e.preventDefault(); e.stopPropagation(); page = 1;}}>Consent demography</a>
+            </li>
+        </ul>
+    </div>
 </nav>
 <main>
+    {#if page == 0}
     <div class="container">
         <div class="btn-group mb-3" role="group" aria-label="Test functions">
             <button class="btn btn-primary" onclick={getConfig}>Get config</button>
@@ -71,6 +86,12 @@
             <SurveyResponse config={configData} bind:value={responseValue} bind:this={surveyComponent}/>
         {/if}
     </div>
+    {:else if page == 1}
+
+    <div class="container">
+        <SurveyConfigConsentDemographyApp></SurveyConfigConsentDemographyApp>
+    </div>
+    {/if}
 
 </main>
 

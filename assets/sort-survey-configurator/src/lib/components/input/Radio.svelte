@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import {getUniqueIDArray} from "../../misc.svelte.ts";
 
   let {config, value = $bindable()} = $props();
@@ -33,7 +33,8 @@
             <input class={{"form-check-input": true, "is-valid": isValid, "is-invalid": isInvalid}}
                    type="radio"
                    value={option} id={componentId[index]}
-                   bind:group={value} />
+                   bind:group={value}
+                   placeholder={option} />
             <label class="form-check-label" for="{componentId[index]}">{option}</label>
             {#if config.options && index >= config.options.length - 1}
             <!-- Feedback on the last component only -->

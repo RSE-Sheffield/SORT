@@ -8,6 +8,11 @@ urlpatterns = [
         name="survey_configure",
     ),
     path(
+        "survey/<int:pk>/edit",
+        views.SurveyEditView.as_view(),
+        name="survey_edit",
+    ),
+    path(
         "survey/<int:pk>/delete/",
         views.SurveyDeleteView.as_view(),
         name="survey_delete",
@@ -23,12 +28,37 @@ urlpatterns = [
         name="survey_mock_responses",
     ),
     path(
+        "survey/<int:pk>/add_file",
+        views.SurveyFileUploadView.as_view(),
+        name="survey_add_file"
+    ),
+    path(
         "survey/<int:pk>/export", views.SurveyExportView.as_view(), name="survey_export"
     ),
     path(
-        "survey/<int:pk>/evidence_gathering",
+        "survey/<int:pk>/evidence_gathering/<int:section_id>",
         views.SurveyEvidenceGatheringView.as_view(),
         name="survey_evidence_gathering",
+    ),
+    path(
+        "survey/<int:pk>/evidence_gathering/<int:section_id>/update",
+        views.SurveyEvidenceUpdateView.as_view(),
+        name="survey_evidence_gathering_update",
+    ),
+    path(
+        "survey/<int:pk>/evidence_gathering/<int:section_id>/add_file",
+        views.SurveyEvidenceFileUploadView.as_view(),
+        name="survey_evidence_add_file"
+    ),
+    path(
+        "survey_evidence/remove_file/<int:pk>",
+        views.SurveyEvidenceFileDeleteView.as_view(),
+        name="survey_evidence_remove_file"
+    ),
+    path(
+        "survey_evidence/file/<int:pk>",
+        views.SurveyEvidenceFileView.as_view(),
+        name="survey_evidence_file"
     ),
     path(
         "survey/<int:pk>/improvement_plan",
