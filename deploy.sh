@@ -18,6 +18,7 @@ pip="$venv_dir/bin/pip"
 python_version="python3.12"
 python="$venv_dir/bin/python"
 env_file="$sort_dir/.env"
+frontend_dir="$sort_dir/assets/sort-survey-configurator"
 
 # Install British UTF-8 locale so we can use this with PostgreSQL.
 # This is important to avoid the limitations of the LATIN1 character set.
@@ -39,6 +40,18 @@ cp --recursive * "$sort_dir/"
 sudo touch "$env_file"
 sudo chown gunicorn:gunicorn "$env_file"
 sudo chmod 600 "$env_file"
+
+# Install Node.js package manager
+# https://nodejs.org/en/download
+# Install Node Version Manager (NVM)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
+\. "$HOME/.nvm/nvm.sh"
+# Install Node.js
+nvm install 22
+
+# Install JavaScript package
+# (Use a sub-shell to avoid changing directory.)
+(cd "$frontend_dir" && npm ci && npm run build)
 
 # Install static files into DJANGO_STATIC_ROOT
 # This runs in a subshell because it's changing directory
