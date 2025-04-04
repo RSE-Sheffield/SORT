@@ -1,7 +1,5 @@
 from django.urls import path
-
 from . import views
-
 urlpatterns = [
     path("survey/<int:pk>", views.SurveyView.as_view(), name="survey"),
     path(

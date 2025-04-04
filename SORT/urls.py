@@ -23,6 +23,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("home.urls")),
     path("", include("survey.urls"), name="survey"),
+    path('django_plotly_dash/', include('django_plotly_dash.urls')),
 ]
 
 if settings.DEBUG:

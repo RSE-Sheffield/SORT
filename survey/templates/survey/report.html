@@ -1,0 +1,24 @@
+{% extends 'base_anonymous.html' %}
+{% load plotly_dash %}
+{% block content %}
+{#<div class="mt-3 mb-3">#}
+{#    <button class="btn btn-primary" onclick="generatePDF()">Download PDF</button>#}
+{#</div>#}
+<div id="report-page">
+    <div class="p-2">
+        <h1>Survey Report: {{ survey.name }}</h1>
+    </div>
+    <div style="width: 100%; padding: 20px; text-align: center;">
+        {% plotly_direct name="SurveyDashboard" %}
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    function generatePDF(){
+      console.log("Trying to generate pdf");
+        let element = document.getElementById('report-page');
+        html2pdf(element);
+    }
+</script>
+
+{% endblock %}

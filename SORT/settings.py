@@ -64,10 +64,12 @@ INSTALLED_APPS = [
     "django_bootstrap5",
     "django_extensions",
     "debug_toolbar",
+    "django_plotly_dash.apps.DjangoPlotlyDashConfig",
     "qr_code",
     # apps created by FA:
     "home",
     "survey",
+    "survey.dashboards.apps.DashboardsConfig"
 ]
 
 MIDDLEWARE = [
@@ -81,6 +83,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "django_plotly_dash.middleware.BaseMiddleware",
+
 ]
 
 ROOT_URLCONF = "SORT.urls"
@@ -208,6 +212,8 @@ SESSION_COOKIE_SECURE = cast_to_boolean(
 )
 CSRF_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_CSRF_COOKIE_SECURE", not DEBUG))
 
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
 # Logging
 # https://docs.djangoproject.com/en/5.1/topics/logging/
 LOGGING = {
@@ -225,3 +231,10 @@ LOGGING = {
     },
 }
 
+
+# Plotly-dash settings to require authentication for all Dash views
+# https://django-plotly-dash.readthedocs.io/en/latest/access_control.html
+
+PLOTLY_DASH = {
+    "view_decorator": "django_plotly_dash.access.login_required"
+}
