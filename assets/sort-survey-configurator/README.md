@@ -25,7 +25,7 @@ Install dependencies using `npm install`
 
 To preview the components (separate from the website) run the following command:
 
-```
+```bash
 npm run dev
 ```
 
@@ -36,14 +36,14 @@ This will start a local dev server where the component can be previewed.
 
 Build by running:
 
-```
+```bash
 npm run build
 ```
 
-This will build the widgets into the `/static/js/sort-ui` folder which can then be imported by the django templates.
+This will build the widgets into the `/static/js/sort-ui` folder which can then be imported by the Django templates.
 
 
-## Technical considerations ()
+## Technical considerations
 Instructions below came pre-generated, leaving this here for now in case it's useful:
 
 **Why use this over SvelteKit?**

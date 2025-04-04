@@ -81,7 +81,7 @@ class SurveyService(BasePermissionService):
             demo_config = json.load(f)
             survey.demography_config = demo_config
 
-        survey.survey_config = {}
+        survey.survey_config = dict(sections=list())
         survey.save()
 
     @requires_permission("edit", obj_param="survey")
