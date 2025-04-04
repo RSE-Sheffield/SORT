@@ -19,6 +19,7 @@ python_version="python3.12"
 python="$venv_dir/bin/python"
 env_file="$sort_dir/.env"
 frontend_dir="$sort_dir/assets/sort-survey-configurator"
+node_version=22
 
 # Install British UTF-8 locale so we can use this with PostgreSQL.
 # This is important to avoid the limitations of the LATIN1 character set.
@@ -29,7 +30,7 @@ sudo update-locale
 # Create Python virtual environment
 mkdir --parents "$sort_dir"
 apt update -qq
-apt install --upgrade --yes -qq "$python_version" "$python_version-venv"
+apt install --upgrade --yes -qq "$python_version" "$python_version-venv" curl
 python3 -m venv "$venv_dir"
 
 # Install the SORT Django app package
@@ -42,12 +43,12 @@ sudo chown gunicorn:gunicorn "$env_file"
 sudo chmod 600 "$env_file"
 
 # Install Node.js package manager
-# https://nodejs.org/en/download
-# Install Node Version Manager (NVM)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
-\. "$HOME/.nvm/nvm.sh"
-# Install Node.js
-nvm install 22
+# https://github.com/nodesource/distributions?tab=readme-ov-file#installation-instructions-deb
+# Get the Ubuntu apt repository
+curl -fsSL "https://deb.nodesource.com/setup_$node_version.x" -o nodesource_setup.sh
+sudo -E bash nodesource_setup.sh
+apt-get install -y nodejs="$node_version"
+node --version
 
 # Install JavaScript package
 # (Use a sub-shell to avoid changing directory.)
