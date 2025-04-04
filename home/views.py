@@ -60,9 +60,13 @@ class LoginInterfaceView(LoginView):
 
 class HomeView(LoginRequiredMixin, View):
     template_name = "home/welcome.html"
-
+    context_object_name = "projects"
+    
     def get(self, request):
-        return render(request, self.template_name, {})
+        user = self.request.user
+        # all projects for current user
+        projects = project_service.get_user_projects(user)      
+        return render(request, self.template_name, dict(projects=projects))
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
