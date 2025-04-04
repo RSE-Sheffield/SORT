@@ -134,7 +134,7 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
         if search_query:
             queryset = queryset.filter(Q(name__icontains=search_query))
 
-        return queryset.order_by("-created_on")
+        return queryset.order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
