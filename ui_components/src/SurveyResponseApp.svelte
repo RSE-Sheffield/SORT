@@ -1,16 +1,20 @@
-<svelte:options customElement="survey-configurator"/>
 <script lang="ts">
     import * as _ from 'lodash';
-    import defaultConfigs from '../../../data/survey_config/sort_only_config.json';
+    // import defaultConfigs from '../../../data/survey_config/sort_only_config.json';
     import SurveyConfigurator from "./lib/components/SurveyConfigurator.svelte";
     import SurveyResponse from "./lib/components/SurveyResponse.svelte";
     import {getDataInElem} from "./lib/misc.svelte.js";
 
+    let {csrf, initConfig, initResponse} = $props();
+
+    let configData = $state(initConfig);
+
+
     //Import data from other script blocks on page (for django)
     //otherwise use the default config
-    let csrf = getDataInElem("csrf", "");
-    let configData = $state(getDataInElem("configData", defaultConfigs));
-    let responseValue = $state();
+
+    // let configData = $state(getDataInElem("configData", defaultConfigs));
+    let responseValue = $state(initResponse);
 
 </script>
 

@@ -182,10 +182,8 @@
 
                 {% if first_evidence_section %}
                     <a href="{% url 'survey_evidence_gathering' survey.id first_evidence_section.section_id %}" class="btn btn-primary"><i class='bx bx-collection' ></i> Gather evidence</a>
-
                 {% else %}
-                    <p>Survey must be configured before the section can be used.</p>
-
+                    <p>Survey must be configured before this section can be used.</p>
                 {% endif %}
 
 
@@ -198,8 +196,12 @@
             <div class="card-body">
                 <p>Use this section to create an improvement plan after collecting survey responses and gathering the
                     evidence.</p>
-                <a href="{% url 'survey_improvement_plan' survey.id %}" class="btn btn-primary"><i
-                        class='bx bxs-file-plus'></i> Make an improvement plan</a>
+
+                {% if first_improve_section %}
+                    <a href="{% url 'survey_improvement_plan' survey.id first_improve_section.section_id %}" class="btn btn-primary"><i class='bx bx-collection' ></i> Edit Improvement Plan</a>
+                {% else %}
+                    <p>Survey must be configured before this section can be used.</p>
+                {% endif %}
             </div>
         </div>
 

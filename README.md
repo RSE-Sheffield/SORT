@@ -15,7 +15,7 @@ Follow these steps to set up and run the app locally:
 
 ---
 
-Prerequisites
+Prerequisites, ensure the following are already installed on your system:
 
 - Python 3.12
 - pip
@@ -32,7 +32,6 @@ git clone <repository-url>
 2. Create and activate a virtual environment
 ```bash
 python -m venv .venv
-
 source .venv/Scripts/activate
 
 ```
@@ -44,7 +43,6 @@ source .venv/Scripts/activate
 # Install python requirements
 pip install -r requirements.txt
 # Install nodejs requirements
-cd assets/sort-survey-configurator
 npm install
 ```
 
@@ -82,7 +80,6 @@ python manage.py runserver
 
 8. Start the vite javascript server (in a different terminal)
 ```bash
-cd assets/sort-survey-configurator
 npm run dev
 ```
 
@@ -93,6 +90,8 @@ The app will be available at http://127.0.0.1:8000.
 9. Import test data by following the instructions as [`data/README.md`](./data/README.md).
 
 # Deployment
+
+
 
 Please read [`docs/deployment.md`](docs/deployment.md).
 
@@ -106,17 +105,22 @@ In order to integrate this into the html template, a tag library is created at `
 - The `vite_client` template tag is used to include Vite's HMR javascript code. 
 - The `vite_asset` tag is used to include asset files (e.g. typescript files) in the template.
   - In debug mode, this creates a link directly to the vite dev server normally located at `http://localhost:5173`
-  - In production mode, the link changes to the location of the file in the `/static/` folder
+  - In production mode, it links to assets within the  `/static/` url path. 
 
 
 ## Before deployment
 
-The script files within `/assets/sort-survey-configurator` must be built into the static folder before deployment. This
+The script files within `/ui_components` must be built into the static folder before deployment. This
 can be done by running:
 
 ```bash
-cd assets/sort-survey-configurator
 npm run build
 ```
 
-This will transpile the typescript files and write them into `/static/sort-ui/` folder.
+This will transpile the typescript files and write them into `/static/ui-components/` folder.
+
+Then run django's `collectstatic` to gather all files into the static folder.
+
+```bash
+python manage.py collectstatic
+```

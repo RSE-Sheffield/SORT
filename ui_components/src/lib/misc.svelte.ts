@@ -16,8 +16,11 @@ export enum TextType {
  * @param elementId ID of the script tag
  * @param defaultData Default data to use if the element or data does not exist
  */
-export function getDataInElem(elementId: string, defaultData: any) {
-    let elem = document.getElementById(elementId);
+export function getDataInElem(elementId: string|null|undefined, defaultData: unknown) {
+    if(elementId === null || elementId === undefined)
+        return defaultData;
+
+    const elem = document.getElementById(elementId);
     let outputData = null;
     if (elem && elem.textContent != null && JSON.parse(elem.textContent)) {
         outputData = JSON.parse(elem.textContent);
@@ -35,7 +38,7 @@ export function getDataInElem(elementId: string, defaultData: any) {
  * @param text
  */
 export function download(fileName:string, text:string) {
-    var element = document.createElement('a');
+    const element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', fileName);
 
@@ -56,8 +59,8 @@ const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567
 const idPrefix = "sort_ui_auto_id_";
 const namePrefix = "sort_ui_auto_name_";
 const generateLength = 16;
-let uniqueIdSet = new Set<string>();
-let uniqueNameSet = new Set<string>();
+const uniqueIdSet = new Set<string>();
+const uniqueNameSet = new Set<string>();
 
 
 function generateString(length: number) {
@@ -72,7 +75,7 @@ function generateString(length: number) {
 
 function generateUniqueAndCheck(prefix: string, numChars: number, checkSet: Set<string>) {
     while (true) {
-        let randomText = prefix + generateString(numChars)
+        const randomText = prefix + generateString(numChars)
         if (!checkSet.has(randomText)) {
             return randomText;
         }
@@ -85,7 +88,7 @@ export function getUniqueID(): string {
 }
 
 export function getUniqueIDArray(length: number) {
-    let outputIds = [];
+    const outputIds = [];
     for (let i = 0; i < length; i++) {
         outputIds.push(generateUniqueAndCheck(idPrefix, generateLength, uniqueIdSet))
     }
@@ -102,7 +105,7 @@ export function getUniqueName(): string {
  * @param node
  * @param handler
  */
-export function clickOutside(node: HTMLElement, handler: Function){
+export function clickOutside(node: HTMLElement, handler: ()=>void){
     const handleClick = (event: MouseEvent) => {
 		if (event.target && !node.contains(event.target as Element)) {
             handler();

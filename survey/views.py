@@ -22,7 +22,7 @@ from home.models import Project
 from survey.services import survey_service
 
 from .forms import InvitationForm
-from .models import Survey, SurveyEvidenceSection, SurveyEvidenceFile
+from .models import Survey, SurveyEvidenceSection, SurveyEvidenceFile, SurveyImprovementPlanSection
 from .services.survey import InvalidInviteTokenException
 
 logger = logging.getLogger(__name__)
@@ -45,6 +45,8 @@ class SurveyView(LoginRequiredMixin, View):
         survey = survey_service.get_survey(request.user, pk)  # Check that we're allowed to get the survey
         context["survey"] = survey
         context["first_evidence_section"] = SurveyEvidenceSection.objects.filter(survey=survey).order_by(
+            'section_id').first()
+        context["first_improve_section"] = SurveyImprovementPlanSection.objects.filter(survey=survey).order_by(
             'section_id').first()
         context["invite_link"] = survey.get_invite_link(request)
         context["can_edit"] = {
@@ -169,16 +171,6 @@ class SurveyExportView(LoginRequiredMixin, View):
         response["Content-Disposition"] = f"inline; filename={file_name}"
         return response
 
-
-section_titles = [
-    "A. Releasing Potential",
-    "B. Embedding Research",
-    "C. Linkages and Leadership",
-    "D. Inclusive research delivery",
-    "E. Digital enabled research",
-]
-
-
 class SurveyEvidenceGatheringView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int, section_id: int):
         survey = Survey.objects.get(pk=pk)
@@ -276,16 +268,51 @@ class SurveyEvidenceFileView(LoginRequiredMixin, View):
 
 
 class SurveyImprovementPlanView(LoginRequiredMixin, View):
-    def get(self, request: HttpRequest, pk: int):
+    def get(self, request: HttpRequest, pk: int, section_id: int):
+
         survey = Survey.objects.get(pk=pk)
-        context = {"survey": survey}
-        context["section_titles"] = section_titles
+        evidence_section = SurveyEvidenceSection.objects.get(survey=survey, section_id=section_id)
+        improve_section = SurveyImprovementPlanSection.objects.get(survey=survey, section_id=section_id)
+        improve_sections = SurveyImprovementPlanSection.objects.filter(survey=survey).order_by("section_id")
+
+        files_list = []
+        for file in evidence_section.files.all():
+            delete_url = reverse("survey_evidence_remove_file", kwargs={"pk": file.pk})
+            file_url = reverse("survey_evidence_file", kwargs={"pk": file.pk})
+            files_list.append({
+                "name": os.path.basename(file.file.name),
+                "deleteUrl": delete_url,
+                "fileUrl": file_url
+            })
+
+        context = {
+            "survey": survey,
+            "evidence_section": evidence_section,
+            "improve_section": improve_section,
+            "sections": improve_sections,
+            "files_list": files_list,
+            "update_url": reverse_lazy("survey_improvement_plan_update",
+                                       kwargs={"pk": survey.pk, "section_id": improve_section.section_id}),
+            "plan": improve_section.plan,
+            "csrf": str(csrf(self.request)["csrf_token"])
+        }
         return render(
             request=request,
             template_name="survey/improvement_plan.html",
             context=context,
         )
 
+class SurveyImprovementPlanUpdateView(LoginRequiredMixin, View):
+    def post(self, request: HttpRequest, pk: int, section_id: int):
+        survey = Survey.objects.get(pk=pk)
+        improve_section = SurveyImprovementPlanSection.objects.get(survey=survey, section_id=section_id)
+        data = request.POST["data"]
+        survey_service.update_improvement_section(request.user, survey, improve_section, data)
+        if request.META["HTTP_REFERER"]:
+            return redirect(request.META["HTTP_REFERER"])
+        else:
+            return reverse_lazy("survey_improvement_plan",
+                                kwargs={"pk": survey.pk, "section_id": improve_section.section_id})
 
 class SurveyResponseView(View):
     """

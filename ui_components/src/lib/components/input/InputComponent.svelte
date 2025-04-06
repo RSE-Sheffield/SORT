@@ -287,7 +287,7 @@
     </div>
 
 {:else if editable && !inEditMode}
-    <a href="/assets/sort-survey-configurator/public"
+    <a href="/assets/ui_components/public"
        class="card mb-3 sort-form-component"
        aria-label="Click to edit field"
        draggable="true"

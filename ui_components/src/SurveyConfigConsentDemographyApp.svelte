@@ -1,20 +1,20 @@
-<svelte:options customElement="survey-configurator"/>
 <script lang="ts">
     import * as _ from 'lodash';
-    import defaultConsentConfigs from '../../../data/survey_config/consent_only_config.json';
-    import defaultDemographicConfigs from '../../../data/survey_config/demography_only_config.json';
+    // import defaultConsentConfigs from '../../../data/survey_config/consent_only_config.json';
+    // import defaultDemographicConfigs from '../../../data/survey_config/demography_only_config.json';
     import SurveyConfigurator from "./lib/components/SurveyConfigurator.svelte";
-    import {getDataInElem} from "./lib/misc.svelte.js";
+
 
     //Import data from other script blocks on page (for django)
     //otherwise use the default config
 
-    let csrf = getDataInElem("csrf", "");
-    let consentConfig = $state(getDataInElem("consentConfig", defaultConsentConfigs));
-    let demographyConfig = $state(getDataInElem("demographyConfig", defaultDemographicConfigs));
+    let {csrf, initConsentConfig, initDemographyConfig} = $props();
 
-    let consentConfigStr = $derived(JSON.stringify(consentConfig))
-    let demographyConfigStr = $derived(JSON.stringify(demographyConfig))
+    let consentConfig = $state(initConsentConfig);
+    let demographyConfig = $state(initDemographyConfig);
+
+    let consentConfigStr = $derived(JSON.stringify(consentConfig));
+    let demographyConfigStr = $derived(JSON.stringify(demographyConfig));
 </script>
 
 

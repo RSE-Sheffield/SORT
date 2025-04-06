@@ -3,6 +3,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 
 // https://vite.dev/config/
 export default defineConfig({
+  root: "ui_components/",
   plugins: [svelte({
       compilerOptions: {
         customElement: true,
@@ -10,7 +11,7 @@ export default defineConfig({
     })],
   server: {
     cors: {
-      origin: "http://localhost:8000"
+      origin: ["http://localhost:8000", "http://127.0.0.1:8000"]
     }
   },
   build: {
@@ -18,14 +19,12 @@ export default defineConfig({
 
     rollupOptions: {
       input: {
-        sort_survey_config: "./src/main.ts",
-        sort_survey_cd: "./src/survey_config_consent_demography.ts",
-        sort_survey_response: "./src/survey_response.ts"
+        main: "ui_components/src/main.ts",
       },
       output: {
         chunkFileNames: `[name].[hash].js`,
         entryFileNames: "[name].js",
-        dir: "../../static/sort-ui",
+        dir: "static/ui-components",
       },
     },
   },

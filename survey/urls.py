@@ -63,9 +63,14 @@ urlpatterns = [
         name="survey_evidence_file"
     ),
     path(
-        "survey/<int:pk>/improvement_plan",
+        "survey/<int:pk>/improvement_plan/<int:section_id>",
         views.SurveyImprovementPlanView.as_view(),
         name="survey_improvement_plan",
+    ),
+    path(
+        "survey/<int:pk>/improvement_plan/<int:section_id>/update",
+        views.SurveyImprovementPlanUpdateView.as_view(),
+        name="survey_improvement_plan_update",
     ),
     path(
         "survey/create/<int:project_id>",

@@ -151,8 +151,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
-
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR/"staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -187,7 +187,7 @@ AUTH_USER_MODEL = "home.User"  # FA: replace username with email as unique ident
 
 # Vite integration
 VITE_BASE_URL = "http://localhost:5173" # Url of vite dev server
-VITE_STATIC_DIR= "sort-ui" # Path to vite-generated asset directory in the static folder
+VITE_STATIC_DIR= "ui-components" # Path to vite-generated asset directory in the static folder
 VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, ".vite/manifest.json")
 
 # FA: for production:
@@ -196,7 +196,7 @@ VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, ".vite/manifest.json")
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
-STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT")
+
 
 # File uploading
 MEDIA_ROOT = os.getenv("DJANGO_MEDIA_ROOT", BASE_DIR / "uploads")
