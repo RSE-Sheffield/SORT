@@ -2,8 +2,6 @@
 {% load static %}
 {% load vite_integration %}
 {% block content %}
-    <!-- Include stylesheet -->
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet"/>
     <div class="container mx-auto px-4 py-8 mt-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
@@ -52,15 +50,15 @@
             <div>
                 <h5>Survey summary</h5>
 
-                <p>
-                    This section demonstrates an overall maturity score of 2 out of 4, placing it at the 'Planned'
-                    level. Opportunities for improvement are identified in question B4, and B1.
-                </p>
-                <!-- This is a placeholder image. -->
-                <img src="{% static 'images/example_response_graph.png' %}">
+                <div
+                        class="sort-response-section-viewer"
+                        data-json-config-id="configData"
+                        data-json-responses-id="responsesData"
+                        data-section-index="{{ evidence_section.section_id }}"
+                ></div>
 
 
-                <h5>Evidence statement</h5>
+                <h2>Evidence statement</h2>
                 <p>In support of the survey result, please gather the evidence for this section in the text box
                     below.</p>
                 <!-- Create the editor container -->
@@ -68,7 +66,7 @@
                      data-update-url="{% url 'survey_evidence_gathering_update' survey.id evidence_section.section_id %}"
                      data-init-contents="{{ evidence_section.text }}"></div>
 
-                <h5>Attached evidence</h5>
+                <h2>Attached evidence</h2>
                 <p>
                     Files and reports can be included as evidence, some examples include:
 
@@ -108,6 +106,8 @@
 
         {{ csrf | json_script:"csrf" }}
         {{ files_list | json_script:"filesListData" }}
+        {{ survey.survey_config | json_script:"configData" }}
+        {{ responses | json_script:"responsesData" }}
         {% vite_client %}
         {% vite_asset "src/main.ts" %}
 

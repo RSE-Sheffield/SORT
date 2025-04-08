@@ -1,5 +1,7 @@
 <script lang="ts" module>
-    export function getDefaultSectionConfig(){
+    import type {SectionConfig} from "../../interfaces.ts";
+
+    export function getDefaultSectionConfig(): SectionConfig{
         return {
             title: "New section",
             description: "Section description",
@@ -25,6 +27,7 @@
         config = $bindable(),
         value = $bindable(),
         editable = false,
+        viewerMode = false,
         sectionTypeEditable = true,
         displaySectionType=true,
         sectionIndex = -1,
@@ -155,6 +158,7 @@
                 <InputComponent
                         bind:config={config.fields[index]}
                         editable={editable}
+                        viewerMode={viewerMode}
                         onDuplicateRequest={()=>{duplicateField(index)}}
                         onDeleteRequest={()=>{deleteField(index)}}
                         bind:value={fieldValues[index]}

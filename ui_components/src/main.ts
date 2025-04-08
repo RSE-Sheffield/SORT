@@ -1,11 +1,13 @@
 import { mount } from 'svelte'
-import {type FileDescriptionType} from "./lib/interfaces.ts"
-import {getDataInElem} from "./lib/misc.svelte.js";
+import {type FileDescriptionType, type SurveyConfig} from "./lib/interfaces.ts"
+import {generateStatsFromSurveyResponses, getDataInElem} from "./lib/misc.svelte.js";
 import SmartTable from "./lib/components/SmartTable.svelte";
 import SurveyConfigConsentDemographyApp from "./SurveyConfigConsentDemographyApp.svelte";
 import SurveyResponseApp from "./SurveyResponseApp.svelte";
 import FileBrowser from "./lib/components/FileBrowser.svelte";
 import QuillEditor from "./lib/components/QuillEditor.svelte";
+import SurveyResponseViewerApp from "./lib/components/SurveyResponseViewerApp.svelte";
+import SurveySectionDataView from "./lib/components/SurveySectionDataView.svelte";
 
 const csrf: string = getDataInElem("csrf", []);
 
@@ -78,6 +80,40 @@ mapMatchedElement(".sort-quill-editor", (elem) => {
             updateUrl: updateUrl,
             initContents: initContents,
             viewOnly: viewOnly
+        }
+    });
+});
+
+
+mapMatchedElement(".sort-response-viewer", (elem) => {
+    const csvUrl = elem.dataset.csvUrl ?? "";
+    const configId = elem.dataset.jsonConfigId;
+    const responsesId = elem.dataset.jsonResponsesId;
+    const config = getDataInElem(configId, {});
+    const responses = getDataInElem(responsesId, []);
+    mount(SurveyResponseViewerApp, {
+        target: elem,
+        props: {
+            config: config,
+            responses: responses,
+            csvDownloadUrl: csvUrl,
+        }
+    });
+});
+
+mapMatchedElement(".sort-response-section-viewer", (elem) => {
+    const sectionIndex = elem.dataset.sectionIndex;
+    const configId = elem.dataset.jsonConfigId;
+    const responsesId = elem.dataset.jsonResponsesId;
+    const config = getDataInElem(configId, {}) as SurveyConfig;
+    const responses = getDataInElem(responsesId, []) as [];
+    const surveyStats = generateStatsFromSurveyResponses(config, responses)
+    mount(SurveySectionDataView, {
+        target: elem,
+        props: {
+            config: config,
+            surveyStats: surveyStats,
+            sectionIndex: Number(sectionIndex)
         }
     });
 });

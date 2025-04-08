@@ -1,8 +1,9 @@
 <script lang="ts">
-  import {getUniqueID, TextType} from "../../misc.svelte.js";
+  import {getUniqueID} from "../../misc.svelte.js";
+  import {TextType} from "../../interfaces.ts";
   import {toNumber} from "lodash";
 
-  let {config, value = $bindable()} = $props();
+  let {config, value = $bindable(), viewerMode = false} = $props();
 
   let componentId = getUniqueID();
   let isValid = $state(false);
@@ -101,6 +102,7 @@
            bind:value={value}
            required={config.required}
            id={componentId}
+           disabled={viewerMode}
     >
     <span class="invalid-feedback">
         {validationErrorFeedback}

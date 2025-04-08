@@ -38,6 +38,11 @@ urlpatterns = [
         "survey/<int:pk>/export", views.SurveyExportView.as_view(), name="survey_export"
     ),
     path(
+        "survey/<int:pk>/response_data",
+        views.SurveyResponseDataView.as_view(),
+        name="survey_response_data",
+    ),
+    path(
         "survey/<int:pk>/evidence_gathering/<int:section_id>",
         views.SurveyEvidenceGatheringView.as_view(),
         name="survey_evidence_gathering",

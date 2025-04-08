@@ -1,6 +1,6 @@
 <script>
   import {getUniqueID} from "../../misc.svelte.ts";
-  let {config, value = $bindable()} = $props();
+  let {config, value = $bindable(), viewerMode = false} = $props();
 
   let componentId = getUniqueID();
   let isValid = $state(false);

@@ -8,7 +8,7 @@ function setFocus(focus){
 
 function init(el){
     console.log("Focusing");
-    // el.focus();
+
 }
 
 </script>

@@ -1,7 +1,7 @@
 <script lang="ts" module>
-    import {TextType} from "../../misc.svelte.js";
+    import {type FieldConfig, TextType} from "../../interfaces.ts";
 
-    export function getDefaultFieldConfig() {
+    export function getDefaultFieldConfig(): FieldConfig {
         return {
             type: "text",
             label: "New Question",
@@ -27,6 +27,7 @@
     import Likert from "./Likert.svelte";
     import OptionsList from "./OptionsList.svelte";
     import {clickOutside} from "../../misc.svelte";
+    import {onMount} from "svelte";
 
     //Constants
     const questionTypes = [
@@ -54,6 +55,7 @@
         config = $bindable(),
         value = $bindable(),
         editable = false,
+        viewerMode = false,
         fieldIndex = -1,
         sectionIndex = -1,
         onDuplicateRequest = () => {
@@ -63,6 +65,7 @@
         onMoveRequest = (srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex) => {
         }
     } = $props();
+
 
     if (config === null || config === undefined) {
         config = {};
@@ -301,7 +304,7 @@
         </div>
     </a>
 {:else}
-    <RenderedComponentType config={config} bind:value={value} bind:this={renderedComponent}></RenderedComponentType>
+    <RenderedComponentType config={config} bind:value={value} bind:this={renderedComponent} viewerMode={viewerMode}></RenderedComponentType>
 {/if}
 
 

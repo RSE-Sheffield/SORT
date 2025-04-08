@@ -9,8 +9,6 @@
         csrf = "",
     } = $props();
 
-    $inspect(value);
-
     let isValid = $state();    let isInvalid = $state();
 
     function setIsValid(valid) {

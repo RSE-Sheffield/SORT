@@ -1,7 +1,7 @@
 <script lang="ts">
   import {getUniqueIDArray} from "../../misc.svelte.ts";
 
-  let {config, value = $bindable()} = $props();
+  let {config, value = $bindable(), viewerMode = false} = $props();
 
   const componentId = getUniqueIDArray(config.options.length);
 
@@ -34,7 +34,9 @@
                    type="radio"
                    value={option} id={componentId[index]}
                    bind:group={value}
-                   placeholder={option} />
+                   placeholder={option}
+                   disabled={viewerMode}
+            />
             <label class="form-check-label" for="{componentId[index]}">{option}</label>
             {#if config.options && index >= config.options.length - 1}
             <!-- Feedback on the last component only -->

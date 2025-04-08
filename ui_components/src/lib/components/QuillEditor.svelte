@@ -1,4 +1,5 @@
 <script lang="ts">
+    import "quill/dist/quill.snow.css"
     import Quill from "quill"
     import {onMount} from "svelte";
 

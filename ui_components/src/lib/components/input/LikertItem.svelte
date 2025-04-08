@@ -1,7 +1,7 @@
 <script>
   import {getUniqueID} from "../../misc.svelte.ts";
 
-  let {config, sublabelIndex, value = $bindable()} = $props();
+  let {config, sublabelIndex, value = $bindable(), viewerMode=false} = $props();
 
   let componentId = getUniqueID();
   let isValid = $state(false);
@@ -48,6 +48,7 @@
                                value={option}
                                bind:group={value}
                                required={config.required}
+                               disabled={viewerMode}
                         /></label>
                 </div>
             </div>

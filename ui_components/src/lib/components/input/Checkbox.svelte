@@ -1,7 +1,7 @@
 <script>
   import {getUniqueIDArray} from "../../misc.svelte.ts";
 
-  let {config, value = $bindable()} = $props();
+  let {config, value = $bindable(), viewerMode = false} = $props();
 
   const componentId = getUniqueIDArray(config.options.length);
 
@@ -34,6 +34,7 @@
                    bind:group={value}
                    aria-label={option}
                    id={componentId[index]}
+                   disabled={viewerMode}
             />
             <label class="form-check-label" for={componentId[index]}>{option}</label>
             {#if config.options && index >= config.options.length - 1}

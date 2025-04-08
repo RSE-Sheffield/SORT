@@ -102,7 +102,6 @@
 
                                 function downloadQRCode() {
                                     let qrCodeCard = document.getElementById("survey_invite_qr_code_card");
-                                    console.log(qrCodeCard.firstElementChild);
                                     let element = document.createElement('a');
                                     element.setAttribute('href', qrCodeCard.firstElementChild.src);
                                     element.setAttribute('download', "survey_invite.png");
@@ -160,8 +159,7 @@
                     </button>
                 </form>
 
-                <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download><i
-                        class="bx bx-export"></i> Export</a>
+
 
             </div>
         </div>
@@ -170,6 +168,15 @@
                 <h2>3. Survey responses</h2>
             </div>
             <div class="card-body">
+                <div class="mb-3">
+                    <strong>Responses collected: {{ responses_count }}</strong>
+                </div>
+
+                <div>
+                    <a href="{% url 'survey_response_data' survey.id %}" class="btn btn-primary"><i class='bx bxs-data' ></i> View collected responses</a>
+                    <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download><i
+                        class="bx bx-export"></i> Export survey data as CSV</a>
+                </div>
 
             </div>
         </div>
@@ -204,7 +211,7 @@
                 {% endif %}
             </div>
         </div>
-
+    
 
     </div>
 {% endblock %}

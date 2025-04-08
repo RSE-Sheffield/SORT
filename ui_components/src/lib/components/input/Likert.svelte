@@ -2,7 +2,7 @@
   import LikertRow from "./LikertRow.svelte";
   import LikertItem from "./LikertItem.svelte";
 
-  let {config, value = $bindable()} = $props();
+  let {config, value = $bindable(), viewerMode = false} = $props();
 
   if (value === null || value === undefined) {
     value = []
@@ -61,6 +61,7 @@
                            sublabelIndex={sublabelIndex}
                            bind:value={compsValue[sublabelIndex]}
                            bind:this={_likertRows[sublabelIndex]}
+                           viewerMode={viewerMode}
                 />
             </tr>
         {/each}
@@ -72,6 +73,7 @@
                            sublabelIndex={sublabelIndex}
                            bind:value={compsValue[sublabelIndex]}
                            bind:this={_likertItems[sublabelIndex]}
+                            viewerMode={viewerMode}
             />
 
         {/each}

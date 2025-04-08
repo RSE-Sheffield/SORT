@@ -49,11 +49,12 @@
             <div>
                 <h5>Survey summary</h5>
 
-                <p>
-                    This section demonstrates an overall maturity score of 2 out of 4, placing it at the 'Planned'
-                    level. Opportunities for improvement are identified in question B4, and B1.
-                </p>
-                <img src="{% static 'images/example_response_graph.png' %}">
+                <div
+                        class="sort-response-section-viewer"
+                        data-json-config-id="configData"
+                        data-json-responses-id="responsesData"
+                        data-section-index="{{ evidence_section.section_id }}"
+                ></div>
 
                 <h5>Evidence statement</h5>
                 <div class="sort-quill-editor"
@@ -74,6 +75,8 @@
 
         {{ csrf | json_script:"csrf" }}
         {{ files_list | json_script:"filesListData" }}
+        {{ survey.survey_config | json_script:"configData" }}
+        {{ responses | json_script:"responsesData" }}
         {% vite_client %}
         {% vite_asset "src/main.ts" %}
 
