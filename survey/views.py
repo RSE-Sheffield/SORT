@@ -9,6 +9,8 @@ from django.core.exceptions import PermissionDenied
 from django.core.files.uploadhandler import UploadFileException
 from django.core.mail import send_mail
 from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.context_processors import csrf
 from django.urls import reverse_lazy, reverse
@@ -20,37 +22,95 @@ from django.conf import settings
 
 from home.models import Project
 from survey.services import survey_service
+from .forms import InvitationForm
+from .models import Survey
+import logging
 
 from .forms import InvitationForm
 from .models import Survey, SurveyEvidenceSection, SurveyEvidenceFile
 from .services.survey import InvalidInviteTokenException
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseForbidden
+from .services.survey import SurveyService
+from survey.dashboards.dashboard import get_survey_dashboard
 
 logger = logging.getLogger(__name__)
 
 
 class SurveyView(LoginRequiredMixin, View):
+    login_url = '/login/'
     """
     Manager's view of a survey to be sent out. The manager is able to
     configure what fields are included in the survey on this page.
     """
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.survey_service = SurveyService()
+
     def get(self, request: HttpRequest, pk: int):
         return self.render_survey_page(request, pk)
 
-    def post(self, request: HttpRequest, pk: int):
-        return self.render_survey_page(request, pk, is_post=True)
+    def post(self, request, pk):
+        print("POST method called")
+        return self.render_survey_page(request, pk)
 
-    def render_survey_page(self, request: HttpRequest, pk: int, is_post=False):
-        context = {}
-        survey = survey_service.get_survey(request.user, pk)  # Check that we're allowed to get the survey
-        context["survey"] = survey
-        context["first_evidence_section"] = SurveyEvidenceSection.objects.filter(survey=survey).order_by(
-            'section_id').first()
-        context["invite_link"] = survey.get_invite_link(request)
-        context["can_edit"] = {
-            survey.id: survey_service.can_edit(request.user, survey)
+    def get_survey_metrics(self, responses):
+        section_averages = {}
+        response_list = []
+
+        for response in responses:
+            answers = response.answers
+            response_data = {
+                'model': 'survey.surveyresponse',
+                'pk': response.pk,
+                'fields': {
+                    'survey': response.survey_id,
+                    'answers': answers
+                }
+            }
+            response_list.append(response_data)
+
+            for section_idx, section_values in enumerate(answers):
+                section_name = f'section_{section_idx + 1}'
+                numeric_values = [
+                    value for value in section_values
+                    if isinstance(value, (int, float)) and not isinstance(value, bool)
+                ]
+
+                if numeric_values:
+                    if section_name not in section_averages:
+                        section_averages[section_name] = []
+                    section_average = round(sum(numeric_values) / len(numeric_values), 1)
+                    section_averages[section_name].append(section_average)
+
+        final_averages = {
+            section: round(sum(values) / len(values), 1)
+            for section, values in section_averages.items()
+            if values
         }
-        return render(request, "survey/survey.html", context)
+
+        return {
+            'section_averages': final_averages,
+            'survey_responses': response_list
+        }
+
+    def render_survey_page(self, request, pk):
+    context = {}
+    survey = survey_service.get_survey(request.user, pk)  # Check that we're allowed to get the survey
+    responses = survey.survey_response.all()
+    context["has_responses"] = responses.exists()
+    if context["has_responses"]:
+        get_survey_dashboard(survey.id)  # Only get the survey for a given id
+        context["dashboard_name"] = f"SurveyDashboard_{survey.id}"
+    context["survey"] = survey
+    context["first_evidence_section"] = SurveyEvidenceSection.objects.filter(survey=survey).order_by(
+        'section_id').first()
+    context["invite_link"] = survey.get_invite_link(request)
+    context["can_edit"] = {
+        survey.id: survey_service.can_edit(request.user, survey)
+    }
+    return render(request, "survey/survey.html", context)
 
 
 class SurveyCreateView(LoginRequiredMixin, CreateView):
@@ -107,7 +167,6 @@ class SurveyDeleteView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         project_pk = self.object.project.pk
         return reverse_lazy("project", kwargs={"project_id": project_pk})
-
 
 class SurveyConfigureView(LoginRequiredMixin, View):
 
