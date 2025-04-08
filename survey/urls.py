@@ -78,6 +78,11 @@ urlpatterns = [
         name="survey_improvement_plan_update",
     ),
     path(
+        "survey/<int:pk>/report",
+        views.SurveyReportView.as_view(),
+        name="survey_report",
+    ),
+    path(
         "survey/create/<int:project_id>",
         views.SurveyCreateView.as_view(),
         name="survey_create",

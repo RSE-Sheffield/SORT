@@ -63,9 +63,10 @@ mapMatchedElement(".sort-file-browser", (elem) => {
 mapMatchedElement(".sort-smart-table", (elem) => {
     const updateUrl = elem.dataset.updateUrl;
     const plan = elem.dataset.plan;
+    const viewOnly = !!elem.dataset.viewOnly;
     mount(SmartTable, {
         target: elem,
-        props: {data: plan, updateUrl: updateUrl, csrf: csrf}
+        props: {data: plan, updateUrl: updateUrl, csrf: csrf, viewOnly: viewOnly}
     });
 });
 

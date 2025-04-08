@@ -1,7 +1,7 @@
 {% extends 'base_manager.html' %}
 {% load qr_code %}
 {% block content %}
-{% load project_filters %}
+    {% load project_filters %}
     <div class="container mx-auto px-4 py-8 mt-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
@@ -90,26 +90,26 @@
 
 
                             <script>
-                                function copyInviteLink() {
-                                    let copyBtnTextElem = document.getElementById("copyBtnText");
-                                    let link = document.getElementById("invitation_link").value;
-                                    navigator.clipboard.writeText(link);
-                                    copyBtnTextElem.innerHTML = "Copied";
-                                    setTimeout(() => {
-                                        copyBtnTextElem.innerHTML = "Copy";
-                                    }, 2000);
-                                }
+                              function copyInviteLink() {
+                                let copyBtnTextElem = document.getElementById("copyBtnText");
+                                let link = document.getElementById("invitation_link").value;
+                                navigator.clipboard.writeText(link);
+                                copyBtnTextElem.innerHTML = "Copied";
+                                setTimeout(() => {
+                                  copyBtnTextElem.innerHTML = "Copy";
+                                }, 2000);
+                              }
 
-                                function downloadQRCode() {
-                                    let qrCodeCard = document.getElementById("survey_invite_qr_code_card");
-                                    let element = document.createElement('a');
-                                    element.setAttribute('href', qrCodeCard.firstElementChild.src);
-                                    element.setAttribute('download', "survey_invite.png");
-                                    element.style.display = 'none';
-                                    document.body.appendChild(element);
-                                    element.click();
-                                    document.body.removeChild(element);
-                                }
+                              function downloadQRCode() {
+                                let qrCodeCard = document.getElementById("survey_invite_qr_code_card");
+                                let element = document.createElement('a');
+                                element.setAttribute('href', qrCodeCard.firstElementChild.src);
+                                element.setAttribute('download', "survey_invite.png");
+                                element.style.display = 'none';
+                                document.body.appendChild(element);
+                                element.click();
+                                document.body.removeChild(element);
+                              }
                             </script>
                         </div>
                         <div class="col-lg-2 text-end">
@@ -135,7 +135,9 @@
                     </p>
                     <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-primary" name="generate_token"><i class='bx bx-mail-send' ></i> Generate invitation</button>
+                        <button type="submit" class="btn btn-primary" name="generate_token"><i
+                                class='bx bx-mail-send'></i> Generate invitation
+                        </button>
                     </form>
                 {% endif %}
             </div>
@@ -160,7 +162,6 @@
                 </form>
 
 
-
             </div>
         </div>
         <div class="card mb-3">
@@ -173,9 +174,10 @@
                 </div>
 
                 <div>
-                    <a href="{% url 'survey_response_data' survey.id %}" class="btn btn-primary"><i class='bx bxs-data' ></i> View collected responses</a>
+                    <a href="{% url 'survey_response_data' survey.id %}" class="btn btn-primary"><i
+                            class='bx bxs-data'></i> View collected responses</a>
                     <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download><i
-                        class="bx bx-export"></i> Export survey data as CSV</a>
+                            class="bx bx-export"></i> Export survey data as CSV</a>
                 </div>
 
             </div>
@@ -185,10 +187,12 @@
                 <h2>4. Gather Evidence</h2>
             </div>
             <div class="card-body">
-                <p>Once you have collected enough responses, use this section to gather evidence in support of the survey results.</p>
+                <p>Once you have collected enough responses, use this section to gather evidence in support of the
+                    survey results.</p>
 
                 {% if first_evidence_section %}
-                    <a href="{% url 'survey_evidence_gathering' survey.id first_evidence_section.section_id %}" class="btn btn-primary"><i class='bx bx-collection' ></i> Gather evidence</a>
+                    <a href="{% url 'survey_evidence_gathering' survey.id first_evidence_section.section_id %}"
+                       class="btn btn-primary"><i class='bx bx-collection'></i> Gather evidence</a>
                 {% else %}
                     <p>Survey must be configured before this section can be used.</p>
                 {% endif %}
@@ -205,13 +209,31 @@
                     evidence.</p>
 
                 {% if first_improve_section %}
-                    <a href="{% url 'survey_improvement_plan' survey.id first_improve_section.section_id %}" class="btn btn-primary"><i class='bx bx-collection' ></i> Edit Improvement Plan</a>
+                    <a href="{% url 'survey_improvement_plan' survey.id first_improve_section.section_id %}"
+                       class="btn btn-primary"><i class='bx bx-collection'></i> Edit Improvement Plan</a>
                 {% else %}
                     <p>Survey must be configured before this section can be used.</p>
                 {% endif %}
             </div>
         </div>
-    
+
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>6. Generate Report</h2>
+            </div>
+            <div class="card-body">
+                <p>Generate a report that shows the combination of survey results, evidence gathered and improvement
+                    plan.</p>
+
+                {% if survey.survey_config %}
+                    <a href="{% url 'survey_report' survey.pk %}" class="btn btn-primary"><i class='bx bxs-report' ></i>Generate printable report</a>
+                {% else %}
+                    <p>Survey must be configured before this section can be used.</p>
+                {% endif %}
+            </div>
+        </div>
+
 
     </div>
 {% endblock %}

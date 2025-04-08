@@ -9,17 +9,17 @@
         deadline: string;
     }
 
-    let {data, updateUrl, csrf} = $props();
+
+    let {data, updateUrl, csrf, viewOnly = false} = $props();
     let initData = []
-    if(typeof  data === "string" && data.length > 0){
-        try{
+    if (typeof data === "string" && data.length > 0) {
+        try {
             initData = JSON.parse(data);
-        }
-        catch(e){
+        } catch (e) {
             console.log(e);
         }
 
-    } else if(Array.isArray(data)){
+    } else if (Array.isArray(data)) {
         initData = data
     }
 
@@ -37,7 +37,7 @@
         })
     }
 
-    function handleDeleteRow(index){
+    function handleDeleteRow(index) {
         actions = actions.toSpliced(index, 1);
     }
 </script>
@@ -52,39 +52,59 @@
                 <th scope="col">Measurable outcomes</th>
                 <th scope="col">Person responsible</th>
                 <th scope="col">Deadline</th>
+
                 <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
             {#each actions as action, index}
-                <tr>
-                    <th scope="row">{index}</th>
-                    <td><textarea class="form-control" bind:value={action.currentPosition}></textarea></td>
-                    <td><textarea class="form-control" bind:value={action.action}></textarea></td>
-                    <td><textarea class="form-control" bind:value={action.outcomes}></textarea></td>
-                    <td><input type="text" class="form-control" bind:value={action.personResponsible}/></td>
-                    <td><input type="date" class="form-control" bind:value={action.deadline}/></td>
-                    <td>
-                        <button class="btn btn-danger" onclick={()=>{handleDeleteRow(index)}} title="Delete" aria-label="Delete row">
-                            <i class='bx bx-x' ></i>
-                        </button>
-                    </td>
-                </tr>
+                {#if viewOnly}
+                    <tr>
+                        <th scope="row">{index}</th>
+                        <td>{action.currentPosition}</td>
+                        <td>{action.action}</td>
+                        <td>{action.outcomes}</td>
+                        <td>{action.personResponsible}</td>
+                        <td>{action.deadline}</td>
+                        <td></td>
+                    </tr>
+                {:else}
+                    <tr>
+                        <th scope="row">{index}</th>
+                        <td><textarea class="form-control" bind:value={action.currentPosition}></textarea></td>
+                        <td><textarea class="form-control" bind:value={action.action}></textarea></td>
+                        <td><textarea class="form-control" bind:value={action.outcomes}></textarea></td>
+                        <td><input type="text" class="form-control" bind:value={action.personResponsible}/></td>
+                        <td><input type="date" class="form-control" bind:value={action.deadline}/></td>
+                        <td>
+                            <button class="btn btn-danger" onclick={()=>{handleDeleteRow(index)}} title="Delete"
+                                    aria-label="Delete row">
+                                <i class='bx bx-x'></i>
+                            </button>
+                        </td>
+                    </tr>
+                {/if}
             {/each}
             </tbody>
         </table>
     </div>
-    <div class="d-flex justify-content-end">
-        <button class="btn-primary btn" onclick={handleAddItem}><i class='bx bx-plus'></i> Add item to plan</button>
-    </div>
+    {#if !viewOnly}
+        <div class="d-flex justify-content-end">
+            <button class="btn-primary btn" onclick={handleAddItem}><i class='bx bx-plus'></i> Add item to plan</button>
+        </div>
+    {/if}
 
-    <div>
-        <form method="post" action={updateUrl}>
-            <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}"/>
-            <input type="hidden" name="data" value={actionStr}/>
-            <button type="submit" name="submit" value="Submit" class="btn btn-primary"><i class="bx bx-save"></i> Save plan</button>
-        </form>
-    </div>
+    {#if !viewOnly}
+        <div>
+            <form method="post" action={updateUrl}>
+                <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}"/>
+                <input type="hidden" name="data" value={actionStr}/>
+                <button type="submit" name="submit" value="Submit" class="btn btn-primary"><i class="bx bx-save"></i>
+                    Save plan
+                </button>
+            </form>
+        </div>
+    {/if}
 
 
 </div>

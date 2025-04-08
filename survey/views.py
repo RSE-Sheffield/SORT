@@ -2,6 +2,7 @@ import json
 import logging
 import os.path
 import mimetypes
+from lib2to3.fixes.fix_input import context
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -334,6 +335,45 @@ class SurveyImprovementPlanUpdateView(LoginRequiredMixin, View):
                                                       kwargs={"pk": survey.pk,
                                                               "section_id": improve_section.section_id})))
 
+
+
+class SurveyReportView(LoginRequiredMixin, View):
+    def get(self, request: HttpRequest, pk: int):
+        survey = survey_service.get_survey(request.user, pk)
+
+
+
+        evidence_sections ={e_section.section_id: e_section for e_section in SurveyEvidenceSection.objects.filter(survey=survey).order_by("section_id")}
+        improve_sections = {i_section.section_id: i_section for i_section in SurveyImprovementPlanSection.objects.filter(survey=survey).order_by("section_id")}
+
+        sections = []
+        for index, section in enumerate(survey.survey_config["sections"]):
+            sections.append({
+                "section_config": section,
+                "evidence": evidence_sections.get(index, None),
+                "improvement": improve_sections.get(index, None),
+            })
+
+
+        # files_list = []
+        # for file in evidence_section.files.all():
+        #     delete_url = reverse("survey_evidence_remove_file", kwargs={"pk": file.pk})
+        #     file_url = reverse("survey_evidence_file", kwargs={"pk": file.pk})
+        #     files_list.append({
+        #         "name": os.path.basename(file.file.name),
+        #         "deleteUrl": delete_url,
+        #         "fileUrl": file_url
+        #     })
+
+        context = {
+            "survey": survey,
+            "responses": [response.answers for response in SurveyResponse.objects.filter(survey=survey)],
+            "sections": sections,
+            "csrf": str(csrf(self.request)["csrf_token"]),
+            # "files_list": files_list,
+        }
+
+        return render(request, "survey/report.html", context)
 
 class SurveyResponseView(View):
     """

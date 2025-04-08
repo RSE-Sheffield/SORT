@@ -1,0 +1,163 @@
+{% extends 'base_manager.html' %}
+{% load static %}
+{% load vite_integration %}
+{% load django_bootstrap5 %}
+{% block content %}
+    <div class="container">
+        <h1><i class='bx bxs-report'></i> Report: {{ survey.name }}</h1>
+
+        <p>{{ survey.description }}</p>
+
+
+        <div class="mb-3">
+            {% for section in sections %}
+                {% if section.section_config.type != "consent" %}
+                    <div>
+                        <h2>{{ section.section_config.title }}</h2>
+                    </div>
+                    <div>
+                        <h3>Survey summary</h3>
+
+                        <div
+                                class="sort-response-section-viewer"
+                                data-json-config-id="configData"
+                                data-json-responses-id="responsesData"
+                                data-section-index="{{ forloop.counter0 }}"
+                        ></div>
+
+                        <h3>Evidence statement</h3>
+
+                        <div class="sort-quill-editor"
+                             data-update-url="{% url 'survey_evidence_gathering_update' survey.id forloop.counter0 %}"
+                             data-init-contents="{{ section.evidence.text }}" data-view-only="true"></div>
+                        {#            <h5>Evidence files</h5>#}
+                        {#            <div class="sort-file-browser" data-json-id="filesListData"></div>#}
+                        <h3>Improvement plan</h3>
+                        <p>
+                            In the table below, list a plan of action you intend to take in the upcoming period using
+                            SMART objectives (Specific, Measurable, Achievable, Relevant and Time-bound).
+                        </p>
+                        <div class="sort-smart-table" data-update-url="{{ update_url }}" data-plan="{{ section.improvement.plan }}" data-view-only="true"></div>
+
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+
+        {{ csrf | json_script:"csrf" }}
+        {{ files_list | json_script:"filesListData" }}
+        {{ survey.survey_config | json_script:"configData" }}
+        {{ responses | json_script:"responsesData" }}
+        {% vite_client %}
+        {% vite_asset "src/main.ts" %}
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}
+{% block end_content %}
+    <style media="print">
+        @media print {
+            *,
+            *::before,
+            *::after {
+                text-shadow: none !important;
+                box-shadow: none !important;
+            }
+
+            a:not(.btn) {
+                text-decoration: underline;
+            }
+
+            abbr[title]::after {
+                content: " (" attr(title) ")";
+            }
+
+            pre {
+                white-space: pre-wrap !important;
+            }
+
+            pre,
+            blockquote {
+                border: 1px solid #adb5bd;
+                page-break-inside: avoid;
+            }
+
+            tr,
+            img {
+                page-break-inside: avoid;
+            }
+
+            p,
+            h2,
+            h3 {
+                orphans: 3;
+                widows: 3;
+            }
+
+            h2,
+            h3 {
+                page-break-after: avoid;
+            }
+
+            h2 {
+                break-before: always;
+            }
+
+            @page {
+                size: a3;
+            }
+
+            body {
+                min-width: 992px !important;
+                background: #fff;
+            }
+
+            .container {
+                min-width: 992px !important;
+            }
+
+            .badge {
+                border: 1px solid #000;
+            }
+
+            .table {
+                border-collapse: collapse !important;
+            }
+
+            .table td,
+            .table th {
+                background-color: #fff !important;
+            }
+
+            .table-bordered th,
+            .table-bordered td {
+                border: 1px solid #dee2e6 !important;
+            }
+
+            .table-dark {
+                color: inherit;
+            }
+
+            .table-dark th,
+            .table-dark td,
+            .table-dark thead th,
+            .table-dark tbody + tbody {
+                border-color: #dee2e6;
+            }
+
+            nav {
+                display: none !important;
+            }
+
+            .sorting-control{
+                display: none;
+            }
+        }
+
+    </style>
+{% endblock %}
+
+
+

@@ -112,7 +112,7 @@
 
     })
 </script>
-<div class="btn-group mb-3" role="group" aria-label="Choose how the graph is sorted">
+<div class="btn-group mb-3 sorting-control" role="group" aria-label="Choose how the graph is sorted">
     <button
             class={{
               "btn": true,
