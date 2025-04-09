@@ -2,7 +2,6 @@ import json
 import logging
 import os.path
 import mimetypes
-from lib2to3.fixes.fix_input import context
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -13,11 +12,9 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.context_processors import csrf
 from django.urls import reverse_lazy, reverse
-from django.utils.http import content_disposition_header
 from django.views import View
 from django.views.generic import DeleteView, FormView, TemplateView, UpdateView
 from django.views.generic.edit import CreateView
-from django.conf import settings
 
 from home.models import Project
 from survey.services import survey_service
