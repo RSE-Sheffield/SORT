@@ -8,6 +8,7 @@ import FileBrowser from "./lib/components/FileBrowser.svelte";
 import QuillEditor from "./lib/components/QuillEditor.svelte";
 import SurveyResponseViewerApp from "./lib/components/SurveyResponseViewerApp.svelte";
 import SurveySectionDataView from "./lib/components/SurveySectionDataView.svelte";
+import SortSummaryMatrix from "./lib/components/SortSummaryMatrix.svelte";
 
 const csrf: string = getDataInElem("csrf", []);
 
@@ -115,6 +116,21 @@ mapMatchedElement(".sort-response-section-viewer", (elem) => {
             config: config,
             surveyStats: surveyStats,
             sectionIndex: Number(sectionIndex)
+        }
+    });
+});
+
+mapMatchedElement(".sort-response-summary-matrix", (elem) => {
+    const configId = elem.dataset.jsonConfigId;
+    const responsesId = elem.dataset.jsonResponsesId;
+    const config = getDataInElem(configId, {}) as SurveyConfig;
+    const responses = getDataInElem(responsesId, []) as [];
+    const surveyStats = generateStatsFromSurveyResponses(config, responses)
+    mount(SortSummaryMatrix, {
+        target: elem,
+        props: {
+            config: config,
+            surveyStats: surveyStats,
         }
     });
 });

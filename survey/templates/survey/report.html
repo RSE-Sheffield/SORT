@@ -16,8 +16,6 @@
                         <h2>{{ section.section_config.title }}</h2>
                     </div>
                     <div>
-                        <h3>Survey summary</h3>
-
                         <div
                                 class="sort-response-section-viewer"
                                 data-json-config-id="configData"
@@ -25,23 +23,34 @@
                                 data-section-index="{{ forloop.counter0 }}"
                         ></div>
 
-                        <h3>Evidence statement</h3>
+                        {% if section.evidence %}
+                            <h3>Evidence statement</h3>
+                            <div class="sort-quill-editor"
+                                 data-update-url="{% url 'survey_evidence_gathering_update' survey.id forloop.counter0 %}"
+                                 data-init-contents="{{ section.evidence.text }}" data-view-only="true"></div>
+                            {#            <h5>Evidence files</h5>#}
+                            {#            <div class="sort-file-browser" data-json-id="filesListData"></div>#}
+                        {% endif %}
 
-                        <div class="sort-quill-editor"
-                             data-update-url="{% url 'survey_evidence_gathering_update' survey.id forloop.counter0 %}"
-                             data-init-contents="{{ section.evidence.text }}" data-view-only="true"></div>
-                        {#            <h5>Evidence files</h5>#}
-                        {#            <div class="sort-file-browser" data-json-id="filesListData"></div>#}
-                        <h3>Improvement plan</h3>
-                        <p>
-                            In the table below, list a plan of action you intend to take in the upcoming period using
-                            SMART objectives (Specific, Measurable, Achievable, Relevant and Time-bound).
-                        </p>
-                        <div class="sort-smart-table" data-update-url="{{ update_url }}" data-plan="{{ section.improvement.plan }}" data-view-only="true"></div>
+                        {% if section.improvement %}
+                            <h3>Improvement plan</h3>
+                            <p>
+                                In the table below, list a plan of action you intend to take in the upcoming period
+                                using
+                                SMART objectives (Specific, Measurable, Achievable, Relevant and Time-bound).
+                            </p>
+                            <div class="sort-smart-table" data-update-url="{{ update_url }}"
+                                 data-plan="{{ section.improvement.plan }}" data-view-only="true"></div>
+                        {% endif %}
 
                     </div>
                 {% endif %}
             {% endfor %}
+
+            <h2>Summary Ranking Matrix</h2>
+            <div class="sort-response-summary-matrix"
+                 data-json-config-id="configData"
+                 data-json-responses-id="responsesData"></div>
         </div>
 
 
@@ -151,7 +160,7 @@
                 display: none !important;
             }
 
-            .sorting-control{
+            .sorting-control {
                 display: none;
             }
         }
