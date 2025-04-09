@@ -5,7 +5,6 @@ import {
     type SectionConfig,
     type SurveyConfig,
     type SurveyStats,
-    TextType,
     type ValueCount
 } from "./interfaces.ts";
 

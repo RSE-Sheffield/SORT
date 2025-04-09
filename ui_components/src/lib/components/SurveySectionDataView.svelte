@@ -1,11 +1,13 @@
 <script lang="ts">
 
     import type {SurveyConfig, SurveyStats} from "../interfaces.ts";
+    import {TextType} from "../interfaces.ts";
     import {formatNumber, getHighestHistogramValue} from "../misc.svelte.ts";
     import LikertHistogram from "./graph/LikertHistogram.svelte";
     import OptionsHistogram from "./graph/OptionsHistogram.svelte";
     import CollapsibleCard from "./CollapsibleCard.svelte";
     import SortLikertStats from "./SortLikertStats.svelte";
+    import ScalarHistogram from "./graph/ScalarHistogram.svelte";
 
     interface Props {
         config: SurveyConfig,
@@ -38,7 +40,7 @@
                                  fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></LikertHistogram>
             </div>
         {/if}
-        {#if fieldConfig.type === "radio" || fieldConfig.type === "select"}
+        {#if fieldConfig.type === "radio" || fieldConfig.type === "select" || fieldConfig.type === "checkbox"}
             <div class="card mb-3 w-50">
                 <div class="card-header">
                     <h5>{fieldConfig.label}</h5>
@@ -46,6 +48,17 @@
                 <div class="card-body">
                     <OptionsHistogram fieldConfig={fieldConfig}
                               fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></OptionsHistogram>
+                </div>
+            </div>
+        {/if}
+        {#if fieldConfig.type === "text" && (fieldConfig.textType === TextType.integer || fieldConfig.textType === TextType.decimals)}
+            <div class="card mb-3 w-50">
+                <div class="card-header">
+                    <h5>{fieldConfig.label}</h5>
+                </div>
+                <div class="card-body">
+                    <ScalarHistogram fieldConfig={fieldConfig}
+                              fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></ScalarHistogram>
                 </div>
             </div>
         {/if}
