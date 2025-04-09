@@ -226,8 +226,7 @@ class SurveyEvidenceUpdateView(LoginRequiredMixin, View):
                                                    evidence_section,
                                                    text=request.POST["text"])
 
-        return reverse_lazy("survey_evidence_gathering",
-                            kwargs={"pk": pk, "section_id": section_id})
+        return redirect("survey_evidence_gathering", pk=pk, section_id=section_id)
 
 
 class SurveyFileUploadView(LoginRequiredMixin, View):
@@ -238,7 +237,7 @@ class SurveyFileUploadView(LoginRequiredMixin, View):
         except UploadFileException as e:
             logger.error(e)
             messages.error(request, str(e))
-        return reverse_lazy("survey", kwargs={"pk": pk})
+        return redirect("survey", pk=pk)
 
 
 class SurveyEvidenceFileUploadView(LoginRequiredMixin, View):
@@ -255,8 +254,7 @@ class SurveyEvidenceFileUploadView(LoginRequiredMixin, View):
             logger.error(e)
             messages.error(request, str(e))
 
-        return reverse_lazy("survey_evidence_gathering",
-                            kwargs={"pk": pk, "section_id": section_id})
+        return redirect("survey_evidence_gathering", pk=pk, section_id=section_id)
 
 
 class SurveyEvidenceFileDeleteView(LoginRequiredMixin, View):
