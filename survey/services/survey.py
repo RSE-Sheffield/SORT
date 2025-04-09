@@ -19,7 +19,7 @@ from home.models import Project, User, Organisation
 from home.services import BasePermissionService
 from home.services.base import requires_permission
 from survey.models import Invitation, Survey, SurveyResponse, SurveyFile, SurveyEvidenceFile, \
-    SurveyEvidenceSection
+    SurveyEvidenceSection, SurveyImprovementPlanSection
 from home.services import project_service
 
 logger = logging.getLogger(__name__)
@@ -103,12 +103,8 @@ class SurveyService(BasePermissionService):
         survey.save()
 
         self._create_survey_evidence_sections(survey)
+        self._create_survey_improvement_sections(survey)
         return survey
-
-    @requires_permission("edit", obj_param="survey")
-    def update_evidence_section(self, user: User, survey: Survey, evidence_section: SurveyEvidenceSection, text):
-        evidence_section.text = text
-        evidence_section.save()
 
     def _create_survey_evidence_sections(self, survey: Survey, clear_existing_sections: bool = True):
         if clear_existing_sections:
@@ -118,6 +114,27 @@ class SurveyService(BasePermissionService):
         for section_index, section in enumerate(survey.survey_config["sections"]):
             if section["type"] == "sort":
                 SurveyEvidenceSection.objects.create(survey=survey, section_id=section_index, title=section["title"])
+
+    def _create_survey_improvement_sections(self, survey: Survey, clear_existing_sections: bool = True):
+        if clear_existing_sections:
+            for improve_section in SurveyImprovementPlanSection.objects.filter(survey=survey):
+                improve_section.delete()  # Delete all previous section first
+
+        for section_index, section in enumerate(survey.survey_config["sections"]):
+            if section["type"] == "sort":
+                SurveyImprovementPlanSection.objects.create(survey=survey,
+                                                            section_id=section_index,
+                                                            title=section["title"])
+
+    @requires_permission("edit", obj_param="survey")
+    def update_evidence_section(self, user: User, survey: Survey, evidence_section: SurveyEvidenceSection, text):
+        evidence_section.text = text
+        evidence_section.save()
+
+    @requires_permission("edit", obj_param="survey")
+    def update_improvement_section(self, user: User, survey: Survey, improve_section: SurveyImprovementPlanSection, text):
+        improve_section.plan = text
+        improve_section.save()
 
     def get_survey_from_token(self, token: str) -> Survey:
         invitations = Invitation.objects.filter(token=token)

@@ -1,7 +1,9 @@
 # Generatd files
 # Ignore generated vite bundled files, these should be generated at deploy time
-/static/sort-ui
+/static/ui-components/
+/staticfiles/
 /uploads/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -69,3 +71,20 @@ venv.bak/
 
 #Pycharm IDE
 .idea/
+
+# Nodejs/NPM
+node_modules
+dist
+dist-ssr
+*.local
+/.vite
+## Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+

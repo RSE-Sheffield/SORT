@@ -2,8 +2,6 @@
 {% load static %}
 {% load vite_integration %}
 {% block content %}
-    <!-- Include stylesheet -->
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet"/>
     <div class="container mx-auto px-4 py-8 mt-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
@@ -52,45 +50,39 @@
             <div>
                 <h5>Survey summary</h5>
 
-                <p>
-                    This section demonstrates an overall maturity score of 2 out of 4, placing it at the 'Planned'
-                    level. Opportunities for improvement are identified in question B4, and B1.
-                </p>
-                <!-- This is a placeholder image. -->
-                <img src="{% static 'images/example_response_graph.png' %}">
+                <div
+                        class="sort-response-section-viewer"
+                        data-json-config-id="configData"
+                        data-json-responses-id="responsesData"
+                        data-section-index="{{ evidence_section.section_id }}"
+                ></div>
 
+
+                <h2>Evidence statement</h2>
+                <p>In support of the survey result, please gather the evidence for this section in the text box
+                    below.</p>
+                <!-- Create the editor container -->
+                <div class="sort-quill-editor"
+                     data-update-url="{% url 'survey_evidence_gathering_update' survey.id evidence_section.section_id %}"
+                     data-init-contents="{{ evidence_section.text }}"></div>
+
+                <h2>Attached evidence</h2>
                 <p>
-                    In support of the survey result, please gather the evidence for this section in the text box below.
-                    Possible evidence includes:
+                    Files and reports can be included as evidence, some examples include:
+
+
                 </p>
                 <ul>
                     <li>
                         Published report
                     </li>
                     <li>
-                        Planning document for the initiatives
+                        Planning document for the initatives
                     </li>
                     <li>
                         etc.
                     </li>
-
                 </ul>
-
-                <h5>Evidence statement</h5>
-
-                <!-- Create the editor container -->
-                <div id="evidence_editor" class="mb-3"></div>
-                <form
-                        action="{% url 'survey_evidence_gathering_update' survey.id evidence_section.section_id %}"
-                        method="post"
-                >
-                    {% csrf_token %}
-                    <input type="hidden" id="evidence_input_field" name="text"
-                           {% if evidence_section.text is not None %}value="{{ evidence_section.text }}"{% endif %}/>
-                    <button type="submit" name="submit" class="btn btn-primary mb-3">Save statement</button>
-                </form>
-
-                <h5>Attached evidence</h5>
 
                 <form action="{% url 'survey_evidence_add_file' survey.id evidence_section.section_id %}"
                       method="post"
@@ -107,45 +99,17 @@
 
 
                 {# Svelte file preview browser #}
-                <div class="sort-file-browser"></div>
+                <div class="sort-file-browser" data-json-id="filesListData"></div>
 
             </div>
         </div>
 
         {{ csrf | json_script:"csrf" }}
         {{ files_list | json_script:"filesListData" }}
+        {{ survey.survey_config | json_script:"configData" }}
+        {{ responses | json_script:"responsesData" }}
         {% vite_client %}
-        {% vite_asset "src/file_browser.ts" %}
+        {% vite_asset "src/main.ts" %}
 
-
-        <!-- Include the Quill library -->
-        <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
-
-        <!-- Initialize Quill editor -->
-        <script>
-
-            const evidenceInputField = document.getElementById("evidence_input_field")
-            const quillInstance = new Quill('#evidence_editor', {
-                theme: 'snow',
-                placeholder: "Please enter evidence for this section here...",
-            });
-
-            if (
-                evidenceInputField.value !== null &&
-                evidenceInputField.value !== undefined &&
-                evidenceInputField.value.length > 0) {
-                try {
-                    quillInstance.setContents(JSON.parse(evidenceInputField.value));
-                } catch (error) {
-                    // We can just ignore parse error and leave it blank
-                    console.log("Could not convert text field value to quill contents", evidenceInputField.value)
-                }
-            }
-
-            quillInstance.on('text-change', (delta, oldDelta, source) => {
-                evidenceInputField.value = JSON.stringify(quillInstance.getContents());
-            });
-
-        </script>
     </div>
 {% endblock %}

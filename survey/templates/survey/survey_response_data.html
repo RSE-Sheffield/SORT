@@ -12,33 +12,27 @@
                     <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-folder-open"></i> <a href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
+                    <i class="bx bxs-folder-open"></i> <a
+                        href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
                     <i class="bx bxs-chart"></i> <a href="{% url 'survey' survey.id %}"> Survey: {{ survey.name }}</a>
                 </li>
                 <li class="breadcrumb-item active" aria-current="page">
-                    <i class="bx bxs-cog"></i> Configuration
+                    <i class='bx bxs-data'></i> Collected responses
                 </li>
             </ol>
         </nav>
     </div>
-
-    <div class="container mx-auto px-4 py-8">
-        <h3>Configure {{ survey.name }}</h3>
-        <p>Specify what questions you would like to add in the survey.</p>
-
-        <div class="sort-consent-demography-config"
-             data-json-consent-config-id="consentConfig"
-             data-json-demography-config-id="demographyConfig"
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <div class="sort-response-viewer"
+             data-json-config-id="configData"
+             data-json-responses-id="responsesData"
+             data-csv-url="{% url 'survey_export' survey.id %}"
         ></div>
+        {{ survey.survey_config | json_script:"configData" }}
+        {{ responses | json_script:"responsesData" }}
     </div>
-    {{ csrf | json_script:"csrf" }}
-    {{ survey.consent_config | json_script:"consentConfig" }}
-    {{ survey.demography_config | json_script:"demographyConfig" }}
-    {{ survey.survey_config | json_script:"configData" }}
     {% vite_client %}
     {% vite_asset "src/main.ts" %}
-
-
 {% endblock %}
