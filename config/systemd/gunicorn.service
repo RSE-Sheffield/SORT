@@ -24,7 +24,7 @@ KillMode=mixed
 TimeoutStopSec=5
 PrivateTmp=true
 # if your app does not need administrative capabilities, let systemd know
-ProtectSystem=strict
+ProtectSystem=full
 Delegate=yes
 LockPersonality=yes
 
