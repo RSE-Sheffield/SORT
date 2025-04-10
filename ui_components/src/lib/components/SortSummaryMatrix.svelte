@@ -1,9 +1,6 @@
 <script lang="ts">
     import type {SurveyConfig, SurveyStats} from "../interfaces.ts";
     import {formatNumber, getColourForMeanValue, getTextColourForMeanValue} from "../misc.svelte.ts";
-
-
-
     interface Props {
         config: SurveyConfig;
         surveyStats: SurveyStats;

@@ -1,6 +1,22 @@
 <script lang="ts">
     import {onMount} from "svelte";
-    import Chart from "chart.js/auto"
+    import {
+        Chart,
+        Colors,
+        PieController,
+        Legend,
+        PointElement,
+        ArcElement
+    } from 'chart.js'
+
+    Chart.register(
+        Colors,
+        PieController,
+        Legend,
+        PointElement,
+        ArcElement
+    );
+
     import type {FieldConfig, FieldStats} from "../../interfaces.ts";
 
 
@@ -11,9 +27,9 @@
 
     let {fieldConfig, fieldStats}: Props = $props();
     let chartContainer: HTMLCanvasElement = $state()
-    let chart: Chart|null = $state(null);
+    let chart: Chart | null = $state(null);
 
-    function generateStats(){
+    function generateStats() {
         let labels = [];
         let data = [];
         fieldStats.histogram.map(value => {
@@ -28,9 +44,9 @@
         return {labels, datasets};
     }
 
-    $effect(()=>{
+    $effect(() => {
         let {labels, datasets} = generateStats();
-        if(chart){
+        if (chart) {
             chart.data.labels = labels;
             chart.data.datasets = datasets;
             chart.update();
@@ -53,7 +69,7 @@
 
     })
 </script>
-<div >
-    <canvas bind:this={chartContainer} ></canvas>
+<div>
+    <canvas bind:this={chartContainer}></canvas>
 </div>
 

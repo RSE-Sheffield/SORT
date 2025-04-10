@@ -1,6 +1,6 @@
 <script lang="ts">
     import "quill/dist/quill.snow.css"
-    import Quill from "quill"
+    import Quill from "quill/core"
     import {onMount} from "svelte";
 
     let {csrf, updateUrl, initContents, viewOnly=false} = $props();

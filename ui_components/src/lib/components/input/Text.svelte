@@ -1,7 +1,6 @@
 <script lang="ts">
   import {getUniqueID} from "../../misc.svelte.js";
   import {TextType} from "../../interfaces.ts";
-  import {toNumber} from "lodash";
 
   let {config, value = $bindable(), viewerMode = false} = $props();
 

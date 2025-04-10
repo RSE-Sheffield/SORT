@@ -3,7 +3,7 @@
     /**
      * Harness for testing SORT UI components
      */
-    import * as _ from 'lodash';
+    import * as _ from "lodash-es";
     import defaultConfigs from '../../../data/survey_config/all_elements_test_config.json';
     import SurveyConfigurator from "./lib/components/SurveyConfigurator.svelte";
     import SurveyResponse from "./lib/components/SurveyResponse.svelte";

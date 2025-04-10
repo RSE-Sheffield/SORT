@@ -1,5 +1,5 @@
 <script lang="ts">
-    import * as _ from "lodash"
+    import * as _ from "lodash-es"
     import type {SurveyConfig, SurveyStats} from "../interfaces.ts";
     import LikertHistogram from "./graph/LikertHistogram.svelte";
     import {
