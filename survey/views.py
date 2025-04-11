@@ -51,6 +51,7 @@ class SurveyView(LoginRequiredMixin, View):
         context["can_edit"] = {
             survey.id: survey_service.can_edit(request.user, survey)
         }
+        context["request"] = request
         return render(request, "survey/survey.html", context)
 
 
@@ -129,13 +130,20 @@ class SurveyConfigureView(LoginRequiredMixin, View):
         }
 
         if is_post:
-            if "consent_config" in request.POST and "demography_config" in request.POST:
+            if (
+                    "survey_body_path" in request.POST and
+                    "consent_config" in request.POST and
+                    "demography_config" in request.POST):
                 consent_config = json.loads(request.POST.get("consent_config", None))
                 demography_config = json.loads(
                     request.POST.get("demography_config", None)
                 )
+                survey_body_path = request.POST.get("survey_body_path", None)
                 survey_service.update_consent_demography_config(request.user,
-                                                                survey, consent_config, demography_config
+                                                                survey,
+                                                                consent_config=consent_config,
+                                                                demography_config=demography_config,
+                                                                survey_body_path=survey_body_path
                                                                 )
                 messages.info(request, "Survey configuration saved")
                 return redirect("survey", pk=survey.pk)
@@ -331,15 +339,14 @@ class SurveyImprovementPlanUpdateView(LoginRequiredMixin, View):
                                                               "section_id": improve_section.section_id})))
 
 
-
 class SurveyReportView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int):
         survey = survey_service.get_survey(request.user, pk)
 
-
-
-        evidence_sections ={e_section.section_id: e_section for e_section in SurveyEvidenceSection.objects.filter(survey=survey).order_by("section_id")}
-        improve_sections = {i_section.section_id: i_section for i_section in SurveyImprovementPlanSection.objects.filter(survey=survey).order_by("section_id")}
+        evidence_sections = {e_section.section_id: e_section for e_section in
+                             SurveyEvidenceSection.objects.filter(survey=survey).order_by("section_id")}
+        improve_sections = {i_section.section_id: i_section for i_section in
+                            SurveyImprovementPlanSection.objects.filter(survey=survey).order_by("section_id")}
 
         sections = []
         for index, section in enumerate(survey.survey_config["sections"]):
@@ -348,7 +355,6 @@ class SurveyReportView(LoginRequiredMixin, View):
                 "evidence": evidence_sections.get(index, None),
                 "improvement": improve_sections.get(index, None),
             })
-
 
         # files_list = []
         # for file in evidence_section.files.all():
@@ -369,6 +375,7 @@ class SurveyReportView(LoginRequiredMixin, View):
         }
 
         return render(request, "survey/report.html", context)
+
 
 class SurveyResponseView(View):
     """

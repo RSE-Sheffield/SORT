@@ -56,129 +56,144 @@
                 <h2>2. Invite Your Participants</h2>
             </div>
             <div class="card-body">
-                {% if invite_link %}
-                    <p>Invite your participants using the follow link:</p>
+                {% if survey.survey_config.sections %}
+                    {% if invite_link %}
+                        <p>Invite your participants using the follow link:</p>
 
-                    <div class="row">
-                        <div class="col-lg-10">
-                            <div class="input-group mb-3">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">Invitation link</span>
-                                </div>
-                                <input type="text" id="invitation_link" class="form-control" disabled
-                                       value="{{ invite_link }}"/>
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary" type="button"
-                                            onclick="copyInviteLink()"><i
-                                            class='bx bx-clipboard'></i> <span id="copyBtnText">Copy</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="d-flex mb-3">
-                                <div class="card" style="width: 20em" id="survey_invite_qr_code_card">
-                                    {% qr_from_text invite_link image_format="png" size="s" alt_text="Survey invitation link" class_names="card-img-top" %}
-                                    <div class="card-body">
-                                        <div class="card-text text-center">
-                                            <button onclick="downloadQRCode()" class="btn btn-primary">
-                                                <i class='bx bx-download'></i> Download invitation QR code
-                                            </button>
-                                        </div>
-
+                        <div class="row">
+                            <div class="col-lg-10">
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">Invitation link</span>
+                                    </div>
+                                    <input type="text" id="invitation_link" class="form-control" disabled
+                                           value="{{ invite_link }}"/>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="button"
+                                                onclick="copyInviteLink()"><i
+                                                class='bx bx-clipboard'></i> <span id="copyBtnText">Copy</span>
+                                        </button>
                                     </div>
                                 </div>
+                                <div class="d-flex mb-3">
+                                    <div class="card" style="width: 20em" id="survey_invite_qr_code_card">
+                                        {% qr_from_text invite_link image_format="png" size="s" alt_text="Survey invitation link" class_names="card-img-top" %}
+                                        <div class="card-body">
+                                            <div class="card-text text-center">
+                                                <button onclick="downloadQRCode()" class="btn btn-primary">
+                                                    <i class='bx bx-download'></i> Download invitation QR code
+                                                </button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <script>
+                                  function copyInviteLink() {
+                                    let copyBtnTextElem = document.getElementById("copyBtnText");
+                                    let link = document.getElementById("invitation_link").value;
+                                    navigator.clipboard.writeText(link);
+                                    copyBtnTextElem.innerHTML = "Copied";
+                                    setTimeout(() => {
+                                      copyBtnTextElem.innerHTML = "Copy";
+                                    }, 2000);
+                                  }
+
+                                  function downloadQRCode() {
+                                    let qrCodeCard = document.getElementById("survey_invite_qr_code_card");
+                                    let element = document.createElement('a');
+                                    element.setAttribute('href', qrCodeCard.firstElementChild.src);
+                                    element.setAttribute('download', "survey_invite.png");
+                                    element.style.display = 'none';
+                                    document.body.appendChild(element);
+                                    element.click();
+                                    document.body.removeChild(element);
+                                  }
+                                </script>
                             </div>
+                            <div class="col-lg-2 text-end">
+                                <form method="POST" action="{% url 'suvey_create_invite' survey.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary" name="generate_token"><i
+                                            class='bx bx-repeat'></i> Re-generate invitation
+                                    </button>
 
-
-                            <script>
-                              function copyInviteLink() {
-                                let copyBtnTextElem = document.getElementById("copyBtnText");
-                                let link = document.getElementById("invitation_link").value;
-                                navigator.clipboard.writeText(link);
-                                copyBtnTextElem.innerHTML = "Copied";
-                                setTimeout(() => {
-                                  copyBtnTextElem.innerHTML = "Copy";
-                                }, 2000);
-                              }
-
-                              function downloadQRCode() {
-                                let qrCodeCard = document.getElementById("survey_invite_qr_code_card");
-                                let element = document.createElement('a');
-                                element.setAttribute('href', qrCodeCard.firstElementChild.src);
-                                element.setAttribute('download', "survey_invite.png");
-                                element.style.display = 'none';
-                                document.body.appendChild(element);
-                                element.click();
-                                document.body.removeChild(element);
-                              }
-                            </script>
+                                </form>
+                            </div>
                         </div>
-                        <div class="col-lg-2 text-end">
-                            <form method="POST" action="{% url 'suvey_create_invite' survey.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-primary" name="generate_token"><i
-                                        class='bx bx-repeat'></i> Re-generate invitation
-                                </button>
-
-                            </form>
-                        </div>
-                    </div>
 
 
-                    <p>Or send an invitation by email:</p>
+                        <p>Or send an invitation by email:</p>
 
-                    <a href="{% url 'invite' survey.id %}" class="btn btn-primary"><i class='bx bx-mail-send'></i> Send
-                        an invitation</a>
+                        <a href="{% url 'invite' survey.id %}" class="btn btn-primary"><i class='bx bx-mail-send'></i>
+                            Send
+                            an invitation</a>
 
+                    {% else %}
+                        <p>
+                            Geneate an invitation link for your participants to fill in the survey:
+                        </p>
+                        <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary" name="generate_token"><i
+                                    class='bx bx-mail-send'></i> Generate invitation
+                            </button>
+                        </form>
+                    {% endif %}
                 {% else %}
-                    <p>
-                        Geneate an invitation link for your participants to fill in the survey:
-                    </p>
-                    <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary" name="generate_token"><i
-                                class='bx bx-mail-send'></i> Generate invitation
-                        </button>
-                    </form>
+                    <p>Survey must be configured before this section can be used.</p>
                 {% endif %}
             </div>
         </div>
+        {% if request.user.is_superuser  %}
         <div class="card mb-3">
             <div class="card-header">
                 <h2>Generate mock responses</h2>
             </div>
             <div class="card-body">
-                <p>Note: Don't forget to configure the form first, go to survey configuration page and press
-                    Submit at the bottom. This is because the survey_config field is blank by default.</p>
-                <form method="POST" action="{% url 'survey_mock_responses' survey.pk %}">
-                    {% csrf_token %}
-                    <label>
-                        Number for mock responses to generate
-                        <input type="number" name="num_responses" class="form-control"/>
-                    </label>
+                {% if survey.survey_config.sections %}
+                    <p>Note: Don't forget to configure the form first, go to survey configuration page and press
+                        Submit at the bottom. This is because the survey_config field is blank by default.</p>
+                    <form method="POST" action="{% url 'survey_mock_responses' survey.pk %}">
+                        {% csrf_token %}
+                        <label>
+                            Number for mock responses to generate
+                            <input type="number" name="num_responses" class="form-control"/>
+                        </label>
 
-                    <button type="submit" name="submit" value="Submit" class="btn btn-primary"><i
-                            class="bx bxs-send"></i> Submit
-                    </button>
-                </form>
+                        <button type="submit" name="submit" value="Submit" class="btn btn-primary"><i
+                                class="bx bxs-send"></i> Submit
+                        </button>
+                    </form>
+                {% else %}
+                    <p>Survey must be configured before this section can be used.</p>
+                {% endif %}
 
 
             </div>
         </div>
+        {% endif %}
         <div class="card mb-3">
             <div class="card-header">
                 <h2>3. Survey responses</h2>
             </div>
             <div class="card-body">
-                <div class="mb-3">
-                    <strong>Responses collected: {{ responses_count }}</strong>
-                </div>
+                {% if survey.survey_config.sections %}
+                    <div class="mb-3">
+                        <strong>Responses collected: {{ responses_count }}</strong>
+                    </div>
 
-                <div>
-                    <a href="{% url 'survey_response_data' survey.id %}" class="btn btn-primary"><i
-                            class='bx bxs-data'></i> View collected responses</a>
-                    <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download><i
-                            class="bx bx-export"></i> Export survey data as CSV</a>
-                </div>
+                    <div>
+                        <a href="{% url 'survey_response_data' survey.id %}" class="btn btn-primary"><i
+                                class='bx bxs-data'></i> View collected responses</a>
+                        <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download><i
+                                class="bx bx-export"></i> Export survey data as CSV</a>
+                    </div>
+                {% else %}
+                    <p>Survey must be configured before this section can be used.</p>
+                {% endif %}
 
             </div>
         </div>
@@ -226,8 +241,9 @@
                 <p>Generate a report that shows the combination of survey results, evidence gathered and improvement
                     plan.</p>
 
-                {% if survey.survey_config %}
-                    <a href="{% url 'survey_report' survey.pk %}" class="btn btn-primary"><i class='bx bxs-report' ></i>Generate printable report</a>
+                {% if survey.survey_config.sections %}
+                    <a href="{% url 'survey_report' survey.pk %}" class="btn btn-primary"><i class='bx bxs-report'></i>Generate
+                        printable report</a>
                 {% else %}
                     <p>Survey must be configured before this section can be used.</p>
                 {% endif %}

@@ -82,16 +82,22 @@ class SurveyService(BasePermissionService):
             survey.demography_config = demo_config
 
         survey.survey_config = dict(sections=list())
+        survey.survey_body_path = "Nurses"
         survey.save()
 
     @requires_permission("edit", obj_param="survey")
     def update_consent_demography_config(
-            self, user: User, survey: Survey, consent_config, demography_config
+            self, user: User, survey: Survey, consent_config, demography_config, survey_body_path
     ) -> Survey:
         survey.consent_config = consent_config
         survey.demography_config = demography_config
+        survey.survey_body_path = survey_body_path
 
-        with open("data/survey_config/sort_only_config.json") as f:
+        body_path = "sort_only_config.json"
+        if survey_body_path in settings.SURVEY_TEMPLATES:
+            body_path = settings.SURVEY_TEMPLATES[survey_body_path]
+
+        with open(settings.SURVEY_TEMPLATE_DIR/body_path) as f:
             sort_config = json.load(f)
             merged_sections = (
                     survey.consent_config["sections"]
@@ -265,6 +271,9 @@ class SurveyService(BasePermissionService):
         """
         Generate a number of mock responses
         """
+        if not user.is_superuser:
+            return PermissionDenied("Must be superuser to use this feature")
+
         for i in range(num_responses):
             self.accept_response(
                 survey, responseValues=self.generate_mock_response(survey.survey_config)

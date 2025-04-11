@@ -225,3 +225,9 @@ LOGGING = {
     },
 }
 
+SURVEY_TEMPLATE_DIR = BASE_DIR / "data/survey_config"
+SURVEY_TEMPLATES = {
+    "Nurses": "sort_only_config_nurses.json",
+    "Midwives": "sort_only_config_midwives.json",
+    "NMAHPs": "sort_only_config_nmahps.json",
+}
