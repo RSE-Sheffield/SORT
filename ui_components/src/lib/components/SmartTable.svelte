@@ -1,5 +1,4 @@
 <script lang="ts">
-    import * as _ from "lodash-es"
 
     interface ActionItem {
         currentPosition: string;
@@ -57,7 +56,7 @@
             </tr>
             </thead>
             <tbody>
-            {#each actions as action, index}
+            {#each actions as action, index (index)}
                 {#if viewOnly}
                     <tr>
                         <th scope="row">{index}</th>

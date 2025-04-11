@@ -6,7 +6,9 @@
         PieController,
         Legend,
         PointElement,
-        ArcElement
+        ArcElement,
+        Tooltip,
+
     } from 'chart.js'
 
     Chart.register(
@@ -14,7 +16,8 @@
         PieController,
         Legend,
         PointElement,
-        ArcElement
+        ArcElement,
+        Tooltip,
     );
 
     import type {FieldConfig, FieldStats} from "../../interfaces.ts";

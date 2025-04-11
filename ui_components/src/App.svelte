@@ -6,7 +6,7 @@
     import * as _ from "lodash-es";
     import defaultConfigs from '../../../data/survey_config/all_elements_test_config.json';
     import SurveyConfigurator from "./lib/components/SurveyConfigurator.svelte";
-    import SurveyResponse from "./lib/components/SurveyResponse.svelte";
+    import SurveyResponseComponent from "./lib/components/SurveyResponseComponent.svelte";
     import {download} from "./lib/misc.svelte.js";
     import SurveyConfigConsentDemographyApp from "./SurveyConfigConsentDemographyApp.svelte";
 
@@ -83,7 +83,7 @@
                                 editable={editable}
             />
         {:else}
-            <SurveyResponse config={configData} bind:value={responseValue} bind:this={surveyComponent}/>
+            <SurveyResponseComponent config={configData} bind:value={responseValue} bind:this={surveyComponent}/>
         {/if}
     </div>
     {:else if page == 1}

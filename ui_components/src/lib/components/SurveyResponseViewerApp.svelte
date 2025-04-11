@@ -1,15 +1,12 @@
 <script lang="ts">
 
-    import {onMount} from "svelte";
     import SurveyResponsesViewer from "./SurveyResponsesViewer.svelte";
-    import LikertHistogram from "./graph/LikertHistogram.svelte";
-    import type {SectionConfig, SurveyConfig, SurveyStats} from "../interfaces.ts";
-    import {generateStatsFromSurveyResponses} from "../misc.svelte.ts";
+    import type {SurveyConfig, SurveyResponseBatch} from "../interfaces.ts";
     import SurveyDataView from "./SurveyDataView.svelte";
 
     interface Props {
         config: SurveyConfig | null;
-        responses: [] | null;
+        responses: SurveyResponseBatch | null;
         csvDownloadUrl: string;
     }
     let {config, responses, csvDownloadUrl}: Props = $props();

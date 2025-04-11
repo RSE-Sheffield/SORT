@@ -25,6 +25,7 @@
             bind:value={value}
             required={config.required}
             id={componentId}
+            disabled={viewerMode}
     >
         {#each config.options as option}
             <option value={option}>{option}</option>

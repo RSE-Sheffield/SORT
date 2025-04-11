@@ -3,7 +3,7 @@ import {
     type FieldConfig,
     type FieldStats,
     type SectionConfig,
-    type SurveyConfig,
+    type SurveyConfig, type SurveyResponseBatch,
     type SurveyStats,
     type ValueCount
 } from "./interfaces.ts";
@@ -119,7 +119,7 @@ export function clickOutside(node: HTMLElement, handler: () => void) {
     };
 }
 
-export function generateStatsFromSurveyResponses(config: SurveyConfig, responses: []) {
+export function generateStatsFromSurveyResponses(config: SurveyConfig, responses: SurveyResponseBatch) {
     if (config === null ||
         responses === null ||
         responses === undefined ||
@@ -158,18 +158,18 @@ export function generateStatsFromSurveyResponses(config: SurveyConfig, responses
     return stats;
 }
 
-function fieldStatsForText(fieldConfig: FieldConfig, si: number, fi: number, responses: []): FieldStats {
+function fieldStatsForText(fieldConfig: FieldConfig, si: number, fi: number, responses: SurveyResponseBatch): FieldStats {
     const values: string[] = [];
     for (let ri = 0; ri < responses.length; ri++) {
-        values.push(responses[ri][si][fi])
+        values.push(responses[ri][si][fi] as string)
     }
     return {values: values}
 }
 
-function fieldStatsForSingleOption(fieldConfig: FieldConfig, si: number, fi: number, responses: []): FieldStats {
+function fieldStatsForSingleOption(fieldConfig: FieldConfig, si: number, fi: number, responses: SurveyResponseBatch): FieldStats {
     const values: string[] = [];
     for (let ri = 0; ri < responses.length; ri++) {
-        values.push(responses[ri][si][fi])
+        values.push(responses[ri][si][fi] as string)
     }
     const fieldStats: FieldStats = {
         histogram: histogramFromConfigAndValues(fieldConfig, values)
@@ -180,7 +180,7 @@ function fieldStatsForSingleOption(fieldConfig: FieldConfig, si: number, fi: num
     return fieldStats;
 }
 
-function fieldStatsForMultiOption(fieldConfig: FieldConfig, si: number, fi: number, responses: []): FieldStats {
+function fieldStatsForMultiOption(fieldConfig: FieldConfig, si: number, fi: number, responses: SurveyResponseBatch): FieldStats {
     const values: string[] = [];
     for (let ri = 0; ri < responses.length; ri++) {
         for (let oi = 0; oi < responses[ri][si][fi].length; oi++) {
@@ -196,7 +196,7 @@ function fieldStatsForMultiOption(fieldConfig: FieldConfig, si: number, fi: numb
     return fieldStats;
 }
 
-function fieldStatForLikert(fieldConfig: FieldConfig, si: number, fi: number, responses: []): FieldStats {
+function fieldStatForLikert(fieldConfig: FieldConfig, si: number, fi: number, responses: SurveyResponseBatch): FieldStats {
 
     // Build histogram for the likert table
     let allValues: string[] = [];

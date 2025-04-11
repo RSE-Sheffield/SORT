@@ -3,7 +3,6 @@
 
   let {config, sublabelIndex, value = $bindable(), viewerMode=false} = $props();
 
-  let componentId = getUniqueID();
   let isValid = $state(false);
   let isInvalid = $state(false);
 
@@ -38,7 +37,7 @@
         </div>
     </div>
     <div class="row">
-        {#each config.options as option, optionIndex }
+        {#each config.options as option }
             <div class="col">
                 <div class="form-check">
                     <label class="form-check-label">

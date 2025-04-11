@@ -10,7 +10,7 @@
             <p>Click response entries below to view individual responses.</p>
 
             <div class="d-flex flex-wrap m-2">
-                {#each responses as response, index}
+                {#each responses as response, index (index)}
                     <button class={{"m-1": true, "btn":true, "btn-primary": currentIndex===index, "btn-secondary": currentIndex !==index}}
                             onclick={()=>{currentIndex = index}}
                             aria-label={"Response entry "+(index+1)}

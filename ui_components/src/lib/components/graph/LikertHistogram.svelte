@@ -9,7 +9,8 @@
         LinearScale,
         BarElement,
         Legend,
-        PointElement
+        PointElement,
+        Tooltip,
 
     } from 'chart.js'
 
@@ -20,7 +21,8 @@
         CategoryScale,
         LinearScale,
         Legend,
-        PointElement
+        PointElement,
+        Tooltip,
     );
     import type {FieldConfig, FieldStats} from "../../interfaces.ts";
     import {getColourForMeanValue, getHistogramMean} from "../../misc.svelte.js";

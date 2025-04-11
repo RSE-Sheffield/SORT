@@ -3,9 +3,8 @@
     import {formatNumber, getColourForMeanValue, getTextColourForMeanValue} from "../misc.svelte.ts";
     interface Props {
         config: SurveyConfig;
-        surveyStats: SurveyStats;
+        surveyStats: SurveyStats | null;
     }
-
     let {config, surveyStats}: Props = $props();
 
     const sectionTitles: string[] = [];
@@ -20,10 +19,11 @@
 
 
 </script>
+{#if surveyStats && config}
 <table class="table table-bordered">
     <thead>
     <tr>
-        {#each sectionTitles as title}
+        {#each sectionTitles as title, index (index)}
             <th scope="col" style="text-align: center">{title}</th>
         {/each}
     </tr>
@@ -39,3 +39,6 @@
 
     </tbody>
 </table>
+{:else }
+<p>Statistics not available</p>
+{/if}

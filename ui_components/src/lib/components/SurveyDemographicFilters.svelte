@@ -1,6 +1,6 @@
 <script lang="ts">
 
-    import {type FieldConfig, type SurveyConfig, TextType} from "../interfaces.ts";
+    import {type FieldConfig, type SurveyConfig, type SurveyResponseBatch, TextType} from "../interfaces.ts";
     import {onMount} from "svelte";
 
     type FilterItem = {
@@ -13,7 +13,7 @@
 
     interface Props {
         config: SurveyConfig;
-        responses: [];
+        responses: SurveyResponseBatch;
         onFilterChange?: (responses) => void
     }
 
@@ -100,7 +100,7 @@
 
 </script>
 {#if filterItems && filterValues}
-    {#each filterItems as fItem, fItemIndex}
+    {#each filterItems as fItem, fItemIndex (fItemIndex)}
         {#if fItem.fieldConfig.type === "text" }
 
             <strong>{fItem.fieldConfig.label}</strong>

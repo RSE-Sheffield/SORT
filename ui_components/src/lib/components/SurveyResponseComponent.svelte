@@ -1,5 +1,4 @@
 <script lang="ts">
-    import * as _ from "lodash-es"
     import SectionComponent from "./input/SectionComponent.svelte";
 
     let {
@@ -9,7 +8,8 @@
         csrf = "",
     } = $props();
 
-    let isValid = $state();    let isInvalid = $state();
+    let isValid = $state();
+    let isInvalid = $state();
 
     function setIsValid(valid) {
         isValid = valid;

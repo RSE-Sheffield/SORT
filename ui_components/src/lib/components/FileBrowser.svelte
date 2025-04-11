@@ -12,7 +12,7 @@
 </script>
 <div>
     <ul class="list-group">
-        {#each filesList as file}
+        {#each filesList as file (file.name)}
             <li class="list-group-item">
                 <FileBrowserItem file={file} csrf={csrf}></FileBrowserItem>
             </li>

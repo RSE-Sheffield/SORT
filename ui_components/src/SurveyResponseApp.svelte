@@ -1,5 +1,5 @@
 <script lang="ts">
-    import SurveyResponse from "./lib/components/SurveyResponse.svelte";
+    import SurveyResponseComponent from "./lib/components/SurveyResponseComponent.svelte";
 
     let {csrf, initConfig, initResponse} = $props();
 
@@ -16,7 +16,7 @@
 
 
 <div>
-    <SurveyResponse config={configData} bind:value={responseValue} csrf={csrf}/>
+    <SurveyResponseComponent config={configData} bind:value={responseValue} csrf={csrf}/>
 </div>
 
 

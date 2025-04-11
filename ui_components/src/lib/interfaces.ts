@@ -44,6 +44,17 @@ export type SurveyConfig = {
     sections: SectionConfig[];
 }
 
+
+/**
+ * Represents the output of each input component in the survey
+ * they either return a single string value (text, textarea, radio, select) or an array of values (checkbox, likert)
+ */
+export type SurveyResponse = string | string[];
+/**
+ * Represent a batch of survey responses with indices [batch/response Index][sectionIndex][fieldIndex]
+ */
+export type SurveyResponseBatch = SurveyResponse[][][];
+
 export type ValueCount = {
     option: string;
     count: number
@@ -67,3 +78,4 @@ export type SectionStats = {
 export type SurveyStats = {
     sections: SectionStats[];
 }
+

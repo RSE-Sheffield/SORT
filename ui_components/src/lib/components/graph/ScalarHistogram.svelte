@@ -8,7 +8,8 @@
         LinearScale,
         LineElement,
         Legend,
-        PointElement
+        PointElement,
+        Tooltip,
     } from 'chart.js'
 
     Chart.register(
@@ -17,7 +18,8 @@
         LineElement,
         LinearScale,
         Legend,
-        PointElement
+        PointElement,
+        Tooltip,
     );
     import type {FieldConfig, FieldStats} from "../../interfaces.ts";
 

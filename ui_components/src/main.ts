@@ -1,5 +1,5 @@
 import { mount } from 'svelte'
-import {type FileDescriptionType, type SurveyConfig} from "./lib/interfaces.ts"
+import {type FileDescriptionType, type SurveyConfig, type SurveyResponseBatch} from "./lib/interfaces.ts"
 import {generateStatsFromSurveyResponses, getDataInElem} from "./lib/misc.svelte.js";
 import SmartTable from "./lib/components/SmartTable.svelte";
 import SurveyConfigConsentDemographyApp from "./SurveyConfigConsentDemographyApp.svelte";
@@ -87,12 +87,13 @@ mapMatchedElement(".sort-quill-editor", (elem) => {
 });
 
 
+
 mapMatchedElement(".sort-response-viewer", (elem) => {
     const csvUrl = elem.dataset.csvUrl ?? "";
     const configId = elem.dataset.jsonConfigId;
     const responsesId = elem.dataset.jsonResponsesId;
     const config = getDataInElem(configId, {});
-    const responses = getDataInElem(responsesId, []);
+    const responses: SurveyResponseBatch = getDataInElem(responsesId, []);
     mount(SurveyResponseViewerApp, {
         target: elem,
         props: {
@@ -108,7 +109,7 @@ mapMatchedElement(".sort-response-section-viewer", (elem) => {
     const configId = elem.dataset.jsonConfigId;
     const responsesId = elem.dataset.jsonResponsesId;
     const config = getDataInElem(configId, {}) as SurveyConfig;
-    const responses = getDataInElem(responsesId, []) as [];
+    const responses: SurveyResponseBatch = getDataInElem(responsesId, []) as [];
     const surveyStats = generateStatsFromSurveyResponses(config, responses)
     mount(SurveySectionDataView, {
         target: elem,
@@ -124,7 +125,7 @@ mapMatchedElement(".sort-response-summary-matrix", (elem) => {
     const configId = elem.dataset.jsonConfigId;
     const responsesId = elem.dataset.jsonResponsesId;
     const config = getDataInElem(configId, {}) as SurveyConfig;
-    const responses = getDataInElem(responsesId, []) as [];
+    const responses: SurveyResponseBatch = getDataInElem(responsesId, []) as [];
     const surveyStats = generateStatsFromSurveyResponses(config, responses)
     mount(SortSummaryMatrix, {
         target: elem,

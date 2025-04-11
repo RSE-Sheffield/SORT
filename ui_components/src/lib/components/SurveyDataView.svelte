@@ -1,16 +1,13 @@
 <script lang="ts">
-    import type {SurveyConfig, SurveyStats} from "../interfaces.ts";
-    import LikertHistogram from "./graph/LikertHistogram.svelte";
+    import type {SurveyConfig, SurveyResponseBatch, SurveyStats} from "../interfaces.ts";
     import {generateStatsFromSurveyResponses} from "../misc.svelte.ts";
-    import OptionsHistogram from "./graph/OptionsHistogram.svelte";
-    import CollapsibleCard from "./CollapsibleCard.svelte";
     import SurveySectionDataView from "./SurveySectionDataView.svelte";
     import SortSummaryMatrix from "./SortSummaryMatrix.svelte";
     import SurveyDemographicFilters from "./SurveyDemographicFilters.svelte";
 
     interface SurveyDataViewProps {
         config: SurveyConfig;
-        responses: []
+        responses: SurveyResponseBatch
     }
 
     let {config, responses}: SurveyDataViewProps = $props();
@@ -57,7 +54,7 @@
     {#if config && surveyStats}
 
 
-        {#each config.sections as sectionConfig, si}
+        {#each config.sections as sectionConfig, si (si)}
             {#if sectionConfig.type !== "consent"}
                 <div class="card mb-3">
                     <div class="card-header">

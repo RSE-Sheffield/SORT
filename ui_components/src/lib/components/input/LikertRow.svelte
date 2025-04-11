@@ -3,7 +3,6 @@
 
   let {config, sublabelIndex, value = $bindable(), viewerMode = false} = $props();
 
-  let componentId = getUniqueID();
   let isValid = $state(false);
   let isInvalid = $state(false);
 
@@ -27,7 +26,7 @@
     <span class={{"is-valid": isValid, "is-invalid": isInvalid}}>{config.sublabels[sublabelIndex]}</span>
     <span class="invalid-feedback">A value must be selected</span>
 </td>
-{#each config.options as option, optionIndex }
+{#each config.options as option }
     <td>
         <div class="form-check">
             <input class={{"form-check-input": true, "is-valid": isValid, "is-invalid": isInvalid}}

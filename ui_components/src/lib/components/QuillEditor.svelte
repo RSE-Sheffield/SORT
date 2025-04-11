@@ -28,6 +28,7 @@
             quillInstance.setContents(JSON.parse(initContents))
         } catch (e){
             //Do nothing
+            console.log(e)
         }
 
 

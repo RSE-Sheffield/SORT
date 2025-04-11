@@ -4,10 +4,8 @@
     import LikertHistogram from "./graph/LikertHistogram.svelte";
     import {
         formatNumber,
-        getColourForMeanValue,
         getHighestHistogramValue,
         getHistogramMean,
-        getTextColourForMeanValue
     } from "../misc.svelte.ts";
     type QM = {
         index: number;
@@ -20,7 +18,7 @@
         sectionIndex: number,
         fieldIndex: number
     }
-    let {config, surveyStats, sectionIndex, fieldIndex} = $props();
+    let {config, surveyStats, sectionIndex, fieldIndex}: Props = $props();
 
     let sectionConfig = $derived(config.sections[sectionIndex]);
     let fieldConfig = $derived(config.sections[sectionIndex].fields[fieldIndex]);
