@@ -24,6 +24,7 @@ function mapMatchedElement(selector: string, handler: (elem: HTMLElement)=> void
 mapMatchedElement(".sort-consent-demography-config", (elem) =>{
     const consentConfigId = elem.dataset.jsonConsentConfigId;
     const demographyConfigId = elem.dataset.jsonDemographyConfigId;
+    const surveyBodyPath = elem.dataset.surveyBodyPath;
     const consentConfig = getDataInElem(consentConfigId, {})
     const demographyConfig = getDataInElem(demographyConfigId, {})
     mount(SurveyConfigConsentDemographyApp, {
@@ -31,7 +32,8 @@ mapMatchedElement(".sort-consent-demography-config", (elem) =>{
         props: {
             csrf: csrf,
             initConsentConfig: consentConfig,
-            initDemographyConfig: demographyConfig
+            initDemographyConfig: demographyConfig,
+            initSurveyBodyPath: surveyBodyPath
         }
     });
 });
@@ -46,7 +48,7 @@ mapMatchedElement(".sort-survey-response", (elem) => {
         props: {
             csrf: csrf,
             initConfig: config,
-            initResponse: response
+            initResponse: response,
         }
     });
 });

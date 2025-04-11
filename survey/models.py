@@ -23,6 +23,7 @@ class Survey(models.Model):
     demography_config = models.JSONField(null=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    survey_body_path = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name

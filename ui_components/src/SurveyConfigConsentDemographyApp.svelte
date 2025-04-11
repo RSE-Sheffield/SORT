@@ -4,11 +4,11 @@
 
     //Import data from other script blocks on page (for django)
     //otherwise use the default config
-
-    let {csrf, initConsentConfig, initDemographyConfig} = $props();
+    let {csrf, initConsentConfig, initDemographyConfig, initSurveyBodyPath} = $props();
 
     let consentConfig = $state(initConsentConfig);
     let demographyConfig = $state(initDemographyConfig);
+    let surveyBodyPath = $state(initSurveyBodyPath);
 
     let consentConfigStr = $derived(JSON.stringify(consentConfig));
     let demographyConfigStr = $derived(JSON.stringify(demographyConfig));
@@ -34,7 +34,14 @@
 <div class="card mb-3">
     <div class="card-body">
         <h2>SORT Survey Questions</h2>
-        <p>SORT questions are automatically added to your survey.</p>
+        <label class="form-label">Select who this survey will target:
+        <select class="form-select" bind:value={surveyBodyPath}>
+            <option value="Nurses">Nurses</option>
+            <option value="Midwives">Midwives</option>
+            <option value="NMAHPs">NMAHPs</option>
+        </select>
+        </label>
+
     </div>
 </div>
 <div class="card mb-3">
@@ -60,6 +67,7 @@
     <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}"/>
     <input type="hidden" name="consent_config" value="{consentConfigStr}"/>
     <input type="hidden" name="demography_config" value="{demographyConfigStr}"/>
+    <input type="hidden" name="survey_body_path" value="{surveyBodyPath}"/>
     <button type="submit" name="submit" value="Submit" class="btn btn-primary"><i class="bx bx-save"></i> Save</button>
 </form>
 
