@@ -1,7 +1,4 @@
 <script lang="ts">
-    import * as _ from 'lodash';
-    // import defaultConsentConfigs from '../../../data/survey_config/consent_only_config.json';
-    // import defaultDemographicConfigs from '../../../data/survey_config/demography_only_config.json';
     import SurveyConfigurator from "./lib/components/SurveyConfigurator.svelte";
 
 

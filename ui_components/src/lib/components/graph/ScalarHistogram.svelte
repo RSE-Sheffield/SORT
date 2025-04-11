@@ -1,7 +1,24 @@
 <script lang="ts">
-    import * as _ from "lodash"
+    import * as _ from "lodash-es"
     import {onMount} from "svelte";
-    import Chart from "chart.js/auto"
+    import {
+        Chart,
+        Colors,
+        LineController,
+        LinearScale,
+        LineElement,
+        Legend,
+        PointElement
+    } from 'chart.js'
+
+    Chart.register(
+        Colors,
+        LineController,
+        LineElement,
+        LinearScale,
+        Legend,
+        PointElement
+    );
     import type {FieldConfig, FieldStats} from "../../interfaces.ts";
 
 

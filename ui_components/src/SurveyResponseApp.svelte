@@ -1,9 +1,5 @@
 <script lang="ts">
-    import * as _ from 'lodash';
-    // import defaultConfigs from '../../../data/survey_config/sort_only_config.json';
-    import SurveyConfigurator from "./lib/components/SurveyConfigurator.svelte";
     import SurveyResponse from "./lib/components/SurveyResponse.svelte";
-    import {getDataInElem} from "./lib/misc.svelte.js";
 
     let {csrf, initConfig, initResponse} = $props();
 

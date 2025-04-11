@@ -1,5 +1,5 @@
 <script lang="ts">
-    import * as _ from "lodash"
+    import * as _ from "lodash-es"
     import SectionComponent from "./input/SectionComponent.svelte";
 
     let {

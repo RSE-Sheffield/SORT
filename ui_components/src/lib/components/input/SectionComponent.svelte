@@ -17,7 +17,7 @@
     ]
 </script>
 <script lang="ts">
-    import * as _ from "lodash"
+    import * as _ from "lodash-es"
     import InputComponent, {getDefaultFieldConfig} from "./InputComponent.svelte";
     import EditableText from "./EditableText.svelte";
     import EditableTextArea from "./EditableTextArea.svelte";
