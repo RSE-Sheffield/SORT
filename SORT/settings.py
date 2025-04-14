@@ -151,8 +151,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
-
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR/"staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -184,11 +184,23 @@ INTERNAL_IPS = [
 ]
 AUTH_USER_MODEL = "home.User"  # FA: replace username with email as unique identifiers
 
+
+# Vite integration
+VITE_BASE_URL = "http://localhost:5173" # Url of vite dev server
+VITE_STATIC_DIR= "ui-components" # Path to vite-generated asset directory in the static folder
+VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, "manifest.json")
+
 # FA: for production:
 
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
-STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT")
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
+
+
+# File uploading
+MEDIA_ROOT = os.getenv("DJANGO_MEDIA_ROOT", BASE_DIR / "uploads")
+MEDIA_SUPPORTED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf", ".doc", ".docx", ".txt", ".csv", ".json"]
 
 # Security settings
 SESSION_COOKIE_SECURE = cast_to_boolean(
@@ -211,4 +223,11 @@ LOGGING = {
         "handlers": ["console"],
         "level": os.getenv("DJANGO_LOG_LEVEL", "WARNING"),
     },
+}
+
+SURVEY_TEMPLATE_DIR = BASE_DIR / "data/survey_config"
+SURVEY_TEMPLATES = {
+    "Nurses": "sort_only_config_nurses.json",
+    "Midwives": "sort_only_config_midwives.json",
+    "NMAHPs": "sort_only_config_nmahps.json",
 }
