@@ -106,14 +106,13 @@ In order to integrate this into the HTML template, a [custom template tag](https
   - In debug mode, this creates a link directly to the Vite dev server normally located at `http://localhost:5173`
   - In production mode, the link changes to the location of the file in the `/static/` folder
 
-For more information, please [read the README](assets/sort-survey-configurator/README.md).
+For more information, please [read the README](ui-components/README.md).
 
 ## Installation
 
 Install the JavaScript package using [`npm install`](https://docs.npmjs.com/cli/v8/commands/npm-install/)
 
 ```bash
-cd assets/sort-survey-configurator
 npm install
 ```
 
@@ -127,7 +126,7 @@ npm run dev
 
 ## Before deployment
 
-The script files within `/ui_components` must be built into the static folder before deployment. This
+The script files within `./ui_components/` must be built into the static folder before deployment. This
 can be done by running:
 
 ```bash
