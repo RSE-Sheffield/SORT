@@ -47,7 +47,7 @@ sudo chmod 600 "$env_file"
 # Get the Ubuntu apt repository
 curl -fsSL "https://deb.nodesource.com/setup_$node_version.x" -o nodesource_setup.sh
 sudo -E bash nodesource_setup.sh
-apt-get install -y nodejs="$node_version.*"
+apt-get install -y --allow-downgrades nodejs="$node_version.*"
 node --version
 
 # Install JavaScript package
