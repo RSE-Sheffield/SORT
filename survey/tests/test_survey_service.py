@@ -17,6 +17,7 @@ from survey.services import SurveyService
 
 class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
     def setUp(self):
+        self.client = django.test.Client()
         self.service = SurveyService()
         self.invitation = SORT.test.model_factory.InvitationFactory()
         self.survey = self.invitation.survey
@@ -82,6 +83,9 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertIsInstance(self.survey.consent_config, dict)
         self.assertIsInstance(self.survey.survey_config, dict)
 
+        # Check that a blank survey was created
+        self.assertEqual(len(self.survey.survey_config["sections"]), 0)
+
     def test_update_consent_demography_config(self):
         self.service.update_consent_demography_config(
             user=self.admin,
@@ -94,6 +98,8 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertIsInstance(self.survey.survey_config, dict)
         self.assertIsInstance(self.survey.consent_config, dict)
         self.assertIsInstance(self.survey.survey_config, dict)
+
+        self.assertGreater(len(self.survey.survey_config["sections"]), 0)
 
     def test_get_survey_from_token(self):
         token = self.survey.current_invite_token()
@@ -129,4 +135,6 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
 
     def test_mock_responses(self):
         self.skipTest("Not yet implemented")
-        self.service.generate_mock_responses(user=self.admin, survey=self.survey, num_responses=3)
+        self.service.generate_mock_responses(
+            user=self.admin, survey=self.survey, num_responses=3
+        )

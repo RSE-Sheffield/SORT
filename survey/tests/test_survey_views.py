@@ -17,6 +17,13 @@ class SurveyServiceTestCase(SORT.test.test_case.ViewTestCase):
         self.service.initialise_survey(
             user=self.user, project=self.project, survey=self.survey
         )
+        self.service.update_consent_demography_config(
+            user=self.user,
+            survey=self.survey,
+            consent_config=self.survey.consent_config,
+            demography_config=self.survey.demography_config,
+            survey_body_path="Nurse",
+        )
 
     def test_survey_get(self):
         self.get("survey", pk=self.survey.pk)
@@ -58,10 +65,20 @@ class SurveyServiceTestCase(SORT.test.test_case.ViewTestCase):
         self.get("survey_export", pk=self.survey.pk)
 
     def test_survey_improvement_plan(self):
-        self.get("survey_improvement_plan", pk=self.survey.pk)
+        for section_id in range(5):
+            with self.subTest(section_id=section_id):
+                self.get(
+                    "survey_improvement_plan", pk=self.survey.pk, section_id=section_id
+                )
 
     def test_survey_evidence_gathering(self):
-        self.get("survey_evidence_gathering", pk=self.survey.pk)
+        for section_id in range(5):
+            with self.subTest(section_id=section_id):
+                self.get(
+                    "survey_evidence_gathering",
+                    pk=self.survey.pk,
+                    section_id=section_id,
+                )
 
     def test_survey_response_get(self):
         invitation = Invitation.objects.create(survey=self.survey)
