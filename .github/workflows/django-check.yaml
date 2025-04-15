@@ -22,7 +22,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'v22.x'
+          # This should match the version used in production
+          node-version: 'v20.x'
           cache: 'npm'
           cache-dependency-path: 'assets/sort-survey-configurator/package-lock.json'
       - name: Install JavaScript package
