@@ -18,6 +18,8 @@ pip="$venv_dir/bin/pip"
 python_version="python3.12"
 python="$venv_dir/bin/python"
 env_file="$sort_dir/.env"
+frontend_dir="$sort_dir/assets/sort-survey-configurator"
+node_version=20
 
 # Install British UTF-8 locale so we can use this with PostgreSQL.
 # This is important to avoid the limitations of the LATIN1 character set.
@@ -28,7 +30,7 @@ sudo update-locale
 # Create Python virtual environment
 mkdir --parents "$sort_dir"
 apt update -qq
-apt install --upgrade --yes -qq "$python_version" "$python_version-venv"
+apt install --upgrade --yes -qq "$python_version" "$python_version-venv" curl
 python3 -m venv "$venv_dir"
 
 # Install the SORT Django app package
@@ -39,6 +41,18 @@ cp --recursive * "$sort_dir/"
 sudo touch "$env_file"
 sudo chown gunicorn:gunicorn "$env_file"
 sudo chmod 600 "$env_file"
+
+# Install Node.js package manager
+# https://github.com/nodesource/distributions?tab=readme-ov-file#installation-instructions-deb
+# Get the Ubuntu apt repository
+curl -fsSL "https://deb.nodesource.com/setup_$node_version.x" -o nodesource_setup.sh
+sudo -E bash nodesource_setup.sh
+apt-get install -y --allow-downgrades nodejs="$node_version.*"
+node --version
+
+# Install JavaScript package
+# (Use a sub-shell to avoid changing directory.)
+(cd "$frontend_dir" && npm ci && npm run build)
 
 # Install static files into DJANGO_STATIC_ROOT
 # This runs in a subshell because it's changing directory
