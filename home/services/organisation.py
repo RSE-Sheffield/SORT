@@ -141,7 +141,7 @@ class OrganisationService(BasePermissionService):
                 survey_count=Count("survey__id", distinct=True),
             ).select_related("created_by", "organisation")
 
-        return base_query.order_by("-created_on")
+        return base_query.order_by("-created_at")
 
     @requires_permission("view", obj_param="organisation")
     def get_organisation_members(

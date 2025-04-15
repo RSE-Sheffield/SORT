@@ -1,5 +1,7 @@
+import os
 import secrets
-
+import logging
+from django.conf import settings
 from django.db import models
 from django.http import HttpRequest
 from django.urls import reverse
@@ -7,12 +9,13 @@ from django.utils import timezone
 
 from home.models import Project
 
+logger = logging.getLogger(__name__)
+
 
 class Survey(models.Model):
     """
     Represents a survey that will be sent out to a participant
     """
-
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     survey_config = models.JSONField(null=True)
@@ -20,6 +23,7 @@ class Survey(models.Model):
     demography_config = models.JSONField(null=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    survey_body_path = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -41,11 +45,61 @@ class Survey(models.Model):
         return None
 
 
+class SurveyEvidenceSection(models.Model):
+    """
+    Each part of each survey has a corresponding evidence section.
+
+    The section_id always matches the section index in the survey.survey_config["sections"]
+    """
+    section_id = models.IntegerField(default=0)
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    title = models.TextField(blank=True, null=True)
+    text = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = [["survey", "section_id"]]
+        indexes = [
+            models.Index(fields=["section_id"]),
+        ]
+
+class SurveyImprovementPlanSection(models.Model):
+
+    """
+    The section_id always matches the section index in the survey.survey_config["sections"]
+    """
+    section_id = models.IntegerField(default=0, db_index=True)
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    title = models.TextField(blank=True, null=True)
+    plan = models.TextField(blank=True, null=True)
+
+def survey_file_upload_path(instance, filename):
+    return f"survey/{instance.survey.pk}/{filename}"
+
+
+class SurveyFile(models.Model):
+    """
+    A file attached to a survey.
+    """
+    file = models.FileField(upload_to=survey_file_upload_path, blank=True, null=True)
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name="files")
+
+
+def evidence_file_upload_path(instance, filename):
+    return f"survey_evidence/{instance.evidence_section.pk}/{filename}"
+
+
+class SurveyEvidenceFile(models.Model):
+    """
+    An evidence file attached to a section of a survey.
+    """
+    file = models.FileField(upload_to=evidence_file_upload_path, blank=True, null=True)
+    evidence_section = models.ForeignKey(SurveyEvidenceSection, on_delete=models.CASCADE, related_name="files")
+
+
 class SurveyResponse(models.Model):
     """
     Represents a single response to the survey from a participant
     """
-
     survey = models.ForeignKey(
         Survey, related_name="survey_response", on_delete=models.CASCADE
     )  # Many questions belong to one survey
@@ -57,7 +111,9 @@ class SurveyResponse(models.Model):
 
 
 class Invitation(models.Model):
-
+    """
+    An invitation to submit a response to a survey.
+    """
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
     token = models.CharField(max_length=64, unique=True, blank=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)

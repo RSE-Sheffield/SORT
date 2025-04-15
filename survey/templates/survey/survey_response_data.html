@@ -1,0 +1,38 @@
+{% extends 'base_manager.html' %}
+{% load static %}
+{% load vite_integration %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-folder-open"></i> <a
+                        href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-chart"></i> <a href="{% url 'survey' survey.id %}"> Survey: {{ survey.name }}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class='bx bxs-data'></i> Collected responses
+                </li>
+            </ol>
+        </nav>
+    </div>
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <div class="sort-response-viewer"
+             data-json-config-id="configData"
+             data-json-responses-id="responsesData"
+             data-csv-url="{% url 'survey_export' survey.id %}"
+        ></div>
+        {{ survey.survey_config | json_script:"configData" }}
+        {{ responses | json_script:"responsesData" }}
+    </div>
+    {% vite_client %}
+    {% vite_asset "src/main.ts" %}
+{% endblock %}

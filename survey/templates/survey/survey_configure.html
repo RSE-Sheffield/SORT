@@ -28,14 +28,18 @@
         <h3>Configure {{ survey.name }}</h3>
         <p>Specify what questions you would like to add in the survey.</p>
 
-        <div id="app"></div>
+        <div class="sort-consent-demography-config"
+             data-json-consent-config-id="consentConfig"
+             data-json-demography-config-id="demographyConfig"
+             data-survey-body-path="{{ survey.survey_body_path }}"
+        ></div>
     </div>
     {{ csrf | json_script:"csrf" }}
     {{ survey.consent_config | json_script:"consentConfig" }}
     {{ survey.demography_config | json_script:"demographyConfig" }}
     {{ survey.survey_config | json_script:"configData" }}
     {% vite_client %}
-    {% vite_asset "src/survey_config_consent_demography.ts" %}
+    {% vite_asset "src/main.ts" %}
 
 
 {% endblock %}
