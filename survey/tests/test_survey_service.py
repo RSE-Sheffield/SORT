@@ -88,6 +88,7 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
             survey=self.survey,
             consent_config=dict(sections=list()),
             demography_config=dict(sections=list()),
+            survey_body_path="Nurses",
         )
 
         self.assertIsInstance(self.survey.survey_config, dict)

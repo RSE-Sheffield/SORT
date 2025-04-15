@@ -33,7 +33,7 @@ def cast_to_boolean(obj: Any) -> bool:
 
 
 # Load environment variables from .env file
-load_dotenv(os.getenv("DJANGO_ENV_PATH"))
+load_dotenv(dotenv_path=os.getenv("DJANGO_ENV_PATH", ".env"))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -152,7 +152,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR/"staticfiles")
+STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR / "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -171,8 +171,8 @@ SESSION_COOKIE_AGE = 1800
 PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 
 # FA: for local testing emails:
-
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND" "django.core.mail.backends.console.EmailBackend")
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
@@ -184,19 +184,12 @@ INTERNAL_IPS = [
 ]
 AUTH_USER_MODEL = "home.User"  # FA: replace username with email as unique identifiers
 
-
 # Vite integration
-VITE_BASE_URL = "http://localhost:5173" # Url of vite dev server
-VITE_STATIC_DIR= "ui-components" # Path to vite-generated asset directory in the static folder
+VITE_BASE_URL = "http://localhost:5173"  # Url of vite dev server
+VITE_STATIC_DIR = "ui-components"  # Path to vite-generated asset directory in the static folder
 VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, "manifest.json")
 
-# FA: for production:
-
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
 X_FRAME_OPTIONS = "SAMEORIGIN"
-
-
 
 # File uploading
 MEDIA_ROOT = os.getenv("DJANGO_MEDIA_ROOT", BASE_DIR / "uploads")

@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from enum import Enum
 from os import path
 from typing import LiteralString
@@ -36,7 +37,7 @@ class AssetType(Enum):
 
 
 @register.simple_tag
-def vite_asset(asset_path):
+def vite_asset(asset_path: str) -> str:
     """
     Link directly to asset on vite dev server in debug mode and to static assets folder in production.
     """
