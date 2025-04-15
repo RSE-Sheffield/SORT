@@ -97,7 +97,7 @@ class SurveyService(BasePermissionService):
         if survey_body_path in settings.SURVEY_TEMPLATES:
             body_path = settings.SURVEY_TEMPLATES[survey_body_path]
 
-        with open(settings.SURVEY_TEMPLATE_DIR/body_path) as f:
+        with open(settings.SURVEY_TEMPLATE_DIR / body_path) as f:
             sort_config = json.load(f)
             merged_sections = (
                     survey.consent_config["sections"]
@@ -113,13 +113,18 @@ class SurveyService(BasePermissionService):
         return survey
 
     def _create_survey_evidence_sections(self, survey: Survey, clear_existing_sections: bool = True):
+        if not survey.survey_config["sections"]:
+            raise ValueError("No sections available")
+
         if clear_existing_sections:
             for evidence_section in SurveyEvidenceSection.objects.filter(survey=survey):
                 evidence_section.delete()  # Delete all previous section first
 
         for section_index, section in enumerate(survey.survey_config["sections"]):
             if section["type"] == "sort":
-                SurveyEvidenceSection.objects.create(survey=survey, section_id=section_index, title=section["title"])
+                survey_evidence_section = SurveyEvidenceSection.objects.create(
+                    survey=survey, section_id=section_index, title=section["title"])
+                survey_evidence_section.save()
 
     def _create_survey_improvement_sections(self, survey: Survey, clear_existing_sections: bool = True):
         if clear_existing_sections:
@@ -128,9 +133,9 @@ class SurveyService(BasePermissionService):
 
         for section_index, section in enumerate(survey.survey_config["sections"]):
             if section["type"] == "sort":
-                SurveyImprovementPlanSection.objects.create(survey=survey,
-                                                            section_id=section_index,
-                                                            title=section["title"])
+                survey_improvement_plan_section = SurveyImprovementPlanSection.objects.create(
+                    survey=survey, section_id=section_index, title=section["title"])
+                survey_improvement_plan_section.save()
 
     @requires_permission("edit", obj_param="survey")
     def update_evidence_section(self, user: User, survey: Survey, evidence_section: SurveyEvidenceSection, text):
@@ -138,7 +143,8 @@ class SurveyService(BasePermissionService):
         evidence_section.save()
 
     @requires_permission("edit", obj_param="survey")
-    def update_improvement_section(self, user: User, survey: Survey, improve_section: SurveyImprovementPlanSection, text):
+    def update_improvement_section(self, user: User, survey: Survey, improve_section: SurveyImprovementPlanSection,
+                                   text):
         improve_section.plan = text
         improve_section.save()
 

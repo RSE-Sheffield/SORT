@@ -65,19 +65,21 @@ class SurveyServiceTestCase(SORT.test.test_case.ViewTestCase):
         self.get("survey_export", pk=self.survey.pk)
 
     def test_survey_improvement_plan(self):
-        for section_id in range(5):
-            with self.subTest(section_id=section_id):
+        # Test sections A to E
+        for improvement_section in self.survey.improvement_sections.all():
+            with self.subTest(section_id=improvement_section.section_id):
                 self.get(
-                    "survey_improvement_plan", pk=self.survey.pk, section_id=section_id
+                    view_name="survey_improvement_plan", pk=self.survey.pk, section_id=improvement_section.section_id
                 )
 
     def test_survey_evidence_gathering(self):
-        for section_id in range(5):
-            with self.subTest(section_id=section_id):
+        # Test sections A to E
+        for evidence_section in self.survey.evidence_sections.all():
+            with self.subTest(section_id=evidence_section.section_id):
                 self.get(
                     "survey_evidence_gathering",
                     pk=self.survey.pk,
-                    section_id=section_id,
+                    section_id=evidence_section.section_id,
                 )
 
     def test_survey_response_get(self):

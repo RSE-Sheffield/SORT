@@ -52,7 +52,7 @@ class SurveyEvidenceSection(models.Model):
     The section_id always matches the section index in the survey.survey_config["sections"]
     """
     section_id = models.IntegerField(default=0)
-    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name="evidence_sections")
     title = models.TextField(blank=True, null=True)
     text = models.TextField(blank=True, null=True)
 
@@ -62,15 +62,16 @@ class SurveyEvidenceSection(models.Model):
             models.Index(fields=["section_id"]),
         ]
 
-class SurveyImprovementPlanSection(models.Model):
 
+class SurveyImprovementPlanSection(models.Model):
     """
     The section_id always matches the section index in the survey.survey_config["sections"]
     """
     section_id = models.IntegerField(default=0, db_index=True)
-    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name="improvement_sections")
     title = models.TextField(blank=True, null=True)
     plan = models.TextField(blank=True, null=True)
+
 
 def survey_file_upload_path(instance, filename):
     return f"survey/{instance.survey.pk}/{filename}"

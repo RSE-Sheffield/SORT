@@ -99,7 +99,21 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertIsInstance(self.survey.consent_config, dict)
         self.assertIsInstance(self.survey.survey_config, dict)
 
-        self.assertGreater(len(self.survey.survey_config["sections"]), 0)
+        # There should be some SORT survey sections
+        self.assertGreater(
+            len(self.survey.survey_config["sections"]), 0, "No survey sections"
+        )
+        # There shouldn't be any consent or demography since we updated with empty values above
+        self.assertEqual(
+            len(self.survey.consent_config["sections"]),
+            0,
+            "Unexpected consent sections",
+        )
+        self.assertEqual(
+            len(self.survey.demography_config["sections"]),
+            0,
+            "Unexpected demography sections",
+        )
 
     def test_get_survey_from_token(self):
         token = self.survey.current_invite_token()
@@ -138,3 +152,18 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.service.generate_mock_responses(
             user=self.admin, survey=self.survey, num_responses=3
         )
+
+    def test_create_survey_evidence_sections(self):
+        self.service.initialise_survey(
+            user=self.admin, project=self.project, survey=self.survey)
+        self.service.update_consent_demography_config(
+            user=self.admin, survey=self.survey,
+            consent_config=self.survey.consent_config,
+            demography_config=self.survey.demography_config,
+            survey_body_path="Nurses")
+        # from survey.models import SurveyEvidenceSection
+        # evidence_sections = SurveyEvidenceSection.objects.filter(survey=self.survey).order_by("section_id")
+        # self.assertEqual(evidence_sections.count(), len(self.survey.survey_config["sections"]))
+        self.assertGreater(self.survey.evidence_sections.count(), 0)
+        sort_sections = [section for section in self.survey.survey_config["sections"] if section["type"] == "sort"]
+        self.assertEqual(self.survey.evidence_sections.count(), len(sort_sections))
