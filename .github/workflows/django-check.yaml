@@ -28,7 +28,6 @@ jobs:
           cache-dependency-path: 'assets/sort-survey-configurator/package-lock.json'
       - name: Install JavaScript package
         run: |
-          cd assets/sort-survey-configurator
           npm ci
           npm run build
       # https://docs.djangoproject.com/en/5.1/ref/django-admin/#check
