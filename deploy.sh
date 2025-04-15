@@ -18,6 +18,7 @@ pip="$venv_dir/bin/pip"
 python_version="python3.12"
 python="$venv_dir/bin/python"
 env_file="$sort_dir/.env"
+django_media_root="/srv/www/sort/uploads/"
 
 # Install British UTF-8 locale so we can use this with PostgreSQL.
 # This is important to avoid the limitations of the LATIN1 character set.
@@ -43,6 +44,11 @@ sudo chmod 600 "$env_file"
 # Install static files into DJANGO_STATIC_ROOT
 # This runs in a subshell because it's changing directory
 (cd "$sort_dir" && exec $python manage.py collectstatic --no-input)
+
+# Create uploads folder
+sudo mkdir --parents "$django_media_root"
+sudo chown gunicorn:gunicorn "$django_media_root"
+sudo chmod 755 "$django_media_root"
 
 # Install Gunicorn service
 cp --verbose config/systemd/gunicorn.service /etc/systemd/system/gunicorn.service
