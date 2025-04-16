@@ -34,7 +34,8 @@ python3 -m venv "$venv_dir"
 
 # Install the SORT Django app package
 $pip install --quiet -r requirements.txt
-cp --recursive * "$sort_dir/"
+sudo rm -r "$sort_dir"/**/migrations
+cp --recursive ./* "$sort_dir/"
 
 # Create environment file
 sudo touch "$env_file"
