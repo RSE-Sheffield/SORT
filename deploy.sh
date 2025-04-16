@@ -18,7 +18,6 @@ pip="$venv_dir/bin/pip"
 python_version="python3.12"
 python="$venv_dir/bin/python"
 env_file="$sort_dir/.env"
-frontend_dir="$sort_dir/assets/sort-survey-configurator"
 node_version=20
 
 # Install British UTF-8 locale so we can use this with PostgreSQL.
