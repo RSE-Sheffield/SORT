@@ -1,19 +1,23 @@
-name: Check Gunicorn config
+name: Check Gunicorn configuration
 on:
   push:
     branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
 jobs:
-  lint:
+  check-config:
+    name: Check Gunicorn configuration
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v5.3.0
+        uses: actions/setup-python@v5.5.0
         with:
           python-version: "3.12"
           cache: "pip"
-      - name: Install Gunicorn
-        run: pip install gunicorn django
+      - name: Install dependencies
+        run: pip install --requirement requirements.txt
       - name: Check Gunicorn config
+        # https://docs.gunicorn.org/en/latest/configure.html
         run: gunicorn --config ./gunicorn.conf.py --check-config SORT.wsgi:application
