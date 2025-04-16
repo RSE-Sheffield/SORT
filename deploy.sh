@@ -47,8 +47,6 @@ sudo chmod 600 "$env_file"
 
 # Create uploads folder
 sudo mkdir --parents "$django_media_root"
-sudo chown gunicorn:gunicorn "$django_media_root"
-sudo chmod 755 "$django_media_root"
 
 # Install Gunicorn service
 cp --verbose config/systemd/gunicorn.service /etc/systemd/system/gunicorn.service
