@@ -5,7 +5,8 @@ on:
   pull_request:
     branches: [ "main", "dev" ]
 jobs:
-  lint:
+  django-test:
+    name: Run Django automated checks and tests
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -15,12 +16,19 @@ jobs:
         with:
           # This should match the version used in production
           python-version: "3.12"
+          cache: "pip"
       - name: Install dependencies
+        run: pip install --requirement requirements.txt --requirement requirements-dev.txt
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          # This should match the version used in production
+          node-version: 'v20.x'
+          cache: 'npm'
+      - name: Install JavaScript package
         run: |
-          # Update pip
-          python -m pip install --upgrade pip
-          # https://pip.pypa.io/en/stable/cli/pip_install/
-          pip install --requirement requirements.txt
+          npm ci
+          npm run build
       # https://docs.djangoproject.com/en/5.1/ref/django-admin/#check
       - name: Run Django system checks
         run: |
@@ -30,4 +38,13 @@ jobs:
       - name: Run Django test suites
         run: |
           export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
-          python manage.py test
+          # Iterate over Django apps with test directories
+          for test_dir in **/tests
+          do
+            echo "Testing $test_dir"
+            # https://docs.djangoproject.com/en/5.1/topics/testing/advanced/#integration-with-coverage-py
+            coverage run --source="home,survey" manage.py test "$test_dir" --verbosity=2 --parallel=auto
+          done
+          # Generate coverage report
+          echo "## Coverage report" >> $GITHUB_STEP_SUMMARY
+          coverage report --format="markdown" >> $GITHUB_STEP_SUMMARY
