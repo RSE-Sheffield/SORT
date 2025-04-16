@@ -38,7 +38,6 @@ cp --recursive * "$sort_dir/"
 
 # Create environment file
 sudo touch "$env_file"
-sudo chown gunicorn:gunicorn "$env_file"
 sudo chmod 600 "$env_file"
 
 # Install static files into DJANGO_STATIC_ROOT
