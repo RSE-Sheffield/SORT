@@ -56,6 +56,7 @@ systemctl enable gunicorn.service
 systemctl enable gunicorn.socket
 systemctl start gunicorn.service
 systemctl reload gunicorn.service
+systemctl restart gunicorn.service
 
 # Install web reverse proxy server
 # Install nginx
