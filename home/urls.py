@@ -1,5 +1,6 @@
 __author__ = "Farhad Allian"
 
+import django.contrib.auth.views
 from django.urls import path
 
 from . import views
@@ -10,6 +11,10 @@ urlpatterns = [
     path("logout/", views.LogoutInterfaceView.as_view(), name="logout"),
     path("signup/", views.SignupView.as_view(), name="signup"),
     path("profile/", views.ProfileView.as_view(), name="profile"),
+    # Change password using built-in authentication view
+    # https://docs.djangoproject.com/en/5.2/topics/auth/default/#built-in-auth-views
+    path("password_change/", django.contrib.auth.views.PasswordChangeView.as_view(), name="change-password"),
+    # Password reset by email (for lost passwords)
     path(
         "password_reset/",
         views.CustomPasswordResetView.as_view(),
