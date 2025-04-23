@@ -6,7 +6,7 @@ from django.contrib.auth.models import (
 from django.db import models
 from django.urls import reverse
 
-from .constants import ROLE_PROJECT_MANAGER, ROLES, ROLE_ADMIN
+from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
 
 
 class UserManager(BaseUserManager):
