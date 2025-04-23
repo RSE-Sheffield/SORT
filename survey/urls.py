@@ -98,6 +98,5 @@ urlpatterns = [
         views.SurveyLinkInvalidView.as_view(),
         name="survey_link_invalid",
     ),
-    path("invite/<int:pk>", views.InvitationView.as_view(), name="invite"),
-
+    path("survey/<int:pk>/invite", views.InvitationView.as_view(), name="invite"),
 ]

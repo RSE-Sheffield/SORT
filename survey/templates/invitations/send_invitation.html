@@ -15,10 +15,10 @@
                     {% csrf_token %}
 
                     <div class="mb-3">
-                        <label for="id_email" class="form-label">Email Address</label>
-                        <input type="email" name="email" id="id_email" class="form-control"
-                               placeholder="Enter email address" required>
-                        <small class="form-text text-muted">Enter the participant's email address.</small>
+                        <label for="id_email" class="form-label">Email Addresses</label>
+                        <textarea type="email" name="email" id="id_email" class="form-control"
+                                  placeholder="Enter email addresses..." rows="5" required></textarea>
+                        <small class="form-text text-muted">Enter the participants email addresses.</small>
                     </div>
 
                     <div class="mb-3">
