@@ -31,3 +31,5 @@ pytest==8.3.4
 pytest-django==4.9.0
 django-qr-code==4.1.0
 factory-boy==3.3.3
+django-crispy-forms==2.4
+crispy-bootstrap5==2025.4

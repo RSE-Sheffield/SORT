@@ -18,13 +18,13 @@ from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from survey.models import Survey
+from survey.services import survey_service
 
 from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from .forms import ManagerLoginForm, ManagerSignupForm, UserProfileForm
 from .mixins import OrganisationRequiredMixin
 from .models import Organisation, Project, OrganisationMembership
 from .services import organisation_service, project_service
-from survey.services import survey_service
 
 User = get_user_model()
 
@@ -204,7 +204,7 @@ class ProjectView(LoginRequiredMixin, ListView):
             self.project = None
 
     def get(self, request, *args, **kwargs):
-        if not hasattr(self, 'project') or not self.project:
+        if not hasattr(self, "project") or not self.project:
             messages.error(request, "Project not found.")
             return redirect("myorganisation")
 
@@ -298,7 +298,7 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         project = get_object_or_404(
-            Project.objects.select_related('organisation'),
+            Project.objects.select_related("organisation"),
             id=self.kwargs["project_id"],
         )
 
