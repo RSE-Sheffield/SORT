@@ -22,7 +22,7 @@ from survey.models import Survey
 from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from .forms import ManagerLoginForm, ManagerSignupForm, UserProfileForm
 from .mixins import OrganisationRequiredMixin
-from .models import Organisation, Project
+from .models import Organisation, Project, OrganisationMembership
 from .services import organisation_service, project_service
 from survey.services import survey_service
 
@@ -61,11 +61,11 @@ class LoginInterfaceView(LoginView):
 class HomeView(LoginRequiredMixin, View):
     template_name = "home/welcome.html"
     context_object_name = "projects"
-    
+
     def get(self, request):
         user = self.request.user
         # all projects for current user
-        projects = project_service.get_user_projects(user)      
+        projects = project_service.get_user_projects(user)
         return render(request, self.template_name, dict(projects=projects))
 
 
@@ -360,3 +360,22 @@ class ProjectDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy("myorganisation")
+
+
+class OrganisationMembershipListView(LoginRequiredMixin, OrganisationRequiredMixin, ListView):
+    model = OrganisationMembership
+    context_object_name = "memberships"
+    template_name = "organisation/members.html"
+
+    @property
+    def organisation(self) -> Organisation:
+        return organisation_service.get_user_organisation(self.request.user)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(organisation=self.organisation)
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context["organisation"] = self.organisation
+        return context

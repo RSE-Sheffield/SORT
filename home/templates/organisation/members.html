@@ -1,0 +1,56 @@
+{% extends "base_manager.html" %}
+{% load project_filters %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <i class="bx bxs-buildings"></i> My Organisation
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="bx bxs-group"></i> Members
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="container mx-auto px-4 py-8">
+        <h1>{{ organisation.name }}</h1>
+        <p>{{ organisation.description }}</p>
+    </div>
+    <div class="container mx-auto px-4 py-8" id="organisation-members">
+        <h2>Members</h2>
+        <div>
+            <a href="{% url 'project_create' organisation.id %}">
+                <a href="#" type="button" class="btn btn-primary">
+                    <i class='bx bxs-user-plus'></i> Invite new member
+                </a>
+            </a>
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">User</th>
+                <th scope="col">Role</th>
+                <th scope="col">Joined at</th>
+                <th scope="col">Added by</th>
+                <th scope="col">Remove</th>
+            </tr>
+            </thead>
+            {% for membership in memberships %}
+                <tr>
+                    <th scope="row">{{ membership.user }}</th>
+                    <td>{{ membership.role | title }}</td>
+                    <td>{{ membership.joined_at }}</td>
+                    <td>{{ membership.added_by }}</td>
+                    <td>
+                        <a href="{{ membership.pk }}" class="btn btn-danger">
+                            <i class='bx bxs-user-minus'></i> Remove
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}
