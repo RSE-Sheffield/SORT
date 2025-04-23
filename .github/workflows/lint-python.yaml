@@ -18,10 +18,3 @@ jobs:
           isort $dirs --skip-glob '*/migrations/*'
           black $dirs --exclude '/migrations/'
           flake8 $dirs --exclude '*/migrations/*'
-      # Suggest merging any changes
-      - name: Create Pull Request
-        # https://github.com/marketplace/actions/create-pull-request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          body: "Python code reformatted with black and isort"
-          branch: "chore/python-formatting"
