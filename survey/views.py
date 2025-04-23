@@ -456,7 +456,7 @@ class InvitationView(FormView):
     form_class = InvitationForm
 
     def form_valid(self, form):
-        recipient_list = tuple(form.cleaned_data["email"].split())
+        recipient_list = tuple(form.cleaned_data["email"].replace(",", " ").split())
         message = form.data["message"]
         survey = Survey.objects.get(pk=self.kwargs["pk"])
         # Generate the survey link with the token
@@ -473,7 +473,7 @@ class InvitationView(FormView):
         )
 
         # Show success message
-        messages.success(self.request, f"Invitation sent to {recipient_list}.")
+        messages.success(self.request, f"Invitation sent to {len(recipient_list)} recipients.")
         return super().form_valid(form)
 
     def get_success_url(self):
