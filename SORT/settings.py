@@ -172,9 +172,21 @@ SESSION_COOKIE_AGE = 1800
 
 PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 
-# FA: for local testing emails:
-EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND" "django.core.mail.backends.console.EmailBackend")
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# Email settings
+# https://docs.djangoproject.com/en/5.1/topics/email/#email-backends
+EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST", "mail4.specialservers.com")
+EMAIL_PORT = int(os.getenv("DJANGO_EMAIL_PORT", 465))
+EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("DJANGO_EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_TLS", False))
+EMAIL_USE_SSL = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_SSL", True))
+EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", 3))
+EMAIL_SSL_KEYFILE = os.getenv("DJANGO_EMAIL_SSL_KEYFILE")
+EMAIL_SSL_CERTFILE = os.getenv("DJANGO_EMAIL_SSL_CERTFILE")
+EMAIL_SUBJECT_PREFIX = os.getenv("DJANGO_EMAIL_SUBJECT_PREFIX", "[SORT] ")
+EMAIL_USE_LOCALTIME = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_LOCALTIME", True))
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "sort@sort-online.org")
 
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
