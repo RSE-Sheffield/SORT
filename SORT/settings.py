@@ -184,7 +184,7 @@ EMAIL_SSL_KEYFILE = os.getenv("DJANGO_EMAIL_SSL_KEYFILE")
 EMAIL_SSL_CERTFILE = os.getenv("DJANGO_EMAIL_SSL_CERTFILE")
 EMAIL_SUBJECT_PREFIX = os.getenv("DJANGO_EMAIL_SUBJECT_PREFIX", "[SORT] ")
 EMAIL_USE_LOCALTIME = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_LOCALTIME", True))
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@noreply.com")
+DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "noreply@noreply.com")
 
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
