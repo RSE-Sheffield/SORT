@@ -152,7 +152,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR/"staticfiles")
+STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR / "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -170,9 +170,21 @@ SESSION_COOKIE_AGE = 1800
 
 PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 
-# FA: for local testing emails:
-
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# Email settings
+# https://docs.djangoproject.com/en/5.1/topics/email/#email-backends
+EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST", "mail4.specialservers.com")
+EMAIL_PORT = int(os.getenv("DJANGO_EMAIL_PORT", 465))
+EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER", "_mainaccount@sort-online.org")
+EMAIL_HOST_PASSWORD = os.getenv("DJANGO_EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_TLS", False))
+EMAIL_USE_SSL = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_SSL", True))
+EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", 3))
+EMAIL_SSL_KEYFILE = os.getenv("DJANGO_EMAIL_SSL_KEYFILE")
+EMAIL_SSL_CERTFILE = os.getenv("DJANGO_EMAIL_SSL_CERTFILE")
+EMAIL_SUBJECT_PREFIX = os.getenv("DJANGO_EMAIL_SUBJECT_PREFIX", "[SORT] ")
+EMAIL_USE_LOCALTIME = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_LOCALTIME", True))
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "sort@sort-online.org")
 
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
@@ -184,10 +196,9 @@ INTERNAL_IPS = [
 ]
 AUTH_USER_MODEL = "home.User"  # FA: replace username with email as unique identifiers
 
-
 # Vite integration
-VITE_BASE_URL = "http://localhost:5173" # Url of vite dev server
-VITE_STATIC_DIR= "ui-components" # Path to vite-generated asset directory in the static folder
+VITE_BASE_URL = "http://localhost:5173"  # Url of vite dev server
+VITE_STATIC_DIR = "ui-components"  # Path to vite-generated asset directory in the static folder
 VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, "manifest.json")
 
 # FA: for production:
@@ -195,8 +206,6 @@ VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, "manifest.json")
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
-
-
 
 # File uploading
 MEDIA_ROOT = os.getenv("DJANGO_MEDIA_ROOT", BASE_DIR / "uploads")

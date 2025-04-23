@@ -3,11 +3,12 @@ import logging
 import os.path
 import mimetypes
 
+import django.core.mail
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.core.files.uploadhandler import UploadFileException
-from django.core.mail import send_mail
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.context_processors import csrf
@@ -453,20 +454,21 @@ class InvitationView(FormView):
     model = Survey
     template_name = "invitations/send_invitation.html"
     form_class = InvitationForm
-    success_url = reverse_lazy("success_invitation")
 
     def form_valid(self, form):
         email = form.cleaned_data["email"]
+        message = form.data["message"]
         survey = Survey.objects.get(pk=self.kwargs["pk"])
         # Generate the survey link with the token
-        survey_link = survey.get_invite_link()
+        survey_link = survey.get_invite_link(request=self.request)
 
         # Send the email
-        send_mail(
-            "Your Survey Invitation",
-            f"Click here to start the survey: {survey_link}",
-            "from@example.com",
-            [email],
+        # https://docs.djangoproject.com/en/5.1/topics/email/
+        django.core.mail.send_mail(
+            subject="Your SORT Survey Invitation",
+            message=f"Click here to start the SORT survey:\n{survey_link}\n\n{message}",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
             fail_silently=False,
         )
 
@@ -474,6 +476,5 @@ class InvitationView(FormView):
         messages.success(self.request, f"Invitation sent to {email}.")
         return super().form_valid(form)
 
-
-class SuccessInvitationView(LoginRequiredMixin, TemplateView):
-    template_name = "invitations/complete_invitation.html"
+    def get_success_url(self):
+        return reverse_lazy("invite", kwargs=dict(pk=self.kwargs["pk"]))
