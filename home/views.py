@@ -14,14 +14,17 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import ListView
+from django.views.generic import ListView, FormView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from survey.models import Survey
 from survey.services import survey_service
 
 from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
-from .forms import ManagerLoginForm, ManagerSignupForm, UserProfileForm
+from .forms.user_profile import UserProfileForm
+from .forms.manager_login import ManagerLoginForm
+from .forms.manager_signup import ManagerSignupForm
+from .forms.organisation_membership_create import OrganisationMembershipCreateForm
 from .mixins import OrganisationRequiredMixin
 from .models import Organisation, Project, OrganisationMembership
 from .services import organisation_service, project_service
@@ -375,16 +378,26 @@ class OrganisationMembershipListView(LoginRequiredMixin, OrganisationRequiredMix
         queryset = super().get_queryset()
         return queryset.filter(organisation=self.organisation)
 
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data(*args, **kwargs)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         context["organisation"] = self.organisation
         return context
 
 
-class OrganisationMembershipCreateView(LoginRequiredMixin, OrganisationRequiredMixin, CreateView):
+class OrganisationMembershipCreateView(LoginRequiredMixin, OrganisationRequiredMixin, FormView):
     """
     Add a new member to your organisation.
     """
     model = OrganisationMembership
     fields = ["user"]
     template_name = "organisation/members/create.html"
+    form_class = OrganisationMembershipCreateForm
+
+    @property
+    def organisation(self) -> Organisation:
+        return organisation_service.get_user_organisation(self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["organisation"] = self.organisation
+        return context

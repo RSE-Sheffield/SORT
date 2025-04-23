@@ -4,8 +4,7 @@ from django.core.exceptions import PermissionDenied
 from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from home.services import organisation_service, project_service
 from survey.services import survey_service
-
-from ..models import Organisation, OrganisationMembership
+from home.models import Organisation, OrganisationMembership
 from .model_factory import (
     OrganisationFactory,
     ProjectFactory,
