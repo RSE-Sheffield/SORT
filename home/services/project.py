@@ -2,16 +2,13 @@
 Project service with integrated permissions
 """
 
-from typing import Optional, Dict
-from django.db.models.query import QuerySet
+from typing import Dict, Optional
+
 from django.core.exceptions import PermissionDenied
+from django.db.models.query import QuerySet
 
 from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
-from ..models import (
-    Organisation,
-    Project,
-    User,
-)
+from ..models import Organisation, Project, User
 from .base import BasePermissionService, requires_permission
 from .organisation import organisation_service
 
@@ -24,7 +21,7 @@ class ProjectService(BasePermissionService):
         try:
             return project.organisation.get_user_role(user)
         except (
-                AttributeError
+            AttributeError
         ):  # In case user is AnonymousUser or organisation method fails
             return None
 
@@ -38,7 +35,7 @@ class ProjectService(BasePermissionService):
         return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
 
     def can_create(self, user: User, organisation: Organisation) -> bool:
-        """ Needs to be at least a member of an organisation to create a project """
+        """Needs to be at least a member of an organisation to create a project"""
         role = organisation_service.get_user_role(user, organisation)
         return role in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]
 
@@ -62,7 +59,7 @@ class ProjectService(BasePermissionService):
 
     @requires_permission("create", obj_param="organisation")
     def create_project(
-            self, user: User, name: str, organisation: Organisation, description: str = None
+        self, user: User, name: str, organisation: Organisation, description: str = None
     ) -> Project:
         """Create a new project"""
         if not self.can_create(user, organisation):

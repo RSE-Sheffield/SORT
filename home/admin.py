@@ -1,11 +1,6 @@
 from django.contrib import admin
 
-from .models import (
-    Organisation,
-    OrganisationMembership,
-    Project,
-    User,
-)
+from .models import Organisation, OrganisationMembership, Project, User
 
 
 # Register your models here.
