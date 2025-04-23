@@ -53,7 +53,6 @@ DEBUG = cast_to_boolean(os.getenv("DJANGO_DEBUG", "False"))
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "sort-web-app.shef.ac.uk").split()
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -63,12 +62,15 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_bootstrap5",
     "django_extensions",
-    "debug_toolbar",
     "qr_code",
-    # apps created by FA:
+    # SORT apps
     "home",
     "survey",
 ]
+
+if DEBUG:
+    # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
+    INSTALLED_APPS.append("debug_toolbar")
 
 MIDDLEWARE = [
     # Implement security in the web server, not in Django.
