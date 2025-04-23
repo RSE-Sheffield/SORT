@@ -32,6 +32,7 @@ urlpatterns = [
     ),
     path("myorganisation/", views.MyOrganisationView.as_view(), name="myorganisation"),
     path("myorganisation/members/", views.OrganisationMembershipListView.as_view(), name="members"),
+    path("myorganisation/members/invite", views.OrganisationMembershipCreateView.as_view(), name="member_create"),
     path(
         "organisation/create/",
         views.OrganisationCreateView.as_view(),

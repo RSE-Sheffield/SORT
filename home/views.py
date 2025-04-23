@@ -365,7 +365,7 @@ class ProjectDeleteView(LoginRequiredMixin, DeleteView):
 class OrganisationMembershipListView(LoginRequiredMixin, OrganisationRequiredMixin, ListView):
     model = OrganisationMembership
     context_object_name = "memberships"
-    template_name = "organisation/members.html"
+    template_name = "organisation/members/list.html"
 
     @property
     def organisation(self) -> Organisation:
@@ -379,3 +379,12 @@ class OrganisationMembershipListView(LoginRequiredMixin, OrganisationRequiredMix
         context = super().get_context_data(*args, **kwargs)
         context["organisation"] = self.organisation
         return context
+
+
+class OrganisationMembershipCreateView(LoginRequiredMixin, OrganisationRequiredMixin, CreateView):
+    """
+    Add a new member to your organisation.
+    """
+    model = OrganisationMembership
+    fields = ["user"]
+    template_name = "organisation/members/create.html"

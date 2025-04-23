@@ -23,7 +23,7 @@
         <h2>Members</h2>
         <div>
             <a href="{% url 'project_create' organisation.id %}">
-                <a href="#" type="button" class="btn btn-primary">
+                <a href="{% url 'member_create' %}" type="button" class="btn btn-primary">
                     <i class='bx bxs-user-plus'></i> Invite new member
                 </a>
             </a>
