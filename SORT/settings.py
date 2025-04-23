@@ -50,7 +50,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(os.getenv("DJANGO_DEBUG", "False"))
 
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "sort-web-app.shef.ac.uk").split()
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split()
 
 # Application definition
 
@@ -173,7 +173,7 @@ PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 # Email settings
 # https://docs.djangoproject.com/en/5.1/topics/email/#email-backends
 EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
-EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST", "mail4.specialservers.com")
+EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("DJANGO_EMAIL_PORT", 465))
 EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("DJANGO_EMAIL_HOST_PASSWORD")
@@ -184,7 +184,7 @@ EMAIL_SSL_KEYFILE = os.getenv("DJANGO_EMAIL_SSL_KEYFILE")
 EMAIL_SSL_CERTFILE = os.getenv("DJANGO_EMAIL_SSL_CERTFILE")
 EMAIL_SUBJECT_PREFIX = os.getenv("DJANGO_EMAIL_SUBJECT_PREFIX", "[SORT] ")
 EMAIL_USE_LOCALTIME = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_LOCALTIME", True))
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "sort@sort-online.org")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@noreply.com")
 
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
