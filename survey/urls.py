@@ -99,9 +99,5 @@ urlpatterns = [
         name="survey_link_invalid",
     ),
     path("invite/<int:pk>", views.InvitationView.as_view(), name="invite"),
-    path(
-        "invite/success/",
-        views.SuccessInvitationView.as_view(),
-        name="success_invitation",
-    ),
+
 ]
