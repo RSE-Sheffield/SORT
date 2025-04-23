@@ -12,7 +12,13 @@ class InvitationForm(forms.Form):
         help_text="Please enter a list of email addresses",
         required=True,
         validators=[EmailListValidator()],
-        widget=forms.Textarea,
+        widget=forms.Textarea(attrs=dict(rows=6)),
+    )
+    message = forms.CharField(
+        label="Message",
+        help_text="(Optional) Additional message for the participants",
+        required=False,
+        widget=forms.Textarea(attrs=dict(rows=3)),
     )
 
 
