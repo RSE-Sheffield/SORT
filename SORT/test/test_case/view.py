@@ -73,6 +73,7 @@ class ViewTestCase(SORTTestCase):
         :param view_name: The name of the view as defined in urls.py
         :param expected_status_code: The HTTP status code that should be returned
         :param login: Whether to authenticate as a user before requesting the URL.
+        :param data: The HTTP request body
         :param kwargs: Additional arguments to pass to the GET request
         """
         data = data or dict()
