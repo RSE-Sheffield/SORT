@@ -1,7 +1,6 @@
 __author__ = "Farhad Allian"
 
 import django.urls
-import django.contrib.auth.views
 from django.urls import path
 
 from . import views
@@ -16,7 +15,7 @@ urlpatterns = [
     # https://docs.djangoproject.com/en/5.2/topics/auth/default/#built-in-auth-views
     # https://docs.djangoproject.com/en/5.2/topics/auth/default/#django.contrib.auth.views.PasswordChangeView
     path("profile/change-password/",
-         django.contrib.auth.views.PasswordChangeView.as_view(
+         views.PasswordChangeView.as_view(
              template_name="home/password_change_form.html",
              success_url=django.urls.reverse_lazy("profile"),
          ),

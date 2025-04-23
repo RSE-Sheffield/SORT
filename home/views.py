@@ -1,3 +1,4 @@
+import django.contrib.auth.views
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -61,11 +62,11 @@ class LoginInterfaceView(LoginView):
 class HomeView(LoginRequiredMixin, View):
     template_name = "home/welcome.html"
     context_object_name = "projects"
-    
+
     def get(self, request):
         user = self.request.user
         # all projects for current user
-        projects = project_service.get_user_projects(user)      
+        projects = project_service.get_user_projects(user)
         return render(request, self.template_name, dict(projects=projects))
 
 
@@ -360,3 +361,9 @@ class ProjectDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy("myorganisation")
+
+
+class PasswordChangeView(django.contrib.auth.views.PasswordChangeView):
+    def form_valid(self, form):
+        messages.success(self.request, "Your password has been changed.")
+        return super().form_valid(form=form)
