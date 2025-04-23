@@ -75,3 +75,7 @@ systemctl restart postgresql
 # Run deployment checks
 # https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 (cd "$sort_dir" && exec $python manage.py check --deploy)
+
+# Migrate database changes
+# https://docs.djangoproject.com/en/5.1/topics/migrations/
+(cd "$sort_dir" && $python manage.py makemigrations --merge && $python manage.py migrate)
