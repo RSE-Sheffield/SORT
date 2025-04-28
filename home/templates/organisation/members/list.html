@@ -22,10 +22,8 @@
     <div class="container mx-auto px-4 py-8" id="organisation-members">
         <h2>Members</h2>
         <div>
-            <a href="{% url 'project_create' organisation.id %}">
-                <a href="{% url 'member_create' %}" type="button" class="btn btn-primary">
-                    <i class='bx bxs-user-plus'></i> Invite new member
-                </a>
+            <a href="{% url 'member_invite' %}" type="button" class="btn btn-primary">
+                <i class='bx bxs-user-plus'></i> Invite new member
             </a>
         </div>
         <table class="table">

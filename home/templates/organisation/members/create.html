@@ -23,11 +23,25 @@
         <h1>Invite new member</h1>
         <div class="card">
             <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    {{ form | crispy }}
-                    <button class="btn btn-primary"><i class="bx bxs-user-plus"></i>&nbsp;Invite</button>
-                </form>
+                {% if success_message %}
+                    <!-- New user invited -->
+                    <div class="alert alert-success" role="alert">
+                        <i class="bx bxs-envelope"></i> {{ success_message }}
+                    </div>
+                    <div>
+                        <a href="{% url 'member_invite' %}" type="button" class="btn btn-primary">
+                            <i class='bx bxs-user-plus'></i> Invite another person
+                        </a>
+                    </div>
+                {% else %}
+                    <!-- Invite organisation member form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form | crispy }}
+
+                        <button class="btn btn-primary"><i class="bx bxs-user-plus"></i>&nbsp;Invite</button>
+                    </form>
+                {% endif %}
             </div>
         </div>
     </div>

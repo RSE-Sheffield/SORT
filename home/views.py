@@ -16,6 +16,8 @@ from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import ListView, FormView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
+import invitations.views
+import invitations.models
 
 from survey.models import Survey
 from survey.services import survey_service
@@ -24,7 +26,6 @@ from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from .forms.user_profile import UserProfileForm
 from .forms.manager_login import ManagerLoginForm
 from .forms.manager_signup import ManagerSignupForm
-from .forms.organisation_membership_create import OrganisationMembershipCreateForm
 from .mixins import OrganisationRequiredMixin
 from .models import Organisation, Project, OrganisationMembership
 from .services import organisation_service, project_service
@@ -35,6 +36,30 @@ User = get_user_model()
 class SignupView(CreateView):
     form_class = ManagerSignupForm
     template_name = "home/register.html"
+
+    @property
+    def invitation(self) -> invitations.models.Invitation:
+        try:
+            return self._invitation
+        except AttributeError:
+            try:
+                self._invitation = invitations.models.Invitation.objects.get(key=self.kwargs["key"])
+                return self._invitation
+            # This signup must have an invitation
+            except invitations.models.Invitation.DoesNotExist:
+                raise PermissionDenied("You must be invited to sign up.")
+
+    def get_context_data(self, **context):
+        context = super().get_context_data(**context)
+        context["email"] = self.invitation.email
+        context["organisation"] = organisation_service.get_user_organisation(self.invitation.inviter)
+
+        return context
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["email"] = self.invitation.email
+        return initial
 
     def form_valid(self, form):
         user = form.save()
@@ -384,20 +409,43 @@ class OrganisationMembershipListView(LoginRequiredMixin, OrganisationRequiredMix
         return context
 
 
-class OrganisationMembershipCreateView(LoginRequiredMixin, OrganisationRequiredMixin, FormView):
+# class OrganisationMembershipCreateView(LoginRequiredMixin, OrganisationRequiredMixin, FormView):
+#     """
+#     Add a new member to your organisation.
+#     """
+#     model = OrganisationMembership
+#     fields = ["user"]
+#     template_name = "organisation/members/create.html"
+#     form_class = OrganisationMembershipCreateForm
+#
+#     @property
+#     def organisation(self) -> Organisation:
+#         return organisation_service.get_user_organisation(self.request.user)
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context["organisation"] = self.organisation
+#         return context
+
+class MyOrganisationInviteView(LoginRequiredMixin, OrganisationRequiredMixin, invitations.views.SendInvite):
     """
-    Add a new member to your organisation.
+    Invite a new member to join an organisation via email.
+
+    https://django-invitations.readthedocs.io/en/latest/usage.html
     """
-    model = OrganisationMembership
-    fields = ["user"]
+    # Based on the template in the django-invitations plugin
+    # https://github.com/jazzband/django-invitations/blob/master/invitations/templates/invitations/forms/_invite.html
     template_name = "organisation/members/create.html"
-    form_class = OrganisationMembershipCreateForm
 
-    @property
-    def organisation(self) -> Organisation:
-        return organisation_service.get_user_organisation(self.request.user)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["organisation"] = self.organisation
-        return context
+class MyOrganisationAcceptInviteView(invitations.views.AcceptInvite):
+    def post(self, *args, **kwargs):
+        import django.urls
+        try:
+            super().post(*args, **kwargs)
+        # There is no public signup URL
+        except django.urls.NoReverseMatch:
+            pass
+
+        # Signup requires a key from an invitation
+        return redirect("signup", key=self.object.key)

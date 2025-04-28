@@ -7,13 +7,13 @@ User = django.contrib.auth.get_user_model()
 
 
 class ManagerSignupForm(UserCreationForm):
-    email = forms.EmailField(
-        required=True, label="Email", error_messages={"required": "Email is required."}
-    )
-
     class Meta:
         model = User
         fields = ("email", "password1", "password2")
+
+    email = forms.EmailField(
+        required=True, label="Email", error_messages={"required": "Email is required."}
+    )
 
     def clean_email(self) -> str:
         email = self.cleaned_data.get("email")

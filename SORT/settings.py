@@ -61,13 +61,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Plugin apps
     "django_bootstrap5",
     "django_extensions",
     "debug_toolbar",
     "qr_code",
     "crispy_forms",
     "crispy_bootstrap5",
-    # apps created by FA:
+    "invitations",
+    # SORT apps
     "home",
     "survey",
 ]
@@ -261,3 +263,9 @@ SURVEY_TEMPLATES = {
 # https://django-crispy-forms.readthedocs.io/en/latest/install.html
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+# Invitations options
+# https://django-invitations.readthedocs.io/en/latest/configuration.html
+INVITATIONS_SIGNUP_REDIRECT = "signup"
+INVITATIONS_CONFIRMATION_URL_NAME = "member_invite_accept"
+INVITATIONS_EMAIL_SUBJECT_PREFIX = "SORT"
