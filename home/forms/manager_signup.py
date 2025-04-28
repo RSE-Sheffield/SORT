@@ -1,16 +1,16 @@
+"""
+New manager registration form
+"""
+
 import django.contrib.auth.models
 import django.forms as forms
 from django.contrib.auth.forms import UserCreationForm
-from django.core.exceptions import ValidationError
-
 from invitations.models import Invitation
 
 from home.services import organisation_service
 from home.models import Organisation
 
 User = django.contrib.auth.get_user_model()
-
-organisation_service =
 
 
 class ManagerSignupForm(UserCreationForm):
@@ -41,11 +41,14 @@ class ManagerSignupForm(UserCreationForm):
         return User.objects.get(pk=self.invitation.inviter_id)
 
     @property
-    def organisation(self):
+    def organisation(self) -> Organisation:
         """
         The organisation that the new user was invited to join.
         """
-        return organisation_service.get_user_organisation(user=self.inviter)
+        organisation = organisation_service.get_user_organisation(user=self.inviter)
+        if organisation is None:
+            raise forms.ValidationError("This user is not a manager of an organisation")
+        return organisation
 
     @property
     def email(self) -> str:
