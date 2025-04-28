@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -37,28 +39,37 @@ class SignupView(CreateView):
     form_class = ManagerSignupForm
     template_name = "home/register.html"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._invitation: Optional[invitations.models.Invitation] = None
+
     @property
     def invitation(self) -> invitations.models.Invitation:
-        try:
-            return self._invitation
-        except AttributeError:
+        """
+        The user invite that was emailed to the new user. Each
+        invitation is uniquely identified by its secret key and email address.
+        """
+        if self._invitation is None:
             try:
                 self._invitation = invitations.models.Invitation.objects.get(key=self.kwargs["key"])
-                return self._invitation
             # This signup must have an invitation
             except invitations.models.Invitation.DoesNotExist:
                 raise PermissionDenied("You must be invited to sign up.")
+        return self._invitation
 
     def get_context_data(self, **context):
         context = super().get_context_data(**context)
-        context["email"] = self.invitation.email
+
+        # The invited user will be invited to the same organisation
+        # as the manager who invited them.
         context["organisation"] = organisation_service.get_user_organisation(self.invitation.inviter)
+        context["email"] = self.invitation.email
 
         return context
 
     def get_initial(self):
         initial = super().get_initial()
-        initial["email"] = self.invitation.email
+        initial["key"] = self.invitation.key
         return initial
 
     def form_valid(self, form):

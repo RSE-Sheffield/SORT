@@ -7,10 +7,22 @@
 {% block content %}
     <div class="border-bottom mb-3">
         <h2>{{ organisation }}</h2>
-        <p>{{ organisation.description }}</p>
+        <p class="text-secondary">{{ organisation.description | truncatechars:128 }}</p>
     </div>
     <form method="POST">
         {% csrf_token %}
+        <div class="mb-3">
+            <label for="email" class="form-label"
+                   style="text-align: right">Email address</label>
+            <input type="email"
+                   class="form-control"
+                   id="email"
+                   name="email"
+                   value="{{ email }}"
+                   required
+                   readonly
+            />
+        </div>
         {% for field in form %}
             <div class="mb-3">
                 <label for="{{ field.id_for_label }}" class="form-label"

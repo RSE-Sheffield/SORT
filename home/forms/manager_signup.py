@@ -3,27 +3,27 @@ import django.forms as forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
+from invitations.models import Invitation
+
 User = django.contrib.auth.get_user_model()
 
 
 class ManagerSignupForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ("email", "password1", "password2")
+        fields = ("password1", "password2")
 
-    email = forms.EmailField(
-        required=True, label="Email", error_messages={"required": "Email is required."}
-    )
+    # Secret key for the invitation (hidden form field)
+    key = forms.CharField(required=False, disabled=True, widget=forms.HiddenInput, label="")
 
-    def clean_email(self) -> str:
-        email = self.cleaned_data.get("email")
-        if User.objects.filter(email=email).exists():
-            raise ValidationError("This email is already registered.")
-        return email
+    @property
+    def email(self) -> str:
+        invitation = Invitation.objects.get(key=self.data["key"])
+        return invitation.email
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.email = self.cleaned_data["email"]
+        user.email = self.email
         user.username = user.email
         if commit:
             user.save()
