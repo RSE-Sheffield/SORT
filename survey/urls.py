@@ -32,7 +32,7 @@ urlpatterns = [
     path(
         "survey/<int:pk>/add_file",
         views.SurveyFileUploadView.as_view(),
-        name="survey_add_file"
+        name="survey_add_file",
     ),
     path(
         "survey/<int:pk>/export", views.SurveyExportView.as_view(), name="survey_export"
@@ -55,17 +55,17 @@ urlpatterns = [
     path(
         "survey/<int:pk>/evidence_gathering/<int:section_id>/add_file",
         views.SurveyEvidenceFileUploadView.as_view(),
-        name="survey_evidence_add_file"
+        name="survey_evidence_add_file",
     ),
     path(
         "survey_evidence/remove_file/<int:pk>",
         views.SurveyEvidenceFileDeleteView.as_view(),
-        name="survey_evidence_remove_file"
+        name="survey_evidence_remove_file",
     ),
     path(
         "survey_evidence/file/<int:pk>",
         views.SurveyEvidenceFileView.as_view(),
-        name="survey_evidence_file"
+        name="survey_evidence_file",
     ),
     path(
         "survey/<int:pk>/improvement_plan/<int:section_id>",
@@ -98,6 +98,5 @@ urlpatterns = [
         views.SurveyLinkInvalidView.as_view(),
         name="survey_link_invalid",
     ),
-    path("invite/<int:pk>", views.InvitationView.as_view(), name="invite"),
-
+    path("survey/<int:pk>/invite", views.InvitationView.as_view(), name="invite"),
 ]
