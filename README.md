@@ -98,20 +98,36 @@ Please read [`docs/deployment.md`](docs/deployment.md).
 
 
 # Vite integration
-The SORT app uses some javascript components such as the survey configurator and the survey response form. This is
-implemented using the svelte framework and vite is used as the bundler. Vite also provides a live server for 
-development which includes HMR (hot module reloading).
+The SORT app uses some JavaScript components such as the survey configurator and the survey response form. This is
+implemented using the svelte framework and vite is used as the bundler. [Vite](https://vite.dev/) also provides a live server for development which includes HMR (hot module reloading).
 
-In order to integrate this into the html template, a tag library is created at `/home/templatetags/vite_integration.py`.
-- The `vite_client` template tag is used to include Vite's HMR javascript code. 
-- The `vite_asset` tag is used to include asset files (e.g. typescript files) in the template.
-  - In debug mode, this creates a link directly to the vite dev server normally located at `http://localhost:5173`
-  - In production mode, it links to assets within the  `/static/` url path. 
+In order to integrate this into the HTML template, a [custom template tag](https://docs.djangoproject.com/en/5.1/howto/custom-template-tags/) library is created at `/home/templatetags/vite_integration.py`.
+- The `vite_client` template tag is used to include Vite's HMR JavaScript code. 
+- The `vite_asset` tag is used to include asset files (e.g. TypeScript files) in the template.
+  - In debug mode, this creates a link directly to the Vite dev server normally located at `http://localhost:5173`
+  - In production mode, the link changes to the location of the file in the `/static/` folder
 
+For more information, please [read the README](ui-components/README.md).
+
+## Installation
+
+Install the JavaScript package using [`npm install`](https://docs.npmjs.com/cli/v8/commands/npm-install/)
+
+```bash
+npm install
+```
+
+## Usage
+
+The development mode will run the test page at http://localhost:5173
+
+```bash
+npm run dev
+```
 
 ## Before deployment
 
-The script files within `/ui_components` must be built into the static folder before deployment. This
+The script files within `./ui_components/` must be built into the static folder before deployment. This
 can be done by running:
 
 ```bash

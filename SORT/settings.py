@@ -33,7 +33,7 @@ def cast_to_boolean(obj: Any) -> bool:
 
 
 # Load environment variables from .env file
-load_dotenv(os.getenv("DJANGO_ENV_PATH"))
+load_dotenv(dotenv_path=os.getenv("DJANGO_ENV_PATH", ".env"))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -53,7 +53,6 @@ DEBUG = cast_to_boolean(os.getenv("DJANGO_DEBUG", "False"))
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "sort-web-app.shef.ac.uk").split()
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -61,16 +60,20 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Plugins
     "django_bootstrap5",
     "django_extensions",
-    "debug_toolbar",
     "qr_code",
     "crispy_forms",
     "crispy_bootstrap5",
-    # apps created by FA:
+    # SORT apps
     "home",
     "survey",
 ]
+
+if DEBUG:
+    # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
+    INSTALLED_APPS.append("debug_toolbar")
 
 MIDDLEWARE = [
     # Implement security in the web server, not in Django.
@@ -82,8 +85,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
+if DEBUG:
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
 ROOT_URLCONF = "SORT.urls"
 
@@ -206,10 +210,6 @@ VITE_STATIC_DIR = (
     "ui-components"  # Path to vite-generated asset directory in the static folder
 )
 VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, "manifest.json")
-
-# FA: for production:
-
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 

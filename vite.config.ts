@@ -16,7 +16,6 @@ export default defineConfig({
   },
   build: {
     manifest: "manifest.json",
-
     rollupOptions: {
       input: {
         main: "ui_components/src/main.ts",
