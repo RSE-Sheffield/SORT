@@ -3,6 +3,7 @@ from typing import Optional
 import invitations.models
 import invitations.views
 from django.contrib import messages
+import django.http
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import (LoginView, LogoutView,
@@ -457,3 +458,17 @@ class OrganisationMembershipDeleteView(LoginRequiredMixin, OrganisationRequiredM
     context_object_name = "organisation_membership"
     success_url = reverse_lazy("members")
     success_message = "The user was removed from the organisation."
+
+    def form_valid(self, form):
+        """
+        After the confirmation form has been submitted successfully, remove the user from the organisation.
+        """
+        # Override this function so we can use the appropriate service
+        organisation_service.remove_user_from_organisation(
+            user=self.request.user,
+            organisation=self.object.organisation,
+            removed_user=self.object.user,
+        )
+        messages.success(self.request,
+                         message=f"The user {self.object.user} was removed from {self.object.organisation}.")
+        return django.http.HttpResponseRedirect(self.get_success_url())

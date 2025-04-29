@@ -99,11 +99,11 @@ class OrganisationService(BasePermissionService):
 
     @requires_permission("edit", obj_param="organisation")
     def add_user_to_organisation(
-        self,
-        user: User,
-        user_to_add: User,
-        organisation: Organisation,
-        role: str,
+            self,
+            user: User,
+            user_to_add: User,
+            organisation: Organisation,
+            role: str,
     ) -> OrganisationMembership:
         """
         Add a user to an organisation with specified role
@@ -126,8 +126,18 @@ class OrganisationService(BasePermissionService):
     def remove_user_from_organisation(
             self, user: User, organisation: Organisation, removed_user: User
     ) -> None:
-        """Remove user from organisation"""
-        OrganisationMembership.objects.filter(
+        """
+        Remove a user from organisation
+
+        @param user: The organisation manager/admin
+        @param organisation: The organisation to remove the user from
+        @param removed_user: The user to revoke permissions from
+        """
+        if not self.can_edit(user, organisation):
+            raise PermissionError(
+                f"User '{user}' does not have permission to remove users from organisation '{organisation}'")
+
+        OrganisationMembership.objects.get(
             user=removed_user, organisation=organisation
         ).delete()
 
