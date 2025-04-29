@@ -37,9 +37,6 @@
                                 {% if '/invite' in request.path %}active{% endif %}"
                                href="{% url 'myorganisation' %}"><i class="bx bxs-buildings"></i> My Organisation</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url "members" %}"><i class="bx bxs-group"></i>&nbsp;Members</a>
-                        </li>
                     </ul>
                     <ul class="navbar-nav">
                         {% if user.is_authenticated %}
