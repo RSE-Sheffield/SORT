@@ -14,7 +14,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import ListView
+from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from survey.models import Survey
@@ -360,3 +360,6 @@ class ProjectDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy("myorganisation")
+
+class HelpView(LoginRequiredMixin, TemplateView):
+    template_name = "help.html"

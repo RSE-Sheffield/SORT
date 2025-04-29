@@ -54,4 +54,9 @@ urlpatterns = [
         views.ProjectDeleteView.as_view(),
         name="project_delete",
     ),
+    path(
+        "help/",
+        views.HelpView.as_view(),
+        name="help",
+    )
 ]
