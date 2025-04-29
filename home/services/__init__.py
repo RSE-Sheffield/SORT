@@ -5,7 +5,6 @@ from .project import ProjectService, project_service
 # Create instances for use in views
 
 
-
 __all__ = [
     "BasePermissionService",
     "ProjectService",

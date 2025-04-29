@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from .models import Invitation, Survey, SurveyResponse, SurveyEvidenceSection, SurveyFile, SurveyEvidenceFile
+from .models import (
+    Invitation,
+    Survey,
+    SurveyEvidenceFile,
+    SurveyEvidenceSection,
+    SurveyFile,
+    SurveyResponse,
+)
 
 
 class InvitationAdmin(admin.ModelAdmin):

@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     "django_extensions",
     "debug_toolbar",
     "qr_code",
+    "crispy_forms",
+    "crispy_bootstrap5",
     # apps created by FA:
     "home",
     "survey",
@@ -172,6 +174,7 @@ PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 
 # Email settings
 # https://docs.djangoproject.com/en/5.1/topics/email/#email-backends
+
 EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("DJANGO_EMAIL_PORT", 465))
@@ -198,7 +201,9 @@ AUTH_USER_MODEL = "home.User"  # FA: replace username with email as unique ident
 
 # Vite integration
 VITE_BASE_URL = "http://localhost:5173"  # Url of vite dev server
-VITE_STATIC_DIR = "ui-components"  # Path to vite-generated asset directory in the static folder
+VITE_STATIC_DIR = (
+    "ui-components"  # Path to vite-generated asset directory in the static folder
+)
 VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, "manifest.json")
 
 # FA: for production:
@@ -209,7 +214,17 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 
 # File uploading
 MEDIA_ROOT = os.getenv("DJANGO_MEDIA_ROOT", BASE_DIR / "uploads")
-MEDIA_SUPPORTED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf", ".doc", ".docx", ".txt", ".csv", ".json"]
+MEDIA_SUPPORTED_EXTENSIONS = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".txt",
+    ".csv",
+    ".json",
+]
 
 # Security settings
 SESSION_COOKIE_SECURE = cast_to_boolean(
@@ -240,3 +255,8 @@ SURVEY_TEMPLATES = {
     "Midwives": "sort_only_config_midwives.json",
     "NMAHPs": "sort_only_config_nmahps.json",
 }
+
+# Crispy enables Bootstrap styling on Django forms
+# https://django-crispy-forms.readthedocs.io/en/latest/install.html
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
