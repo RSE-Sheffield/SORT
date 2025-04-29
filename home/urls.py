@@ -41,6 +41,11 @@ urlpatterns = [
         name="members",
     ),
     path(
+        "myorganisation/members/delete/<int:pk>/",
+        views.OrganisationMembershipDeleteView.as_view(),
+        name="member_delete",
+    ),
+    path(
         "myorganisation/members/invite",
         views.MyOrganisationInviteView.as_view(),
         name="member_invite",

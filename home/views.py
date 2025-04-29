@@ -1,35 +1,32 @@
 from typing import Optional
 
+import invitations.models
+import invitations.views
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import (
-    LoginView,
-    LogoutView,
-    PasswordResetCompleteView,
-    PasswordResetConfirmView,
-    PasswordResetDoneView,
-    PasswordResetView,
-)
+from django.contrib.auth.views import (LoginView, LogoutView,
+                                       PasswordResetCompleteView,
+                                       PasswordResetConfirmView,
+                                       PasswordResetDoneView,
+                                       PasswordResetView)
+from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import ListView
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
-import invitations.views
-import invitations.models
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from survey.models import Survey
 from survey.services import survey_service
 
 from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
-from .forms.user_profile import UserProfileForm
 from .forms.manager_login import ManagerLoginForm
 from .forms.manager_signup import ManagerSignupForm
+from .forms.user_profile import UserProfileForm
 from .mixins import OrganisationRequiredMixin
-from .models import Organisation, Project, OrganisationMembership
+from .models import Organisation, OrganisationMembership, Project
 from .services import organisation_service, project_service
 
 User = get_user_model()
@@ -449,3 +446,14 @@ class MyOrganisationAcceptInviteView(invitations.views.AcceptInvite):
 
         # Signup requires a key from an invitation
         return redirect("signup", key=self.object.key)
+
+
+class OrganisationMembershipDeleteView(LoginRequiredMixin, OrganisationRequiredMixin, SuccessMessageMixin, DeleteView):
+    """
+    Remove a user from an organisation.
+    """
+    model = OrganisationMembership
+    template_name = "organisation/members/delete.html"
+    context_object_name = "organisation_membership"
+    success_url = reverse_lazy("members")
+    success_message = "The user was removed from the organisation."
