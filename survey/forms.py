@@ -1,5 +1,4 @@
 from django import forms
-from django.core.validators import EmailValidator
 from django.forms import BaseFormSet, formset_factory
 from strenum import StrEnum
 
