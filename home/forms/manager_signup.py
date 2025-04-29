@@ -9,6 +9,7 @@ from invitations.models import Invitation
 
 from home.services import organisation_service
 from home.models import Organisation
+from home.constants import ROLE_PROJECT_MANAGER
 
 User = django.contrib.auth.get_user_model()
 
@@ -65,6 +66,11 @@ class ManagerSignupForm(UserCreationForm):
             user.save()
 
         # Add user to organisation
-        organisation_service.add_user_to_organisation(user, self.organisation)
+        organisation_service.add_user_to_organisation(
+            user_to_add=user,
+            organisation=self.organisation,
+            user=self.inviter,
+            role=ROLE_PROJECT_MANAGER,
+        )
 
         return user

@@ -75,7 +75,7 @@ class OrganisationService(BasePermissionService):
 
     @requires_permission("edit", obj_param="organisation")
     def update_organisation(
-        self, user: User, organisation: Organisation, data: Dict
+            self, user: User, organisation: Organisation, data: Dict
     ) -> Organisation:
         """Update organisation with provided data"""
         for key, value in data.items():
@@ -84,7 +84,7 @@ class OrganisationService(BasePermissionService):
         return organisation
 
     def create_organisation(
-        self, user: User, name: str, description: str = None
+            self, user: User, name: str, description: str = None
     ) -> Organisation:
         """
         Create a new organisation, and add the creator to it.
@@ -105,7 +105,14 @@ class OrganisationService(BasePermissionService):
         organisation: Organisation,
         role: str,
     ) -> OrganisationMembership:
-        """Add a user to an organisation with specified role"""
+        """
+        Add a user to an organisation with specified role
+
+        @param user: user who is adding the user to the organisation
+        @param user_to_add: user to add
+        @param organisation: The organisation to add the user to
+        @param role: The role that the user has in the organisation
+        """
         if role not in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]:
             raise ValueError(
                 f"Role must be either {ROLE_ADMIN} or {ROLE_PROJECT_MANAGER}"
@@ -117,7 +124,7 @@ class OrganisationService(BasePermissionService):
 
     @requires_permission("edit", obj_param="organisation")
     def remove_user_from_organisation(
-        self, user: User, organisation: Organisation, removed_user: User
+            self, user: User, organisation: Organisation, removed_user: User
     ) -> None:
         """Remove user from organisation"""
         OrganisationMembership.objects.filter(
@@ -125,7 +132,7 @@ class OrganisationService(BasePermissionService):
         ).delete()
 
     def get_organisation_projects(
-        self, organisation: Organisation, user: User = None, with_metrics: bool = True
+            self, organisation: Organisation, user: User = None, with_metrics: bool = True
     ) -> QuerySet[Project]:
         """Get projects for an organisation with optional metrics"""
         if not self.can_view(user, organisation):
@@ -143,7 +150,7 @@ class OrganisationService(BasePermissionService):
 
     @requires_permission("view", obj_param="organisation")
     def get_organisation_members(
-        self, user: User, organisation: Organisation
+            self, user: User, organisation: Organisation
     ) -> QuerySet[OrganisationMembership]:
         """Get all members of an organisation with their roles"""
         return OrganisationMembership.objects.filter(

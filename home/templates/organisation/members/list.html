@@ -6,7 +6,9 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
-                        <i class="bx bxs-buildings"></i> My Organisation
+                        <a href="{% url 'myorganisation' %}">
+                            <i class="bx bxs-buildings"></i> My Organisation
+                        </a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">
                         <i class="bx bxs-group"></i> Members
@@ -21,34 +23,38 @@
     </div>
     <div class="container mx-auto px-4 py-8" id="organisation-members">
         <h2>Members</h2>
-        <div>
-            <a href="{% url 'member_invite' %}" type="button" class="btn btn-primary">
+        <div class="mb-3">
+            <a href="{% url 'member_invite' %}" type="button" class="btn btn-primary"
+               title="Invite a new user to join this organisation">
                 <i class='bx bxs-user-plus'></i> Invite new member
             </a>
         </div>
-        <table class="table">
-            <thead>
-            <tr>
-                <th scope="col">User</th>
-                <th scope="col">Role</th>
-                <th scope="col">Joined at</th>
-                <th scope="col">Added by</th>
-                <th scope="col">Remove</th>
-            </tr>
-            </thead>
-            {% for membership in memberships %}
+        <div>
+            <table class="table">
+                <thead>
                 <tr>
-                    <th scope="row">{{ membership.user }}</th>
-                    <td>{{ membership.role | title }}</td>
-                    <td>{{ membership.joined_at }}</td>
-                    <td>{{ membership.added_by }}</td>
-                    <td>
-                        <a href="{{ membership.pk }}" class="btn btn-danger">
-                            <i class='bx bxs-user-minus'></i> Remove
-                        </a>
-                    </td>
+                    <th scope="col">User</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Joined at</th>
+                    <th scope="col">Added by</th>
+                    <th scope="col">Remove</th>
                 </tr>
-            {% endfor %}
-        </table>
+                </thead>
+                {% for membership in memberships %}
+                    <tr>
+                        <th scope="row">{{ membership.user }}</th>
+                        <td class="font-monospace">{{ membership.role }}</td>
+                        <td>{{ membership.joined_at }}</td>
+                        <td>{{ membership.added_by }}</td>
+                        <td>
+                            <a href="{{ membership.pk }}" class="btn btn-danger"
+                               title="Remove this user from the organisation">
+                                <i class='bx bxs-user-minus'></i> Remove
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
     </div>
 {% endblock %}
