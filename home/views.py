@@ -17,7 +17,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView, TemplateView
 
 from survey.models import Survey
 from survey.services import survey_service
@@ -472,3 +472,7 @@ class OrganisationMembershipDeleteView(LoginRequiredMixin, OrganisationRequiredM
         messages.success(self.request,
                          message=f"The user {self.object.user} was removed from {self.object.organisation}.")
         return django.http.HttpResponseRedirect(self.get_success_url())
+
+      
+class HelpView(LoginRequiredMixin, TemplateView):
+    template_name = "help.html"

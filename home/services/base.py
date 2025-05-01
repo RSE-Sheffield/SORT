@@ -46,7 +46,7 @@ def requires_permission(permission_type: str, obj_param: str) -> Callable:
             # Check permission
             if not check_method(user, obj):
                 raise PermissionDenied(
-                    f"User '{user}' does not have {permission_type} permission for {obj}"
+                    f"User '{user}' does not have {permission_type} permission for '{obj}'"
                 )
 
             return func(service, user, *args, **kwargs)

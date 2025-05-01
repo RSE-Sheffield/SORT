@@ -123,15 +123,19 @@ class SurveyService(BasePermissionService):
     def _create_survey_evidence_sections(
         self, survey: Survey, clear_existing_sections: bool = True
     ):
+        if not survey.survey_config["sections"]:
+            raise ValueError("No sections available")
+
         if clear_existing_sections:
             for evidence_section in SurveyEvidenceSection.objects.filter(survey=survey):
                 evidence_section.delete()  # Delete all previous section first
 
         for section_index, section in enumerate(survey.survey_config["sections"]):
             if section["type"] == "sort":
-                SurveyEvidenceSection.objects.create(
+                survey_evidence_section = SurveyEvidenceSection.objects.create(
                     survey=survey, section_id=section_index, title=section["title"]
                 )
+                survey_evidence_section.save()
 
     def _create_survey_improvement_sections(
         self, survey: Survey, clear_existing_sections: bool = True
@@ -144,9 +148,10 @@ class SurveyService(BasePermissionService):
 
         for section_index, section in enumerate(survey.survey_config["sections"]):
             if section["type"] == "sort":
-                SurveyImprovementPlanSection.objects.create(
+                survey_improvement_plan_section = SurveyImprovementPlanSection.objects.create(
                     survey=survey, section_id=section_index, title=section["title"]
                 )
+                survey_improvement_plan_section.save()
 
     @requires_permission("edit", obj_param="survey")
     def update_evidence_section(

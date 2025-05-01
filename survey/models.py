@@ -53,7 +53,7 @@ class SurveyEvidenceSection(models.Model):
     """
 
     section_id = models.IntegerField(default=0)
-    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name="evidence_sections")
     title = models.TextField(blank=True, null=True)
     text = models.TextField(blank=True, null=True)
 
@@ -70,7 +70,7 @@ class SurveyImprovementPlanSection(models.Model):
     """
 
     section_id = models.IntegerField(default=0, db_index=True)
-    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name="improvement_sections")
     title = models.TextField(blank=True, null=True)
     plan = models.TextField(blank=True, null=True)
 
