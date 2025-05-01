@@ -1,8 +1,8 @@
-from django import template
+import django.template
 
-from ..forms import SearchBarForm
+from home.forms.search_bar import SearchBarForm
 
-register = template.Library()
+register = django.template.Library()
 
 
 @register.inclusion_tag("components/search_bar.html", takes_context=True)

@@ -50,6 +50,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
+        # If they didn't enter their name, default to email address
+        if not self.first_name and not self.last_name:
+            return self.email
         return f"{self.first_name} {self.last_name}"
 
 
