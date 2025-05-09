@@ -169,6 +169,12 @@ class SurveyConfigureView(LoginRequiredMixin, View):
             context=context,
         )
 
+class SurveyDuplicateConfigView(LoginRequiredMixin, View):
+    def get(self, request: HttpRequest, pk: int):
+        survey = survey_service.get_survey(request.user, pk)
+        new_survey = survey_service.duplicate_survey(request.user, survey)
+        return redirect(reverse("survey", kwargs={"pk": new_survey.pk}))
+
 
 class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
 

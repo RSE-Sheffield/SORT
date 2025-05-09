@@ -25,6 +25,11 @@ urlpatterns = [
         name="suvey_create_invite",
     ),
     path(
+        "survey/<int:pk>/duplicate_config",
+        views.SurveyDuplicateConfigView.as_view(),
+        name="survey_duplicate_config",
+    ),
+    path(
         "survey/<int:pk>/mock_responses",
         views.SurveyGenerateMockResponsesView.as_view(),
         name="survey_mock_responses",
