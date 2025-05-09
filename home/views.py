@@ -1,5 +1,6 @@
-from typing import Optional
 
+from typing import Optional
+import django.contrib.auth.views
 import invitations.models
 import invitations.views
 from django.contrib import messages
@@ -399,6 +400,12 @@ class ProjectDeleteView(LoginRequiredMixin, DeleteView):
         return reverse_lazy("myorganisation")
 
 
+
+class PasswordChangeView(django.contrib.auth.views.PasswordChangeView):
+    def form_valid(self, form):
+        messages.success(self.request, "Your password has been changed.")
+        return super().form_valid(form=form)
+
 class OrganisationMembershipListView(LoginRequiredMixin, OrganisationRequiredMixin, ListView):
     model = OrganisationMembership
     context_object_name = "memberships"
@@ -476,3 +483,4 @@ class OrganisationMembershipDeleteView(LoginRequiredMixin, OrganisationRequiredM
       
 class HelpView(LoginRequiredMixin, TemplateView):
     template_name = "help.html"
+
