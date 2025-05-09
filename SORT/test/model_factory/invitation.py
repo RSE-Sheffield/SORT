@@ -1,6 +1,7 @@
 import factory.django
 
 from survey.models import Invitation
+
 from .survey import SurveyFactory
 
 

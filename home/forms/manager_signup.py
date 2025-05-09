@@ -7,9 +7,9 @@ import django.forms as forms
 from django.contrib.auth.forms import UserCreationForm
 from invitations.models import Invitation
 
-from home.services import organisation_service
-from home.models import Organisation
 from home.constants import ROLE_PROJECT_MANAGER
+from home.models import Organisation
+from home.services import organisation_service
 
 User = django.contrib.auth.get_user_model()
 
@@ -25,7 +25,9 @@ class ManagerSignupForm(UserCreationForm):
         fields = ("password1", "password2")
 
     # Secret key for the invitation (hidden form field)
-    key = forms.CharField(required=False, disabled=True, widget=forms.HiddenInput, label="")
+    key = forms.CharField(
+        required=False, disabled=True, widget=forms.HiddenInput, label=""
+    )
 
     @property
     def invitation(self) -> Invitation:

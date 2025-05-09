@@ -69,7 +69,9 @@ class SurveyServiceTestCase(SORT.test.test_case.ViewTestCase):
         for improvement_section in self.survey.improvement_sections.all():
             with self.subTest(section_id=improvement_section.section_id):
                 self.get(
-                    view_name="survey_improvement_plan", pk=self.survey.pk, section_id=improvement_section.section_id
+                    view_name="survey_improvement_plan",
+                    pk=self.survey.pk,
+                    section_id=improvement_section.section_id,
                 )
 
     def test_survey_evidence_gathering(self):

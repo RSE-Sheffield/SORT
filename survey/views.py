@@ -546,7 +546,9 @@ class InvitationView(FormView):
         )
 
         # Show success message
-        messages.success(self.request, f"Invitation sent to {len(recipient_list)} recipients.")
+        messages.success(
+            self.request, f"Invitation sent to {len(recipient_list)} recipients."
+        )
         return super().form_valid(form)
 
     def get_success_url(self):

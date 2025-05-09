@@ -1,7 +1,8 @@
 import factory.django
 
-from .organisation import OrganisationFactory
 from home.models import Project
+
+from .organisation import OrganisationFactory
 
 
 class ProjectFactory(factory.django.DjangoModelFactory):

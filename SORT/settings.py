@@ -180,7 +180,9 @@ PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 # Email settings
 # https://docs.djangoproject.com/en/5.1/topics/email/#email-backends
 
-EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_BACKEND = os.getenv(
+    "DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
+)
 EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("DJANGO_EMAIL_PORT", 465))
 EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER")

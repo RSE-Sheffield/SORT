@@ -5,6 +5,7 @@ class EmailListValidator(EmailValidator):
     """
     Validate a sequence of email addresses.
     """
+
     message = "Enter valid email addresses."
 
     @classmethod

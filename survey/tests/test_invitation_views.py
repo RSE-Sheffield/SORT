@@ -29,8 +29,9 @@ class SurveyServiceTestCase(SORT.test.test_case.ViewTestCase):
 
     def test_invitation_view_post(self):
         self.post(
-            view_name="invite", pk=self.survey.pk,
+            view_name="invite",
+            pk=self.survey.pk,
             data=dict(email="test@test.com", message="My message"),
             # Expect redirection on success
-            expected_status_code=HTTPStatus.FOUND
+            expected_status_code=HTTPStatus.FOUND,
         )
