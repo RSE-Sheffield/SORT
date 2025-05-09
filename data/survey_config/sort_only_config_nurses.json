@@ -136,7 +136,7 @@
           "description": "Rate the following statements from 1 (strongly disagree) to 5 (strongly agree)",
           "required": true,
           "sublabels": [
-            "D1. Our organisation have skills to support Public and Patient Involvement and Engagement",
+            "D1. Our organisation has skills to support Public and Patient Involvement and Engagement",
             "D2. Our organisation use their expertise to deliver research, including portfolio (commercial and non-commercial) research",
             "D3. Our organisation who deliver research have their contribution recognised in research outputs (for example, through acknowledgement, co-authorship)",
             "D4. Our organisation who work at an advanced, specialist, and consultant levels of practice act as principal investigators (PIs) for portfolio research"
