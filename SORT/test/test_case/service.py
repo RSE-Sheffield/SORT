@@ -3,6 +3,7 @@ A unit testing class for testing SORT application services.
 """
 
 from typing import Optional
+
 from home.services.base import BasePermissionService
 
 from .base import SORTTestCase

@@ -155,15 +155,22 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
 
     def test_create_survey_evidence_sections(self):
         self.service.initialise_survey(
-            user=self.admin, project=self.project, survey=self.survey)
+            user=self.admin, project=self.project, survey=self.survey
+        )
         self.service.update_consent_demography_config(
-            user=self.admin, survey=self.survey,
+            user=self.admin,
+            survey=self.survey,
             consent_config=self.survey.consent_config,
             demography_config=self.survey.demography_config,
-            survey_body_path="Nurses")
+            survey_body_path="Nurses",
+        )
         # from survey.models import SurveyEvidenceSection
         # evidence_sections = SurveyEvidenceSection.objects.filter(survey=self.survey).order_by("section_id")
         # self.assertEqual(evidence_sections.count(), len(self.survey.survey_config["sections"]))
         self.assertGreater(self.survey.evidence_sections.count(), 0)
-        sort_sections = [section for section in self.survey.survey_config["sections"] if section["type"] == "sort"]
+        sort_sections = [
+            section
+            for section in self.survey.survey_config["sections"]
+            if section["type"] == "sort"
+        ]
         self.assertEqual(self.survey.evidence_sections.count(), len(sort_sections))

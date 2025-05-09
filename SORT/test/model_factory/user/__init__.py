@@ -1,4 +1,4 @@
-from .user import UserFactory
 from .superuser import SuperUserFactory
+from .user import UserFactory
 
-__all__ = ['UserFactory', 'SuperUserFactory']
+__all__ = ["UserFactory", "SuperUserFactory"]

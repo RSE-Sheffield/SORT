@@ -1,5 +1,6 @@
 import django.contrib.auth
 import factory
+
 from .constants import PASSWORD
 
 

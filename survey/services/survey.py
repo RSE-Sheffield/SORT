@@ -148,8 +148,10 @@ class SurveyService(BasePermissionService):
 
         for section_index, section in enumerate(survey.survey_config["sections"]):
             if section["type"] == "sort":
-                survey_improvement_plan_section = SurveyImprovementPlanSection.objects.create(
-                    survey=survey, section_id=section_index, title=section["title"]
+                survey_improvement_plan_section = (
+                    SurveyImprovementPlanSection.objects.create(
+                        survey=survey, section_id=section_index, title=section["title"]
+                    )
                 )
                 survey_improvement_plan_section.save()
 

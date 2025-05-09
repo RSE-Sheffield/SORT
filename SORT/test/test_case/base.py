@@ -1,6 +1,6 @@
 import django.test
 
-from ..model_factory import UserFactory, SuperUserFactory
+from ..model_factory import SuperUserFactory, UserFactory
 
 
 class SORTTestCase(django.test.TestCase):
