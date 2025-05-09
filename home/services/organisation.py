@@ -1,18 +1,14 @@
 """
 Organisation service with integrated permissions
 """
+
 from typing import Dict, Optional, Set
-from django.core.exceptions import PermissionDenied
+
 from django.db.models import Count
 from django.db.models.query import QuerySet
 
 from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
-from ..models import (
-    Organisation,
-    OrganisationMembership,
-    Project,
-    User
-)
+from ..models import Organisation, OrganisationMembership, Project, User
 from .base import BasePermissionService, requires_permission
 
 
@@ -21,7 +17,9 @@ class OrganisationService(BasePermissionService):
 
     def get_user_role(self, user: User, organisation: Organisation) -> Optional[str]:
         try:
-            membership = organisation.organisationmembership_set.filter(user=user).first()
+            membership = organisation.organisationmembership_set.filter(
+                user=user
+            ).first()
             return membership.role if membership else None
         except AttributeError:  # In case user is AnonymousUser
             return None
@@ -107,7 +105,14 @@ class OrganisationService(BasePermissionService):
             organisation: Organisation,
             role: str,
     ) -> OrganisationMembership:
-        """Add a user to an organisation with specified role"""
+        """
+        Add a user to an organisation with specified role
+
+        @param user: user who is adding the user to the organisation
+        @param user_to_add: user to add
+        @param organisation: The organisation to add the user to
+        @param role: The role that the user has in the organisation
+        """
         if role not in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]:
             raise ValueError(
                 f"Role must be either {ROLE_ADMIN} or {ROLE_PROJECT_MANAGER}"
@@ -121,8 +126,18 @@ class OrganisationService(BasePermissionService):
     def remove_user_from_organisation(
             self, user: User, organisation: Organisation, removed_user: User
     ) -> None:
-        """Remove user from organisation"""
-        OrganisationMembership.objects.filter(
+        """
+        Remove a user from organisation
+
+        @param user: The organisation manager/admin
+        @param organisation: The organisation to remove the user from
+        @param removed_user: The user to revoke permissions from
+        """
+        if not self.can_edit(user, organisation):
+            raise PermissionError(
+                f"User '{user}' does not have permission to remove users from organisation '{organisation}'")
+
+        OrganisationMembership.objects.get(
             user=removed_user, organisation=organisation
         ).delete()
 
@@ -137,7 +152,7 @@ class OrganisationService(BasePermissionService):
 
         # Add metrics
         if with_metrics:
-            projects = base_query.annotate(
+            base_query = base_query.annotate(
                 survey_count=Count("survey__id", distinct=True),
             ).select_related("created_by", "organisation")
 

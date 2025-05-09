@@ -1,15 +1,23 @@
 from django import forms
-from django.core.validators import EmailValidator
 from django.forms import BaseFormSet, formset_factory
 from strenum import StrEnum
 
+from .validators.email_list_validator import EmailListValidator
+
 
 class InvitationForm(forms.Form):
-    email = forms.EmailField(
-        label="Participant Email",
-        max_length=100,
+    email = forms.CharField(
+        label="Participant Emails",
+        help_text="Please enter a list of email addresses",
         required=True,
-        validators=[EmailValidator()],
+        validators=[EmailListValidator()],
+        widget=forms.Textarea(attrs=dict(rows=6)),
+    )
+    message = forms.CharField(
+        label="Message",
+        help_text="(Optional) Additional message for the participants",
+        required=False,
+        widget=forms.Textarea(attrs=dict(rows=3)),
     )
 
 

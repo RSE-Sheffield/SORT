@@ -33,7 +33,7 @@ def cast_to_boolean(obj: Any) -> bool:
 
 
 # Load environment variables from .env file
-load_dotenv(os.getenv("DJANGO_ENV_PATH"))
+load_dotenv(dotenv_path=os.getenv("DJANGO_ENV_PATH", ".env"))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,10 +50,9 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(os.getenv("DJANGO_DEBUG", "False"))
 
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "sort-web-app.shef.ac.uk").split()
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split()
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -61,14 +60,21 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Plugin apps
     "django_bootstrap5",
     "django_extensions",
-    "debug_toolbar",
     "qr_code",
-    # apps created by FA:
+    "crispy_forms",
+    "crispy_bootstrap5",
+    "invitations",
+    # SORT apps
     "home",
     "survey",
 ]
+
+if DEBUG:
+    # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
+    INSTALLED_APPS.append("debug_toolbar")
 
 MIDDLEWARE = [
     # Implement security in the web server, not in Django.
@@ -80,8 +86,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
+if DEBUG:
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
 ROOT_URLCONF = "SORT.urls"
 
@@ -152,7 +159,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR/"staticfiles")
+STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR / "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -170,9 +177,22 @@ SESSION_COOKIE_AGE = 1800
 
 PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 
-# FA: for local testing emails:
+# Email settings
+# https://docs.djangoproject.com/en/5.1/topics/email/#email-backends
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("DJANGO_EMAIL_PORT", 465))
+EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("DJANGO_EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_TLS", False))
+EMAIL_USE_SSL = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_SSL", True))
+EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", 3))
+EMAIL_SSL_KEYFILE = os.getenv("DJANGO_EMAIL_SSL_KEYFILE")
+EMAIL_SSL_CERTFILE = os.getenv("DJANGO_EMAIL_SSL_CERTFILE")
+EMAIL_SUBJECT_PREFIX = os.getenv("DJANGO_EMAIL_SUBJECT_PREFIX", "[SORT] ")
+EMAIL_USE_LOCALTIME = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_LOCALTIME", True))
+DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "noreply@noreply.com")
 
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
@@ -184,23 +204,28 @@ INTERNAL_IPS = [
 ]
 AUTH_USER_MODEL = "home.User"  # FA: replace username with email as unique identifiers
 
-
 # Vite integration
-VITE_BASE_URL = "http://localhost:5173" # Url of vite dev server
-VITE_STATIC_DIR= "ui-components" # Path to vite-generated asset directory in the static folder
+VITE_BASE_URL = "http://localhost:5173"  # Url of vite dev server
+VITE_STATIC_DIR = (
+    "ui-components"  # Path to vite-generated asset directory in the static folder
+)
 VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, "manifest.json")
-
-# FA: for production:
-
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
-
-
 # File uploading
 MEDIA_ROOT = os.getenv("DJANGO_MEDIA_ROOT", BASE_DIR / "uploads")
-MEDIA_SUPPORTED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf", ".doc", ".docx", ".txt", ".csv", ".json"]
+MEDIA_SUPPORTED_EXTENSIONS = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".txt",
+    ".csv",
+    ".json",
+]
 
 # Security settings
 SESSION_COOKIE_SECURE = cast_to_boolean(
@@ -231,3 +256,14 @@ SURVEY_TEMPLATES = {
     "Midwives": "sort_only_config_midwives.json",
     "NMAHPs": "sort_only_config_nmahps.json",
 }
+
+# Crispy enables Bootstrap styling on Django forms
+# https://django-crispy-forms.readthedocs.io/en/latest/install.html
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+# Invitations options
+# https://django-invitations.readthedocs.io/en/latest/configuration.html
+INVITATIONS_SIGNUP_REDIRECT = "signup"
+INVITATIONS_CONFIRMATION_URL_NAME = "member_invite_accept"
+INVITATIONS_EMAIL_SUBJECT_PREFIX = "SORT"

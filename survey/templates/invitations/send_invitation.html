@@ -1,34 +1,17 @@
 {% extends 'base_manager.html' %}
-
+{% load crispy_forms_tags %}
 {% block content %}
     <div class="container mx-auto px-4 py-8 mt-4">
         <div>
             <h1>Invitations</h1>
             <p class="subtitle">Use the form below to send out invitations to your survey participants.</p>
         </div>
-
-
         <div class="card custom-card shadow-sm my-4">
             <div class="card-body">
-
                 <form method="post">
                     {% csrf_token %}
-
-                    <div class="mb-3">
-                        <label for="id_email" class="form-label">Email Address</label>
-                        <input type="email" name="email" id="id_email" class="form-control" placeholder="Enter email address" required>
-                        <small class="form-text text-muted">Enter the participant's email address. You can separate multiple addresses with commas.</small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="id_message" class="form-label">Message (Optional)</label>
-                        <textarea name="message" id="id_message" class="form-control" rows="3" placeholder="Write your message here..."></textarea>
-                        <small class="form-text text-muted">Add any additional messages.</small>
-                    </div>
-
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary" style="background-color: #6933AD; border: none;">Send</button>
-                    </div>
+                    {{ form | crispy }}
+                    <button type="submit" class="btn btn-primary">Send</button>
                 </form>
             </div>
 

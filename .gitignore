@@ -38,11 +38,12 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
+.coverage
 
 # Django stuff:
 *.log
 local_settings.py
-db.sqlite3
+*.sqlite3
 
 # Sphinx documentation
 
