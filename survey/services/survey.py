@@ -100,9 +100,9 @@ class SurveyService(BasePermissionService):
         with open(settings.SURVEY_TEMPLATE_DIR/body_path) as f:
             sort_config = json.load(f)
             merged_sections = (
-                    survey.consent_config["sections"]
-                    + sort_config["sections"]
-                    + survey.demography_config["sections"]
+                survey.consent_config["sections"]
+                + sort_config["sections"]
+                + survey.demography_config["sections"]
             )
             survey.survey_config = {"sections": merged_sections}
 
