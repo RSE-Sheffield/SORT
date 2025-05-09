@@ -4,7 +4,6 @@ from .models import (
     Organisation,
     OrganisationMembership,
     Project,
-    ProjectOrganisation,
     User,
 )
 
@@ -30,18 +29,12 @@ class OrganisationMembershipAdmin(admin.ModelAdmin):
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ("name", "created_by", "created_on")
+    list_display = ("name", "created_by", "created_at")
     search_fields = ("name",)
-    list_filter = ("created_on",)
-
-
-class ProjectOrganisationAdmin(admin.ModelAdmin):
-    list_display = ("project", "organisation", "added_by", "added_at")
-    search_fields = ("project__name", "organisation__name")
+    list_filter = ("created_at",)
 
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Organisation, OrganisationAdmin)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(OrganisationMembership, OrganisationMembershipAdmin)
-admin.site.register(ProjectOrganisation, ProjectOrganisationAdmin)

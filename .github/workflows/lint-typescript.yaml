@@ -1,0 +1,28 @@
+# ESLint is a static code analysis tool for finding problems with ECMAScript/JavaScript code
+# https://eslint.org/
+name: Lint JavaScript code
+on:
+  push:
+    branches: [  "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4.2.2
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 'v20.x'
+        cache: 'npm'
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci
+    # https://eslint.org/docs/latest/use/command-line-interface
+    # We also need the Svelte linter https://sveltejs.github.io/eslint-plugin-svelte/
+    # This could be improved by using a configuration file
+    # https://eslint.org/docs/latest/use/configure/configuration-files#configuration-file
+    - name: Run ESLint
+      working-directory: .
+      run: npm run lintjs

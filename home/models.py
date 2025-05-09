@@ -6,7 +6,7 @@ from django.contrib.auth.models import (
 from django.db import models
 from django.urls import reverse
 
-from .constants import PERMISSION_CHOICES, PERMISSION_VIEW, ROLE_PROJECT_MANAGER, ROLES
+from .constants import ROLE_PROJECT_MANAGER, ROLES, ROLE_ADMIN
 
 
 class UserManager(BaseUserManager):
@@ -64,8 +64,12 @@ class Organisation(models.Model):
     def __str__(self):
         return self.name
 
-    def get_user_role(self, user):
+    def get_user_role(self, user: User):
+        if user.is_superuser or user.is_staff:
+            return ROLE_ADMIN
+
         membership = self.organisationmembership_set.filter(user=user).first()
+
         return membership.role if membership else None
 
 
@@ -85,40 +89,14 @@ class OrganisationMembership(models.Model):
 class Project(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    organisations = models.ManyToManyField(Organisation, through="ProjectOrganisation")
+    organisation = models.ForeignKey(
+        Organisation, on_delete=models.CASCADE, related_name="projects"
+    )
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    created_on = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
         return reverse("project", kwargs={"project_id": self.pk})
-
-
-class ProjectOrganisation(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
-    added_at = models.DateTimeField(auto_now_add=True)
-    added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-
-    class Meta:
-        unique_together = ["project", "organisation"]
-
-
-class ProjectManagerPermission(models.Model):
-    """Defines the permission level for project managers within a project"""
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    permission = models.CharField(
-        max_length=10, choices=PERMISSION_CHOICES, default=PERMISSION_VIEW
-    )
-    granted_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="granted_permissions"
-    )
-    granted_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ["user", "project"]
-        verbose_name_plural = "Project manager permissions"
