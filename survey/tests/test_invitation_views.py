@@ -5,7 +5,7 @@ import SORT.test.test_case
 from survey.services import SurveyService
 
 
-class SurveyServiceTestCase(SORT.test.test_case.ViewTestCase):
+class InvitationViewTestCase(SORT.test.test_case.ViewTestCase):
     def setUp(self):
         super().setUp()
         self.service = SurveyService()
