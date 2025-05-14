@@ -11,7 +11,7 @@ import django.test
 import SORT.test.model_factory
 import SORT.test.test_case
 from home.constants import ROLE_ADMIN
-from survey.models import Invitation, Survey
+from survey.models import Invitation, Survey, SurveyEvidenceSection, SurveyImprovementPlanSection
 from survey.services import SurveyService
 
 
@@ -114,6 +114,23 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
             0,
             "Unexpected demography sections",
         )
+
+    def test_duplicate_survey(self):
+        # Properly initialise the survey
+        self.service.initialise_survey(self.admin, self.project, self.survey)
+        self.service.update_consent_demography_config(self.admin, self.survey,
+                                                      demography_config=self.survey.demography_config,
+                                                      survey_body_path=self.survey.survey_body_path,
+                                                      consent_config=self.survey.consent_config)
+
+        duplicated_survey = self.service.duplicate_survey(user=self.admin, survey=self.survey)
+        self.assertTrue(duplicated_survey.name.startswith("Copy of"))
+        self.assertEqual(duplicated_survey.project, self.survey.project)
+        self.assertDictEqual(duplicated_survey.survey_config, self.survey.survey_config)
+        self.assertDictEqual(duplicated_survey.consent_config, self.survey.consent_config)
+        self.assertDictEqual(duplicated_survey.demography_config, self.survey.demography_config)
+        self.assertTrue(SurveyEvidenceSection.objects.filter(survey=duplicated_survey).count() > 1)
+        self.assertTrue(SurveyImprovementPlanSection.objects.filter(survey=duplicated_survey).count() > 1)
 
     def test_get_survey_from_token(self):
         token = self.survey.current_invite_token()
