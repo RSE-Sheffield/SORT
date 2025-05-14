@@ -42,7 +42,7 @@ This app can be deployed to a web server using the script [`deploy.sh`](../deplo
 1. Configure the `.env` file as described below.
 2. Run the deployment script: `sudo bash -x deploy.sh`
 3. Configure the database
-4. Run database migrations
+4. Run database migrations: `sudo /opt/sort/venv/bin/python /opt/sort/manage.py migrate`
 
 We can run commands and Bash scripts as the superuser (`root`) using the [`sudo` command](https://manpages.ubuntu.com/manpages/noble/en/man8/sudo.8.html).
 
@@ -210,7 +210,7 @@ $ sudo $psql
 sort=>
 ```
 
-Once you're in the `psql` shell, you can exit using the `\q` command.
+Once you're in the `psql` shell, you can exit using the `\q` command.
 
 ## Manage tables
 

@@ -32,8 +32,12 @@ def cast_to_boolean(obj: Any) -> bool:
     return obj[0] in {"1", "y", "t", "o"}
 
 
+# Load environment variables and secrets
+# https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Credentials
+CREDENTIALS_DIRECTORY = Path(os.getenv("CREDENTIALS_DIRECTORY", "."))
+DJANGO_ENV_PATH = Path(os.getenv("DJANGO_ENV_PATH", CREDENTIALS_DIRECTORY.joinpath(".env")))
 # Load environment variables from .env file
-load_dotenv(os.getenv("DJANGO_ENV_PATH"))
+load_dotenv(DJANGO_ENV_PATH)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -152,7 +156,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR/"staticfiles")
+STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR / "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -184,10 +188,9 @@ INTERNAL_IPS = [
 ]
 AUTH_USER_MODEL = "home.User"  # FA: replace username with email as unique identifiers
 
-
 # Vite integration
-VITE_BASE_URL = "http://localhost:5173" # Url of vite dev server
-VITE_STATIC_DIR= "ui-components" # Path to vite-generated asset directory in the static folder
+VITE_BASE_URL = "http://localhost:5173"  # Url of vite dev server
+VITE_STATIC_DIR = "ui-components"  # Path to vite-generated asset directory in the static folder
 VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, "manifest.json")
 
 # FA: for production:
@@ -195,8 +198,6 @@ VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, "manifest.json")
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
-
-
 
 # File uploading
 MEDIA_ROOT = os.getenv("DJANGO_MEDIA_ROOT", BASE_DIR / "uploads")
