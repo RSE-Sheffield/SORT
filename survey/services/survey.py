@@ -120,6 +120,19 @@ class SurveyService(BasePermissionService):
         self._create_survey_improvement_sections(survey)
         return survey
 
+    @requires_permission("edit", obj_param="survey")
+    def duplicate_survey(self, user: User, survey: Survey):
+        new_survey = Survey.objects.create(project=survey.project,
+                                           name=f"Copy of {survey.name}",
+                                           description=survey.description)
+
+        self.update_consent_demography_config(user, new_survey,
+                                              consent_config=survey.consent_config,
+                                              demography_config=survey.demography_config, survey_body_path=survey.survey_body_path)
+
+        return new_survey
+
+
     def _create_survey_evidence_sections(
         self, survey: Survey, clear_existing_sections: bool = True
     ):
