@@ -53,6 +53,13 @@
     {/if}
     {#if config && surveyStats}
 
+        <div class="card mb-3">
+            <div class="card-header"><h3>Summary Ranking Matrix</h3></div>
+            <div class="card-body">
+                <p>Summary of survey participant's overall average perception for each section.</p>
+                <SortSummaryMatrix config={config} surveyStats={surveyStats}></SortSummaryMatrix>
+            </div>
+        </div>
 
         {#each config.sections as sectionConfig, si (si)}
             {#if sectionConfig.type !== "consent"}
@@ -71,13 +78,7 @@
             {/if}
         {/each}
 
-        <div class="card mb-3">
-            <div class="card-header"><h3>Summary Ranking Matrix</h3></div>
-            <div class="card-body">
-                <p>Summary of survey participant's overall average perception for each section.</p>
-                <SortSummaryMatrix config={config} surveyStats={surveyStats}></SortSummaryMatrix>
-            </div>
-        </div>
+
     {:else}
         <p>No statistics available.</p>
     {/if}

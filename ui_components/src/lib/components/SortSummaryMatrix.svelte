@@ -1,6 +1,11 @@
 <script lang="ts">
     import type {SurveyConfig, SurveyStats} from "../interfaces.ts";
-    import {formatNumber, getColourForMeanValue, getTextColourForMeanValue} from "../misc.svelte.ts";
+    import {
+        formatNumber,
+        getColourForMeanValue,
+        getSortMaturityLabel,
+        getTextColourForMeanValue
+    } from "../misc.svelte.ts";
     interface Props {
         config: SurveyConfig;
         surveyStats: SurveyStats | null;
@@ -32,7 +37,7 @@
     <tr>
         {#each sectionMean as mean}
             <td style="text-align: center; background: {getColourForMeanValue(mean)};">
-                <strong style="color: {getTextColourForMeanValue(mean)}">{formatNumber(mean)}</strong>
+                <strong style="color: {getTextColourForMeanValue(mean)}">{getSortMaturityLabel(mean)} ({formatNumber(mean)})</strong>
             </td>
         {/each}
     </tr>

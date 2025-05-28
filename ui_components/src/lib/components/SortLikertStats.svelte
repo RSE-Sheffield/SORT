@@ -5,7 +5,7 @@
     import {
         formatNumber,
         getHighestHistogramValue,
-        getHistogramMean,
+        getHistogramMean, getSortMaturityLabel,
     } from "../misc.svelte.ts";
     type QM = {
         index: number;
@@ -53,7 +53,8 @@
 <p>
     Section {sectionConfig.title} demonstrates an overall score <strong>
     of {formatNumber(surveyStats.sections[sectionIndex].fields[fieldIndex].mean)} out of
-    {getHighestHistogramValue(surveyStats.sections[sectionIndex].fields[fieldIndex].histograms[0])}</strong>.
+    {getHighestHistogramValue(surveyStats.sections[sectionIndex].fields[fieldIndex].histograms[0])}</strong> indicating maturity
+    ranking of <strong>{getSortMaturityLabel(surveyStats.sections[sectionIndex].fields[fieldIndex].mean)}</strong>.
     Areas of strength are demonstrated in questions <strong>{strongestAreas}</strong>.
     Areas of improvements are identified in questions <strong>{weakestAreas}</strong>.
 </p>
