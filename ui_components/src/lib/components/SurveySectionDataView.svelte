@@ -20,7 +20,7 @@
 </script>
 {#if surveyStats && config}
     <div class="d-flex flex-wrap">
-        {#each sectionConfig.fields as fieldConfig, fi}
+        {#each sectionConfig.fields as fieldConfig, fi (fi)}
             {#if fieldConfig.type === "likert" && sectionConfig.type === "sort"}
                 <div class="mb-3 flex-grow-1 flex-fill w-100">
 
@@ -69,7 +69,7 @@
                     >
                         {#snippet content()}
                             <ul class="list-group">
-                                {#each surveyStats.sections[sectionIndex].fields[fi].values as text}
+                                {#each surveyStats.sections[sectionIndex].fields[fi].values as text, index (index)}
 
                                     <li class="list-group-item">{text}</li>
                                 {/each}

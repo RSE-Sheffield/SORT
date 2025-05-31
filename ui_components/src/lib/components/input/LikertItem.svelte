@@ -1,5 +1,4 @@
 <script>
-  import {getUniqueID} from "../../misc.svelte.ts";
 
   let {config, sublabelIndex, value = $bindable(), viewerMode=false} = $props();
 
@@ -37,7 +36,7 @@
         </div>
     </div>
     <div class="row">
-        {#each config.options as option }
+        {#each config.options as option (option)}
             <div class="col">
                 <div class="form-check">
                     <label class="form-check-label">

@@ -1,43 +1,17 @@
 <script lang="ts">
-    import "quill/dist/quill.snow.css"
-    import Quill from "quill"
-    import {onMount} from "svelte";
+    import DOMPurify  from "dompurify";
+    import PellEditor from "./input/PellEditor.svelte";
 
     let {csrf, updateUrl, initContents, viewOnly=false} = $props();
-
-    let editorRef: HTMLElement = $state();
-    let quillInstance: Quill = null;
-    let contents = $state();
-
-    onMount(()=>{
-
-        const readOnlyConfig = {
-            readOnly: true,
-        }
-        const editorConfig = {
-            theme: 'snow',
-            readOnly: false,
-            placeholder: "Please enter evidence for this section here...",
-        }
-
-        quillInstance = new Quill(editorRef, viewOnly ? readOnlyConfig : editorConfig);
-        quillInstance.on('text-change', (delta, oldDelta, source) => {
-            contents = JSON.stringify(quillInstance.getContents());
-        });
-        try{
-            quillInstance.setContents(JSON.parse(initContents))
-        } catch (e){
-            //Do nothing
-            console.log(e)
-        }
+    let contents = $state(initContents);
 
 
-
-    })
 </script>
 <div>
-    <div bind:this={editorRef} class="mb-3"></div>
-    {#if !viewOnly}
+    {#if viewOnly}
+        {@html DOMPurify.sanitize(contents)}
+    {:else }
+    <PellEditor bind:value={contents}></PellEditor>
     <form
             action={updateUrl}
             method="post"

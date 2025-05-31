@@ -1,6 +1,9 @@
-<script>
+<script lang="ts">
+  import DOMPurify  from "dompurify";
   import {getUniqueID} from "../../misc.svelte.ts";
   let {config, value = $bindable(), viewerMode = false} = $props();
+
+
 
   let componentId = getUniqueID();
   let isValid = $state(false);
@@ -20,14 +23,14 @@
 </script>
 <div class="col-12">
     <label class="form-label" for={componentId}>{config.label}{#if config.required}<span style="color: red">*</span>{/if}</label>
-    {#if config.description || config.description.length > 0}<p class="form-text">{config.description}</p>{/if}
+    {#if config.description || config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
     <select class={{"form-select": true,"is-valid": isValid, "is-invalid": isInvalid}}
             bind:value={value}
             required={config.required}
             id={componentId}
             disabled={viewerMode}
     >
-        {#each config.options as option}
+        {#each config.options as option (option)}
             <option value={option}>{option}</option>
         {/each}
     </select>
