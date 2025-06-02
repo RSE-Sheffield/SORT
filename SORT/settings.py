@@ -65,14 +65,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "allauth",
+    "allauth.account",
     "django_bootstrap5",
     "django_extensions",
-    "debug_toolbar",
     "qr_code",
-    # apps created by FA:
     "home",
     "survey",
 ]
+if DEBUG:
+    INSTALLED_APPS.append("debug_toolbar")
 
 MIDDLEWARE = [
     # Implement security in the web server, not in Django.
@@ -84,8 +86,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
+
+if DEBUG:
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
 ROOT_URLCONF = "SORT.urls"
 
@@ -178,7 +183,10 @@ PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
 
 # For django-debug-toolbar
 INTERNAL_IPS = [
@@ -232,3 +240,8 @@ SURVEY_TEMPLATES = {
     "Midwives": "sort_only_config_midwives.json",
     "NMAHPs": "sort_only_config_nmahps.json",
 }
+
+# Authentication
+# https://docs.allauth.org/en/latest/account/configuration.html
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+ACCOUNT_LOGIN_METHODS = {"email"}
