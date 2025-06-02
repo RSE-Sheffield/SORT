@@ -29,35 +29,6 @@ from survey.services import survey_service
 User = get_user_model()
 
 
-class SignupView(CreateView):
-    form_class = ManagerSignupForm
-    template_name = "home/register.html"
-
-    def form_valid(self, form):
-        user = form.save()
-        login(self.request, user)
-        return redirect(reverse_lazy("home"))
-
-
-class LogoutInterfaceView(LogoutView):
-    success_url = reverse_lazy("login")
-
-
-class LoginInterfaceView(LoginView):
-    template_name = "home/login.html"
-    form_class = ManagerLoginForm
-    success_url = reverse_lazy("home")
-
-    def form_invalid(self, form):
-        messages.error(self.request, "Invalid email or password.")
-        return super().form_invalid(form)
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return redirect("home")
-        return super().dispatch(request, *args, **kwargs)
-
-
 class HomeView(LoginRequiredMixin, View):
     template_name = "home/welcome.html"
 
