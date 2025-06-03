@@ -332,3 +332,17 @@ export function getTextColourForMeanValue(mean: number): string {
     }
     return colourRange[0].textColour;
 }
+
+export function getSortMaturityLabel(score: number) {
+    if (score < 1.5) {
+        return "Not yet planned";
+    } else if (score >= 1.5 && score < 2.5) {
+        return "Planned";
+    } else if (score >= 2.5 && score < 3.5) {
+        return "Early progress";
+    } else if (score >= 3.5 && score < 4.5) {
+        return "Substantial progress";
+    } else {
+        return "Established"
+    }
+}
