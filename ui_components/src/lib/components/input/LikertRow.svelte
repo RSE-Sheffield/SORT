@@ -1,5 +1,4 @@
 <script>
-  import {getUniqueID} from "../../misc.svelte.ts";
 
   let {config, sublabelIndex, value = $bindable(), viewerMode = false} = $props();
 
@@ -26,7 +25,7 @@
     <span class={{"is-valid": isValid, "is-invalid": isInvalid}}>{config.sublabels[sublabelIndex]}</span>
     <span class="invalid-feedback">A value must be selected</span>
 </td>
-{#each config.options as option }
+{#each config.options as option (option)}
     <td>
         <div class="form-check">
             <input class={{"form-check-input": true, "is-valid": isValid, "is-invalid": isInvalid}}

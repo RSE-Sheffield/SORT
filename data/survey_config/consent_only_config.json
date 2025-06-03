@@ -3,7 +3,7 @@
     {
       "title": "Welcome",
       "type": "consent",
-      "description": "Welcome to the study",
+      "description": "<span><i>Thank you for taking the time to complete this Self-Assessment of Organisational&nbsp; Research Readiness Tool (SORT). Your response will help us as an organisation to map our progress in supporting the Research agenda.&nbsp;By systematically gathering data on current research practices, organizations can identify strengths and areas for improvement.&nbsp;The online survey should take no longer than 15-20 minutes to complete.<br></i><b><i>Due to the functionality of the online form, you will not be able to return later to amend your responses, so please try to complete your survey in one session.</i></b><i><br><br></i><i>Responses will be stored in accordance with organisational information governance and data protection policy. Any reporting will be anonymous and would not identify you as an individual. Any analysis and reporting that might include demographic information would be at a broad &nbsp;(clinical board/speciality) level and would only be used to inform planning and support required going forward.&nbsp;By completing and submitting your responses to this evaluation, you are agreeing to participate voluntarily and provide consent for the use of your data in accordance with organisational policy.</i></span>",
       "fields": [
         {
           "type": "checkbox",

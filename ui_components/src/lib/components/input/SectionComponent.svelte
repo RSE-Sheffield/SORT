@@ -1,4 +1,5 @@
 <script lang="ts" module>
+    import DOMPurify  from "dompurify";
     import type {SectionConfig} from "../../interfaces.ts";
 
     export function getDefaultSectionConfig(): SectionConfig{
@@ -112,8 +113,8 @@
      }}
 >
     <div class="card-body">
-        <div class="row">
-            <div class="col-8">
+        <div style="display: flex; justify-content: space-between; gap: 1em">
+            <div style="flex: 1">
                 <h2>
                 {#if editable}
                     <EditableText bind:value={config.title}/>
@@ -122,7 +123,7 @@
                 {/if}
                 </h2>
             </div>
-            <div class="col-4 text-end">
+            <div class="text-end">
                 {#if displaySectionType}
                     {#if editable && sectionTypeEditable}
                         <select class="form-select" bind:value={config.type}>
@@ -144,7 +145,7 @@
                     {#if editable }
                         <EditableTextArea bind:value={config.description}/>
                     {:else}
-                        {config.description}
+                        {@html DOMPurify.sanitize(config.description)}
                     {/if}
                 </p>
             </div>
@@ -153,7 +154,7 @@
         </div>
 
 
-        {#each config.fields as field, index (index)}
+        {#each config.fields, index (index)}
             <div class="mb-3">
                 <InputComponent
                         bind:config={config.fields[index]}

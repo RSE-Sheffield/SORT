@@ -1,7 +1,6 @@
 <script lang="ts">
     import SurveyConfigurator from "./lib/components/SurveyConfigurator.svelte";
 
-
     //Import data from other script blocks on page (for django)
     //otherwise use the default config
     let {csrf, initConsentConfig, initDemographyConfig, initSurveyBodyPath} = $props();
@@ -15,9 +14,11 @@
 </script>
 
 
+
 <div class="card mb-3">
     <div class="card-body">
         <h2>Configure your welcome and consent page</h2>
+
         <p>
             The introduction page of your survey page can be configured below. We've provided a default consent page
             which

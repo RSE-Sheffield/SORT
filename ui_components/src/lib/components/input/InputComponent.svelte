@@ -28,6 +28,7 @@
     import OptionsList from "./OptionsList.svelte";
     import {clickOutside} from "../../misc.svelte";
     import {onMount} from "svelte";
+    import PellEditor from "./PellEditor.svelte";
 
     //Constants
     const questionTypes = [
@@ -184,7 +185,7 @@
                     <label class="form-label col-12">
                         Question type
                         <select bind:value={config.type} class="form-select">
-                            {#each questionTypes as questionType}
+                            {#each questionTypes as questionType (questionType.value)}
                                 <option value={questionType.value}>{questionType.label} </option>
                             {/each}
                         </select>
@@ -195,7 +196,7 @@
             <div class="mb-3">
                 <label class="form-label col-12">
                     Description
-                    <textarea class="form-control" bind:value={config.description}></textarea>
+                    <PellEditor bind:value={config.description}></PellEditor>
                 </label>
             </div>
 

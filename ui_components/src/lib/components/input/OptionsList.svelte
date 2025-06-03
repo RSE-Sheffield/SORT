@@ -9,7 +9,7 @@
         options.splice(index, 1);
     }
 </script>
-{#each options as option, index}
+{#each options as option, index (index)}
 <div class="input-group mb-1">
      <span class="input-group-text">
          {#if type === "radio"}

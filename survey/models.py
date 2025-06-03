@@ -57,7 +57,7 @@ class SurveyEvidenceSection(models.Model):
         Survey, on_delete=models.CASCADE, related_name="evidence_sections"
     )
     title = models.TextField(blank=True, null=True)
-    text = models.TextField(blank=True, null=True)
+    text = models.TextField(blank=True, null=True, default="No evidence provided.")
 
     class Meta:
         unique_together = [["survey", "section_id"]]

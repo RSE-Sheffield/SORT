@@ -1,21 +1,14 @@
 <script lang="ts">
-let {value = $bindable("") } = $props();
-let hasFocus = $state(false);
+    interface Props {
+        value: string,
+        placeholder?: string
+    }
 
-function setFocus(focus){
-    hasFocus = focus;
-}
+    let {value = $bindable(""), placeholder = "Enter text here"}: Props = $props();
 
-function init(el){
-    el.focus();
-}
 
 </script>
 
-{#if hasFocus}
-<input class="form-control" bind:value={value} onfocusout={()=> {setFocus(false)}} use:init/>
-{:else}
-{value} <button class="btn btn-link " onclick={()=>{setFocus(true)}} title="Edit text" aria-label="Edit text"><i class='bx bxs-edit-alt' ></i></button>
-{/if}
+<input class="focus-ring" bind:value={value} style="border:none; border-radius: 0.12em; width: 100%" placeholder="Enter text here"/>
 
 

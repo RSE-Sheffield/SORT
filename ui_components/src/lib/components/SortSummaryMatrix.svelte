@@ -30,7 +30,7 @@
     </thead>
     <tbody>
     <tr>
-        {#each sectionMean as mean}
+        {#each sectionMean as mean, index (index)}
             <td style="text-align: center; background: {getColourForMeanValue(mean)};">
                 <strong style="color: {getTextColourForMeanValue(mean)}">{formatNumber(mean)}</strong>
             </td>

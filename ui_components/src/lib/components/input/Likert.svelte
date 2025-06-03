@@ -1,6 +1,8 @@
 <script>
+  import DOMPurify  from "dompurify";
   import LikertRow from "./LikertRow.svelte";
   import LikertItem from "./LikertItem.svelte";
+
 
   let {config, value = $bindable(), viewerMode = false} = $props();
 
@@ -42,12 +44,12 @@
 
 <div class="form-label">
     {config.label}{#if config.required}<span style="color: red">*</span>{/if}
-    {#if config.description || config.description.length > 0}<p class="form-text">{config.description}</p>{/if}
+    {#if config.description || config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
     <table class="table table-striped d-none d-sm-block" style="width: 100%;">
         <thead>
         <tr>
             <th>Statement</th>
-            {#each config.options as option}
+            {#each config.options as option, index (index)}
                 <th scope="col">{option}</th>
             {/each}
 
@@ -55,7 +57,7 @@
 
         </thead>
         <tbody>
-        {#each config.sublabels as sublabel, sublabelIndex }
+        {#each config.sublabels as sublabel, sublabelIndex (sublabelIndex)}
             <tr>
                 <LikertRow config={config}
                            sublabelIndex={sublabelIndex}
@@ -68,7 +70,7 @@
         </tbody>
     </table>
     <div class="d-block d-sm-none">
-        {#each config.sublabels as sublabel, sublabelIndex }
+        {#each config.sublabels as sublabel, sublabelIndex (sublabelIndex)}
             <LikertItem config={config}
                            sublabelIndex={sublabelIndex}
                            bind:value={compsValue[sublabelIndex]}
