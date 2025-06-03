@@ -62,9 +62,15 @@
                 <p>In support of the survey result, please gather the evidence for this section in the text box
                     below.</p>
                 <!-- Create the editor container -->
-                <div class="sort-quill-editor mb-2"
-                     data-update-url="{% url 'survey_evidence_gathering_update' survey.id evidence_section.section_id %}"
-                     data-init-contents="{{ evidence_section.text }}"></div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="sort-richtext-field mb-2"
+                             data-update-url="{% url 'survey_evidence_gathering_update' survey.id evidence_section.section_id %}"
+                             data-init-contents="{{ evidence_section.text }}"></div>
+
+                    </div>
+                </div>
+
 
                 <h2>Attached evidence</h2>
                 <p>

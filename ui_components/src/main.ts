@@ -5,7 +5,7 @@ import SmartTable from "./lib/components/SmartTable.svelte";
 import SurveyConfigConsentDemographyApp from "./SurveyConfigConsentDemographyApp.svelte";
 import SurveyResponseApp from "./SurveyResponseApp.svelte";
 import FileBrowser from "./lib/components/FileBrowser.svelte";
-import QuillEditor from "./lib/components/QuillEditor.svelte";
+import RichtextFormField from "./lib/components/RichtextFormField.svelte";
 import SurveyResponseViewerApp from "./lib/components/SurveyResponseViewerApp.svelte";
 import SurveySectionDataView from "./lib/components/SurveySectionDataView.svelte";
 import SortSummaryMatrix from "./lib/components/SortSummaryMatrix.svelte";
@@ -73,11 +73,11 @@ mapMatchedElement(".sort-smart-table", (elem) => {
     });
 });
 
-mapMatchedElement(".sort-quill-editor", (elem) => {
+mapMatchedElement(".sort-richtext-field", (elem) => {
     const updateUrl = elem.dataset.updateUrl;
     const initContents = elem.dataset.initContents;
     const viewOnly = !!elem.dataset.viewOnly
-    mount(QuillEditor, {
+    mount(RichtextFormField, {
         target: elem,
         props: {
             csrf: csrf,
