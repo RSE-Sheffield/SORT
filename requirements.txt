@@ -31,3 +31,4 @@ factory-boy==3.3.3
 django-crispy-forms==2.4
 crispy-bootstrap5==2025.4
 django-invitations==2.1.0
+django-allauth==65.9.0
