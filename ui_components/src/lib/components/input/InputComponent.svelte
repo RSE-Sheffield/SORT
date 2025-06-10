@@ -136,7 +136,11 @@
         endEdit();
     }
 
-
+    // Input label
+    let ariaLabel = 'Click to edit field';
+    if (config.readOnly) {
+        ariaLabel = 'This field cannot be edited';
+    }
 </script>
 
 {#snippet enforceMaxChar()}
@@ -293,12 +297,13 @@
 {:else if editable && !inEditMode}
     <a href="/assets/ui_components/public"
        class="card mb-3 sort-form-component"
-       aria-label="Click to edit field"
+       title={ariaLabel}
+       aria-label={ariaLabel}
        draggable="true"
        ondragstart={onDragStartHandler}
        ondrop={onDropHandler}
        ondragover={onDragOverHandler}
-       onclick={(event)=>{event.preventDefault(); beginEdit()}}
+       onclick={(event)=>{event.preventDefault(); if (!config.readOnly) {beginEdit()}}}
     >
         <div class="card-body">
             <RenderedComponentType config={config}></RenderedComponentType>
