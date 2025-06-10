@@ -15,7 +15,8 @@
           "maxNumChar": 500,
           "minNumValue": 0,
           "maxNumValue": 100,
-          "textType": "INTEGER_TEXT"
+          "textType": "INTEGER_TEXT",
+          "disabled": false
         },
         {
           "type": "radio",
@@ -23,7 +24,8 @@
           "description": "",
           "required": true,
           "sublabels": [],
-          "options": ["Male", "Female", "Non-binary", "Prefer not to say"]
+          "options": ["Male", "Female", "Non-binary", "Prefer not to say"],
+          "disabled": false
         },
         {
           "type": "text",
@@ -35,21 +37,24 @@
           "maxNumChar": 500,
           "minNumValue": 0,
           "maxNumValue": 100,
-          "textType": "INTEGER_TEXT"
+          "textType": "INTEGER_TEXT",
+          "disabled": false
         },
         {
           "type": "radio",
           "label": "What is your current Band/Grade",
           "required": true,
           "sublabels": [],
-          "options": ["Band 5 ", "Band 6", "Band 7", "Band 8", "Band 9"]
+          "options": ["Band 5 ", "Band 6", "Band 7", "Band 8", "Band 9"],
+          "disabled": false
         },
         {
           "type": "radio",
           "label": "Please indicate your highest qualification",
           "required": true,
           "sublabels": [],
-          "options": ["Diploma", "Degree", "Masters", "PhD/Doctorate"]
+          "options": ["Diploma", "Degree", "Masters", "PhD/Doctorate"],
+          "disabled": false
         },
         {
           "type": "radio",
@@ -73,7 +78,8 @@
             "White - Irish"                  ,
             "White - Romany"                 ,
             "Other"
-          ]
+          ],
+          "disabled": false
         }
 
       ]

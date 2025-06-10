@@ -276,10 +276,19 @@
                 </div>
             {/if}
 
+            <!-- Required switch -->
             <div class="form-check form-switch mb-3">
                 <label class="form-label">
                     Required
                     <input type="checkbox" class="form-check-input" role="switch" bind:checked={config.required}/>
+                </label>
+            </div>
+
+            <!-- Disabled switch -->
+            <div class="form-check form-switch mb-3">
+                <label class="form-label">
+                    Disabled
+                    <input type="checkbox" class="form-check-input" role="switch" bind:checked={config.disabled}/>
                 </label>
             </div>
 
@@ -304,6 +313,8 @@
             <RenderedComponentType config={config}></RenderedComponentType>
         </div>
     </a>
+{:else if config.disabled}
+    <!-- This field is disabled -->
 {:else}
     <RenderedComponentType config={config} bind:value={value} bind:this={renderedComponent} viewerMode={viewerMode}></RenderedComponentType>
 {/if}
