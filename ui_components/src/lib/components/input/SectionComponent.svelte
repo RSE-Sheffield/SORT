@@ -97,6 +97,8 @@
         }
     }
 
+    // Only allow fields to be deactivated in the demography section
+    let canDisableFields = config.type == "demographic";
 
 </script>
 
@@ -167,6 +169,7 @@
                         sectionIndex={sectionIndex}
                         fieldIndex={index}
                         onMoveRequest={handleMoveRequest}
+                        canDisableFields={canDisableFields}
                 />
             </div>
         {/each}

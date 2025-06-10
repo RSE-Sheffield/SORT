@@ -64,7 +64,8 @@
         onDeleteRequest = () => {
         },
         onMoveRequest = (srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex) => {
-        }
+        },
+        canDisableFields = false,
     } = $props();
 
 
@@ -284,6 +285,7 @@
                 </label>
             </div>
 
+            {#if canDisableFields }
             <!-- Disabled switch -->
             <div class="form-check form-switch mb-3">
                 <label class="form-label">
@@ -291,6 +293,7 @@
                     <input type="checkbox" class="form-check-input" role="switch" bind:checked={config.disabled}/>
                 </label>
             </div>
+            {/if}
 
             <div>
                 <button class="btn btn-primary" onclick={() => {onDuplicateRequest()}}><i class="bx bx-duplicate"></i> Duplicate</button>
