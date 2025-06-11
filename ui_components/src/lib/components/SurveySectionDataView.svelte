@@ -21,6 +21,7 @@
 {#if surveyStats && config}
     <div class="d-flex flex-wrap">
         {#each sectionConfig.fields as fieldConfig, fi (fi)}
+            {#if !fieldConfig.disabled}
             {#if fieldConfig.type === "likert" && sectionConfig.type === "sort"}
                 <div class="mb-3 flex-grow-1 flex-fill w-100">
 
@@ -77,6 +78,7 @@
                         {/snippet}
                     </CollapsibleCard>
                 </div>
+            {/if}
             {/if}
         {/each}
     </div>
