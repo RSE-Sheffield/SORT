@@ -95,11 +95,14 @@
     let renderedComponent = $state();
 
     export function validate() {
-        console.log("Validating field" + config.label);
+        console.log("Validating field " + config.label);
+        // Skip disabled fields
+        if (config.disabled) {
+            return true;
+        }
         if (renderedComponent) {
             return renderedComponent.validate();
         }
-
         return false;
     }
 
