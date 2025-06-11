@@ -158,6 +158,12 @@
     </div>
 {/snippet}
 
+{#snippet readOnlyBadge()}
+<span class="badge badge-secondary text-bg-secondary"
+  title="This is a standard field and cannot be modified.">
+  Read only
+</span>
+{/snippet}
 
 {#if editable && inEditMode}
 
@@ -170,25 +176,35 @@
          ondragend={onDragEndHandler}
          use:clickOutside={()=>{endEdit()}}
     >
+
         <div class="card-header" style="text-align: right">
+            {#if config.readOnly }
+                {@render readOnlyBadge()}
+            {/if}
             <button onclick={()=>{endEdit()}} class="btn btn-link btn-sm" aria-label="Close">
                 <i class='bx bx-radio-circle-marked'></i>
                 <i class='bx bx-collapse-vertical'></i> close
             </button>
         </div>
+        {#if config.readOnly }
+        <div class="alert alert-warning" role="alert">
+            <span class="bx bx-minus-circle"></span>
+            This field is a standard question and cannot be modified.
+        </div>
+        {/if}
         <div class="card-body">
 
             <div class="row mb-3">
                 <div class="col-8">
                     <label class="form-label col-12">
                         Question label
-                        <input type="text" class="form-control" bind:value={config.label}/>
+                        <input type="text" class="form-control" bind:value={config.label} readonly={config.readOnly} />
                     </label>
                 </div>
                 <div class="col-4">
                     <label class="form-label col-12">
                         Question type
-                        <select bind:value={config.type} class="form-select">
+                        <select bind:value={config.type} class="form-select" disabled={config.readOnly}>
                             {#each questionTypes as questionType (questionType.value)}
                                 <option value={questionType.value}>{questionType.label} </option>
                             {/each}
@@ -289,7 +305,9 @@
 
             <div>
                 <button class="btn btn-primary" onclick={() => {onDuplicateRequest()}}><i class="bx bx-duplicate"></i> Duplicate</button>
+                {#if !config.readOnly}
                 <button class="btn btn-danger" onclick={() => {onDeleteRequest()}}><i class="bx bx-trash"></i> Delete</button>
+                {/if}
             </div>
         </div>
     </div>
@@ -303,9 +321,12 @@
        ondragstart={onDragStartHandler}
        ondrop={onDropHandler}
        ondragover={onDragOverHandler}
-       onclick={(event)=>{event.preventDefault(); if (!config.readOnly) {beginEdit()}}}
+       onclick={(event)=>{event.preventDefault(); beginEdit()}}
     >
         <div class="card-body">
+            {#if config.readOnly }
+                {@render readOnlyBadge()}
+            {/if}
             <RenderedComponentType config={config}></RenderedComponentType>
         </div>
     </a>
