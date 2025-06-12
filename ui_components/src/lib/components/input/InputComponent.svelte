@@ -1,6 +1,7 @@
 <script lang="ts" module>
     import {type FieldConfig, TextType} from "../../interfaces.ts";
 
+
     export type MoveRequestHandler = (srcSectionIndex: number,
                                       srcFieldIndex: number,
                                       destSectionIndex: number,
@@ -22,9 +23,11 @@
             textType: TextType.plain,
         };
     }
+
+    let isDragging = $state(false);
 </script>
 <script lang="ts">
-    import type { Component } from "svelte";
+    import type {Component} from "svelte";
     import Text from "./Text.svelte";
     import TextArea from "./TextArea.svelte";
     import Checkbox from "./Checkbox.svelte";
@@ -36,6 +39,7 @@
     import {onMount} from "svelte";
     import PellEditor from "./PellEditor.svelte";
     import type {SurveyResponse} from "../../interfaces.ts";
+    import grabHandleIcon from "../../../assets/grab_dots.svg"
 
 
     //Constants
@@ -103,6 +107,8 @@
     // States
     let inEditMode = $state(false);
 
+    let hasDragOver = $state(false);
+
 
     let RenderedComponentType = $derived.by(() => {
         if (config.type in renderComponentTypes) {
@@ -133,33 +139,46 @@
     }
 
     function onDragStartHandler(e: DragEvent) {
-        if(e.dataTransfer){
+        hasDragOver = false;
+        isDragging = true;
+        if (e.dataTransfer) {
             e.dataTransfer.effectAllowed = "move"
             e.dataTransfer.setData("application/json", JSON.stringify({section: sectionIndex, field: fieldIndex}))
         }
-
     }
 
     function onDropHandler(e: DragEvent) {
-
         e.preventDefault();
         e.stopPropagation(); // Stop drop event propagating to the parent SectionComponent
-        if(e.dataTransfer){
+        if (e.dataTransfer) {
             const moveSource = JSON.parse(e.dataTransfer.getData("application/json"));
             onMoveRequest(moveSource.section, moveSource.field, sectionIndex, fieldIndex)
         }
+        isDragging = false;
 
     }
 
     function onDragOverHandler(e: DragEvent) {
         e.preventDefault();
-        if(e.dataTransfer)
+        hasDragOver = true;
+        if (e.dataTransfer)
             e.dataTransfer.dropEffect = "move";
+    }
+
+    function onDragLeaveHandler(){
+        hasDragOver = false;
     }
 
     function onDragEndHandler() {
         endEdit();
+        isDragging = false;
     }
+
+    $effect(()=>{
+        if(!isDragging){
+            hasDragOver = false;
+        }
+    })
 
 
 </script>
@@ -183,22 +202,29 @@
 {#if editable && inEditMode}
 
     <div role="group"
-         class="card mb-3"
-         draggable="true"
-         ondragstart={onDragStartHandler}
+         class={{"card": true, "mb-3": true, "drag-over-bg": hasDragOver}}
          ondrop={onDropHandler}
          ondragover={onDragOverHandler}
-         ondragend={onDragEndHandler}
          use:clickOutside={()=>{endEdit()}}
     >
-        <div class="card-header" style="text-align: right">
+        <div class="card-header" style="display: flex; justify-content: space-between">
+            <div></div>
+            <button
+                    class="btn btn-link"
+                    draggable="true"
+                    ondragstart={onDragStartHandler}
+                    ondrop={onDropHandler}
+                    ondragover={onDragOverHandler}
+                    ondragend={onDragEndHandler}
+                    ondragleave={onDragLeaveHandler}>
+                <img src={grabHandleIcon} style="width: 1.5em; height: auto;" alt="Field drag drop handle">
+            </button>
             <button onclick={()=>{endEdit()}} class="btn btn-link btn-sm" aria-label="Close">
                 <i class='bx bx-radio-circle-marked'></i>
                 <i class='bx bx-collapse-vertical'></i> close
             </button>
         </div>
         <div class="card-body">
-
             <div class="row mb-3">
                 <div class="col-8">
                     <label class="form-label col-12">
@@ -320,12 +346,14 @@
 
 {:else if editable && !inEditMode}
     <a href="/assets/ui_components/public"
-       class="card mb-3 sort-form-component"
+       class={{"card": true, "mb-3": true, "sort-form-component": true, "drag-over-bg": hasDragOver}}
        aria-label="Click to edit field"
        draggable="true"
        ondragstart={onDragStartHandler}
        ondrop={onDropHandler}
        ondragover={onDragOverHandler}
+       ondragleave={onDragLeaveHandler}
+       ondragend={onDragEndHandler}
        onclick={(event)=>{event.preventDefault(); beginEdit()}}
     >
         <div class="card-body">
@@ -346,5 +374,10 @@
     .sort-form-component:hover {
         background: #cec3fa;
     }
+
+    .drag-over-bg {
+        background: #cd8bf8;
+    }
+
 
 </style>
