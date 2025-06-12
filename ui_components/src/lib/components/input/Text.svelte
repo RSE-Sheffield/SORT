@@ -11,7 +11,7 @@
   let isInvalid = $state(false);
   let validationErrorFeedback = $state("The field must not be empty.");
 
-  function setIsValid(valid) {
+  function setIsValid(valid: boolean) {
     isValid = valid;
     isInvalid = !valid;
   }

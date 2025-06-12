@@ -1,6 +1,11 @@
 <script lang="ts" module>
     import {type FieldConfig, TextType} from "../../interfaces.ts";
 
+    export type MoveRequestHandler = (srcSectionIndex: number,
+                                      srcFieldIndex: number,
+                                      destSectionIndex: number,
+                                      destFieldIndex: number) => void
+
     export function getDefaultFieldConfig(): FieldConfig {
         return {
             type: "text",
@@ -19,6 +24,7 @@
     }
 </script>
 <script lang="ts">
+    import type { Component } from "svelte";
     import Text from "./Text.svelte";
     import TextArea from "./TextArea.svelte";
     import Checkbox from "./Checkbox.svelte";
@@ -29,6 +35,8 @@
     import {clickOutside} from "../../misc.svelte";
     import {onMount} from "svelte";
     import PellEditor from "./PellEditor.svelte";
+    import type {SurveyResponse} from "../../interfaces.ts";
+
 
     //Constants
     const questionTypes = [
@@ -47,9 +55,23 @@
         select: Select,
         likert: Likert
     }
+    type InputComponents = Text | TextArea | Radio | Checkbox | Select | Likert;
     const componentTypeText = new Set(["text", "textarea"])
     const componentTypeWithOptions = new Set(["radio", "checkbox", "select", "likert"]);
     const componentTypeWithSublabels = new Set(["likert"]);
+
+    interface Props {
+        config: FieldConfig;
+        value?: SurveyResponse;
+        editable?: boolean;
+        viewerMode?: boolean;
+        fieldIndex?: number;
+        sectionIndex?: number;
+        onDuplicateRequest: () => void;
+        onDeleteRequest: () => void;
+        onMoveRequest: MoveRequestHandler;
+    }
+
 
     // Props
     let {
@@ -63,20 +85,18 @@
         },
         onDeleteRequest = () => {
         },
-        onMoveRequest = (srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex) => {
+        onMoveRequest = () => {
         }
-    } = $props();
+    }: Props = $props();
 
 
+    //Create a field config object or insert missing keys
     if (config === null || config === undefined) {
-        config = {};
-    }
-
-    //Insert missing keys
-    let defaultConfig = getDefaultFieldConfig()
-    for (let key in defaultConfig) {
-        if (!(key in config)) {
-            config[key] = defaultConfig[key];
+        config = getDefaultFieldConfig();
+    } else {
+        config = {
+            ...getDefaultFieldConfig(),
+            ...config,
         }
     }
 
@@ -91,20 +111,17 @@
         return Text;
     })
 
-    let renderedComponent = $state();
+
+    let renderedComponent: InputComponents | null | undefined = $state();
 
     export function validate() {
-        console.log("Validating field" + config.label);
-        if (renderedComponent) {
+        console.log("Validating field" + (config?.label ?? "Undefined"));
+        if (renderedComponent)
             return renderedComponent.validate();
-        }
 
         return false;
     }
 
-    export function getValue() {
-        return {name: config.name, value: value};
-    }
 
     export function beginEdit() {
         if (editable)
@@ -115,24 +132,32 @@
         inEditMode = false;
     }
 
-    function onDragStartHandler(e) {
-        e.dataTransfer.effectAllowed = "move"
-        e.dataTransfer.setData("application/json", JSON.stringify({section: sectionIndex, field: fieldIndex}))
+    function onDragStartHandler(e: DragEvent) {
+        if(e.dataTransfer){
+            e.dataTransfer.effectAllowed = "move"
+            e.dataTransfer.setData("application/json", JSON.stringify({section: sectionIndex, field: fieldIndex}))
+        }
+
     }
 
-    function onDropHandler(e) {
+    function onDropHandler(e: DragEvent) {
+
         e.preventDefault();
         e.stopPropagation(); // Stop drop event propagating to the parent SectionComponent
-        const moveSource = JSON.parse(e.dataTransfer.getData("application/json"));
-        onMoveRequest(moveSource.section, moveSource.field, sectionIndex, fieldIndex)
+        if(e.dataTransfer){
+            const moveSource = JSON.parse(e.dataTransfer.getData("application/json"));
+            onMoveRequest(moveSource.section, moveSource.field, sectionIndex, fieldIndex)
+        }
+
     }
 
-    function onDragOverHandler(e) {
+    function onDragOverHandler(e: DragEvent) {
         e.preventDefault();
-        e.dataTransfer.dropEffect = "move";
+        if(e.dataTransfer)
+            e.dataTransfer.dropEffect = "move";
     }
 
-    function onDragEndHandler(e){
+    function onDragEndHandler() {
         endEdit();
     }
 
@@ -284,8 +309,11 @@
             </div>
 
             <div>
-                <button class="btn btn-primary" onclick={() => {onDuplicateRequest()}}><i class="bx bx-duplicate"></i> Duplicate</button>
-                <button class="btn btn-danger" onclick={() => {onDeleteRequest()}}><i class="bx bx-trash"></i> Delete</button>
+                <button class="btn btn-primary" onclick={() => {onDuplicateRequest()}}><i class="bx bx-duplicate"></i>
+                    Duplicate
+                </button>
+                <button class="btn btn-danger" onclick={() => {onDeleteRequest()}}><i class="bx bx-trash"></i> Delete
+                </button>
             </div>
         </div>
     </div>
@@ -305,7 +333,8 @@
         </div>
     </a>
 {:else}
-    <RenderedComponentType config={config} bind:value={value} bind:this={renderedComponent} viewerMode={viewerMode}></RenderedComponentType>
+    <RenderedComponentType config={config} bind:value={value} bind:this={renderedComponent}
+                           viewerMode={viewerMode}></RenderedComponentType>
 {/if}
 
 

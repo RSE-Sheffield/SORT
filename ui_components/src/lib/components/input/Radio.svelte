@@ -10,7 +10,7 @@
   let isValid = $state(false);
   let isInvalid = $state(false);
 
-  function setIsValid(valid) {
+  function setIsValid(valid: boolean) {
     isValid = valid;
     isInvalid = !valid;
   }
