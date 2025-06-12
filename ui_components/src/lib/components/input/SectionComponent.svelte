@@ -83,7 +83,15 @@
     }
 
     function duplicateField(index: number) {
-        config.fields.splice(index, 0, _.cloneDeep(config.fields[index]));
+        let updatedFields = [...config.fields];
+        // Copy the field
+        let _field = _.cloneDeep(updatedFields[index]);
+        // User-created fields may be modified
+        _field.readOnly = false;
+        console.log(_field);
+        // Insert the new field after the old one
+        updatedFields.splice(index+1, 0, _field);
+        config.fields = updatedFields;
     }
 
     function deleteField(index: number) {

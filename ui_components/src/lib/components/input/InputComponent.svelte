@@ -66,7 +66,8 @@
         onMoveRequest = (srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex) => {
         }
     } = $props();
-
+    // Some fields cannot be modified
+    const readonly = config.readOnly;
 
     if (config === null || config === undefined) {
         config = {};
@@ -137,23 +138,20 @@
     }
 
     // Input label
-    let ariaLabel = 'Click to edit field';
-    if (config.readOnly) {
-        ariaLabel = 'This field cannot be edited';
-    }
+    let title = readonly ? 'This field cannot be edited' : 'Click to edit field';
 </script>
 
 {#snippet enforceMaxChar()}
     <label class="form-label">
         Maximum characters
-        <input type="number" class="form-control" bind:value={config.maxNumChar}/>
+        <input type="number" class="form-control" bind:value={config.maxNumChar} readonly={readonly}/>
     </label>
 
     <div class="form-check form-switch">
         <label class="form-label">
             Enforce maximum characters
             <input class="form-check-input" type="checkbox" role="switch"
-                   bind:checked={config.enforceValueConstraints}>
+                   bind:checked={config.enforceValueConstraints} readonly={readonly} disabled={readonly}>
         </label>
     </div>
 {/snippet}
@@ -178,7 +176,7 @@
     >
 
         <div class="card-header" style="text-align: right">
-            {#if config.readOnly }
+            {#if readonly }
                 {@render readOnlyBadge()}
             {/if}
             <button onclick={()=>{endEdit()}} class="btn btn-link btn-sm" aria-label="Close">
@@ -186,7 +184,7 @@
                 <i class='bx bx-collapse-vertical'></i> close
             </button>
         </div>
-        {#if config.readOnly }
+        {#if readonly }
         <div class="alert alert-warning" role="alert">
             <span class="bx bx-minus-circle"></span>
             This field is a standard question and cannot be modified.
@@ -198,13 +196,13 @@
                 <div class="col-8">
                     <label class="form-label col-12">
                         Question label
-                        <input type="text" class="form-control" bind:value={config.label} readonly={config.readOnly} />
+                        <input type="text" class="form-control" bind:value={config.label} readonly={readonly} />
                     </label>
                 </div>
                 <div class="col-4">
                     <label class="form-label col-12">
                         Question type
-                        <select bind:value={config.type} class="form-select" disabled={config.readOnly}>
+                        <select bind:value={config.type} class="form-select" disabled={readonly}>
                             {#each questionTypes as questionType (questionType.value)}
                                 <option value={questionType.value}>{questionType.label} </option>
                             {/each}
@@ -216,7 +214,7 @@
             <div class="mb-3">
                 <label class="form-label col-12">
                     Description
-                    <PellEditor bind:value={config.description}></PellEditor>
+                    <PellEditor bind:value={config.description} readonly={readonly}></PellEditor>
                 </label>
             </div>
 
@@ -224,14 +222,14 @@
             {#if componentTypeWithSublabels.has(config.type)}
                 <div class="mb-3">
                     <div class="form-label">Sublabels</div>
-                    <OptionsList bind:options={config.sublabels} type={config.type}/>
+                    <OptionsList bind:options={config.sublabels} type={config.type} readonly={readonly}/>
                 </div>
             {/if}
 
             {#if componentTypeWithOptions.has(config.type)}
                 <div class="mb-3">
                     <div class="form-label">Options</div>
-                    <OptionsList bind:options={config.options} type={config.type}/>
+                    <OptionsList bind:options={config.options} type={config.type} readonly={readonly}/>
                 </div>
             {/if}
 
@@ -239,7 +237,7 @@
                 <div class="row mb-3">
                     <div class="col">
                         <label class="form-label">Text type
-                            <select bind:value={config.textType} class="form-select">
+                            <select bind:value={config.textType} class="form-select" disabled={readonly}>
                                 <option value={TextType.plain}>Plain text</option>
                                 <option value={TextType.email}>Email</option>
                                 <option value={TextType.integer}>Whole numbers</option>
@@ -253,34 +251,34 @@
                         {:else if config.textType === TextType.integer}
                             <label class="form-label">
                                 Minimum value
-                                <input type="number" class="form-control" bind:value={config.minNumValue}/>
+                                <input type="number" class="form-control" bind:value={config.minNumValue} readonly={readonly}/>
                             </label>
                             <label class="form-label">
                                 Maximum value
-                                <input type="number" class="form-control" bind:value={config.maxNumValue}/>
+                                <input type="number" class="form-control" bind:value={config.maxNumValue} readonly={readonly}/>
                             </label>
                             <div class="form-check form-switch">
                                 <label class="form-label">
                                     Enforce value limits
                                     <input class="form-check-input" type="checkbox" role="switch"
-                                           bind:checked={config.enforceValueConstraints}>
+                                           bind:checked={config.enforceValueConstraints} readonly={readonly} disabled={readonly}>
                                 </label>
                             </div>
 
                         {:else if config.textType === TextType.decimals}
                             <label class="form-label">
                                 Minimum value
-                                <input type="number" class="form-control" bind:value={config.minNumValue}/>
+                                <input type="number" class="form-control" bind:value={config.minNumValue} readonly={readonly}>/>
                             </label>
                             <label class="form-label">
                                 Maximum value
-                                <input type="number" class="form-control" bind:value={config.maxNumValue}/>
+                                <input type="number" class="form-control" bind:value={config.maxNumValue} readonly={readonly}/>
                             </label>
                             <div class="form-check form-switch">
                                 <label class="form-label">
                                     Enforce value limits
                                     <input class="form-check-input" type="checkbox" role="switch"
-                                           bind:checked={config.enforceValueConstraints}>
+                                           bind:checked={config.enforceValueConstraints} readonly={readonly} disabled={readonly}/>
                                 </label>
                             </div>
                         {/if}
@@ -305,7 +303,7 @@
 
             <div>
                 <button class="btn btn-primary" onclick={() => {onDuplicateRequest()}}><i class="bx bx-duplicate"></i> Duplicate</button>
-                {#if !config.readOnly}
+                {#if !readonly}
                 <button class="btn btn-danger" onclick={() => {onDeleteRequest()}}><i class="bx bx-trash"></i> Delete</button>
                 {/if}
             </div>
@@ -315,8 +313,8 @@
 {:else if editable && !inEditMode}
     <a href="/assets/ui_components/public"
        class="card mb-3 sort-form-component"
-       title={ariaLabel}
-       aria-label={ariaLabel}
+       title={title}
+       aria-label={title}
        draggable="true"
        ondragstart={onDragStartHandler}
        ondrop={onDropHandler}
@@ -324,7 +322,7 @@
        onclick={(event)=>{event.preventDefault(); beginEdit()}}
     >
         <div class="card-body">
-            {#if config.readOnly }
+            {#if readonly }
                 {@render readOnlyBadge()}
             {/if}
             <RenderedComponentType config={config}></RenderedComponentType>
