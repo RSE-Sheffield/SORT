@@ -316,6 +316,11 @@
        onclick={(event)=>{event.preventDefault(); beginEdit()}}
     >
         <div class="card-body">
+            {#if config.disabled}
+                <span class="badge badge-danger text-bg-danger">
+                    Disabled
+                </span>
+            {/if}
             <RenderedComponentType config={config}></RenderedComponentType>
         </div>
     </a>
