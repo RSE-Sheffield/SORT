@@ -30,6 +30,7 @@
         editable = false,
         viewerMode = false,
         sectionTypeEditable = true,
+        sectionEditable = true,
         displaySectionType = true,
         sectionIndex = -1,
         onMoveRequest = null,
@@ -185,15 +186,15 @@
         {/each}
 
         {#if editable}
-
             <div class="d-flex justify-content-between">
                 <button class="btn btn-primary" onclick={addField}><i class="bx bx-plus"></i> Add field</button>
                 <div></div>
-                <button class="btn btn-danger" onclick={() => {onDeleteSectionRequest()}}><i class="bx bxs-trash"></i>
-                    Delete section
-                </button>
+                {#if sectionEditable}
+                    <button class="btn btn-danger" onclick={() => {onDeleteSectionRequest()}}><i
+                            class="bx bxs-trash"></i> Delete section
+                    </button>
+                {/if}
             </div>
-
         {/if}
     </div>
 </div>
