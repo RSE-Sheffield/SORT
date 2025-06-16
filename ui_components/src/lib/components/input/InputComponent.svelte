@@ -302,7 +302,9 @@
             </div>
 
             <div>
-                <button class="btn btn-primary" onclick={() => {onDuplicateRequest()}}><i class="bx bx-duplicate"></i> Duplicate</button>
+                <button class="btn btn-primary" onclick={() => {onDuplicateRequest()}} title="Copy this field">
+                    <i class="bx bx-duplicate"></i> Duplicate
+                </button>
                 {#if !readonly}
                 <button class="btn btn-danger" onclick={() => {onDeleteRequest()}}><i class="bx bx-trash"></i> Delete</button>
                 {/if}
