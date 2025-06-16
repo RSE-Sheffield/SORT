@@ -176,16 +176,17 @@
                 <i class='bx bx-collapse-vertical'></i> close
             </button>
         </div>
+        {#if config.disabled}
+        <div class="alert alert-danger">
+            <span class="badge badge-danger text-bg-danger"
+            title="This field is deactivated and will not be shown in the survey.">
+                Disabled
+            </span>&nbsp;
+                This field is deactivated and will not be shown in the survey.
+        </div>
+        {/if}
         <div class="card-body">
-            {#if config.disabled}
-                <div class="alert alert-danger">
-                    <span class="badge badge-danger text-bg-danger"
-                    title="This field is deactivated and will not be shown in the survey.">
-                        Disabled
-                    </span>&nbsp;
-                        This field is deactivated and will not be shown in the survey.
-                </div>
-            {/if}
+
 
             <div class="row mb-3">
                 <div class="col-8">
