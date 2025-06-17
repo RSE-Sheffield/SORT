@@ -59,6 +59,7 @@
     <SectionComponent bind:config={config.sections[index]}
                       editable={editable}
                       sectionTypeEditable={sectionTypeEditable}
+                      sectionEditable={sectionEditable}
                       bind:this={_sectionComponents[index]}
                       sectionIndex={index}
                       onMoveRequest={handleMoveRequest}

@@ -16,7 +16,8 @@
           "minNumValue": 0,
           "maxNumValue": 100,
           "textType": "INTEGER_TEXT",
-          "disabled": false
+          "disabled": false,
+          "readOnly": true
         },
         {
           "type": "radio",
@@ -24,8 +25,14 @@
           "description": "",
           "required": true,
           "sublabels": [],
-          "options": ["Male", "Female", "Non-binary", "Prefer not to say"],
-          "disabled": false
+          "options": [
+            "Male",
+            "Female",
+            "Non-binary",
+            "Prefer not to say"
+          ],
+          "disabled": false,
+          "readOnly": true
         },
         {
           "type": "text",
@@ -38,23 +45,37 @@
           "minNumValue": 0,
           "maxNumValue": 100,
           "textType": "INTEGER_TEXT",
-          "disabled": false
+          "disabled": false,
+          "readOnly": true
         },
         {
           "type": "radio",
           "label": "What is your current Band/Grade",
           "required": true,
           "sublabels": [],
-          "options": ["Band 5 ", "Band 6", "Band 7", "Band 8", "Band 9"],
-          "disabled": false
+          "options": [
+            "Band 5 ",
+            "Band 6",
+            "Band 7",
+            "Band 8",
+            "Band 9"
+          ],
+          "disabled": false,
+          "readOnly": true
         },
         {
           "type": "radio",
           "label": "Please indicate your highest qualification",
           "required": true,
           "sublabels": [],
-          "options": ["Diploma", "Degree", "Masters", "PhD/Doctorate"],
-          "disabled": false
+          "options": [
+            "Diploma",
+            "Degree",
+            "Masters",
+            "PhD/Doctorate"
+          ],
+          "disabled": false,
+          "readOnly": true
         },
         {
           "type": "radio",
@@ -62,26 +83,26 @@
           "required": true,
           "sublabels": [],
           "options": [
-            "Asian British - Bangladeshi"    ,
-            "Asian British - Indian"         ,
-            "Asian British - Pakistani"      ,
-            "Asian - Chinese"                ,
-            "Asian - other"                  ,
-            "Black British - African"        ,
-            "Black British - Caribbean"      ,
-            "Black British - other"          ,
+            "Asian British - Bangladeshi",
+            "Asian British - Indian",
+            "Asian British - Pakistani",
+            "Asian - Chinese",
+            "Asian - other",
+            "Black British - African",
+            "Black British - Caribbean",
+            "Black British - other",
             "Mixed - Black African and White",
-            "Mixed - Black Asian and White"  ,
-            "Mixed - Caribbean and White"    ,
-            "Mixed - other"                  ,
-            "White - British"                ,
-            "White - Irish"                  ,
-            "White - Romany"                 ,
+            "Mixed - Black Asian and White",
+            "Mixed - Caribbean and White",
+            "Mixed - other",
+            "White - British",
+            "White - Irish",
+            "White - Romany",
             "Other"
           ],
-          "disabled": false
+          "disabled": false,
+          "readOnly": true
         }
-
       ]
     }
   ]

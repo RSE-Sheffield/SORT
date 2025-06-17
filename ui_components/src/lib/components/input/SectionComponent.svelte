@@ -1,8 +1,8 @@
 <script lang="ts" module>
-    import DOMPurify  from "dompurify";
+    import DOMPurify from "dompurify";
     import type {SectionConfig} from "../../interfaces.ts";
 
-    export function getDefaultSectionConfig(): SectionConfig{
+    export function getDefaultSectionConfig(): SectionConfig {
         return {
             title: "New section",
             description: "Section description",
@@ -30,16 +30,18 @@
         editable = false,
         viewerMode = false,
         sectionTypeEditable = true,
-        displaySectionType=true,
+        sectionEditable = true,
+        displaySectionType = true,
         sectionIndex = -1,
         onMoveRequest = null,
-        onDeleteSectionRequest = ()=>{},
+        onDeleteSectionRequest = () => {
+        },
     } = $props();
 
     //Insert missing keys
     let defultConfig = getDefaultSectionConfig()
-    for(let key in defultConfig){
-        if(!(key in config)){
+    for (let key in defultConfig) {
+        if (!(key in config)) {
             config[key] = defultConfig[key];
         }
     }
@@ -49,9 +51,9 @@
     let fieldComponents = $derived(_fieldComponents.filter(Boolean));
 
 
-    let fieldValues = $state(value !== null && value !== undefined ? value :[]);
-    $effect(()=>{
-       value = _.cloneDeep(fieldValues);
+    let fieldValues = $state(value !== null && value !== undefined ? value : []);
+    $effect(() => {
+        value = _.cloneDeep(fieldValues);
     });
 
     let textVal = $state();
@@ -61,7 +63,7 @@
         console.log("Validating section");
         let sectionValid = true;
         for (let i = 0; i < fieldComponents.length; i++) {
-            if(!fieldComponents[i].validate()){
+            if (!fieldComponents[i].validate()) {
                 sectionValid = false;
             }
         }
@@ -69,12 +71,12 @@
         return sectionValid;
     }
 
-    export function getValue(){
+    export function getValue() {
         let fieldValues = []
         for (let i = 0; i < fieldComponents.length; i++) {
             fieldValues.push(fieldComponents[i].getValue());
         }
-        return { name: config.title, fields: fieldValues};
+        return {name: config.title, fields: fieldValues};
     }
 
 
@@ -83,7 +85,19 @@
     }
 
     function duplicateField(index: number) {
-        config.fields.splice(index, 0, _.cloneDeep(config.fields[index]));
+        // Defensive checks
+        if (index < 0 || index >= config.fields.length) {
+            throw new Error("Index out of bounds");
+        }
+        // Build a new array using the existing fields
+        let updatedFields = [...config.fields];
+        // Copy the field
+        let _field = _.cloneDeep(updatedFields[index]);
+        // User-created fields may be modified
+        _field.readOnly = false;
+        // Insert the new field at the end to avoid weird index issues
+        updatedFields.push(_field)
+        config.fields = updatedFields;
     }
 
     function deleteField(index: number) {
@@ -91,8 +105,8 @@
     }
 
 
-    function handleMoveRequest(srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex){
-        if(onMoveRequest){
+    function handleMoveRequest(srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex) {
+        if (onMoveRequest) {
             onMoveRequest(srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex);
         }
     }
@@ -118,11 +132,11 @@
         <div style="display: flex; justify-content: space-between; gap: 1em">
             <div style="flex: 1">
                 <h2>
-                {#if editable}
-                    <EditableText bind:value={config.title}/>
-                {:else}
-                    {config.title}
-                {/if}
+                    {#if editable}
+                        <EditableText bind:value={config.title}/>
+                    {:else}
+                        {config.title}
+                    {/if}
                 </h2>
             </div>
             <div class="text-end">
@@ -156,7 +170,7 @@
         </div>
 
 
-        {#each config.fields, index (index)}
+        {#each config.fields as field, index (index)}
             <div class="mb-3">
                 <InputComponent
                         bind:config={config.fields[index]}
@@ -175,13 +189,15 @@
         {/each}
 
         {#if editable}
-
             <div class="d-flex justify-content-between">
                 <button class="btn btn-primary" onclick={addField}><i class="bx bx-plus"></i> Add field</button>
                 <div></div>
-                <button class="btn btn-danger" onclick={() => {onDeleteSectionRequest()}}><i class="bx bxs-trash"></i> Delete section</button>
+                {#if sectionEditable}
+                    <button class="btn btn-danger" onclick={() => {onDeleteSectionRequest()}}><i
+                            class="bx bxs-trash"></i> Delete section
+                    </button>
+                {/if}
             </div>
-
         {/if}
     </div>
 </div>
