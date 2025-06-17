@@ -186,12 +186,13 @@
             </button>
         </div>
         {#if config.disabled}
-        <div class="alert alert-danger">
+        <div class="alert alert-danger mb-0">
             <span class="badge badge-danger text-bg-danger"
             title="This field is deactivated and will not be shown in the survey.">
                 Disabled
             </span>&nbsp;
-                This field is deactivated and will not be shown in the survey.
+            This field is deactivated and will not be shown in the survey.
+        </div>
         {/if}
         {#if readonly }
         <div class="alert alert-warning" role="alert">
