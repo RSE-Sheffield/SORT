@@ -1,5 +1,5 @@
 <script lang="ts">
-    let {options = $bindable(), type = ""} = $props();
+    let {options = $bindable(), type = "", readonly=false} = $props();
 
     function addOption(){
         options.push("Option " + (options.length + 1));
@@ -22,10 +22,18 @@
              <i class='bx bxs-grid'></i>
          {/if}
      </span>
-     <input class="form-control" type="text" bind:value={options[index]} />
+     <input class="form-control" type="text" bind:value={options[index]} readonly={readonly}/>
+    {#if readonly}
+    <button class="btn btn-outline-secondary" aria-label="Delete option" title="Delete option"><i class='bx bx-x' ></i></button>
+    {:else}
     <button class="btn btn-outline-danger" onclick={()=>{deleteOption(index)}} aria-label="Delete option" title="Delete option"><i class='bx bx-x' ></i></button>
+    {/if}
 </div>
 {/each}
 <div>
+    {#if readonly}
+    <button class="btn btn-secondary btn-sm"><i class="bx bx-plus"></i> Add option</button>
+    {:else}
     <button class="btn btn-primary btn-sm" onclick={addOption}><i class="bx bx-plus"></i> Add option</button>
+    {/if}
 </div>

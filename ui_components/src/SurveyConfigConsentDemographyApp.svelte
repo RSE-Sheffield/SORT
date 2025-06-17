@@ -52,6 +52,9 @@
             The demographic page of your survey can be configured below. We've provided some example demographic
             questions which can be freely customised.
         </p>
+        <p>
+            The in-built demographics fields may not be modified and are labelled "Read only".
+        </p>
         <div class="alert alert-warning" role="alert">
             <i class='bx bxs-error' ></i> Please avoid collecting personally identifiable information. If needed, instead of
             collecting names, emails or addresses, it is recommended to collect IDs that can be used to identify
