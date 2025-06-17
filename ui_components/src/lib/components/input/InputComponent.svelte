@@ -64,7 +64,8 @@
         onDeleteRequest = () => {
         },
         onMoveRequest = (srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex) => {
-        }
+        },
+        canDisableFields = false,
     } = $props();
     // Some fields cannot be modified
     const readonly = config.readOnly;
@@ -95,11 +96,14 @@
     let renderedComponent = $state();
 
     export function validate() {
-        console.log("Validating field" + config.label);
+        console.log("Validating field " + config.label);
+        // Skip disabled fields
+        if (config.disabled) {
+            return true;
+        }
         if (renderedComponent) {
             return renderedComponent.validate();
         }
-
         return false;
     }
 
@@ -181,6 +185,14 @@
                 <i class='bx bx-collapse-vertical'></i> close
             </button>
         </div>
+        {#if config.disabled}
+        <div class="alert alert-danger">
+            <span class="badge badge-danger text-bg-danger"
+            title="This field is deactivated and will not be shown in the survey.">
+                Disabled
+            </span>&nbsp;
+                This field is deactivated and will not be shown in the survey.
+        {/if}
         {#if readonly }
         <div class="alert alert-warning" role="alert">
             {@render readOnlyBadge()}
@@ -188,6 +200,7 @@
         </div>
         {/if}
         <div class="card-body">
+
 
             <div class="row mb-3">
                 <div class="col-8">
@@ -291,12 +304,23 @@
                 </div>
             {/if}
 
+            <!-- Required switch -->
             <div class="form-check form-switch mb-3">
                 <label class="form-label">
                     Required
                     <input type="checkbox" class="form-check-input" role="switch" bind:checked={config.required}/>
                 </label>
             </div>
+
+            {#if canDisableFields }
+            <!-- Disabled switch -->
+            <div class="form-check form-switch mb-3">
+                <label class="form-label">
+                    Disabled
+                    <input type="checkbox" class="form-check-input" role="switch" bind:checked={config.disabled}/>
+                </label>
+            </div>
+            {/if}
 
             <div>
                 <button class="btn btn-primary" onclick={() => {onDuplicateRequest()}} title="Copy this field">
@@ -321,12 +345,20 @@
        onclick={(event)=>{event.preventDefault(); beginEdit()}}
     >
         <div class="card-body">
+            {#if config.disabled}
+            <span class="badge badge-danger text-bg-danger"
+            title="This field is deactivated and will not be shown in the survey.">
+                Disabled
+            </span>
+            {/if}
             {#if readonly }
-                {@render readOnlyBadge()}
+            {@render readOnlyBadge()}
             {/if}
             <RenderedComponentType config={config}></RenderedComponentType>
         </div>
     </a>
+{:else if config.disabled}
+    <!-- This field is disabled -->
 {:else}
     <RenderedComponentType config={config} bind:value={value} bind:this={renderedComponent} viewerMode={viewerMode}></RenderedComponentType>
 {/if}
