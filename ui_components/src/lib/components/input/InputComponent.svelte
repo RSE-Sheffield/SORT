@@ -176,9 +176,6 @@
     >
 
         <div class="card-header" style="text-align: right">
-            {#if readonly }
-                {@render readOnlyBadge()}
-            {/if}
             <button onclick={()=>{endEdit()}} class="btn btn-link btn-sm" aria-label="Close">
                 <i class='bx bx-radio-circle-marked'></i>
                 <i class='bx bx-collapse-vertical'></i> close
@@ -186,7 +183,7 @@
         </div>
         {#if readonly }
         <div class="alert alert-warning" role="alert">
-            <span class="bx bx-minus-circle"></span>
+            {@render readOnlyBadge()}
             This field is a standard question and cannot be modified.
         </div>
         {/if}
