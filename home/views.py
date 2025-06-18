@@ -507,3 +507,17 @@ class OrganisationMembershipDeleteView(
 
 class HelpView(LoginRequiredMixin, TemplateView):
     template_name = "help.html"
+
+
+class PrivacyNoticeView(TemplateView):
+    """
+    Privacy notice static page
+    """
+    template_name = "data_protection/privacy.html"
+
+
+class RetentionScheduleView(TemplateView):
+    """
+    Data retention schedule static page
+    """
+    template_name = "data_protection/retention.html"
