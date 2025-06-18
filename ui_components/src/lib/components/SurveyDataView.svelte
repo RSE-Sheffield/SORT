@@ -25,7 +25,7 @@
         return generateStatsFromSurveyResponses(config, filteredResponses);
     })
 
-    function handleFilterChange(changedFilteredResponses) {
+    function handleFilterChange(changedFilteredResponses: SurveyResponseBatch) {
         filteredResponses = changedFilteredResponses;
     }
 

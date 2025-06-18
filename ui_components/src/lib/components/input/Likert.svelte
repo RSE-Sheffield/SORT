@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import DOMPurify  from "dompurify";
   import LikertRow from "./LikertRow.svelte";
   import LikertItem from "./LikertItem.svelte";
@@ -23,10 +23,10 @@
     value = output;
   });
 
-  let _likertRows = $state([]);
+  let _likertRows: LikertRow[] = $state([]);
   let likertRows = $derived(_likertRows.filter(Boolean));
 
-  let _likertItems = $state([]);
+  let _likertItems: LikertItem[] = $state([]);
   let likertItems = $derived(_likertItems.filter(Boolean));
 
 

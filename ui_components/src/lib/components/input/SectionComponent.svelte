@@ -1,27 +1,46 @@
 <script lang="ts" module>
     import DOMPurify from "dompurify";
     import type {SectionConfig} from "../../interfaces.ts";
+    import type {MoveRequestHandler} from "./InputComponent.svelte";
+    export type {MoveRequestHandler};
 
-    export function getDefaultSectionConfig(): SectionConfig {
+    export function getDefaultSectionConfig() {
         return {
             title: "New section",
             description: "Section description",
             type: "consent",
             fields: []
-        };
+        } as SectionConfig;
     }
 
     export const sectionTypes = [
         {label: "Consent", value: "consent"},
         {label: "SORT", value: "sort"},
         {label: "Demographic", value: "demographic"}
-    ]
+    ];
 </script>
 <script lang="ts">
     import * as _ from "lodash-es"
     import InputComponent, {getDefaultFieldConfig} from "./InputComponent.svelte";
     import EditableText from "./EditableText.svelte";
     import EditableTextArea from "./EditableTextArea.svelte";
+    import type {SurveyResponse} from "../../interfaces.ts";
+
+
+
+
+    interface Props {
+        config: SectionConfig;
+        value?: SurveyResponse[];
+        editable?: boolean;
+        viewerMode?: boolean;
+        sectionTypeEditable?: boolean;
+        sectionEditable?: boolean;
+        displaySectionType?: boolean;
+        sectionIndex?: number;
+        onMoveRequest?: MoveRequestHandler | null;
+        onDeleteSectionRequest?: () => void;
+    }
 
 
     let {
@@ -36,19 +55,17 @@
         onMoveRequest = null,
         onDeleteSectionRequest = () => {
         },
-    } = $props();
+    }: Props = $props();
 
     //Insert missing keys
-    let defultConfig = getDefaultSectionConfig()
-    for (let key in defultConfig) {
-        if (!(key in config)) {
-            config[key] = defultConfig[key];
-        }
-    }
+    config = {
+        ...getDefaultSectionConfig(),
+        ...config
+    };
 
     // Keeps track of all field components
-    let _fieldComponents = $state([])
-    let fieldComponents = $derived(_fieldComponents.filter(Boolean));
+    let _fieldComponents: InputComponent[] = $state([])
+    let fieldComponents: InputComponent[] = $derived(_fieldComponents.filter(Boolean));
 
 
     let fieldValues = $state(value !== null && value !== undefined ? value : []);
@@ -70,15 +87,6 @@
 
         return sectionValid;
     }
-
-    export function getValue() {
-        let fieldValues = []
-        for (let i = 0; i < fieldComponents.length; i++) {
-            fieldValues.push(fieldComponents[i].getValue());
-        }
-        return {name: config.title, fields: fieldValues};
-    }
-
 
     function addField() {
         config.fields.push(getDefaultFieldConfig())
@@ -105,7 +113,10 @@
     }
 
 
-    function handleMoveRequest(srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex) {
+    function handleMoveRequest(srcSectionIndex: number,
+                               srcFieldIndex: number,
+                               destSectionIndex: number,
+                               destFieldIndex: number) {
         if (onMoveRequest) {
             onMoveRequest(srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex);
         }
@@ -119,13 +130,16 @@
 <div role="group" class="card mb-3"
      ondragover={(e) => {
        e.preventDefault();
-       e.dataTransfer.dropEffect = "move";
+       if(e?.dataTransfer)
+        e.dataTransfer.dropEffect = "move";
      }}
      ondrop={(e) =>{
        e.preventDefault();
        e.stopPropagation();
-       const moveSource = JSON.parse(e.dataTransfer.getData("application/json"));
-       onMoveRequest(moveSource.section, moveSource.field, sectionIndex, -1);
+       if(e?.dataTransfer) {
+         const moveSource = JSON.parse(e.dataTransfer.getData("application/json"));
+         onMoveRequest?.(moveSource.section, moveSource.field, sectionIndex, -1);
+       }
      }}
 >
     <div class="card-body">

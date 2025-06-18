@@ -1,6 +1,12 @@
 <script lang="ts" module>
     import {type FieldConfig, TextType} from "../../interfaces.ts";
 
+
+    export type MoveRequestHandler = (srcSectionIndex: number,
+                                      srcFieldIndex: number,
+                                      destSectionIndex: number,
+                                      destFieldIndex: number) => void
+
     export function getDefaultFieldConfig(): FieldConfig {
         return {
             type: "text",
@@ -17,8 +23,11 @@
             textType: TextType.plain,
         };
     }
+
+    let isDragging = $state(false);
 </script>
 <script lang="ts">
+    import type {Component} from "svelte";
     import Text from "./Text.svelte";
     import TextArea from "./TextArea.svelte";
     import Checkbox from "./Checkbox.svelte";
@@ -29,6 +38,9 @@
     import {clickOutside} from "../../misc.svelte";
     import {onMount} from "svelte";
     import PellEditor from "./PellEditor.svelte";
+    import type {SurveyResponse} from "../../interfaces.ts";
+    import grabHandleIcon from "../../../assets/grab_dots.svg"
+
 
     //Constants
     const questionTypes = [
@@ -47,9 +59,23 @@
         select: Select,
         likert: Likert
     }
+    type InputComponents = Text | TextArea | Radio | Checkbox | Select | Likert;
     const componentTypeText = new Set(["text", "textarea"])
     const componentTypeWithOptions = new Set(["radio", "checkbox", "select", "likert"]);
     const componentTypeWithSublabels = new Set(["likert"]);
+
+    interface Props {
+        config: FieldConfig;
+        value?: SurveyResponse;
+        editable?: boolean;
+        viewerMode?: boolean;
+        fieldIndex?: number;
+        sectionIndex?: number;
+        onDuplicateRequest: () => void;
+        onDeleteRequest: () => void;
+        onMoveRequest: MoveRequestHandler;
+    }
+
 
     // Props
     let {
@@ -66,24 +92,25 @@
         onMoveRequest = (srcSectionIndex, srcFieldIndex, destSectionIndex, destFieldIndex) => {
         },
         canDisableFields = false,
-    } = $props();
+    }: Props = $props();
+  
     // Some fields cannot be modified
     const readonly = config.readOnly;
 
+    //Create a field config object or insert missing keys
     if (config === null || config === undefined) {
-        config = {};
-    }
-
-    //Insert missing keys
-    let defaultConfig = getDefaultFieldConfig()
-    for (let key in defaultConfig) {
-        if (!(key in config)) {
-            config[key] = defaultConfig[key];
+        config = getDefaultFieldConfig();
+    } else {
+        config = {
+            ...getDefaultFieldConfig(),
+            ...config,
         }
     }
 
     // States
     let inEditMode = $state(false);
+
+    let hasDragOver = $state(false);
 
 
     let RenderedComponentType = $derived.by(() => {
@@ -93,23 +120,20 @@
         return Text;
     })
 
-    let renderedComponent = $state();
+
+    let renderedComponent: InputComponents | null | undefined = $state();
 
     export function validate() {
-        console.log("Validating field " + config.label);
         // Skip disabled fields
         if (config.disabled) {
             return true;
         }
-        if (renderedComponent) {
+        console.log("Validating field" + (config?.label ?? "Undefined"));
+        if (renderedComponent)
             return renderedComponent.validate();
-        }
         return false;
     }
 
-    export function getValue() {
-        return {name: config.name, value: value};
-    }
 
     export function beginEdit() {
         if (editable)
@@ -120,29 +144,50 @@
         inEditMode = false;
     }
 
-    function onDragStartHandler(e) {
-        e.dataTransfer.effectAllowed = "move"
-        e.dataTransfer.setData("application/json", JSON.stringify({section: sectionIndex, field: fieldIndex}))
+    function onDragStartHandler(e: DragEvent) {
+        hasDragOver = false;
+        isDragging = true;
+        if (e.dataTransfer) {
+            e.dataTransfer.effectAllowed = "move"
+            e.dataTransfer.setData("application/json", JSON.stringify({section: sectionIndex, field: fieldIndex}))
+        }
     }
 
-    function onDropHandler(e) {
+    function onDropHandler(e: DragEvent) {
         e.preventDefault();
         e.stopPropagation(); // Stop drop event propagating to the parent SectionComponent
-        const moveSource = JSON.parse(e.dataTransfer.getData("application/json"));
-        onMoveRequest(moveSource.section, moveSource.field, sectionIndex, fieldIndex)
+        if (e.dataTransfer) {
+            const moveSource = JSON.parse(e.dataTransfer.getData("application/json"));
+            onMoveRequest(moveSource.section, moveSource.field, sectionIndex, fieldIndex)
+        }
+        isDragging = false;
+
     }
 
-    function onDragOverHandler(e) {
+    function onDragOverHandler(e: DragEvent) {
         e.preventDefault();
-        e.dataTransfer.dropEffect = "move";
+        hasDragOver = true;
+        if (e.dataTransfer)
+            e.dataTransfer.dropEffect = "move";
     }
 
-    function onDragEndHandler(e){
+    function onDragLeaveHandler(){
+        hasDragOver = false;
+    }
+
+    function onDragEndHandler() {
         endEdit();
+        isDragging = false;
     }
 
     // Input label
     let title = readonly ? 'This field cannot be edited' : 'Click to edit field';
+
+    $effect(()=>{
+        if(!isDragging){
+            hasDragOver = false;
+        }
+    })
 </script>
 
 {#snippet enforceMaxChar()}
@@ -170,16 +215,23 @@
 {#if editable && inEditMode}
 
     <div role="group"
-         class="card mb-3"
-         draggable="true"
-         ondragstart={onDragStartHandler}
+         class={{"card": true, "mb-3": true, "drag-over-bg": hasDragOver}}
          ondrop={onDropHandler}
          ondragover={onDragOverHandler}
-         ondragend={onDragEndHandler}
          use:clickOutside={()=>{endEdit()}}
     >
-
-        <div class="card-header" style="text-align: right">
+        <div class="card-header" style="display: flex; justify-content: space-between">
+            <div></div>
+            <button
+                    class="btn btn-link"
+                    draggable="true"
+                    ondragstart={onDragStartHandler}
+                    ondrop={onDropHandler}
+                    ondragover={onDragOverHandler}
+                    ondragend={onDragEndHandler}
+                    ondragleave={onDragLeaveHandler}>
+                <img src={grabHandleIcon} style="width: 1.5em; height: auto;" alt="Field drag drop handle" title="Drag to move this field">
+            </button>
             <button onclick={()=>{endEdit()}} class="btn btn-link btn-sm" aria-label="Close">
                 <i class='bx bx-radio-circle-marked'></i>
                 <i class='bx bx-collapse-vertical'></i> close
@@ -201,8 +253,6 @@
         </div>
         {/if}
         <div class="card-body">
-
-
             <div class="row mb-3">
                 <div class="col-8">
                     <label class="form-label col-12">
@@ -336,13 +386,15 @@
 
 {:else if editable && !inEditMode}
     <a href="/assets/ui_components/public"
-       class="card mb-3 sort-form-component"
        title={title}
        aria-label={title}
+       class={{"card": true, "mb-3": true, "sort-form-component": true, "drag-over-bg": hasDragOver}}
        draggable="true"
        ondragstart={onDragStartHandler}
        ondrop={onDropHandler}
        ondragover={onDragOverHandler}
+       ondragleave={onDragLeaveHandler}
+       ondragend={onDragEndHandler}
        onclick={(event)=>{event.preventDefault(); beginEdit()}}
     >
         <div class="card-body">
@@ -361,7 +413,8 @@
 {:else if config.disabled}
     <!-- This field is disabled -->
 {:else}
-    <RenderedComponentType config={config} bind:value={value} bind:this={renderedComponent} viewerMode={viewerMode}></RenderedComponentType>
+    <RenderedComponentType config={config} bind:value={value} bind:this={renderedComponent}
+                           viewerMode={viewerMode}></RenderedComponentType>
 {/if}
 
 
@@ -373,5 +426,10 @@
     .sort-form-component:hover {
         background: #cec3fa;
     }
+
+    .drag-over-bg {
+        background: #cd8bf8;
+    }
+
 
 </style>
