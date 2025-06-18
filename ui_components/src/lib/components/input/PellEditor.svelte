@@ -8,7 +8,8 @@
     }
 
     let {
-        value = $bindable()
+        value = $bindable(),
+        readonly = false
     }: Props = $props();
     if (value === null || value === undefined) {
         value = "Placeholder";
@@ -80,6 +81,9 @@
             }
         });
         editor.content.innerHTML = value;
+
+        // Disabled
+        editor.content.contentEditable = !readonly;
     }
 </script>
 

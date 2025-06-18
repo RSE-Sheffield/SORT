@@ -93,7 +93,19 @@
     }
 
     function duplicateField(index: number) {
-        config.fields.splice(index, 0, _.cloneDeep(config.fields[index]));
+        // Defensive checks
+        if (index < 0 || index >= config.fields.length) {
+            throw new Error("Index out of bounds");
+        }
+        // Build a new array using the existing fields
+        let updatedFields = [...config.fields];
+        // Copy the field
+        let _field = _.cloneDeep(updatedFields[index]);
+        // User-created fields may be modified
+        _field.readOnly = false;
+        // Insert the new field at the end to avoid weird index issues
+        updatedFields.push(_field)
+        config.fields = updatedFields;
     }
 
     function deleteField(index: number) {
@@ -110,6 +122,8 @@
         }
     }
 
+    // Only allow fields to be deactivated in the demography section
+    let canDisableFields = config.type == "demographic";
 
 </script>
 
@@ -170,7 +184,7 @@
         </div>
 
 
-        {#each config.fields, index (index)}
+        {#each config.fields as field, index (index)}
             <div class="mb-3">
                 <InputComponent
                         bind:config={config.fields[index]}
@@ -183,6 +197,7 @@
                         sectionIndex={sectionIndex}
                         fieldIndex={index}
                         onMoveRequest={handleMoveRequest}
+                        canDisableFields={canDisableFields}
                 />
             </div>
         {/each}

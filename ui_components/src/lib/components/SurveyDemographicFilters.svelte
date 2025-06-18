@@ -27,6 +27,11 @@
             if (config.sections[si].type === "demographic") {
                 for (let fi = 0; fi < config.sections[si].fields.length; fi++) {
                     const fieldConfig = config.sections[si].fields[fi];
+                    // Hide deactivated fields
+                    if (fieldConfig.disabled) {
+                        console.log(`Concealing disabled field "${fieldConfig.label}"`);
+                        break;
+                    }
                     switch (fieldConfig.type) {
                         case "checkbox":
                         case "select":
