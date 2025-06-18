@@ -217,7 +217,7 @@
                     ondragover={onDragOverHandler}
                     ondragend={onDragEndHandler}
                     ondragleave={onDragLeaveHandler}>
-                <img src={grabHandleIcon} style="width: 1.5em; height: auto;" alt="Field drag drop handle">
+                <img src={grabHandleIcon} style="width: 1.5em; height: auto;" alt="Field drag drop handle" title="Drag to move this field">
             </button>
             <button onclick={()=>{endEdit()}} class="btn btn-link btn-sm" aria-label="Close">
                 <i class='bx bx-radio-circle-marked'></i>
