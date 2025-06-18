@@ -162,7 +162,7 @@
 
 {#snippet readOnlyBadge()}
 <span class="badge badge-secondary text-bg-secondary"
-  title="This is a standard field and cannot be modified.">
+  title="This is a standard field and cannot be modified. You can hide this field by clicking the Disable option below.">
   Read only
 </span>
 {/snippet}
