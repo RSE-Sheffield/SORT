@@ -1,11 +1,11 @@
-<script>
+<script lang="ts">
 
   let {config, sublabelIndex, value = $bindable(), viewerMode = false} = $props();
 
   let isValid = $state(false);
   let isInvalid = $state(false);
 
-  function setIsValid(valid) {
+  function setIsValid(valid: boolean) {
     isValid = valid;
     isInvalid = !valid;
   }

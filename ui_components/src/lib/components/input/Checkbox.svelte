@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import {getUniqueIDArray} from "../../misc.svelte.ts";
   import DOMPurify  from "dompurify";
 
@@ -9,7 +9,7 @@
   let isValid = $state(false);
   let isInvalid = $state(false);
 
-  function setIsValid(valid) {
+  function setIsValid(valid: boolean) {
     isValid = valid;
     isInvalid = !valid;
   }

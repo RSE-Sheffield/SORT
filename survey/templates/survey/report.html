@@ -10,10 +10,28 @@
 
 
         <div class="mb-3">
+
+            <h2>Summary Ranking Matrix</h2>
+            <div class="sort-response-summary-matrix"
+                 data-json-config-id="configData"
+                 data-json-responses-id="responsesData"></div>
+
+            <h3>Report sections</h3>
+            <ul>
+                {% for section in sections %}
+                    {% if section.section_config.type != "consent" %}
+                        <li><a href="#page-section-{{ forloop.counter0 }}">{{ section.section_config.title }}</a></li>
+                    {% endif %}
+                {% endfor %}
+
+            </ul>
+
+
             {% for section in sections %}
                 {% if section.section_config.type != "consent" %}
+                    <div class="page-break"></div>
                     <div>
-                        <h2>{{ section.section_config.title }}</h2>
+                        <h2 id="page-section-{{ forloop.counter0 }}">{{ section.section_config.title }}</h2>
                     </div>
                     <div>
                         <div
@@ -47,10 +65,7 @@
                 {% endif %}
             {% endfor %}
 
-            <h2>Summary Ranking Matrix</h2>
-            <div class="sort-response-summary-matrix"
-                 data-json-config-id="configData"
-                 data-json-responses-id="responsesData"></div>
+
         </div>
 
 
@@ -110,10 +125,6 @@
                 page-break-after: avoid;
             }
 
-            h2 {
-                break-before: always;
-            }
-
             @page {
                 size: a3;
             }
@@ -121,6 +132,10 @@
             body {
                 min-width: 992px !important;
                 background: #fff;
+            }
+
+            .page-break {
+                break-before: always;
             }
 
             .container {
