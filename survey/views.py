@@ -14,7 +14,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.context_processors import csrf
 from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import DeleteView, FormView, UpdateView, DetailView
+from django.views.generic import (
+    DeleteView,
+    FormView,
+    UpdateView,
+    DetailView,
+    TemplateView,
+)
 from django.views.generic.edit import CreateView
 
 from home.models import Project
@@ -29,6 +35,7 @@ from .models import (
     SurveyResponse,
 )
 from .services.survey import InvalidInviteTokenException
+from .exceptions import SurveyInactiveError
 
 logger = logging.getLogger(__name__)
 
@@ -475,10 +482,12 @@ class SurveyResponseView(View):
     ):
 
         try:
-
             survey = survey_service.get_survey_from_token(token)
+            if not survey.is_active:
+                raise SurveyInactiveError("Survey is not active.")
+
             # Context for rendering
-            context = {}
+            context = dict()
 
             if is_post:
                 # Only process if it's a post request
@@ -501,6 +510,9 @@ class SurveyResponseView(View):
 
         except InvalidInviteTokenException:
             return redirect("survey_link_invalid")
+
+        except SurveyInactiveError:
+            return redirect("survey_response_inactive")
 
 
 class SurveyLinkInvalidView(View):
@@ -621,3 +633,11 @@ class SurveyDeactivateView(LoginRequiredMixin, DetailView):
                 request, "Please confirm that you want to pause this survey."
             )
         return redirect(self.object.get_absolute_url())
+
+
+class SurveyResponseInactiveView(TemplateView):
+    """
+    Show when a survey is inactive.
+    """
+
+    template_name = "survey/survey_response_inactive.html"

@@ -121,7 +121,7 @@
                                 </script>
                             </div>
                             <div class="col-lg-2 text-end">
-                                <form method="POST" action="{% url 'suvey_create_invite' survey.id %}">
+                                <form method="POST" action="{% url 'survey_create_invite' survey.id %}">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-primary" name="generate_token"><i
                                             class='bx bx-repeat'></i> Re-generate invitation
@@ -142,7 +142,7 @@
                         <p>
                             Geneate an invitation link for your participants to fill in the survey:
                         </p>
-                        <form method="post" action="{% url 'suvey_create_invite' survey.id %}">
+                        <form method="post" action="{% url 'survey_create_invite' survey.id %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-primary" name="generate_token"><i
                                     class='bx bx-mail-send'></i> Generate invitation

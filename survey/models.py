@@ -126,6 +126,13 @@ class SurveyResponse(models.Model):
     def get_absolute_url(self, token):
         return reverse("survey", kwargs={"pk": self.survey.pk})
 
+    def clean(self):
+        super().clean()
+
+        # Paused survey
+        if not self.survey.is_active:
+            raise ValueError("Cannot submit response to an inactive survey")
+
 
 class Invitation(models.Model):
     """
