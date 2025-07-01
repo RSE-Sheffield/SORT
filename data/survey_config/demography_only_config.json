@@ -54,7 +54,8 @@
           "required": true,
           "sublabels": [],
           "options": [
-            "Band 5 ",
+            "Band 4",
+            "Band 5",
             "Band 6",
             "Band 7",
             "Band 8",
