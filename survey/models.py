@@ -125,6 +125,9 @@ class SurveyResponse(models.Model):
     answers = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Survey {self.survey.pk} response {self.pk}"
+
     def get_absolute_url(self, token):
         return reverse("survey", kwargs={"pk": self.survey.pk})
 
