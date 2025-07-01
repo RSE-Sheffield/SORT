@@ -44,6 +44,13 @@ class Survey(models.Model):
 
         return None
 
+    @property
+    def reference_number(self) -> str:
+        """
+        Unique identifier e.g. "SURVEY-000001"
+        """
+        return f"{self.__class__.__name__.upper()}-{str(self.pk).zfill(6)}"
+
 
 class SurveyEvidenceSection(models.Model):
     """

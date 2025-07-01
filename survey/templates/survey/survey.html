@@ -1,6 +1,17 @@
 {% extends 'base_manager.html' %}
 {% load qr_code %}
 {% block content %}
+    <script lang="js">
+    const copyToClipboard = async (selectors = ".user-select-all") => {
+      try {
+        const element = document.querySelector(selectors);
+        await navigator.clipboard.writeText(element.textContent);
+      } catch (error) {
+        console.error("Failed to copy to clipboard:", error);
+        throw error;
+      }
+    };
+    </script>
     {% load project_filters %}
     <div class="container mx-auto px-4 py-8 mt-4">
         <nav aria-label="breadcrumb">
@@ -21,12 +32,19 @@
     <div class="container mx-auto px-4 py-8">
         <div class="card mb-3">
             <div class="card-header">
-                <h1>{{ survey.name }}</h1>
+                <h1 title="Reference number {{ survey.reference_number }}">{{ survey.name }}</h1>
             </div>
             <div class="card-body">
                 <p><strong>Survey description:</strong></p>
                 <p>{{ survey.description }}</p>
                 <p><strong>Created on:</strong> {{ survey.created_at }}</p>
+                <p>
+                    <strong>Unique identifier:</strong>
+                    <span id="reference-number" class="user-select-all">{{ survey.reference_number }}</span>
+                    <button class="btn btn-secondary p-1" onclick="copyToClipboard()" title="Copy to clipboard">
+                        <i class="bx bx-copy"></i>
+                    </button>
+                </p>
                 <div class="d-flex justify-content-between mt-3">
                     <div></div>
                     <div></div>
@@ -35,7 +53,6 @@
                     <div>
                         <a href="{% url 'survey_duplicate_config' survey.pk %}" class="btn btn-primary"><i class='bx bxs-copy' ></i> Create a new survey using current configurations.</a>
                     </div>
-
                 </div>
             </div>
         </div>

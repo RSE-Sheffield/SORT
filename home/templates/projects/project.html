@@ -53,7 +53,7 @@
         {% for survey in surveys %}
             <div class="card w-100">
                 <div class="card-body">
-                    <h3 class="card-title">{{ survey.name }}</h3>
+                    <h3 class="card-title" title="Survey identifier {{ survey.pk }}">{{ survey.name }}</h3>
                     <div class="card-text">
                         <span>Responses: {{ survey.survey_response.count | default:0 }}</span>
                     </div>
