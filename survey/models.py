@@ -24,6 +24,11 @@ class Survey(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     survey_body_path = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Are responses being collected?",
+        null=False,
+    )
 
     def __str__(self):
         return self.name

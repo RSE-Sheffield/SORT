@@ -186,17 +186,37 @@
             <div class="card-header">
                 <h2>3. Survey responses</h2>
             </div>
+            {% if not survey.is_active %}
+            <p class="alert alert-warning">
+                <i class="bx bx-pause-circle"></i>
+                Data collection is <strong>paused</strong>.
+                Participants are unable to submit survey responses.
+            </p>
+            {% endif %}
             <div class="card-body">
+                <p>In this section one may view the collected data that has been submitted by participants, either in summary or individual responses.</p>
+                <p>You may also pause and resume data collection to prevent new data being gathered when the survey is complete by clicking the "Deactivate survey" or "Activate survey" button below.</p>
                 {% if survey.survey_config.sections %}
                     <div class="mb-3">
-                        <strong>Responses collected: {{ responses_count }}</strong>
+                        <strong>Responses collected:</strong>&nbsp;{{ responses_count }}
                     </div>
-
                     <div>
                         <a href="{% url 'survey_response_data' survey.id %}" class="btn btn-primary"><i
                                 class='bx bxs-data'></i> View collected responses</a>
                         <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download><i
                                 class="bx bx-export"></i> Export survey data as CSV</a>
+                        {% if survey.is_active %}
+                        <a href="{% url 'survey_deactivate' survey.id %}" class="btn btn-warning"
+                           title="Stop collecting responses">
+                            <i class="bx bx-pause-circle"></i> Deactivate survey</a>
+                        {% else %}
+                        <form action="{% url 'survey_activate' survey.id %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" name="activate" value="1" class="btn btn-success">
+                                <i class="bx bx-play-circle"></i>&nbsp;Activate survey
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
                 {% else %}
                     <p>Survey must be configured before this section can be used.</p>
