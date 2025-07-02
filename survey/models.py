@@ -49,6 +49,13 @@ class Survey(models.Model):
 
         return None
 
+    @property
+    def reference_number(self) -> str:
+        """
+        Unique identifier e.g. "SURVEY-000001"
+        """
+        return f"{self.__class__.__name__.upper()}-{str(self.pk).zfill(6)}"
+
 
 class SurveyEvidenceSection(models.Model):
     """
@@ -122,6 +129,9 @@ class SurveyResponse(models.Model):
     )  # Many questions belong to one survey
     answers = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Survey {self.survey.pk} response {self.pk}"
 
     def get_absolute_url(self, token):
         return reverse("survey", kwargs={"pk": self.survey.pk})
