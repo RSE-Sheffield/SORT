@@ -16,16 +16,17 @@ from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import (
     DeleteView,
-    FormView,
-    UpdateView,
     DetailView,
+    FormView,
     TemplateView,
+    UpdateView,
 )
 from django.views.generic.edit import CreateView
 
 from home.models import Project
 from survey.services import survey_service
 
+from .exceptions import SurveyInactiveError
 from .forms import InvitationForm
 from .models import (
     Survey,
@@ -35,7 +36,6 @@ from .models import (
     SurveyResponse,
 )
 from .services.survey import InvalidInviteTokenException
-from .exceptions import SurveyInactiveError
 
 logger = logging.getLogger(__name__)
 
