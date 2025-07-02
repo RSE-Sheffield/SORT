@@ -54,7 +54,8 @@
           "required": true,
           "sublabels": [],
           "options": [
-            "Band 5 ",
+            "Band 4",
+            "Band 5",
             "Band 6",
             "Band 7",
             "Band 8",
@@ -62,6 +63,49 @@
           ],
           "disabled": false,
           "readOnly": true
+        },
+        {
+          "type": "radio",
+          "label": "Please describe your current role",
+          "required": true,
+          "sublabels": [],
+          "options": [
+            "Art Therapist",
+            "Dietitian",
+            "Dramatherapist",
+            "Music therapist",
+            "Occupational therapist",
+            "Operating department practitioner",
+            "Orthoptist",
+            "Osteopath",
+            "Paramedic",
+            "Physiotherapist",
+            "Podiatrist",
+            "Prosthetist or Orthotist",
+            "Radiographer",
+            "Speech and Language Therapist",
+            "Registered Nurse",
+            "Nurse Consultant",
+            "Other"
+          ],
+          "disabled": false,
+          "readOnly": true
+        },
+        {
+          "description": "",
+          "disabled": false,
+          "enforceValueConstraints": false,
+          "label": "Please provide your job title",
+          "maxNumChar": 500,
+          "maxNumValue": 100,
+          "minNumValue": 0,
+          "options": [
+          ],
+          "required": true,
+          "sublabels": [
+          ],
+          "textType": "PLAIN_TEXT",
+          "type": "text"
         },
         {
           "type": "radio",
@@ -76,6 +120,20 @@
           ],
           "disabled": false,
           "readOnly": true
+        },
+        {
+          "description": "",
+          "disabled": false,
+          "enforceValueConstraints": true,
+          "label": "How many years have you been qualified",
+          "maxNumChar": 500,
+          "maxNumValue": 100,
+          "minNumValue": 0,
+          "options": [],
+          "required": true,
+          "sublabels": [],
+          "textType": "INTEGER_TEXT",
+          "type": "text"
         },
         {
           "type": "radio",
