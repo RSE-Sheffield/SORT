@@ -1,0 +1,49 @@
+{% extends 'base_manager.html' %}
+{% block content %}
+    {% load project_filters %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-folder-open"></i> <a
+                        href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <i class="bx bxs-chart"></i> Survey: {{ survey.name }}
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bx bx-pause-circle"></i>&nbsp;Deactivate survey
+                </li>
+            </ol>
+        </nav>
+    </div>
+    <div class="container px-4">
+        <h1>Deactivate survey</h1>
+        <p>
+            Please confirm that you would like to <strong>pause response gathering</strong> for survey "{{ survey }}".
+        </p>
+
+        <p>
+            After you have paused the survey, to resume response gathering please click the "Activate survey" button on
+            the survey management page.
+        </p>
+        <h2>Confirm deactivation</h2>
+        <p>
+            If the survey is deactivated then participants will not be able to submit survey data until it is activated
+            again.
+        </p>
+        <form action="{% url 'survey_deactivate' survey.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" name="deactivate" value="1" class="btn btn-warning">
+                <i class="bx bx-pause-circle"></i>&nbsp;Deactivate survey
+            </button>
+            <label for="confirm" class="m-3">
+                <input type="checkbox" required id="confirm" name="confirm" value="1"/>
+                I <strong>confirm</strong> that I want to pause response gathering
+            </label>
+        </form>
+    </div>
+{% endblock %}

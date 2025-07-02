@@ -9,12 +9,18 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.core.files.uploadhandler import UploadFileException
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.context_processors import csrf
 from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import DeleteView, FormView, UpdateView
+from django.views.generic import (
+    DeleteView,
+    FormView,
+    UpdateView,
+    DetailView,
+    TemplateView,
+)
 from django.views.generic.edit import CreateView
 
 from home.models import Project
@@ -29,6 +35,7 @@ from .models import (
     SurveyResponse,
 )
 from .services.survey import InvalidInviteTokenException
+from .exceptions import SurveyInactiveError
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +175,7 @@ class SurveyConfigureView(LoginRequiredMixin, View):
             template_name="survey/survey_configure.html",
             context=context,
         )
+
 
 class SurveyDuplicateConfigView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int):
@@ -474,10 +482,12 @@ class SurveyResponseView(View):
     ):
 
         try:
-
             survey = survey_service.get_survey_from_token(token)
+            if not survey.is_active:
+                raise SurveyInactiveError("Survey is not active.")
+
             # Context for rendering
-            context = {}
+            context = dict()
 
             if is_post:
                 # Only process if it's a post request
@@ -500,6 +510,9 @@ class SurveyResponseView(View):
 
         except InvalidInviteTokenException:
             return redirect("survey_link_invalid")
+
+        except SurveyInactiveError:
+            return redirect("survey_response_inactive")
 
 
 class SurveyLinkInvalidView(View):
@@ -559,3 +572,72 @@ class InvitationView(FormView):
 
     def get_success_url(self):
         return reverse_lazy("invite", kwargs=dict(pk=self.kwargs["pk"]))
+
+
+class SurveyActivateView(LoginRequiredMixin, DetailView):
+    """
+    Activate response collection for this survey.
+    """
+
+    model = Survey
+
+    def get(self, request, *args, **kwargs):
+        """
+        We don't need to confirm activation, so no detail view template is used.
+        """
+        return HttpResponseNotAllowed(["POST"])
+
+    def activate(self):
+        """
+        Activate the survey.
+        """
+        self.object.is_active = True
+        self.object.save()
+
+    def post(self, request, *args, **kwargs):
+        """
+        Update the survey.
+        """
+        self.object = self.get_object()
+        self.activate()
+        messages.success(request, "Survey activated")
+        return redirect(self.object.get_absolute_url())
+
+
+class SurveyDeactivateView(LoginRequiredMixin, DetailView):
+    """
+    Deactivate response collection for this survey.
+
+    The user must confirm that they want to pause data collection.
+    """
+
+    model = Survey
+    context_object_name = "survey"
+    template_name = "survey/deactivate_confirm.html"
+
+    def deactivate(self):
+        self.object.is_active = False
+        self.object.save()
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        is_confirmed: bool = bool(int(request.POST.get("confirm", "0")))
+
+        # Confirmed
+        if is_confirmed:
+            self.deactivate()
+            messages.warning(request, "Survey deactivated")
+        # Unconfirmed
+        else:
+            messages.error(
+                request, "Please confirm that you want to pause this survey."
+            )
+        return redirect(self.object.get_absolute_url())
+
+
+class SurveyResponseInactiveView(TemplateView):
+    """
+    Show when a survey is inactive.
+    """
+
+    template_name = "survey/survey_response_inactive.html"
