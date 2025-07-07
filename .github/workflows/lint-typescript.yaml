@@ -28,9 +28,9 @@ jobs:
       - name: Run linter
         run: npm run lint
       - name: Run test suite
-        run: |
-          printf "# Test coverage\n\`\`\`" >> $GITHUB_STEP_SUMMARY
-          npm run test:coverage >> $GITHUB_STEP_SUMMARY
-          printf "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        run: npm run test:coverage
       - name: Report coverage
         uses: davelosert/vitest-coverage-report-action@v2.8.3
+        with:
+          json-summary-path: ui_components/coverage/coverage-summary.json
+          json-final-path: ui_components/coverage/coverage-final.json
