@@ -26,5 +26,6 @@ jobs:
         run: npm run lint
       - name: Run test suite
         run: |
-          echo "# Test coverage" >> $GITHUB_STEP_SUMMARY
+          echo "# Test coverage\n```" >> $GITHUB_STEP_SUMMARY
           npm run test:coverage >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
