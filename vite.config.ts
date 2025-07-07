@@ -18,7 +18,7 @@ export default defineConfig({
         manifest: "manifest.json",
         rollupOptions: {
             input: {
-                main: "./src/main.ts",
+                main: "./ui_components/src/main.ts",
             },
             output: {
                 chunkFileNames: `[name].[hash].js`,
