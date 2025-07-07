@@ -6,6 +6,9 @@ on:
     branches: [ "dev" ]
   pull_request:
     branches: [ "dev", "main" ]
+permissions:
+  contents: read
+  pull-requests: write  # post coverage reports
 jobs:
   test:
     runs-on: ubuntu-24.04
@@ -29,3 +32,5 @@ jobs:
           printf "# Test coverage\n\`\`\`" >> $GITHUB_STEP_SUMMARY
           npm run test:coverage >> $GITHUB_STEP_SUMMARY
           printf "\`\`\`" >> $GITHUB_STEP_SUMMARY
+      - name: Report coverage
+        uses: davelosert/vitest-coverage-report-action@v2.8.3

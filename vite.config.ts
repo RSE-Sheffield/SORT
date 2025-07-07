@@ -36,7 +36,7 @@ export default defineConfig({
         environment: "jsdom",
         coverage: {
             provider: "v8",
-            reporter: ["text"]
+            reporter: ["text", "json", "json-summary"]
         },
     },
     // Tell Vitest to use the `browser` entry points in `package.json` files, even though it's running in Node
