@@ -20,6 +20,7 @@
   "devDependencies": {
     "@eslint/js": "^9.24.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@testing-library/svelte": "^5.2.8",
     "@tsconfig/svelte": "^5.0.4",
     "@types/lodash-es": "^4.17.12",
     "@types/pell": "^1.0.4",
