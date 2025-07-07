@@ -1,21 +1,28 @@
-import {test, expect} from 'vitest';
+import { test, expect } from "vitest";
 import "@testing-library/jest-dom";
-import userEvent from '@testing-library/user-event';
-import {render, screen} from '@testing-library/svelte';
+import userEvent from "@testing-library/user-event";
+import { render, screen } from "@testing-library/svelte";
 import CollapsibleCard from "../../src/lib/components/CollapsibleCard.svelte";
 
-
 test("CollapsibleCard", async () => {
-    render(CollapsibleCard, {props: {startCollapsed: true}});
-    const user = userEvent.setup();
-    const toggleElement = screen.getByRole("link");
+  render(CollapsibleCard, {
+    props: {
+      startCollapsed: true,
+    },
+  });
+  const user = userEvent.setup();
+  const toggleButton = document.querySelector(".card .card-header a");
 
-    // Make sure it exits
-    expect(toggleElement).toBeInTheDocument();
+  // Check initial HTML elements
+  expect(toggleButton).toBeInTheDocument();
+  expect(document.querySelector(".card-body")).not.toBeInTheDocument();
 
-    // Click to expand
-    await user.click(toggleElement);
+  // Click to expand
+  await user.click(toggleButton);
+  expect(toggleButton).toHaveTextContent("Collapse");
+  expect(document.querySelector(".card-body")).toBeInTheDocument();
 
-    // Click to collapse
-    await user.click(toggleElement);
+  // Click to collapse
+  await user.click(toggleButton);
+  expect(toggleButton).toHaveTextContent("Expand");
 });
