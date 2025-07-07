@@ -26,7 +26,7 @@ npm run test:coverage
 
 ## Writing tests
 
-The frontend tests are contained in the `ui_components/tests` directory and are organised to match the source code structure. Each test should test an isolated unit of code. Please read the [introduction to writing tests for Svelte](https://svelte.dev/docs/svelte/testing).
+The frontend tests are contained in the `ui_components/tests` directory and are organised to match the source code structure. Each test should test an isolated unit of code. Please read the [introduction to writing tests for Svelte](https://svelte.dev/docs/svelte/testing) and the [Svelte testing library](https://testing-library.com/docs/svelte-testing-library/intro).
 
 # Backend testing
 
