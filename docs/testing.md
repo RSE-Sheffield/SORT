@@ -9,10 +9,20 @@ There are two testing frameworks in place: one for the frontend (JavaScript and 
 To run the test suite, use the `test` command via the Node package manager (NPM):
 
 ```bash
-npm run test
+npm test
 ```
 
+This will execute Vitest. There are also other testing modes. To run the tests whenever the code changes using a file watcher, run:
 
+```bash
+npm run test:watch
+```
+
+And to get a coverage report:
+
+```bash
+npm run test:coverage
+```
 
 ## Writing tests
 
