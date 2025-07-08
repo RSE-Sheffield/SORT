@@ -22,7 +22,7 @@ urlpatterns = [
     path(
         "survey/<int:pk>/create_invite",
         views.SurveyCreateInviteView.as_view(),
-        name="suvey_create_invite",
+        name="survey_create_invite",
     ),
     path(
         "survey/<int:pk>/duplicate_config",
@@ -91,6 +91,21 @@ urlpatterns = [
         "survey/create/<int:project_id>",
         views.SurveyCreateView.as_view(),
         name="survey_create",
+    ),
+    path(
+        "survey/<int:pk>/activate",
+        views.SurveyActivateView.as_view(),
+        name="survey_activate",
+    ),
+    path(
+        "survey/<int:pk>/deactivate",
+        views.SurveyDeactivateView.as_view(),
+        name="survey_deactivate",
+    ),
+    path(
+        "survey_response/inactive",
+        views.SurveyResponseInactiveView.as_view(),
+        name="survey_response_inactive",
     ),
     path("completion/", views.CompletionView.as_view(), name="completion_page"),
     path(

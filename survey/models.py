@@ -24,6 +24,11 @@ class Survey(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     survey_body_path = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Are responses being collected?",
+        null=False,
+    )
 
     def __str__(self):
         return self.name
@@ -43,6 +48,13 @@ class Survey(models.Model):
             return request.build_absolute_uri("/survey_response/" + token)
 
         return None
+
+    @property
+    def reference_number(self) -> str:
+        """
+        Unique identifier e.g. "SURVEY-000001"
+        """
+        return f"{self.__class__.__name__.upper()}-{str(self.pk).zfill(6)}"
 
 
 class SurveyEvidenceSection(models.Model):
@@ -118,8 +130,18 @@ class SurveyResponse(models.Model):
     answers = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Survey {self.survey.pk} response {self.pk}"
+
     def get_absolute_url(self, token):
         return reverse("survey", kwargs={"pk": self.survey.pk})
+
+    def clean(self):
+        super().clean()
+
+        # Paused survey
+        if not self.survey.is_active:
+            raise ValueError("Cannot submit response to an inactive survey")
 
 
 class Invitation(models.Model):

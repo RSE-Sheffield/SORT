@@ -8,9 +8,38 @@
     function deleteOption(index){
         options.splice(index, 1);
     }
+
+    /**
+     * Handle pasting text into an option text input.
+     */
+    function handlePaste(event, index) {
+        // Get the pasted text
+        const pastedText = event.clipboardData.getData("text");
+
+        // If the pasted text is multiline, process it to generate new options.
+        // Otherwise, just paste it into field as normal.
+        if (pastedText.includes("\n")) {
+            // Prevent the default paste behavior
+            event.preventDefault();
+
+            // Split the text into lines and remove whitespace
+            const lines = pastedText.split('\n').map(line => line.trim())
+                .filter(line => line.length > 0); // Remove empty lines
+
+            if (lines.length >= 1) {
+                // Replace the current option with the first line
+                options[index] = lines[0];
+
+                // Insert the remaining lines as new options after the current one
+                const newOptions = lines.slice(1);
+                options.splice(index + 1, 0, ...newOptions);
+            }
+        }
+    }
 </script>
 {#each options as option, index (index)}
 <div class="input-group mb-1">
+    <!-- Icon (based on question type) -->
      <span class="input-group-text">
          {#if type === "radio"}
             <i class='bx bx-radio-circle-marked' ></i>
@@ -22,7 +51,8 @@
              <i class='bx bxs-grid'></i>
          {/if}
      </span>
-     <input class="form-control" type="text" bind:value={options[index]} readonly={readonly}/>
+     <input class="form-control" type="text" bind:value={options[index]} readonly={readonly}
+       onpaste={readonly ? undefined : (e) => handlePaste(e, index)} />
     {#if readonly}
     <button class="btn btn-outline-secondary" aria-label="Delete option" title="Delete option"><i class='bx bx-x' ></i></button>
     {:else}

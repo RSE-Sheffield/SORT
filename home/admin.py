@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import Organisation, OrganisationMembership, Project, User
 
 
-# Register your models here.
+@admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = ("email", "first_name", "last_name", "is_staff", "date_joined")
     search_fields = ("email", "first_name", "last_name")
@@ -11,25 +11,22 @@ class UserAdmin(admin.ModelAdmin):
     ordering = ("-date_joined",)
 
 
+@admin.register(Organisation)
 class OrganisationAdmin(admin.ModelAdmin):
-    list_display = ("name", "created_at")
-    search_fields = ("name",)
+    list_display = ("pk", "name", "created_at")
+    search_fields = ("name", "description",)
     ordering = ("name",)
 
 
+@admin.register(OrganisationMembership)
 class OrganisationMembershipAdmin(admin.ModelAdmin):
     list_display = ("user", "organisation", "role", "joined_at")
     list_filter = ("role",)
     search_fields = ("user__email", "organisation__name")
 
 
+@admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ("name", "created_by", "created_at")
-    search_fields = ("name",)
-    list_filter = ("created_at",)
-
-
-admin.site.register(User, UserAdmin)
-admin.site.register(Organisation, OrganisationAdmin)
-admin.site.register(Project, ProjectAdmin)
-admin.site.register(OrganisationMembership, OrganisationMembershipAdmin)
+    list_display = ("pk", "name", "created_by", "created_at", "organisation")
+    search_fields = ("name", "description",)
+    list_filter = ("organisation",)

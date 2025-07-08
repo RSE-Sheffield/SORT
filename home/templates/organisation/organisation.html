@@ -46,7 +46,7 @@
             {% for project in projects %}
                 <div class="card w-100">
                     <div class="card-body">
-                        <p class="h5 card-title">{{ project.name }}</p>
+                        <p class="h5 card-title" title="Project identifier {{ project.pk }}">{{ project.name }}</p>
                         <p class="h6 card-subtitle text-muted mb-2">{{ project.description|default_if_none:"No description provided." }}</p>
                         <p class="h7 card-text">Surveys: {{ project.survey_count }}</p>
 
