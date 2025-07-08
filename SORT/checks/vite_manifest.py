@@ -28,13 +28,14 @@ def check_manifest(*args, **kwargs) -> list[django.core.checks.Error]:
         )
 
     # Find the manifest.json file in the static folder
-    path = Path(django.contrib.staticfiles.finders.find(settings.VITE_MANIFEST_FILE_PATH))
+    path = django.contrib.staticfiles.finders.find(settings.VITE_MANIFEST_FILE_PATH)
 
     # Check if manifest.json is present
-    if not path.exists():
+    if not path:
+        absolute_path = Path(settings.STATIC_ROOT).joinpath(settings.VITE_MANIFEST_FILE_PATH).absolute()
         errors.append(
             django.core.checks.Error(
-                f"File not found: {settings.VITE_MANIFEST_FILE_PATH}",
+                f"File not found: '{absolute_path}'",
                 hint="Ensure that the JavaScript project has been built (npm run build)",
                 id="SORT.E002",
             ),

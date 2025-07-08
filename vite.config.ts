@@ -23,7 +23,7 @@ export default defineConfig({
             output: {
                 chunkFileNames: `[name].[hash].js`,
                 entryFileNames: "[name].js",
-                dir: "../static/ui-components",
+                dir: "./static/ui-components",
             },
         },
     },
