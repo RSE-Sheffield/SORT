@@ -218,7 +218,7 @@ if DEBUG:
     "URL of Vite local development server"
 VITE_STATIC_DIR = "ui-components"
 "Path to vite-generated asset directory in the static folder"
-VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, "manifest.json")
+VITE_MANIFEST_FILE_PATH = Path(os.path.join(VITE_STATIC_DIR, "manifest.json"))
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 

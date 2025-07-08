@@ -1,6 +1,7 @@
 import json
 import logging
 from enum import Enum
+from pathlib import Path
 from os import path
 from typing import LiteralString
 from urllib.parse import urljoin
@@ -51,11 +52,12 @@ def vite_asset(asset_path: str) -> str:
     else:
         global VITE_MANIFEST
         if VITE_MANIFEST is None:
-            vite_manifest_path = finders.find(settings.VITE_MANIFEST_FILE_PATH)
+            vite_manifest_path = Path(finders.find(settings.VITE_MANIFEST_FILE_PATH))
             if vite_manifest_path:
-                with open(vite_manifest_path, "r") as f:
-                    VITE_MANIFEST = json.load(f)
+                with vite_manifest_path.open() as file:
+                    VITE_MANIFEST = json.load(file)
             else:
+                logger.error("File not found: %s", vite_manifest_path)
                 raise FileNotFoundError(
                     f"Vite manifest file ({settings.VITE_MANIFEST_FILE_PATH}) cannot be found."
                 )
@@ -85,7 +87,7 @@ def vite_asset(asset_path: str) -> str:
 
 
 def get_asset_import_tag(
-    asset_static_path: str | LiteralString | bytes, type: AssetType
+        asset_static_path: str | LiteralString | bytes, type: AssetType
 ):
     asset_static_path_found = finders.find(asset_static_path)
     if asset_static_path_found:
