@@ -39,7 +39,7 @@ class SurveyService(BasePermissionService):
         try:
             return survey.project.organisation.get_user_role(user)
         except (
-                AttributeError
+            AttributeError
         ):  # In case user is AnonymousUser or organisation method fails
             return None
 
@@ -90,12 +90,12 @@ class SurveyService(BasePermissionService):
 
     @requires_permission("edit", obj_param="survey")
     def update_consent_demography_config(
-            self,
-            user: User,
-            survey: Survey,
-            consent_config,
-            demography_config,
-            survey_body_path,
+        self,
+        user: User,
+        survey: Survey,
+        consent_config,
+        demography_config,
+        survey_body_path,
     ) -> Survey:
         survey.consent_config = consent_config
         survey.demography_config = demography_config
@@ -108,9 +108,9 @@ class SurveyService(BasePermissionService):
         with open(settings.SURVEY_TEMPLATE_DIR / body_path) as f:
             sort_config = json.load(f)
             merged_sections = (
-                    survey.consent_config["sections"]
-                    + sort_config["sections"]
-                    + survey.demography_config["sections"]
+                survey.consent_config["sections"]
+                + sort_config["sections"]
+                + survey.demography_config["sections"]
             )
             survey.survey_config = {"sections": merged_sections}
 
@@ -128,13 +128,13 @@ class SurveyService(BasePermissionService):
 
         self.update_consent_demography_config(user, new_survey,
                                               consent_config=survey.consent_config,
-                                              demography_config=survey.demography_config,
-                                              survey_body_path=survey.survey_body_path)
+                                              demography_config=survey.demography_config, survey_body_path=survey.survey_body_path)
 
         return new_survey
 
+
     def _create_survey_evidence_sections(
-            self, survey: Survey, clear_existing_sections: bool = True
+        self, survey: Survey, clear_existing_sections: bool = True
     ):
         if not survey.survey_config["sections"]:
             raise ValueError("No sections available")
@@ -151,11 +151,11 @@ class SurveyService(BasePermissionService):
                 survey_evidence_section.save()
 
     def _create_survey_improvement_sections(
-            self, survey: Survey, clear_existing_sections: bool = True
+        self, survey: Survey, clear_existing_sections: bool = True
     ):
         if clear_existing_sections:
             for improve_section in SurveyImprovementPlanSection.objects.filter(
-                    survey=survey
+                survey=survey
             ):
                 improve_section.delete()  # Delete all previous section first
 
@@ -170,18 +170,18 @@ class SurveyService(BasePermissionService):
 
     @requires_permission("edit", obj_param="survey")
     def update_evidence_section(
-            self, user: User, survey: Survey, evidence_section: SurveyEvidenceSection, text
+        self, user: User, survey: Survey, evidence_section: SurveyEvidenceSection, text
     ):
         evidence_section.text = text
         evidence_section.save()
 
     @requires_permission("edit", obj_param="survey")
     def update_improvement_section(
-            self,
-            user: User,
-            survey: Survey,
-            improve_section: SurveyImprovementPlanSection,
-            text,
+        self,
+        user: User,
+        survey: Survey,
+        improve_section: SurveyImprovementPlanSection,
+        text,
     ):
         improve_section.plan = text
         improve_section.save()
@@ -201,9 +201,8 @@ class SurveyService(BasePermissionService):
 
         return invitation.survey
 
-    @staticmethod
-    def accept_response(survey: Survey, responseValues):
-        survey.accept_response(answers=responseValues)
+    def accept_response(self, survey: Survey, responseValues):
+        SurveyResponse.objects.create(survey=survey, answers=responseValues)
 
     @requires_permission("edit", obj_param="survey")
     def create_invitation(self, user: User, survey: Survey) -> Invitation:
@@ -276,7 +275,7 @@ class SurveyService(BasePermissionService):
 
     @requires_permission("edit", obj_param="survey")
     def add_uploaded_files(
-            self, user: User, survey: Survey, files: Dict[str, UploadedFile]
+        self, user: User, survey: Survey, files: Dict[str, UploadedFile]
     ):
 
         for field_name, uploaded_file in files.items():
@@ -293,11 +292,11 @@ class SurveyService(BasePermissionService):
 
     @requires_permission("edit", obj_param="survey")
     def add_uploaded_files_to_evidence_section(
-            self,
-            user: User,
-            survey: Survey,
-            evidence_section: SurveyEvidenceSection,
-            files: Dict[str, UploadedFile],
+        self,
+        user: User,
+        survey: Survey,
+        evidence_section: SurveyEvidenceSection,
+        files: Dict[str, UploadedFile],
     ):
 
         for field_name, uploaded_file in files.items():
@@ -320,16 +319,84 @@ class SurveyService(BasePermissionService):
 
     @requires_permission("edit", obj_param="survey")
     def remove_evidence_file(
-            self, user: User, survey: Survey, file: SurveyEvidenceFile
+        self, user: User, survey: Survey, file: SurveyEvidenceFile
     ):
         file.delete()
 
-    @staticmethod
-    def generate_mock_responses(user: User, survey: Survey, num_responses: int = 10):
+    def generate_mock_responses(self, user: User, survey: Survey, num_responses):
         """
         Generate a number of mock responses
         """
         if not user.is_superuser:
             return PermissionDenied("Must be superuser to use this feature")
 
-        survey.generate_mock_responses(num_responses)
+        for i in range(num_responses):
+            self.accept_response(
+                survey, responseValues=self.generate_mock_response(survey.survey_config)
+            )
+
+    def generate_mock_response(self, survey_config):
+        output_data = []
+
+        for section in survey_config["sections"]:
+            section_data_output = []
+            for field in section["fields"]:
+                section_data_output.append(self.generate_random_field_value(field))
+
+            output_data.append(section_data_output)
+
+        return output_data
+
+    def generate_random_field_value(self, field_config):
+        type = field_config["type"]
+        if type == "radio" or type == "select":
+            # Pick one option
+            num_options = len(field_config["options"])
+            option_index = random.randint(0, num_options - 1)
+            return str(field_config["options"][option_index])
+        elif type == "checkbox":
+            # Pick one random option
+            num_options = len(field_config["options"])
+            option_index = random.randint(0, num_options - 1)
+            return [str(field_config["options"][option_index])]
+        elif type == "likert":
+            likert_output = []
+            # Pick something
+            for sublabel in field_config["sublabels"]:
+                num_options = len(field_config["options"])
+                option_index = random.randint(0, num_options - 1)
+                likert_output.append(str(field_config["options"][option_index]))
+            return likert_output
+
+        elif type == "text":
+            if "textType" in field_config:
+                if field_config["textType"] == "INTEGER_TEXT":
+                    min_value = (
+                        field_config["minNumValue"]
+                        if "minNumValue" in field_config
+                        else 0
+                    )
+                    max_value = (
+                        field_config["maxNumValue"]
+                        if "maxNumValue" in field_config
+                        else 100
+                    )
+                    return str(random.randint(min_value, max_value))
+                elif field_config["textType"] == "DECIMALS_TEXT":
+                    min_value = (
+                        field_config["minNumValue"]
+                        if "minNumValue" in field_config
+                        else 0
+                    )
+                    max_value = (
+                        field_config["maxNumValue"]
+                        if "maxNumValue" in field_config
+                        else 100
+                    )
+                    return str(random.uniform(min_value, max_value))
+                elif field_config["textType"] == "EMAIL_TEXT":
+                    return "test@test.com"
+                else:
+                    return "Test plaintext field"
+        else:
+            return f"Test string for textarea field {field_config['label']}"
