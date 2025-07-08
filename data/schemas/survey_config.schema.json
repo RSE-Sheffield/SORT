@@ -1,0 +1,610 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "sections": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "fields": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "sublabels": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "enforceValueConstraints": {
+                      "type": "boolean"
+                    },
+                    "maxNumChar": {
+                      "type": "integer"
+                    },
+                    "minNumValue": {
+                      "type": "integer"
+                    },
+                    "maxNumValue": {
+                      "type": "integer"
+                    },
+                    "textType": {
+                      "type": "string"
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "readOnly": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "label",
+                    "required",
+                    "sublabels",
+                    "options",
+                    "enforceValueConstraints",
+                    "maxNumChar",
+                    "minNumValue",
+                    "maxNumValue",
+                    "textType",
+                    "disabled",
+                    "readOnly"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "sublabels": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "readOnly": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "label",
+                    "description",
+                    "required",
+                    "sublabels",
+                    "options",
+                    "disabled",
+                    "readOnly"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "sublabels": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "enforceValueConstraints": {
+                      "type": "boolean"
+                    },
+                    "maxNumChar": {
+                      "type": "integer"
+                    },
+                    "minNumValue": {
+                      "type": "integer"
+                    },
+                    "maxNumValue": {
+                      "type": "integer"
+                    },
+                    "textType": {
+                      "type": "string"
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "readOnly": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "label",
+                    "required",
+                    "sublabels",
+                    "options",
+                    "enforceValueConstraints",
+                    "maxNumChar",
+                    "minNumValue",
+                    "maxNumValue",
+                    "textType",
+                    "disabled",
+                    "readOnly"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "sublabels": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "readOnly": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "label",
+                    "required",
+                    "sublabels",
+                    "options",
+                    "disabled",
+                    "readOnly"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "sublabels": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "readOnly": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "label",
+                    "required",
+                    "sublabels",
+                    "options",
+                    "disabled",
+                    "readOnly"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string"
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "enforceValueConstraints": {
+                      "type": "boolean"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "maxNumChar": {
+                      "type": "integer"
+                    },
+                    "maxNumValue": {
+                      "type": "integer"
+                    },
+                    "minNumValue": {
+                      "type": "integer"
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "sublabels": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "textType": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "readOnly": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "description",
+                    "disabled",
+                    "enforceValueConstraints",
+                    "label",
+                    "maxNumChar",
+                    "maxNumValue",
+                    "minNumValue",
+                    "options",
+                    "required",
+                    "sublabels",
+                    "textType",
+                    "type",
+                    "readOnly"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "sublabels": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "readOnly": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "label",
+                    "required",
+                    "sublabels",
+                    "options",
+                    "disabled",
+                    "readOnly"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string"
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "enforceValueConstraints": {
+                      "type": "boolean"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "maxNumChar": {
+                      "type": "integer"
+                    },
+                    "maxNumValue": {
+                      "type": "integer"
+                    },
+                    "minNumValue": {
+                      "type": "integer"
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "sublabels": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "textType": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "readOnly": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "description",
+                    "disabled",
+                    "enforceValueConstraints",
+                    "label",
+                    "maxNumChar",
+                    "maxNumValue",
+                    "minNumValue",
+                    "options",
+                    "required",
+                    "sublabels",
+                    "textType",
+                    "type",
+                    "readOnly"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "sublabels": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "readOnly": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "label",
+                    "required",
+                    "sublabels",
+                    "options",
+                    "disabled",
+                    "readOnly"
+                  ]
+                }
+              ]
+            }
+          },
+          "required": [
+            "title",
+            "type",
+            "description",
+            "fields"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "sections"
+  ]
+}
