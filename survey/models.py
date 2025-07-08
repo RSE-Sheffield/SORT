@@ -1,4 +1,5 @@
 import logging
+import random
 import secrets
 
 from django.db import models
@@ -24,11 +25,6 @@ class Survey(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     survey_body_path = models.TextField(blank=True, null=True)
-    is_active = models.BooleanField(
-        default=True,
-        help_text="Are responses being collected?",
-        null=False,
-    )
 
     def __str__(self):
         return self.name
@@ -49,12 +45,82 @@ class Survey(models.Model):
 
         return None
 
-    @property
-    def reference_number(self) -> str:
+    def generate_mock_responses(self, num_responses: int = 10):
+        for _ in range(num_responses):
+            self.accept_response(self._generate_mock_response())
+
+    def _generate_mock_response(self):
         """
-        Unique identifier e.g. "SURVEY-000001"
+        Generate a dummy survey submission based on the questions in this survey.
         """
-        return f"{self.__class__.__name__.upper()}-{str(self.pk).zfill(6)}"
+        output_data = list()
+
+        for section in self.survey_config["sections"]:
+            section_data_output = list()
+            for field in section["fields"]:
+                section_data_output.append(self._generate_random_field_value(field))
+
+            output_data.append(section_data_output)
+
+        return output_data
+
+    @classmethod
+    def _generate_random_field_value(cls, field_config):
+        field_type = field_config["type"]
+        if field_type == "radio" or field_type == "select":
+            # Pick one option
+            num_options = len(field_config["options"])
+            option_index = random.randint(0, num_options - 1)
+            return str(field_config["options"][option_index])
+        elif field_type == "checkbox":
+            # Pick one random option
+            num_options = len(field_config["options"])
+            option_index = random.randint(0, num_options - 1)
+            return [str(field_config["options"][option_index])]
+        elif field_type == "likert":
+            likert_output = list()
+            # Pick something
+            for _ in field_config["sublabels"]:
+                num_options = len(field_config["options"])
+                option_index = random.randint(0, num_options - 1)
+                likert_output.append(str(field_config["options"][option_index]))
+            return likert_output
+
+        elif field_type == "text":
+            if "textType" in field_config:
+                if field_config["textType"] == "INTEGER_TEXT":
+                    min_value = (
+                        field_config["minNumValue"]
+                        if "minNumValue" in field_config
+                        else 0
+                    )
+                    max_value = (
+                        field_config["maxNumValue"]
+                        if "maxNumValue" in field_config
+                        else 100
+                    )
+                    return str(random.randint(min_value, max_value))
+                elif field_config["textType"] == "DECIMALS_TEXT":
+                    min_value = (
+                        field_config["minNumValue"]
+                        if "minNumValue" in field_config
+                        else 0
+                    )
+                    max_value = (
+                        field_config["maxNumValue"]
+                        if "maxNumValue" in field_config
+                        else 100
+                    )
+                    return str(random.uniform(min_value, max_value))
+                elif field_config["textType"] == "EMAIL_TEXT":
+                    return "test@test.com"
+                else:
+                    return "Test plaintext field"
+        else:
+            return f"Test string for textarea field {field_config['label']}"
+
+    def accept_response(self, answers: list):
+        SurveyResponse.objects.create(survey=self, answers=answers)
 
 
 class SurveyEvidenceSection(models.Model):
@@ -130,18 +196,8 @@ class SurveyResponse(models.Model):
     answers = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Survey {self.survey.pk} response {self.pk}"
-
     def get_absolute_url(self, token):
         return reverse("survey", kwargs={"pk": self.survey.pk})
-
-    def clean(self):
-        super().clean()
-
-        # Paused survey
-        if not self.survey.is_active:
-            raise ValueError("Cannot submit response to an inactive survey")
 
 
 class Invitation(models.Model):
