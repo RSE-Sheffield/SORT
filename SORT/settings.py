@@ -213,10 +213,11 @@ INTERNAL_IPS = [
 AUTH_USER_MODEL = "home.User"  # FA: replace username with email as unique identifiers
 
 # Vite integration
-VITE_BASE_URL = "http://localhost:5173"  # Url of vite dev server
-VITE_STATIC_DIR = (
-    "ui-components"  # Path to vite-generated asset directory in the static folder
-)
+if DEBUG:
+    VITE_BASE_URL = "http://localhost:5173"
+    "URL of Vite local development server"
+VITE_STATIC_DIR = "ui-components"
+"Path to vite-generated asset directory in the static folder"
 VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, "manifest.json")
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
@@ -281,4 +282,4 @@ INVITATIONS_EMAIL_SUBJECT_PREFIX = "SORT"
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_EMAIL_VERIFICATION="mandatory"
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
