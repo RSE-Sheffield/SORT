@@ -1,0 +1,15 @@
+import { test } from "vitest";
+import "@testing-library/jest-dom";
+import { render } from "@testing-library/svelte";
+import LikertRow from "../../../src/lib/components/input/LikertRow.svelte";
+
+test("LikertRow", () => {
+  render(LikertRow, {
+    props: {
+      config: {
+        sublabels: ["Test sublabel A", "Test sublabel B", "Test sublabel C"],
+      },
+      sublabelIndex: 0,
+    },
+  });
+});

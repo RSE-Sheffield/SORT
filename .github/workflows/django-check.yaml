@@ -25,6 +25,7 @@ jobs:
           # This should match the version used in production
           node-version: 'v20.x'
           cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
       - name: Install JavaScript package
         run: |
           npm ci
