@@ -95,4 +95,5 @@ urlpatterns = [
         views.HelpView.as_view(),
         name="help",
     ),
+    path("eula/", views.LicenseAgreementView.as_view(), name="eula"),
 ]
