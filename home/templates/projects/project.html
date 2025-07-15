@@ -55,7 +55,7 @@
                 <div class="card-body">
                     <h3 class="card-title" title="Survey identifier {{ survey.pk }}">{{ survey.name }}</h3>
                     <div class="card-text">
-                        <span>Responses: {{ survey.survey_response.count | default:0 }}</span>
+                        <span>Responses: {{ survey.responses_count }}</span>
                     </div>
                     <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
                         {% if can_edit|get_item:survey.id %}
