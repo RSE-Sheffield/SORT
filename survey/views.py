@@ -134,6 +134,9 @@ class SurveyDeleteView(LoginRequiredMixin, DeleteView):
 
 
 class SurveyConfigureView(LoginRequiredMixin, View):
+    """
+    Modify the questions in a survey.
+    """
 
     def get(self, request: HttpRequest, pk: int):
         return self.render_survey_config_view(request, pk, is_post=False)
@@ -142,9 +145,13 @@ class SurveyConfigureView(LoginRequiredMixin, View):
         return self.render_survey_config_view(request, pk, is_post=True)
 
     def render_survey_config_view(self, request: HttpRequest, pk: int, is_post: bool):
-        context = {}
+        context = dict()
         # TODO: Error handling when object not found
         survey = get_object_or_404(Survey, pk=pk)
+        if survey.has_responses:
+            raise PermissionDenied(
+                "Surveys cannot be modified after receiving responses."
+            )
         context["survey"] = survey
         context["csrf"] = str(csrf(self.request)["csrf_token"])
         context["can_edit"] = {survey.id: survey_service.can_edit(request.user, survey)}
