@@ -97,6 +97,13 @@ class SurveyService(BasePermissionService):
             demography_config,
             survey_body_path,
     ) -> Survey:
+        """
+        Modify demographics fields on this survey
+        """
+
+        if survey.has_responses:
+            raise PermissionDenied("Cannot modify survey with responses")
+
         survey.consent_config = consent_config
         survey.demography_config = demography_config
         survey.survey_body_path = survey_body_path

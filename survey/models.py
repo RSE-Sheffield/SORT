@@ -134,6 +134,20 @@ class Survey(models.Model):
     def accept_response(self, answers: list):
         return SurveyResponse.objects.create(survey=self, answers=answers)
 
+    @property
+    def responses_count(self) -> int:
+        """
+        The number of submitted questionnaires.
+        """
+        return self.survey_response.count()
+
+    @property
+    def has_responses(self) -> bool:
+        """
+        Does this survey have any responses?
+        """
+        return self.survey_response.exists()
+
 
 class SurveyEvidenceSection(models.Model):
     """

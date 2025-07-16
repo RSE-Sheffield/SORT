@@ -51,7 +51,9 @@
                 </div>
                 <div class="d-flex justify-content-end mt-3">
                     <div>
-                        <a href="{% url 'survey_duplicate_config' survey.pk %}" class="btn btn-primary"><i class='bx bxs-copy' ></i> Create a new survey using current configurations.</a>
+                        <a href="{% url 'survey_duplicate_config' survey.pk %}" class="btn btn-primary"
+                        title="Create a new survey using current configurations.">
+                            <i class='bx bxs-copy' ></i> Duplicate</a>
                     </div>
                 </div>
             </div>
@@ -68,10 +70,24 @@
             </div>
             <div class="card-body">
                 <div class="mb-3 mt-3">
+                    {% if survey.has_responses %}
+                    <div class="alert alert-warning">
+                        <p>
+                            ⚠️ The survey cannot be modified after responses have been collected.
+                            Consider duplicating the survey instead.
+                        </p>
+                    </div>
+                    {% endif %}
                     <p>First, configure you survey here. You are able to add and customise demographic questions asked
                         in the survey.</p>
+                    <p>After the survey receives any responses you will no longer be able to modify the questions.</p>
+                    {% if survey.has_responses %}
+                    <button class="btn btn-secondary" title="Surveys that have been responded to cannot be modified">
+                        <i class="bx bxs-cog"></i> Configure the survey</button>
+                    {% else %}
                     <a href="{% url 'survey_configure' survey.id %}" class="btn btn-primary"><i class="bx bxs-cog"></i>
                         Configure the survey</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
