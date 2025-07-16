@@ -13,3 +13,4 @@ class HomeConfig(AppConfig):
         # https://docs.djangoproject.com/en/5.2/topics/checks/
         # Suppress linting errors
         import home.checks  # noqa: F401
+        import survey.checks  # noqa: F401
