@@ -20,4 +20,4 @@ jobs:
       - name: Install linter
         run: pip install flake8
       - name: Lint Python code
-        run: flake8 SORT home survey --exclude '*/migrations/*'
+        run: flake8
