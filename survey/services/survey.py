@@ -1,7 +1,6 @@
 import csv
 import json
 import logging
-import random
 from io import StringIO
 from typing import Dict, Optional
 
