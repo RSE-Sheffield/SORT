@@ -21,7 +21,7 @@ def check_manifest(*args, **kwargs) -> list[django.core.checks.Error]:
     if not getattr(settings, 'VITE_MANIFEST_FILE_PATH', None):
         errors.append(
             django.core.checks.Error(
-                f"Setting not defined VITE_MANIFEST_FILE_PATH",
+                "Setting not defined VITE_MANIFEST_FILE_PATH",
                 hint="Add VITE_MANIFEST_FILE_PATH to settings.py",
                 id="SORT.E001",
             ),
