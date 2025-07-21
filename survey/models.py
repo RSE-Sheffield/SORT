@@ -1,6 +1,9 @@
 import logging
 import random
 import secrets
+import io
+import csv
+from typing import Generator
 
 from django.db import models
 from django.http import HttpRequest
@@ -147,6 +150,62 @@ class Survey(models.Model):
         Does this survey have any responses?
         """
         return self.survey_response.exists()
+
+    def fields_iter(self) -> Generator[str, None, None]:
+        """
+        Iterate over all field (and sub-field) labels.
+        """
+        for section in self.survey_config["sections"]:
+            for field in section["fields"]:
+                if field["type"] == "likert":
+                    yield from field["sublabels"]
+                else:
+                    yield field["label"]
+
+    @property
+    def fields(self) -> tuple[str]:
+        """
+        Survey questions/field names
+        """
+        return tuple(self.fields_iter())
+
+    def to_csv(self) -> str:
+        """
+        Flatten the survey form to export as CSV.
+        - Section titles are skipped
+        - Likert sublabels are expanded into individual columns
+        """
+
+        with io.StringIO() as buffer:
+            writer = csv.writer(buffer)
+            writer.writerow(self.fields)
+
+            # Row values
+            for response in self.survey_response.all():
+                answer = response.answers
+                row_values = list()
+                for sIndex, section in enumerate(self.survey_config["sections"]):
+
+                    if sIndex >= len(answer):
+                        continue
+
+                    for field_index, field in enumerate(section["fields"]):
+                        if field_index >= len(answer[sIndex]):
+                            continue
+
+                        if field["type"] == "likert":
+                            for sublabel_index, sublabel in enumerate(field["sublabels"]):
+                                row_values.append(answer[sIndex][field_index][sublabel_index])
+                        else:
+                            value = answer[sIndex][field_index]
+                            if isinstance(value, list):
+                                row_values.append(",".join(value))
+                            else:
+                                row_values.append(value)
+
+                writer.writerow(row_values)
+
+            return buffer.getvalue()
 
 
 class SurveyEvidenceSection(models.Model):
