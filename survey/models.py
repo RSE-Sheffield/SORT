@@ -3,7 +3,7 @@ import random
 import secrets
 import io
 import csv
-from typing import Generator
+from typing import Generator, Iterable
 
 from django.db import models
 from django.http import HttpRequest
@@ -78,6 +78,10 @@ class Survey(models.Model):
             output_data.append(section_data_output)
 
         return output_data
+
+    @property
+    def sections(self) -> Iterable[dict]:
+        return self.survey_config["sections"]
 
     @classmethod
     def _generate_random_field_value(cls, field_config):
@@ -155,7 +159,7 @@ class Survey(models.Model):
         """
         Iterate over all field (and sub-field) labels.
         """
-        for section in self.survey_config["sections"]:
+        for section in self.sections:
             for field in section["fields"]:
                 if field["type"] == "likert":
                     yield from field["sublabels"]
@@ -169,42 +173,35 @@ class Survey(models.Model):
         """
         return tuple(self.fields_iter())
 
-    def to_csv(self) -> str:
+    def responses_iter_values(self) -> Generator[str, None, None]:
+        """
+        Iterate over all responses, with the answers flattened to a row of data
+        """
+        # Iterate over survey response answer fields
+        for answers in self.survey_response.all():
+            yield answers.answers_values
+
+    def responses_iter(self) -> Generator[dict[str, str], None, None]:
+        """
+        Generate an iterable of flat dictionaries, each with questions and answers for this survey.
+        """
+        for answers_values in self.responses_iter_values():
+            yield dict(zip(self.fields, answers_values))
+
+    def to_csv(self, **kwargs) -> str:
         """
         Flatten the survey form to export as CSV.
-        - Section titles are skipped
-        - Likert sublabels are expanded into individual columns
+
+        :kwargs: Keyword arguments passed to csv.DictWriter
+        :returns: CSV data
         """
-
+        # Build text data
         with io.StringIO() as buffer:
-            writer = csv.writer(buffer)
-            writer.writerow(self.fields)
-
-            # Row values
-            for response in self.survey_response.all():
-                answer = response.answers
-                row_values = list()
-                for sIndex, section in enumerate(self.survey_config["sections"]):
-
-                    if sIndex >= len(answer):
-                        continue
-
-                    for field_index, field in enumerate(section["fields"]):
-                        if field_index >= len(answer[sIndex]):
-                            continue
-
-                        if field["type"] == "likert":
-                            for sublabel_index, sublabel in enumerate(field["sublabels"]):
-                                row_values.append(answer[sIndex][field_index][sublabel_index])
-                        else:
-                            value = answer[sIndex][field_index]
-                            if isinstance(value, list):
-                                row_values.append(",".join(value))
-                            else:
-                                row_values.append(value)
-
-                writer.writerow(row_values)
-
+            writer = csv.DictWriter(buffer, fieldnames=self.fields, **kwargs)
+            writer.writeheader()
+            # Iterate over survey responses, one line per submitted response
+            for row in self.responses_iter():
+                writer.writerow(row)
             return buffer.getvalue()
 
 
@@ -293,6 +290,21 @@ class SurveyResponse(models.Model):
         # Paused survey
         if not self.survey.is_active:
             raise ValueError("Cannot submit response to an inactive survey")
+
+    @property
+    def answers_values(self) -> Generator[str, None, None]:
+        """
+        Build a flat iterable of all the answer values for this response.
+
+        - Likert sub-labels are expanded into individual columns
+        """
+        for section in self.answers:
+            for field in section:
+                # Flatten sub-labels
+                if isinstance(field, list):
+                    yield from field
+                else:
+                    yield field
 
 
 class Invitation(models.Model):
