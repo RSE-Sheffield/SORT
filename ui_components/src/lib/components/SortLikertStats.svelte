@@ -59,7 +59,7 @@
     of {sectionMeanReadiness.toFixed(2)} out of
     {getHighestHistogramValue(surveyStats.sections[sectionIndex].fields[fieldIndex].histograms[0])}</strong> indicating maturity
     ranking of <strong>{getSortMaturityLabel(surveyStats.sections[sectionIndex].fields[fieldIndex].mean)}</strong>.
-    {readinessDescription}
+    The responses suggest that {readinessDescription}
 </p>
 <div class="progress">
   <div class="progress-bar bg-secondary" role="progressbar" style="width: {0.2*sectionMeanReadiness*100}%" aria-valuenow="{sectionMeanReadiness}" aria-valuemin="0" aria-valuemax="4">
