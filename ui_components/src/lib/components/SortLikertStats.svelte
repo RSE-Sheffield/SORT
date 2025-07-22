@@ -54,6 +54,7 @@
     const readinessDescription: string = readinessDescriptions[sectionMeanReadinessInt-1];
 
 </script>
+<h3>Summary <span class="badge badge-secondary bg-secondary">{sectionMeanReadiness.toFixed(0)}</span></h3>
 <p>
     Section {sectionConfig.title} demonstrates an overall score <strong>
     of {sectionMeanReadiness.toFixed(2)} out of
