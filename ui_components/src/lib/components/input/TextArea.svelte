@@ -3,6 +3,15 @@
   let {config, value = $bindable(), viewerMode = false} = $props();
   import DOMPurify from "dompurify";
 
+  // Ensure value is always a string when bound
+  // If there's undefined then the value passed up is missing, rather
+  // than null or an empty string, which corrupts the data structure.
+  $effect(() => {
+    if (value === undefined || value === null) {
+      value = "";
+    }
+  });
+
   let componentId = getUniqueID();
   let isValid = $state(false);
   let isInvalid = $state(false);
