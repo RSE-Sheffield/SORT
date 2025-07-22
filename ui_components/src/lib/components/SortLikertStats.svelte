@@ -16,9 +16,10 @@
         config: SurveyConfig;
         surveyStats: SurveyStats;
         sectionIndex: number,
-        fieldIndex: number
+        fieldIndex: number,
+        readinessDescriptions: string[],
     }
-    let {config, surveyStats, sectionIndex, fieldIndex}: Props = $props();
+    let {config, surveyStats, sectionIndex, fieldIndex, readinessDescriptions}: Props = $props();
 
     let sectionConfig = $derived(config.sections[sectionIndex]);
     let fieldConfig = $derived(config.sections[sectionIndex].fields[fieldIndex]);
@@ -38,7 +39,7 @@
         strongestList.map(qm => {
             output.push(fieldConfig.sublabels[qm.index]);
         })
-        return output.join(", ");
+        return output;
     })
     let weakestAreas: string = $derived.by(()=>{
         const weakestList = questionMeanSorted.slice(0,2);
@@ -46,18 +47,41 @@
         weakestList.map(qm => {
             output.push(fieldConfig.sublabels[qm.index]);
         })
-        return output.join(", ");
+        return output;
     })
+    const sectionMeanReadiness: number = surveyStats.sections[sectionIndex].fields[fieldIndex].mean;
+    const sectionMeanReadinessInt: bigint = parseInt(sectionMeanReadiness);
+    const readinessDescription: string = readinessDescriptions[sectionMeanReadinessInt-1];
 
 </script>
 <p>
     Section {sectionConfig.title} demonstrates an overall score <strong>
-    of {formatNumber(surveyStats.sections[sectionIndex].fields[fieldIndex].mean)} out of
+    of {sectionMeanReadiness.toFixed(2)} out of
     {getHighestHistogramValue(surveyStats.sections[sectionIndex].fields[fieldIndex].histograms[0])}</strong> indicating maturity
     ranking of <strong>{getSortMaturityLabel(surveyStats.sections[sectionIndex].fields[fieldIndex].mean)}</strong>.
-    Areas of strength are demonstrated in questions <strong>{strongestAreas}</strong>.
-    Areas of improvements are identified in questions <strong>{weakestAreas}</strong>.
+    {readinessDescription}
 </p>
+<div class="progress">
+  <div class="progress-bar bg-secondary" role="progressbar" style="width: {0.2*sectionMeanReadiness*100}%" aria-valuenow="{sectionMeanReadiness}" aria-valuemin="0" aria-valuemax="4">
+      {sectionMeanReadiness.toFixed(1)} / 5
+  </div>
+</div>
+<h4>Areas of strength</h4>
+<p>Areas of strength are demonstrated in the following questions:</p>
+<ul>
+{#each strongestAreas as strongArea }
+    <li>{strongArea}</li>
+{/each}
+</ul>
+<h4>Areas for improvement</h4>
+<p>
+    Areas of improvements are identified in the following questions:
+</p>
+<ul>
+{#each weakestAreas as weakArea }
+    <li>{weakArea}</li>
+{/each}
+</ul>
 <LikertHistogram fieldConfig={fieldConfig}
                                  fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}></LikertHistogram>
 <table class="table table-bordered mt-4">

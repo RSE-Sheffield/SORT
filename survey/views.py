@@ -458,6 +458,11 @@ class SurveyReportView(LoginRequiredMixin, View):
         #         "fileUrl": file_url
         #     })
 
+
+        # Response descriptions
+        with open("data/readiness_descriptions/matrix.json") as file:
+            readiness_descriptions: list[list[str]] = list(json.load(file))
+
         context = {
             "survey": survey,
             "responses": [
@@ -467,6 +472,7 @@ class SurveyReportView(LoginRequiredMixin, View):
             "sections": sections,
             "csrf": str(csrf(self.request)["csrf_token"]),
             # "files_list": files_list,
+            "readiness_descriptions": readiness_descriptions,
         }
 
         return render(request, "survey/report.html", context)

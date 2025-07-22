@@ -11,10 +11,11 @@
     interface Props {
         config: SurveyConfig,
         surveyStats: SurveyStats | null,
-        sectionIndex: number
+        sectionIndex: number,
+        readinessDescriptions: string[],
     }
 
-    let {config, surveyStats, sectionIndex = 0}: Props = $props();
+    let {config, surveyStats, sectionIndex = 0, readinessDescriptions}: Props = $props();
     let sectionConfig = $derived(config.sections[sectionIndex]);
 
 </script>
@@ -29,7 +30,8 @@
                             config={config}
                             surveyStats={surveyStats}
                             sectionIndex={sectionIndex}
-                            fieldIndex={fi}>
+                            fieldIndex={fi}
+                            readinessDescriptions={readinessDescriptions}>
                     </SortLikertStats>
                 </div>
 
