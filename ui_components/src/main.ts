@@ -107,18 +107,24 @@ mapMatchedElement(".sort-response-viewer", (elem) => {
 });
 
 mapMatchedElement(".sort-response-section-viewer", (elem) => {
-    const sectionIndex = elem.dataset.sectionIndex;
+    const sectionIndex = Number(elem.dataset.sectionIndex);
     const configId = elem.dataset.jsonConfigId;
     const responsesId = elem.dataset.jsonResponsesId;
+    // Get readiness-level descriptions for all sections
+    const readinessDescriptionsId = elem.dataset.jsonReadinessDescriptionsId;
+    const readinessDescriptionsAllSections = getDataInElem(readinessDescriptionsId, []);
+    // Readiness descriptions for just this section (levels 0 to 4)
+    const readinessDescriptions = readinessDescriptionsAllSections[sectionIndex-1];
     const config = getDataInElem(configId, {}) as SurveyConfig;
     const responses: SurveyResponseBatch = getDataInElem(responsesId, []) as [];
-    const surveyStats = generateStatsFromSurveyResponses(config, responses)
+    const surveyStats = generateStatsFromSurveyResponses(config, responses);
     mount(SurveySectionDataView, {
         target: elem,
         props: {
             config: config,
             surveyStats: surveyStats,
-            sectionIndex: Number(sectionIndex)
+            sectionIndex: sectionIndex,
+            readinessDescriptions: readinessDescriptions,
         }
     });
 });

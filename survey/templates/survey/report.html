@@ -5,12 +5,9 @@
 {% block content %}
     <div class="container">
         <h1><i class='bx bxs-report'></i> Report: {{ survey.name }}</h1>
-
         <p>{{ survey.description }}</p>
 
-
         <div class="mb-3">
-
             <h2>Summary Ranking Matrix</h2>
             <div class="sort-response-summary-matrix"
                  data-json-config-id="configData"
@@ -23,21 +20,20 @@
                         <li><a href="#page-section-{{ forloop.counter0 }}">{{ section.section_config.title }}</a></li>
                     {% endif %}
                 {% endfor %}
-
             </ul>
-
 
             {% for section in sections %}
                 {% if section.section_config.type != "consent" %}
                     <div class="page-break"></div>
                     <div>
-                        <h2 id="page-section-{{ forloop.counter0 }}">{{ section.section_config.title }}</h2>
+                        <h2 id="page-section-{{ forloop.counter0 }}">Section {{ section.section_config.title }}</h2>
                     </div>
                     <div>
                         <div
                                 class="sort-response-section-viewer"
                                 data-json-config-id="configData"
                                 data-json-responses-id="responsesData"
+                                data-json-readiness-descriptions-id="readinessDescriptions"
                                 data-section-index="{{ forloop.counter0 }}"
                         ></div>
 
@@ -46,8 +42,6 @@
                             <div class="sort-richtext-field"
                                  data-update-url="{% url 'survey_evidence_gathering_update' survey.id forloop.counter0 %}"
                                  data-init-contents="{{ section.evidence.text }}" data-view-only="true"></div>
-                            {#            <h5>Evidence files</h5>#}
-                            {#            <div class="sort-file-browser" data-json-id="filesListData"></div>#}
                         {% endif %}
 
                         {% if section.improvement %}
@@ -73,6 +67,7 @@
         {{ files_list | json_script:"filesListData" }}
         {{ survey.survey_config | json_script:"configData" }}
         {{ responses | json_script:"responsesData" }}
+        {{ readiness_descriptions | json_script:"readinessDescriptions" }}
         {% vite_client %}
         {% vite_asset "src/main.ts" %}
 
