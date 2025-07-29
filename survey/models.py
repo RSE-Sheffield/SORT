@@ -1,8 +1,9 @@
+import csv
+import io
+import json
 import logging
 import random
 import secrets
-import io
-import csv
 from typing import Generator, Iterable
 
 from django.db import models
@@ -36,6 +37,20 @@ class Survey(models.Model):
 
     def __str__(self):
         return self.name
+
+    def initialise(self):
+        """
+        Load an "empty" survey configuration
+        """
+
+        with open("data/survey_config/consent_only_config.json") as file:
+            self.consent_config = json.load(file)
+
+        with open("data/survey_config/demography_only_config.json") as file:
+            self.demography_config = json.load(file)
+
+        self.survey_config = dict(sections=list())
+        self.survey_body_path = "Nurses"
 
     def get_absolute_url(self):
         return reverse("survey", kwargs={"pk": self.pk})
