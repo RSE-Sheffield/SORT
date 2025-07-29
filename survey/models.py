@@ -1,6 +1,9 @@
 import logging
 import random
 import secrets
+import io
+import csv
+from typing import Generator, Iterable
 
 from django.db import models
 from django.http import HttpRequest
@@ -76,6 +79,10 @@ class Survey(models.Model):
 
         return output_data
 
+    @property
+    def sections(self) -> Iterable[dict]:
+        return self.survey_config["sections"]
+
     @classmethod
     def _generate_random_field_value(cls, field_config):
         field_type = field_config["type"]
@@ -147,6 +154,55 @@ class Survey(models.Model):
         Does this survey have any responses?
         """
         return self.survey_response.exists()
+
+    def fields_iter(self) -> Generator[str, None, None]:
+        """
+        Iterate over all field (and sub-field) labels.
+        """
+        for section in self.sections:
+            for field in section["fields"]:
+                if field["type"] == "likert":
+                    yield from field["sublabels"]
+                else:
+                    yield field["label"]
+
+    @property
+    def fields(self) -> tuple[str]:
+        """
+        Survey questions/field names
+        """
+        return tuple(self.fields_iter())
+
+    def responses_iter_values(self) -> Generator[str, None, None]:
+        """
+        Iterate over all responses, with the answers flattened to a row of data
+        """
+        # Iterate over survey response answer fields
+        for answers in self.survey_response.all():
+            yield answers.answers_values
+
+    def responses_iter(self) -> Generator[dict[str, str], None, None]:
+        """
+        Generate an iterable of flat dictionaries, each with questions and answers for this survey.
+        """
+        for answers_values in self.responses_iter_values():
+            yield dict(zip(self.fields, answers_values))
+
+    def to_csv(self, **kwargs) -> str:
+        """
+        Flatten the survey form to export as CSV.
+
+        :kwargs: Keyword arguments passed to csv.DictWriter
+        :returns: CSV data
+        """
+        # Build text data
+        with io.StringIO() as buffer:
+            writer = csv.DictWriter(buffer, fieldnames=self.fields, **kwargs)
+            writer.writeheader()
+            # Iterate over survey responses, one line per submitted response
+            for row in self.responses_iter():
+                writer.writerow(row)
+            return buffer.getvalue()
 
 
 class SurveyEvidenceSection(models.Model):
@@ -234,6 +290,21 @@ class SurveyResponse(models.Model):
         # Paused survey
         if not self.survey.is_active:
             raise ValueError("Cannot submit response to an inactive survey")
+
+    @property
+    def answers_values(self) -> Generator[str, None, None]:
+        """
+        Build a flat iterable of all the answer values for this response.
+
+        - Likert sub-labels are expanded into individual columns
+        """
+        for section in self.answers:
+            for field in section:
+                # Flatten sub-labels
+                if isinstance(field, list):
+                    yield from field
+                else:
+                    yield field
 
 
 class Invitation(models.Model):

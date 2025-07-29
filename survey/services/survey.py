@@ -229,55 +229,7 @@ class SurveyService(BasePermissionService):
 
     @requires_permission("view", obj_param="survey")
     def export_csv(self, user: User, survey: Survey) -> str:
-        """
-        Flatten the survey form to export as CSV
-        Section titles are skipped
-        Likert sublabels are expanded into individual columns
-        """
-        survey_config = survey.survey_config
-
-        with StringIO() as f:
-            writer = csv.writer(f)
-
-            # Header
-            header_fields = []
-            for sIndex, section in enumerate(survey_config["sections"]):
-                for fIndex, field in enumerate(section["fields"]):
-                    if field["type"] == "likert":
-                        for fsIndex, sublabel in enumerate(field["sublabels"]):
-                            header_fields.append(sublabel)
-                    else:
-                        header_fields.append(field["label"])
-            writer.writerow(header_fields)
-
-            # Row values
-            for response in survey.survey_response.all():
-                answer = response.answers
-                row_values = []
-                for sIndex, section in enumerate(survey_config["sections"]):
-
-                    if sIndex >= len(answer):
-                        continue
-
-                    for fIndex, field in enumerate(section["fields"]):
-                        if fIndex >= len(answer[sIndex]):
-                            continue
-
-                        if field["type"] == "likert":
-                            for fsIndex, sublabel in enumerate(field["sublabels"]):
-                                row_values.append(answer[sIndex][fIndex][fsIndex])
-                        else:
-                            value = answer[sIndex][fIndex]
-                            if isinstance(value, list):
-                                row_values.append(",".join(value))
-                            else:
-                                row_values.append(value)
-
-                writer.writerow(row_values)
-
-            output_csv = f.getvalue()
-
-        return output_csv
+        return survey.to_csv()
 
     def _is_extension_supported(self, file_name: str) -> bool:
         for extension in settings.MEDIA_SUPPORTED_EXTENSIONS:
