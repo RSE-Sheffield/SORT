@@ -37,6 +37,10 @@ class Survey(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def organisation(self):
+        return self.project.organisation
+
     def get_absolute_url(self):
         return reverse("survey", kwargs={"pk": self.pk})
 
