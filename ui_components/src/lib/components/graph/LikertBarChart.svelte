@@ -1,5 +1,4 @@
 <script lang="ts">
-    import * as _ from "lodash-es";
     import {onMount} from "svelte";
     import {
         Chart,
@@ -39,10 +38,8 @@
 
     let {fieldConfig, fieldStats}: LikertHistogramProps = $props();
     let barChartContainer: HTMLCanvasElement = $state()
-    let chartHeight = $derived(fieldConfig.sublabels.length * 3); // Reduced height since we're showing less data
+    let chartHeight = $derived(fieldConfig.sublabels.length * 2.5); // Reduced height since we're showing less data
     let chart: Chart | null = $state(null);
-    let sortByMean = $state(false);
-    let sortAscending = $state(true);
     let indexMean: IndexMean[] = $derived.by(() => {
         let ims: IndexMean[] = [];
         fieldStats.histograms.map((value, index) => {
@@ -51,12 +48,6 @@
                 mean: getHistogramMean(value)
             })
         });
-
-        if (sortByMean) {
-            let sortOrder: (boolean | "asc" | "desc")[] = ["asc", "asc"];
-            if (!sortAscending) sortOrder = ["desc", "desc"];
-            ims = _.orderBy(ims, ["mean", "index"], sortOrder);
-        }
         return ims;
     });
 
