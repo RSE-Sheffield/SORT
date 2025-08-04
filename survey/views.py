@@ -158,9 +158,9 @@ class SurveyConfigureView(LoginRequiredMixin, View):
 
         if is_post:
             if (
-                "survey_body_path" in request.POST
-                and "consent_config" in request.POST
-                and "demography_config" in request.POST
+                    "survey_body_path" in request.POST
+                    and "consent_config" in request.POST
+                    and "demography_config" in request.POST
             ):
                 consent_config = json.loads(request.POST.get("consent_config", None))
                 demography_config = json.loads(
@@ -205,13 +205,27 @@ class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
         return redirect("survey", pk=pk)
 
 
-class SurveyExportView(LoginRequiredMixin, View):
+class SurveyExportCsvView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int):
         survey = survey_service.get_survey(request.user, pk)
         output_csv = survey_service.export_csv(self.request.user, survey)
         response = HttpResponse(output_csv, content_type="text/csv")
         file_name = f"survey_{survey.id}.csv"
-        response["Content-Disposition"] = f"inline; filename={file_name}"
+        response["Content-Disposition"] = f"attachment; filename={file_name}"
+        return response
+
+
+class SurveyExportExcelView(LoginRequiredMixin, View):
+    """
+    Export the survey responses in Excel format.
+    """
+
+    def get(self, request: HttpRequest, pk: int):
+        survey = survey_service.get_survey(request.user, pk)
+        output_csv = survey_service.export_excel(self.request.user, survey)
+        response = HttpResponse(output_csv, content_type="application/vnd.ms-excel")
+        file_name = f"survey_{survey.id}.xlsx"
+        response["Content-Disposition"] = f"attachment; filename={file_name}"
         return response
 
 
@@ -336,7 +350,7 @@ class SurveyEvidenceFileView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int):
         evidence_file = SurveyEvidenceFile.objects.get(pk=pk)
         if not survey_service.can_view(
-            request.user, evidence_file.evidence_section.survey
+                request.user, evidence_file.evidence_section.survey
         ):
             raise PermissionDenied("You do not have permission to view this survey.")
         file_path = evidence_file.file.path
@@ -458,7 +472,6 @@ class SurveyReportView(LoginRequiredMixin, View):
         #         "fileUrl": file_url
         #     })
 
-
         # Response descriptions
         with open("data/readiness_descriptions/matrix.json") as file:
             readiness_descriptions: list[list[str]] = list(json.load(file))
@@ -491,7 +504,7 @@ class SurveyResponseView(View):
         return self.render_survey_response_page(request, token, is_post=True)
 
     def render_survey_response_page(
-        self, request: HttpRequest, token: str, is_post: bool
+            self, request: HttpRequest, token: str, is_post: bool
     ):
 
         try:

@@ -3,8 +3,11 @@ import random
 import secrets
 import io
 import csv
+import tempfile
+from pathlib import Path
 from typing import Generator, Iterable
 
+import xlsxwriter
 from django.db import models
 from django.http import HttpRequest
 from django.urls import reverse
@@ -203,6 +206,36 @@ class Survey(models.Model):
             for row in self.responses_iter():
                 writer.writerow(row)
             return buffer.getvalue()
+
+    def _to_excel(self) -> str:
+        """
+        Write survey responses to an Excel workbook file with a random name.
+
+        :returns: Filename
+        """
+        filename = tempfile.NamedTemporaryFile().name
+        workbook = xlsxwriter.Workbook(filename)
+        sheet = workbook.add_worksheet(name=str(self))
+        # Iterate over responses (one row per response)
+        for i, row in enumerate(self.responses_iter()):
+            # Write headers
+            if i == 0:
+                sheet.write_row(i, 0, row.keys())
+            sheet.write_row(i + 1, 0, row.values())
+        workbook.close()
+        return filename
+
+    def to_excel(self) -> bytes:
+        """
+        Get the survey response data in Excel format.
+        """
+        path = Path(self._to_excel())
+
+        # Return data
+        with path.open("rb") as file:
+            data = file.read()
+        path.unlink()
+        return data
 
 
 class SurveyEvidenceSection(models.Model):
