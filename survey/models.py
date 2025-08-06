@@ -96,7 +96,11 @@ class Survey(models.Model):
 
     @property
     def sections(self) -> Iterable[dict]:
-        return self.survey_config["sections"]
+        sections = list()
+        sections.extend(self.survey_config["sections"])
+        sections.extend(self.demography_config["sections"])
+        sections.extend(self.consent_config["sections"])
+        return sections
 
     @classmethod
     def _generate_random_field_value(cls, field_config):
