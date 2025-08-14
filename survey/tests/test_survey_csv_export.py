@@ -1,5 +1,5 @@
 import csv
-import tempfile
+import io
 
 from django.test import TestCase
 
@@ -16,16 +16,17 @@ class TestSurveyCsvExport(TestCase):
         The survey CSV export function should export the survey CSV file.
         """
 
+        num_responses = 10
+
         survey = SurveyFactory()
         survey.initialise()
-        survey.generate_mock_responses()
+        survey.generate_mock_responses(num_responses=num_responses)
 
-        with tempfile.TemporaryFile(mode="w") as file:
-            file.write(survey.to_csv())
+        csv_data = survey.to_csv()
+        self.assertTrue(csv_data.strip(), "CSV export failed")
 
-            file.seek(0)
+        csv_file = io.StringIO(csv_data)
+        rows = list(csv.DictReader(csv_file))
 
-            # Validate CSV
-            reader = csv.reader(file)
-            for row in reader:
-                pass
+        self.assertGreater(len(rows), 0, "CSV should contain at least one row")
+        self.assertEqual(len(rows), survey.responses_count, "Unexpected number of CSV data rows")

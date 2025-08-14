@@ -43,12 +43,15 @@ class Survey(models.Model):
         Load an "empty" survey configuration
         """
 
+        # Consent questions
         with open("data/survey_config/consent_only_config.json") as file:
             self.consent_config = json.load(file)
 
+        # Demographics questions
         with open("data/survey_config/demography_only_config.json") as file:
             self.demography_config = json.load(file)
 
+        # No SORT questions by default
         self.survey_config = dict(sections=list())
         self.survey_body_path = "Nurses"
 
@@ -95,8 +98,12 @@ class Survey(models.Model):
         return output_data
 
     @property
-    def sections(self) -> Iterable[dict]:
-        return self.survey_config["sections"]
+    def sections(self) -> list[dict]:
+        sections = list()
+        sections.extend(self.survey_config["sections"])
+        sections.extend(self.demography_config["sections"])
+        sections.extend(self.consent_config["sections"])
+        return sections
 
     @classmethod
     def _generate_random_field_value(cls, field_config):
@@ -154,7 +161,9 @@ class Survey(models.Model):
             return f"Test string for textarea field {field_config['label']}"
 
     def accept_response(self, answers: list):
-        return SurveyResponse.objects.create(survey=self, answers=answers)
+        survey_response = SurveyResponse.objects.create(survey=self, answers=answers)
+        survey_response.save()
+        return survey_response
 
     @property
     def responses_count(self) -> int:
