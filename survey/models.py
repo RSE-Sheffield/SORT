@@ -98,12 +98,8 @@ class Survey(models.Model):
         return output_data
 
     @property
-    def sections(self) -> list[dict]:
-        sections = list()
-        sections.extend(self.survey_config["sections"])
-        sections.extend(self.demography_config["sections"])
-        sections.extend(self.consent_config["sections"])
-        return sections
+    def sections(self) -> tuple[dict]:
+        return tuple(self.survey_config["sections"]+self.demography_config["sections"]+self.consent_config["sections"])
 
     @classmethod
     def _generate_random_field_value(cls, field_config):

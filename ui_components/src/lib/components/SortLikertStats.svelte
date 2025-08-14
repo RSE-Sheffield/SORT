@@ -19,7 +19,7 @@
         fieldIndex: number,
         readinessDescriptions: string[],
     }
-    let {config, surveyStats, sectionIndex, fieldIndex, readinessDescriptions}: Props = $props();
+    let {config, surveyStats, sectionIndex, fieldIndex, readinessDescriptions = []}: Props = $props();
 
     let sectionConfig = $derived(config.sections[sectionIndex]);
     let fieldConfig = $derived(config.sections[sectionIndex].fields[fieldIndex]);
@@ -60,7 +60,9 @@
     of {sectionMeanReadiness.toFixed(2)} out of
     {getHighestHistogramValue(surveyStats.sections[sectionIndex].fields[fieldIndex].histograms[0])}</strong> indicating maturity
     ranking of <strong>{getSortMaturityLabel(surveyStats.sections[sectionIndex].fields[fieldIndex].mean)}</strong>.
+    {#if readinessDescription}
     The responses suggest that {readinessDescription}
+    {/if}
 </p>
 <div class="progress">
   <div class="progress-bar bg-secondary" role="progressbar" style="width: {0.2*sectionMeanReadiness*100}%" aria-valuenow="{sectionMeanReadiness}" aria-valuemin="0" aria-valuemax="4">
