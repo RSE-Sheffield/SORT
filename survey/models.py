@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import random
+import itertools
 import secrets
 from typing import Generator, Iterable
 
@@ -88,7 +89,7 @@ class Survey(models.Model):
         """
         output_data = list()
 
-        for section in self.survey_config["sections"]:
+        for section in self.sections:
             section_data_output = list()
             for field in section["fields"]:
                 section_data_output.append(self._generate_random_field_value(field))
@@ -100,9 +101,9 @@ class Survey(models.Model):
     @property
     def sections(self) -> tuple[dict]:
         return tuple(
-            self.survey_config["sections"]
+            self.consent_config["sections"]
             + self.demography_config["sections"]
-            + self.consent_config["sections"]
+            + self.survey_config["sections"]
         )
 
     @classmethod
@@ -161,6 +162,9 @@ class Survey(models.Model):
             return f"Test string for textarea field {field_config['label']}"
 
     def accept_response(self, answers: list):
+        """
+        Enter a new survey submission.
+        """
         survey_response = SurveyResponse.objects.create(survey=self, answers=answers)
         survey_response.save()
         return survey_response
@@ -210,7 +214,7 @@ class Survey(models.Model):
         Generate an iterable of flat dictionaries, each with questions and answers for this survey.
         """
         for answers_values in self.responses_iter_values():
-            yield dict(zip(self.fields, answers_values))
+            yield dict(itertools.zip_longest(self.fields, answers_values))
 
     def to_csv(self, **kwargs) -> str:
         """
