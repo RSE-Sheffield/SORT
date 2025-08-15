@@ -5,7 +5,7 @@ import logging
 import random
 import itertools
 import secrets
-from typing import Generator, Iterable
+from typing import Generator
 
 from django.db import models
 from django.http import HttpRequest
