@@ -55,6 +55,25 @@ class User(AbstractBaseUser, PermissionsMixin):
             return self.email
         return f"{self.first_name} {self.last_name}"
 
+    @property
+    def active_projects(self) -> int:
+        """
+        Count the number of active surveys associated with this user.
+        """
+        active_surveys = 0
+        for project in self.projects_iter():
+            if project.is_active:
+                active_surveys += 1
+
+        return active_surveys
+
+    def projects_iter(self):
+        """
+        Iterate over all this user's projects.
+        """
+        for organisation in self.organisation_set.all():
+            yield from organisation.projects.all()
+
 
 class Organisation(models.Model):
     name = models.CharField(max_length=200)
@@ -90,6 +109,9 @@ class OrganisationMembership(models.Model):
 
 
 class Project(models.Model):
+    """
+    A project is an organisation unit for surveys within an organisation.
+    """
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     organisation = models.ForeignKey(
@@ -103,3 +125,17 @@ class Project(models.Model):
 
     def get_absolute_url(self):
         return reverse("project", kwargs={"project_id": self.pk})
+
+    @property
+    def is_active(self) -> bool:
+        """
+        Does this project contain any active surveys?
+        """
+        return any(self.surveys.values_list("is_active", flat=True))
+
+    @property
+    def survey_count(self) -> int:
+        """
+        How many surveys are organised within this project?
+        """
+        return self.surveys.count()

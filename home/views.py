@@ -117,7 +117,7 @@ class HomeView(LoginRequiredMixin, View):
         user = self.request.user
         # all projects for current user
         projects = project_service.get_user_projects(user)
-        return render(request, self.template_name, dict(projects=projects))
+        return render(request, self.template_name, context=dict(projects=projects))
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
@@ -196,10 +196,6 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
         user = self.request.user
         projects = context["projects"]
         user_role = self.organisation.get_user_role(user)
-
-        # add survey count to each project
-        for project in projects:
-            project.survey_count = project.survey_set.count()
 
         context.update(
             {
