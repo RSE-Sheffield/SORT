@@ -36,4 +36,4 @@ class TestSurveyExport(TestCase):
             field_count = len(self.survey.fields)
             for row in sheet.values:
                 # The number of cells (columns) in each row should equal the field count
-                self.assertEqual(len(row), field_count)
+                self.assertEqual(len(row), field_count, "Unexpected column count")
