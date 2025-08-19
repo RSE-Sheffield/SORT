@@ -39,6 +39,10 @@ class Survey(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def organisation(self):
+        return self.project.organisation
+
     def initialise(self):
         """
         Load an "empty" survey configuration
