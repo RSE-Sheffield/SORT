@@ -1,4 +1,4 @@
-import { mount } from 'svelte'
+import {mount} from 'svelte'
 import {type FileDescriptionType, type SurveyConfig, type SurveyResponseBatch} from "./lib/interfaces.ts"
 import {generateStatsFromSurveyResponses, getDataInElem} from "./lib/misc.svelte.js";
 import SmartTable from "./lib/components/SmartTable.svelte";
@@ -12,16 +12,16 @@ import SortSummaryMatrix from "./lib/components/SortSummaryMatrix.svelte";
 
 const csrf: string = getDataInElem("csrf", []);
 
-function mapMatchedElement(selector: string, handler: (elem: HTMLElement)=> void){
+function mapMatchedElement(selector: string, handler: (elem: HTMLElement) => void) {
     const matchingElements = document.querySelectorAll(selector);
-    for(let i = 0; i < matchingElements.length; i++) {
+    for (let i = 0; i < matchingElements.length; i++) {
         const elem = matchingElements[i] as HTMLElement;
         handler(elem);
     }
 }
 
 
-mapMatchedElement(".sort-consent-demography-config", (elem) =>{
+mapMatchedElement(".sort-consent-demography-config", (elem) => {
     const consentConfigId = elem.dataset.jsonConsentConfigId;
     const demographyConfigId = elem.dataset.jsonDemographyConfigId;
     const surveyBodyPath = elem.dataset.surveyBodyPath;
@@ -55,11 +55,11 @@ mapMatchedElement(".sort-survey-response", (elem) => {
 
 
 mapMatchedElement(".sort-file-browser", (elem) => {
-    const fileListDataId =elem.dataset.jsonId;
+    const fileListDataId = elem.dataset.jsonId;
     const filesList: FileDescriptionType[] = getDataInElem(fileListDataId, []);
     mount(FileBrowser, {
         target: elem,
-        props: { filesList: filesList, csrf: csrf}
+        props: {filesList: filesList, csrf: csrf}
     });
 });
 
@@ -89,7 +89,6 @@ mapMatchedElement(".sort-richtext-field", (elem) => {
 });
 
 
-
 mapMatchedElement(".sort-response-viewer", (elem) => {
     const csvUrl = elem.dataset.csvUrl ?? "";
     const configId = elem.dataset.jsonConfigId;
@@ -114,10 +113,11 @@ mapMatchedElement(".sort-response-section-viewer", (elem) => {
     const readinessDescriptionsId = elem.dataset.jsonReadinessDescriptionsId;
     const readinessDescriptionsAllSections = getDataInElem(readinessDescriptionsId, []);
     // Readiness descriptions for just this section (levels 0 to 4)
-    const readinessDescriptions = readinessDescriptionsAllSections[sectionIndex-1];
+    const readinessDescriptions = readinessDescriptionsAllSections[sectionIndex - 1];
     const config = getDataInElem(configId, {}) as SurveyConfig;
     const responses: SurveyResponseBatch = getDataInElem(responsesId, []) as [];
     const surveyStats = generateStatsFromSurveyResponses(config, responses);
+    const useBarChart = elem.dataset.useBarChart === 'true'; // Convert string to boolean
     mount(SurveySectionDataView, {
         target: elem,
         props: {
@@ -125,6 +125,7 @@ mapMatchedElement(".sort-response-section-viewer", (elem) => {
             surveyStats: surveyStats,
             sectionIndex: sectionIndex,
             readinessDescriptions: readinessDescriptions,
+            useBarChart: useBarChart,
         }
     });
 });

@@ -2,11 +2,13 @@
     import * as _ from "lodash-es"
     import type {SurveyConfig, SurveyStats} from "../interfaces.ts";
     import LikertHistogram from "./graph/LikertHistogram.svelte";
+    import LikertBarChart from "./graph/LikertBarChart.svelte";
     import {
         formatNumber,
         getHighestHistogramValue,
         getHistogramMean, getSortMaturityLabel,
     } from "../misc.svelte.ts";
+
     type QM = {
         index: number;
         mean: number;
@@ -18,14 +20,23 @@
         sectionIndex: number,
         fieldIndex: number,
         readinessDescriptions: string[],
+        useBarChart: boolean
     }
-    let {config, surveyStats, sectionIndex, fieldIndex, readinessDescriptions}: Props = $props();
+
+    let {
+        config,
+        surveyStats,
+        sectionIndex,
+        fieldIndex,
+        readinessDescriptions = [],
+        useBarChart = true
+    }: Props = $props();
 
     let sectionConfig = $derived(config.sections[sectionIndex]);
     let fieldConfig = $derived(config.sections[sectionIndex].fields[fieldIndex]);
-    let questionMeanSorted: QM[] = $derived.by(()=>{
+    let questionMeanSorted: QM[] = $derived.by(() => {
         const qm = [];
-        for(let i =0; i < surveyStats.sections[sectionIndex].fields[fieldIndex].histograms.length; i++){
+        for (let i = 0; i < surveyStats.sections[sectionIndex].fields[fieldIndex].histograms.length; i++) {
             qm.push({
                 index: i,
                 mean: getHistogramMean(surveyStats.sections[sectionIndex].fields[fieldIndex].histograms[i])
@@ -33,7 +44,7 @@
         }
         return _.orderBy(qm, ["mean"], ["asc"]);
     })
-    let strongestAreas: string = $derived.by(()=>{
+    let strongestAreas: string = $derived.by(() => {
         const strongestList = questionMeanSorted.slice(-2);
         const output: string[] = [];
         strongestList.map(qm => {
@@ -41,8 +52,8 @@
         })
         return output;
     })
-    let weakestAreas: string = $derived.by(()=>{
-        const weakestList = questionMeanSorted.slice(0,2);
+    let weakestAreas: string = $derived.by(() => {
+        const weakestList = questionMeanSorted.slice(0, 2);
         const output: string[] = [];
         weakestList.map(qm => {
             output.push(fieldConfig.sublabels[qm.index]);
@@ -51,40 +62,49 @@
     })
     const sectionMeanReadiness: number = surveyStats.sections[sectionIndex].fields[fieldIndex].mean;
     const sectionMeanReadinessInt: bigint = parseInt(sectionMeanReadiness);
-    const readinessDescription: string = readinessDescriptions[sectionMeanReadinessInt-1];
+    const readinessDescription: string = readinessDescriptions[sectionMeanReadinessInt - 1];
 
 </script>
 <h3>Summary <span class="badge badge-secondary bg-secondary">{sectionMeanReadiness.toFixed(0)}</span></h3>
 <p>
     Section {sectionConfig.title} demonstrates an overall score <strong>
     of {sectionMeanReadiness.toFixed(2)} out of
-    {getHighestHistogramValue(surveyStats.sections[sectionIndex].fields[fieldIndex].histograms[0])}</strong> indicating maturity
+    {getHighestHistogramValue(surveyStats.sections[sectionIndex].fields[fieldIndex].histograms[0])}</strong> indicating
+    maturity
     ranking of <strong>{getSortMaturityLabel(surveyStats.sections[sectionIndex].fields[fieldIndex].mean)}</strong>.
-    The responses suggest that {readinessDescription}
+    {#if readinessDescription}
+        The responses suggest that {readinessDescription}
+    {/if}
 </p>
 <div class="progress">
-  <div class="progress-bar bg-secondary" role="progressbar" style="width: {0.2*sectionMeanReadiness*100}%" aria-valuenow="{sectionMeanReadiness}" aria-valuemin="0" aria-valuemax="4">
-      {sectionMeanReadiness.toFixed(1)} / 5
-  </div>
+    <div class="progress-bar bg-secondary" role="progressbar" style="width: {0.2*sectionMeanReadiness*100}%"
+         aria-valuenow="{sectionMeanReadiness}" aria-valuemin="0" aria-valuemax="4">
+        {sectionMeanReadiness.toFixed(1)} / 5
+    </div>
 </div>
 <h4>Areas of strength</h4>
 <p>Areas of strength are demonstrated in the following questions:</p>
 <ul>
-{#each strongestAreas as strongArea }
-    <li>{strongArea}</li>
-{/each}
+    {#each strongestAreas as strongArea }
+        <li>{strongArea}</li>
+    {/each}
 </ul>
 <h4>Areas for improvement</h4>
 <p>
     Areas of improvements are identified in the following questions:
 </p>
 <ul>
-{#each weakestAreas as weakArea }
-    <li>{weakArea}</li>
-{/each}
+    {#each weakestAreas as weakArea }
+        <li>{weakArea}</li>
+    {/each}
 </ul>
-<LikertHistogram fieldConfig={fieldConfig}
-                                 fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}></LikertHistogram>
+{#if useBarChart}
+    <LikertBarChart fieldConfig={fieldConfig}
+                     fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}></LikertBarChart>
+{:else}
+    <LikertHistogram fieldConfig={fieldConfig}
+                    fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}></LikertHistogram>
+{/if}
 <table class="table table-bordered mt-4">
     <thead>
     <tr>
