@@ -1,7 +1,7 @@
 import csv
 import logging
-import sys
 
+from django.conf import settings
 from django.core.management import BaseCommand
 
 from survey.models import Survey, SurveyResponse
@@ -28,7 +28,7 @@ class Command(BaseCommand):
 
     @classmethod
     def build_row(
-        cls, sections: list[dict], survey_response: SurveyResponse
+            cls, sections: list[dict], survey_response: SurveyResponse
     ) -> dict[str, str]:
         """
         Map a set of survey response answers to a row of data (key-value pairs).
@@ -66,8 +66,9 @@ class Command(BaseCommand):
         headers = survey.fields
 
         # CSV export
+        self.stdout.reconfigure(encoding=settings.DEFAULT_CHARSET)
         writer = csv.DictWriter(
-            sys.stdout, fieldnames=headers, lineterminator="\n", quoting=csv.QUOTE_ALL
+            self.stdout, fieldnames=headers, lineterminator="\n", quoting=csv.QUOTE_ALL
         )
         writer.writeheader()
 
