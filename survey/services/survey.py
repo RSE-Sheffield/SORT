@@ -1,7 +1,5 @@
-import csv
 import json
 import logging
-from io import StringIO
 from typing import Dict, Optional
 
 from django.conf import settings
@@ -71,20 +69,8 @@ class SurveyService(BasePermissionService):
 
     @requires_permission("create", obj_param="project")
     def initialise_survey(self, user: User, project: Project, survey: Survey):
-
         survey.project = project
-
-        # TODO: Make a proper loader function
-        with open("data/survey_config/consent_only_config.json") as f:
-            consent_config = json.load(f)
-            survey.consent_config = consent_config
-
-        with open("data/survey_config/demography_only_config.json") as f:
-            demo_config = json.load(f)
-            survey.demography_config = demo_config
-
-        survey.survey_config = dict(sections=list())
-        survey.survey_body_path = "Nurses"
+        survey.initialise()
         survey.save()
 
     @requires_permission("edit", obj_param="survey")
