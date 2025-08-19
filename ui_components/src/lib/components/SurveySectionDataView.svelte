@@ -3,6 +3,7 @@
     import type {SurveyConfig, SurveyStats} from "../interfaces.ts";
     import {TextType} from "../interfaces.ts";
     import LikertHistogram from "./graph/LikertHistogram.svelte";
+    import LikertBarChart from "./graph/LikertBarChart.svelte";
     import OptionsHistogram from "./graph/OptionsHistogram.svelte";
     import CollapsibleCard from "./CollapsibleCard.svelte";
     import SortLikertStats from "./SortLikertStats.svelte";
@@ -13,9 +14,10 @@
         surveyStats: SurveyStats | null,
         sectionIndex: number,
         readinessDescriptions: string[],
+        useBarChart: boolean
     }
 
-    let {config, surveyStats, sectionIndex = 0, readinessDescriptions}: Props = $props();
+    let {config, surveyStats, sectionIndex = 0, readinessDescriptions, useBarChart = false}: Props = $props();
     let sectionConfig = $derived(config.sections[sectionIndex]);
 
 </script>
@@ -31,15 +33,20 @@
                             surveyStats={surveyStats}
                             sectionIndex={sectionIndex}
                             fieldIndex={fi}
-                            readinessDescriptions={readinessDescriptions}>
+                            readinessDescriptions={readinessDescriptions}
+                            useBarChart={useBarChart}>
                     </SortLikertStats>
                 </div>
 
             {:else if fieldConfig.type === "likert" }
                 <div class="mb-3 flex-grow-1 flex-fill w-100">
-
+                    {#if useBarChart}
+                    <LikertBarChart fieldConfig={fieldConfig}
+                                     fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></LikertBarChart>
+                    {:else}
                     <LikertHistogram fieldConfig={fieldConfig}
                                      fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></LikertHistogram>
+                    {/if}
                 </div>
             {/if}
             {#if fieldConfig.type === "radio" || fieldConfig.type === "select" || fieldConfig.type === "checkbox"}
