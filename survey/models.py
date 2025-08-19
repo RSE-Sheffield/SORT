@@ -5,11 +5,10 @@ import logging
 import random
 import itertools
 import secrets
-import io
-import csv
 import tempfile
 from pathlib import Path
-from typing import Generator
+from typing import Generator, ContextManager
+from contextlib import contextmanager
 
 import xlsxwriter
 from django.db import models
@@ -241,14 +240,18 @@ class Survey(models.Model):
                 writer.writerow(row)
             return buffer.getvalue()
 
-    def _to_excel(self) -> str:
+    @contextmanager
+    def _to_excel(self) -> ContextManager[Path]:
         """
         Write survey responses to an Excel workbook file with a random name.
 
-        :returns: Filename
+        :returns: The file name of a temporary Excel file
         """
-        filename = tempfile.NamedTemporaryFile().name
-        workbook = xlsxwriter.Workbook(filename)
+        # Create a random filename (this will be deleted after the resource is used)
+        path = Path(tempfile.mkdtemp()).joinpath("survey_responses.xlsx")
+
+        # Create spreadsheet data
+        workbook = xlsxwriter.Workbook(filename=path)
         sheet = workbook.add_worksheet(name=str(self))
         # Iterate over responses (one row per response)
         for i, row in enumerate(self.responses_iter()):
@@ -257,19 +260,19 @@ class Survey(models.Model):
                 sheet.write_row(i, 0, row.keys())
             sheet.write_row(i + 1, 0, row.values())
         workbook.close()
-        return filename
+        yield Path(workbook.filename)
+
+        # Delete temporary file
+        path.unlink()
 
     def to_excel(self) -> bytes:
         """
         Get the survey response data in Excel format.
         """
-        path = Path(self._to_excel())
-
-        # Return data
-        with path.open("rb") as file:
-            data = file.read()
-        path.unlink()
-        return data
+        with self._to_excel() as path:
+            # Return data
+            with path.open("rb") as file:
+                return file.read()
 
 
 class SurveyEvidenceSection(models.Model):

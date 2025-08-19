@@ -1,6 +1,4 @@
-import csv
 import io
-import tempfile
 
 from django.test import TestCase
 
