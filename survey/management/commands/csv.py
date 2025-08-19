@@ -16,5 +16,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         survey = Survey.objects.get(pk=options["survey_id"])
-        self.stdout.reconfigure(encoding=settings.DEFAULT_CHARSET)
+        # Set these options to work properly with Linux and Windows
+        self.stdout.reconfigure(encoding=settings.DEFAULT_CHARSET, newline="")
         self.stdout.write(survey.to_csv())
