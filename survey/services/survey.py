@@ -1,4 +1,3 @@
-import json
 import logging
 from typing import Dict, Optional
 
@@ -93,18 +92,7 @@ class SurveyService(BasePermissionService):
         survey.demography_config = demography_config
         survey.survey_body_path = survey_body_path
 
-        body_path = "sort_only_config.json"
-        if survey_body_path in settings.SURVEY_TEMPLATES:
-            body_path = settings.SURVEY_TEMPLATES[survey_body_path]
-
-        with open(settings.SURVEY_TEMPLATE_DIR / body_path) as f:
-            sort_config = json.load(f)
-            merged_sections = (
-                    survey.consent_config["sections"]
-                    + sort_config["sections"]
-                    + survey.demography_config["sections"]
-            )
-            survey.survey_config = {"sections": merged_sections}
+        survey.merge_sections()
 
         survey.save()
 

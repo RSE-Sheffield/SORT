@@ -5,8 +5,10 @@ import logging
 import random
 import itertools
 import secrets
+from pathlib import Path
 from typing import Generator
 
+from django.conf import settings
 from django.db import models
 from django.http import HttpRequest
 from django.urls import reverse
@@ -56,9 +58,8 @@ class Survey(models.Model):
         with open("data/survey_config/demography_only_config.json") as file:
             self.demography_config = json.load(file)
 
-        # No SORT questions by default
-        self.survey_config = dict(sections=list())
         self.survey_body_path = "Nurses"
+        self.merge_sections()
 
     def get_absolute_url(self):
         return reverse("survey", kwargs={"pk": self.pk})
@@ -104,11 +105,12 @@ class Survey(models.Model):
 
     @property
     def sections(self) -> tuple[dict]:
-        return tuple(
-            self.consent_config["sections"]
-            + self.demography_config["sections"]
-            + self.survey_config["sections"]
-        )
+        """
+        The groups of questions in the survey.
+        """
+        # The consent_config and demography_config fields are redundant because their values are merged into the
+        # survey_config field
+        return tuple(self.survey_config["sections"])
 
     @classmethod
     def _generate_random_field_value(cls, field_config):
@@ -205,13 +207,13 @@ class Survey(models.Model):
         """
         return tuple(self.fields_iter())
 
-    def responses_iter_values(self) -> Generator[str, None, None]:
+    def responses_iter_values(self):
         """
         Iterate over all responses, with the answers flattened to a row of data
         """
         # Iterate over survey response answer fields
-        for answers in self.survey_response.all():
-            yield answers.answers_values
+        for survey_response in self.survey_response.all():
+            yield survey_response.answers_values
 
     def responses_iter(self) -> Generator[dict[str, str], None, None]:
         """
@@ -222,7 +224,7 @@ class Survey(models.Model):
 
     def to_csv(self, **kwargs) -> str:
         """
-        Flatten the survey form to export as CSV.
+        Flatten the survey form to export as comma-separated values (CSV).
 
         :kwargs: Keyword arguments passed to csv.DictWriter
         :returns: CSV data
@@ -235,6 +237,30 @@ class Survey(models.Model):
             for row in self.responses_iter():
                 writer.writerow(row)
             return buffer.getvalue()
+
+    @property
+    def template_filename(self) -> str:
+        return settings.SURVEY_TEMPLATES[self.survey_body_path]
+
+    @property
+    def template_path(self) -> Path:
+        return settings.SURVEY_TEMPLATE_DIR.joinpath(self.template_filename)
+
+    @property
+    def sort_config(self):
+        with self.template_path.open() as file:
+            return json.load(file)
+
+    def merge_sections(self, body_path: str = None):
+        """
+        Merge all the survey question configuration into the survey_config field.
+        """
+        merged_sections = (
+                self.consent_config["sections"]
+                + self.sort_config["sections"]
+                + self.demography_config["sections"]
+        )
+        self.survey_config = {"sections": merged_sections}
 
 
 class SurveyEvidenceSection(models.Model):
