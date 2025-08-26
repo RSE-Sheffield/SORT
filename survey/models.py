@@ -33,7 +33,7 @@ class Survey(models.Model):
     survey_config = models.JSONField(null=True)
     consent_config = models.JSONField(null=True)
     demography_config = models.JSONField(null=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="surveys")
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="survey")
     created_at = models.DateTimeField(auto_now_add=True)
     survey_body_path = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(
