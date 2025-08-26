@@ -154,7 +154,7 @@ class OrganisationService(BasePermissionService):
         # Add metrics
         if with_metrics:
             base_query = base_query.annotate(
-                survey_count=Count("survey__id", distinct=True),
+                survey_count=Count("surveys__id", distinct=True),
             ).select_related("created_by", "organisation")
 
         return base_query.order_by("-created_at")

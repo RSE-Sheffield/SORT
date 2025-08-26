@@ -48,7 +48,7 @@
                     <div class="card-body">
                         <p class="h5 card-title" title="Project identifier {{ project.pk }}">{{ project.name }}</p>
                         <p class="h6 card-subtitle text-muted mb-2">{{ project.description|default_if_none:"No description provided." }}</p>
-                        <p class="h7 card-text">Surveys: {{ project.survey_count }}</p>
+                        <p class="h7 card-text">Surveys: {{ project.surveys.count }}</p>
 
                         <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
                             {% if can_edit|get_item:project.id %}
