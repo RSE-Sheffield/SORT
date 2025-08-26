@@ -205,13 +205,27 @@ class SurveyGenerateMockResponsesView(LoginRequiredMixin, View):
         return redirect("survey", pk=pk)
 
 
-class SurveyExportView(LoginRequiredMixin, View):
+class SurveyExportCsvView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int):
         survey = survey_service.get_survey(request.user, pk)
         output_csv = survey_service.export_csv(self.request.user, survey)
         response = HttpResponse(output_csv, content_type="text/csv")
         file_name = f"survey_{survey.id}.csv"
-        response["Content-Disposition"] = f"inline; filename={file_name}"
+        response["Content-Disposition"] = f"attachment; filename={file_name}"
+        return response
+
+
+class SurveyExportExcelView(LoginRequiredMixin, View):
+    """
+    Export the survey responses in Excel format.
+    """
+
+    def get(self, request: HttpRequest, pk: int):
+        survey = survey_service.get_survey(request.user, pk)
+        output_csv = survey_service.export_excel(self.request.user, survey)
+        response = HttpResponse(output_csv, content_type="application/vnd.ms-excel")
+        file_name = f"survey_{survey.id}.xlsx"
+        response["Content-Disposition"] = f"attachment; filename={file_name}"
         return response
 
 

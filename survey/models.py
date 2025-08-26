@@ -5,8 +5,12 @@ import logging
 import random
 import itertools
 import secrets
+import tempfile
 from pathlib import Path
-from typing import Generator
+from typing import Generator, ContextManager
+from contextlib import contextmanager
+
+import xlsxwriter
 
 from django.conf import settings
 from django.db import models
@@ -237,6 +241,40 @@ class Survey(models.Model):
             for row in self.responses_iter():
                 writer.writerow(row)
             return buffer.getvalue()
+
+    @contextmanager
+    def _to_excel(self) -> ContextManager[Path]:
+        """
+        Write survey responses to an Excel workbook file with a random name.
+
+        :returns: The file name of a temporary Excel file
+        """
+        # Create a random filename (this will be deleted after the resource is used)
+        path = Path(tempfile.mkdtemp()).joinpath("survey_responses.xlsx")
+
+        # Create spreadsheet data
+        workbook = xlsxwriter.Workbook(filename=path)
+        sheet = workbook.add_worksheet(name=str(self))
+        # Iterate over responses (one row per response)
+        for i, row in enumerate(self.responses_iter()):
+            # Write headers
+            if i == 0:
+                sheet.write_row(i, 0, row.keys())
+            sheet.write_row(i + 1, 0, row.values())
+        workbook.close()
+        yield Path(workbook.filename)
+
+        # Delete temporary file
+        path.unlink()
+
+    def to_excel(self) -> bytes:
+        """
+        Get the survey response data in Excel format.
+        """
+        with self._to_excel() as path:
+            # Return data
+            with path.open("rb") as file:
+                return file.read()
 
     @property
     def template_filename(self) -> str:

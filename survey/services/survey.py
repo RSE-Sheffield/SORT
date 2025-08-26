@@ -204,6 +204,10 @@ class SurveyService(BasePermissionService):
     def export_csv(self, user: User, survey: Survey) -> str:
         return survey.to_csv()
 
+    @requires_permission("view", obj_param="survey")
+    def export_excel(self, user: User, survey: Survey):
+        return survey.to_excel()
+
     def _is_extension_supported(self, file_name: str) -> bool:
         for extension in settings.MEDIA_SUPPORTED_EXTENSIONS:
             if file_name.lower().endswith(extension):
