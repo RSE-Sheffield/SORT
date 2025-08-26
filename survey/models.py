@@ -241,7 +241,7 @@ class Survey(models.Model):
             for row in self.responses_iter():
                 writer.writerow(row)
             return buffer.getvalue()
-          
+
     @contextmanager
     def _to_excel(self) -> ContextManager[Path]:
         """
