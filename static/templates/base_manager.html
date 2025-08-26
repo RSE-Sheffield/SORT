@@ -23,10 +23,6 @@
                                     class="bx bxs-home"></i> Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if '/profile' in request.path %}active{% endif %}"
-                               href="{% url 'profile' %}"><i class="bx bxs-user"></i> Profile</a>
-                        </li>
-                        <li class="nav-item">
                             {% url 'organisation_create' as organisation_create_url %}
                             <a class="nav-link 
                                 {% if '/myorganisation' in request.path %}active{% endif %} 
@@ -35,7 +31,11 @@
                                 {% if '/survey' in request.path %}active{% endif %} 
                                 {% if '/completion' in request.path %}active{% endif %}
                                 {% if '/invite' in request.path %}active{% endif %}"
-                               href="{% url 'myorganisation' %}"><i class="bx bxs-buildings"></i> My Organisation</a>
+                               href="{% url 'myorganisation' %}"><i class="bx bxs-buildings"></i> Organisation Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/profile' in request.path %}active{% endif %}"
+                               href="{% url 'profile' %}"><i class="bx bxs-user"></i> Profile</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if '/help;' in request.path %}active{% endif %}"
@@ -43,15 +43,15 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link"
-                               href="https://docs.google.com/forms/d/e/1FAIpQLSfy6nXvjBiKroZnF92lJjYjMDsldxMnamlObfKDxNDZkIWzvw/viewform?usp=dialog"
-                               target="_blank"><i class='bx bxs-bug'></i> Report issues <i
-                                    class='bx bx-link-external'></i></a>
+                               href="https://docs.google.com/forms/d/e/1FAIpQLSfo1aaPWWqwTEfG7w6OL6TjaOZJw3h8SkOgs87t4lyRdb6Ybg/viewform?usp=dialog"
+                               target="_blank"><i class='bx  bx-message-edit'></i> Feedback
+                                <i class='bx bx-link-external'></i></a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link"
-                               href="https://docs.google.com/forms/d/e/1FAIpQLSfo1aaPWWqwTEfG7w6OL6TjaOZJw3h8SkOgs87t4lyRdb6Ybg/viewform?usp=dialog"
-                               target="_blank"><i class='bx  bx-message-edit'  ></i>  Provide feedback <i
-                                    class='bx bx-link-external'></i></a>
+                               href="https://docs.google.com/forms/d/e/1FAIpQLSfy6nXvjBiKroZnF92lJjYjMDsldxMnamlObfKDxNDZkIWzvw/viewform?usp=dialog"
+                               target="_blank"><i class='bx bxs-bug'></i> Report issues
+                                <i class='bx bx-link-external'></i></a>
                         </li>
                     </ul>
                     <ul class="navbar-nav">

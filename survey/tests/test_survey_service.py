@@ -88,8 +88,8 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertIsInstance(self.survey.consent_config, dict)
         self.assertIsInstance(self.survey.survey_config, dict)
 
-        # Check that a blank survey was created
-        self.assertEqual(len(self.survey.survey_config["sections"]), 0)
+        # Check that a survey was created with some sections
+        self.assertGreater(len(self.survey.survey_config["sections"]), 0)
 
     def test_update_consent_demography_config(self):
         self.service.update_consent_demography_config(

@@ -21,7 +21,7 @@ class InvitationViewTestCase(SORT.test.test_case.ViewTestCase):
             survey=self.survey,
             consent_config=self.survey.consent_config,
             demography_config=self.survey.demography_config,
-            survey_body_path="Nurse",
+            survey_body_path="Nurses",
         )
 
     def test_invitation_view(self):
