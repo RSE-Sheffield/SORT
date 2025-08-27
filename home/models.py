@@ -131,11 +131,4 @@ class Project(models.Model):
         """
         Does this project contain any active surveys?
         """
-        return any(self.surveys.values_list("is_active", flat=True))
-
-    @property
-    def survey_count(self) -> int:
-        """
-        How many surveys are organised within this project?
-        """
-        return self.surveys.count()
+        return any(self.survey.values_list("is_active", flat=True))
