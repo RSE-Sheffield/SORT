@@ -58,4 +58,4 @@ class OrganisationViewTestCase(ViewTestCase):
         )
 
     def test_organisation_view(self):
-        self.skipTest("Not yet implemented")
+        self.get("myorganisation", expected_status_code=HTTPStatus.FOUND)
