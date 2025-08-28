@@ -7,7 +7,7 @@
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
                         <a href="{% url 'myorganisation' %}">
-                            <i class="bx bxs-buildings"></i> My Organisation
+                            <i class="bx bxs-buildings"></i> Organisation Dashboard
                         </a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">
@@ -20,12 +20,24 @@
     <div class="container mx-auto px-4 py-8">
         <h1>{{ organisation.name }}</h1>
         <p>{{ organisation.description }}</p>
+        <p>
+            Manage who has access to your organisation's <abbr
+                title="The Self-Assessment of Organisational Readiness Tool">SORT</abbr> Online projects and
+            assessments. This page allows you to oversee your team's participation and ensure the right people are
+            involved in your research readiness evaluations.
+        </p>
     </div>
     <div class="container mx-auto px-4 py-8" id="organisation-members">
         <h2>Members</h2>
+        <p>See everyone who currently has access to your organisation, including their roles, join dates, and
+            participation status across active projects. Use the <strong>Remove</strong> button to revoke access for
+            team members who have left your organisation or
+            no longer need to participate in SORT assessments. This ensures your member list stays current and your data
+            remains secure.
+        </p>
         <div class="mb-3">
             <a href="{% url 'member_invite' %}" type="button" class="btn btn-primary"
-               title="Invite a new user to join this organisation">
+               title="Invite a new user to join this organisation and manage surveys.">
                 <i class='bx bxs-user-plus'></i> Invite new member
             </a>
         </div>
