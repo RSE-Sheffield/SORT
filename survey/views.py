@@ -139,12 +139,12 @@ class SurveyConfigureView(LoginRequiredMixin, View):
     """
 
     def get(self, request: HttpRequest, pk: int):
-        return self.render_survey_config_view(request, pk, is_post=False)
+        return self.render_survey_config_view(request, pk)
 
     def post(self, request: HttpRequest, pk: int):
-        return self.render_survey_config_view(request, pk, is_post=True)
+        return self.render_survey_config_view(request, pk)
 
-    def render_survey_config_view(self, request: HttpRequest, pk: int, is_post: bool):
+    def render_survey_config_view(self, request: HttpRequest, pk: int):
         context = dict()
         # TODO: Error handling when object not found
         survey = get_object_or_404(Survey, pk=pk)
@@ -156,26 +156,19 @@ class SurveyConfigureView(LoginRequiredMixin, View):
         context["csrf"] = str(csrf(self.request)["csrf_token"])
         context["can_edit"] = {survey.id: survey_service.can_edit(request.user, survey)}
 
-        if is_post:
-            if (
-                    "survey_body_path" in request.POST
-                    and "consent_config" in request.POST
-                    and "demography_config" in request.POST
-            ):
-                consent_config = json.loads(request.POST.get("consent_config", None))
-                demography_config = json.loads(
-                    request.POST.get("demography_config", None)
-                )
-                survey_body_path = request.POST.get("survey_body_path", None)
-                survey_service.update_consent_demography_config(
-                    request.user,
-                    survey,
-                    consent_config=consent_config,
-                    demography_config=demography_config,
-                    survey_body_path=survey_body_path,
-                )
-                messages.info(request, "Survey configuration saved")
-                return redirect("survey", pk=survey.pk)
+        if request.method == "POST":
+            consent_config = json.loads(request.POST["consent_config"])
+            demography_config = json.loads(request.POST["demography_config"])
+            survey_body_path = request.POST["survey_body_path"]
+            survey_service.update_consent_demography_config(
+                request.user,
+                survey,
+                consent_config=consent_config,
+                demography_config=demography_config,
+                survey_body_path=survey_body_path,
+            )
+            messages.info(request, "Survey configuration saved")
+            return redirect("survey", pk=survey.pk)
 
         return render(
             request=request,

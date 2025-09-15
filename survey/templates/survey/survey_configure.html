@@ -35,8 +35,8 @@
         ></div>
     </div>
     {{ csrf | json_script:"csrf" }}
-    {{ survey.consent_config | json_script:"consentConfig" }}
-    {{ survey.demography_config | json_script:"demographyConfig" }}
+    {{ survey.consent_config_default | json_script:"consentConfig" }}
+    {{ survey.demography_config_default | json_script:"demographyConfig" }}
     {{ survey.survey_config | json_script:"configData" }}
     {% vite_client %}
     {% vite_asset "src/main.ts" %}

@@ -85,7 +85,7 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         )
 
         self.assertIsInstance(self.survey.survey_config, dict)
-        self.assertIsInstance(self.survey.consent_config, dict)
+        self.assertIsInstance(self.survey.consent_config_default, dict)
         self.assertIsInstance(self.survey.survey_config, dict)
 
         # Check that a survey was created with some sections
@@ -101,7 +101,7 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         )
 
         self.assertIsInstance(self.survey.survey_config, dict)
-        self.assertIsInstance(self.survey.consent_config, dict)
+        self.assertIsInstance(self.survey.consent_config_default, dict)
         self.assertIsInstance(self.survey.survey_config, dict)
 
         # There should be some SORT survey sections
@@ -110,12 +110,12 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         )
         # There shouldn't be any consent or demography since we updated with empty values above
         self.assertEqual(
-            len(self.survey.consent_config["sections"]),
+            len(self.survey.consent_config_default["sections"]),
             0,
             "Unexpected consent sections",
         )
         self.assertEqual(
-            len(self.survey.demography_config["sections"]),
+            len(self.survey.demography_config_default["sections"]),
             0,
             "Unexpected demography sections",
         )
@@ -126,9 +126,9 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.service.update_consent_demography_config(
             self.admin,
             self.survey,
-            demography_config=self.survey.demography_config,
+            demography_config=self.survey.demography_config_default,
             survey_body_path=self.survey.survey_body_path,
-            consent_config=self.survey.consent_config,
+            consent_config=self.survey.consent_config_default,
         )
 
         duplicated_survey = self.service.duplicate_survey(
@@ -138,10 +138,10 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertEqual(duplicated_survey.project, self.survey.project)
         self.assertDictEqual(duplicated_survey.survey_config, self.survey.survey_config)
         self.assertDictEqual(
-            duplicated_survey.consent_config, self.survey.consent_config
+            duplicated_survey.consent_config_default, self.survey.consent_config_default
         )
         self.assertDictEqual(
-            duplicated_survey.demography_config, self.survey.demography_config
+            duplicated_survey.demography_config_default, self.survey.demography_config_default
         )
         self.assertTrue(
             SurveyEvidenceSection.objects.filter(survey=duplicated_survey).count() > 1
@@ -198,8 +198,8 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.service.update_consent_demography_config(
             user=self.admin,
             survey=self.survey,
-            consent_config=self.survey.consent_config,
-            demography_config=self.survey.demography_config,
+            consent_config=self.survey.consent_config_default,
+            demography_config=self.survey.demography_config_default,
             survey_body_path="Nurses",
         )
         # from survey.models import SurveyEvidenceSection

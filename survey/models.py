@@ -41,8 +41,6 @@ class Survey(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     survey_config = models.JSONField(null=True)
-    consent_config = models.JSONField(null=True)
-    demography_config = models.JSONField(null=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="survey")
     created_at = models.DateTimeField(auto_now_add=True)
     survey_body_path = models.TextField(
@@ -68,25 +66,40 @@ class Survey(models.Model):
         return Path(settings.SURVEY_TEMPLATE_DIR).joinpath(settings.CONSENT_TEMPLATE)
 
     @property
+    def demography_config_filename(self) -> str:
+        """
+        The filename of the demographics questions configuration file for this profession.
+        """
+        return settings.DEMOGRAPHY_TEMPLATES[self.survey_body_path]
+
+    @property
     def demography_config_path(self) -> Path:
-        """The location of the demographics questions configuration file."""
-        filename = settings.DEMOGRAPHY_TEMPLATES[self.survey_body_path]
-        return Path(settings.SURVEY_TEMPLATE_DIR) / filename
+        """
+        The location of the demographics questions configuration file for this profession
+        """
+        return Path(settings.SURVEY_TEMPLATE_DIR) / self.demography_config_filename
+
+    @property
+    def consent_config_default(self) -> dict:
+        """
+        Survey consent question configuration
+        """
+        with self.consent_config_path.open() as file:
+            return json.load(file)
+
+    @property
+    def demography_config_default(self) -> dict:
+        """
+        The default demographics questions configuration
+        """
+        with self.demography_config_path.open() as file:
+            return json.load(file)
 
     def initialise(self):
         """
         Load the default survey configuration.
         """
-
-        # Consent questions
-        with self.consent_config_path.open() as file:
-            self.consent_config = json.load(file)
-
-        # Demographics questions
-        with self.demography_config_path.open() as file:
-            self.demography_config = json.load(file)
-
-        self.merge_sections()
+        self.update()
 
     def get_absolute_url(self):
         return reverse("survey", kwargs={"pk": self.pk})
@@ -301,25 +314,36 @@ class Survey(models.Model):
 
     @property
     def template_filename(self) -> str:
+        """
+        The filename of the SORT questions config file for this profession e.g. "sort_only_config_midwives.json"
+        """
         return settings.SURVEY_TEMPLATES[self.survey_body_path]
 
     @property
     def template_path(self) -> Path:
+        """
+        The location of the SORT questions configuration for this profession.
+        """
         return settings.SURVEY_TEMPLATE_DIR.joinpath(self.template_filename)
 
     @property
-    def sort_config(self):
+    def sort_config(self) -> dict:
+        """
+        The SORT section configuration for this profession.
+        """
         with self.template_path.open() as file:
             return json.load(file)
 
-    def merge_sections(self, body_path: str = None):
+    def update(self, consent_config: dict = None, demography_config: dict = None):
         """
-        Merge all the survey question configuration into the survey_config field.
+        Update the survey question configuration into the survey_config field.
+
+        The consent and demographics fields may be overridden by the user, while the SORT questions are hard-coded.
         """
         merged_sections = (
-                self.consent_config["sections"]
+                consent_config or self.consent_config_default["sections"]
                 + self.sort_config["sections"]
-                + self.demography_config["sections"]
+                + demography_config or self.demography_config_default["sections"]
         )
         self.survey_config = {"sections": merged_sections}
 
