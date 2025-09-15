@@ -65,13 +65,13 @@ class Survey(models.Model):
     @property
     def consent_config_path(self) -> Path:
         """The location of the consent configuration file."""
-        return Path("data/survey_config/consent_only_config.json")
+        return Path(settings.SURVEY_TEMPLATE_DIR).joinpath(settings.CONSENT_TEMPLATE)
 
     @property
     def demography_config_path(self) -> Path:
         """The location of the demographics questions configuration file."""
-        filename = f"demography_only_config_{self.survey_body_path.lower()}.json"
-        return Path("data/survey_config/") / filename
+        filename = settings.DEMOGRAPHY_TEMPLATES[self.survey_body_path]
+        return Path(settings.SURVEY_TEMPLATE_DIR) / filename
 
     def initialise(self):
         """
