@@ -50,15 +50,20 @@
         },
         {
           "type": "radio",
-          "label": "What is your current Band/Grade",
+          "label": "What is your current pay band?",
           "required": true,
           "sublabels": [],
           "options": [
+            "Band 2",
+            "Band 3",
             "Band 4",
             "Band 5",
             "Band 6",
             "Band 7",
-            "Band 8",
+            "Band 8a",
+            "Band 8b",
+            "Band 8c",
+            "Band 8d",
             "Band 9"
           ],
           "disabled": false,
