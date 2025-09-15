@@ -59,7 +59,7 @@ class Survey(models.Model):
             self.consent_config = json.load(file)
 
         # Demographics questions
-        with open("data/survey_config/demography_only_config.json") as file:
+        with open("data/survey_config/demography_only_config_nmahps.json") as file:
             self.demography_config = json.load(file)
 
         self.survey_body_path = "Nurses"

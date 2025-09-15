@@ -7,7 +7,7 @@ settings = django.conf.settings
 
 SURVEY_CONFIG_FILE_PATHS = {
     "data/survey_config/consent_only_config.json",
-    "data/survey_config/demography_only_config.json"
+    "data/survey_config/demography_only_config_nmahps.json"
 }
 
 
