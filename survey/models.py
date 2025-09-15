@@ -1,4 +1,5 @@
 import csv
+import enum
 import io
 import json
 import logging
@@ -23,6 +24,15 @@ from home.models import Project
 logger = logging.getLogger(__name__)
 
 
+class Profession(enum.StrEnum):
+    """
+    Respondent job category
+    """
+    NMAHPS = "NMAHPs"
+    NURSES = "Nurses"
+    WIDMIVES = "Midwives"
+
+
 class Survey(models.Model):
     """
     Represents a survey that will be sent out to a participant
@@ -35,7 +45,10 @@ class Survey(models.Model):
     demography_config = models.JSONField(null=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="survey")
     created_at = models.DateTimeField(auto_now_add=True)
-    survey_body_path = models.TextField(blank=True, null=True)
+    survey_body_path = models.TextField(
+        blank=False, null=False, default=Profession.NMAHPS,
+        help_text="Respondent profession",
+        choices=tuple((prof.name, prof.value) for prof in Profession))
     is_active = models.BooleanField(
         default=True,
         help_text="Are responses being collected?",
@@ -49,20 +62,30 @@ class Survey(models.Model):
     def organisation(self):
         return self.project.organisation
 
+    @property
+    def consent_config_path(self) -> Path:
+        """The location of the consent configuration file."""
+        return Path("data/survey_config/consent_only_config.json")
+
+    @property
+    def demography_config_path(self) -> Path:
+        """The location of the demographics questions configuration file."""
+        filename = f"demography_only_config_{self.survey_body_path.lower()}.json"
+        return Path("data/survey_config/") / filename
+
     def initialise(self):
         """
-        Load an "empty" survey configuration
+        Load the default survey configuration.
         """
 
         # Consent questions
-        with open("data/survey_config/consent_only_config.json") as file:
+        with self.consent_config_path.open() as file:
             self.consent_config = json.load(file)
 
         # Demographics questions
-        with open("data/survey_config/demography_only_config_nmahps.json") as file:
+        with self.demography_config_path.open() as file:
             self.demography_config = json.load(file)
 
-        self.survey_body_path = "Nurses"
         self.merge_sections()
 
     def get_absolute_url(self):
