@@ -32,6 +32,5 @@ class InvitationViewTestCase(SORT.test.test_case.ViewTestCase):
             view_name="invite",
             pk=self.survey.pk,
             data=dict(email="test@test.com", message="My message"),
-            # Expect redirection on success
             expected_status_code=HTTPStatus.FOUND,
         )

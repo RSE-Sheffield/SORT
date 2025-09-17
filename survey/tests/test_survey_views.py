@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 
 import SORT.test.model_factory
@@ -14,16 +15,8 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
         self.project = self.survey.project
         self.organisation = self.project.organisation
         self.user = self.organisation.members.first()
-        self.service.initialise_survey(
-            user=self.user, project=self.project, survey=self.survey
-        )
-        self.service.update_consent_demography_config(
-            user=self.user,
-            survey=self.survey,
-            consent_config=self.survey.consent_config_default,
-            demography_config=self.survey.demography_config_default,
-            survey_body_path=Profession.NURSES,
-        )
+        self.survey.initialise()
+        self.survey.save()
 
     def test_survey_get(self):
         self.get("survey", pk=self.survey.pk)
@@ -59,10 +52,15 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
         self.get("survey_configure", pk=self.survey.pk)
 
     def test_survey_configure_post(self):
-        self.post("survey_configure", pk=self.survey.pk, data=dict(
-            consent_config=dict(sections=list()),
-            demography_config=dict(sections=list()),
-        ))
+        self.post(
+            view_name="survey_configure",
+            pk=self.survey.pk,
+            data=dict(
+                consent_config=json.dumps(self.survey.consent_config_default),
+                demography_config=json.dumps(self.survey.demography_config_default),
+            ),
+            expected_status_code=HTTPStatus.FOUND,
+        )
 
     def test_survey_export(self):
         self.get("survey_export", pk=self.survey.pk)

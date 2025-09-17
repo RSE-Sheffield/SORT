@@ -338,7 +338,6 @@ class Survey(models.Model):
         """
         Reset all the questionnaire sections to their default values.
         """
-
         self.update(
             consent_config=self.consent_config_default,
             demography_config=self.demography_config_default,

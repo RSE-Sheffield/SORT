@@ -42,11 +42,11 @@ class ViewTestCase(SORTTestCase):
         )
 
     def get(
-        self,
-        view_name: str,
-        expected_status_code: int = HTTPStatus.OK,
-        login: bool = True,
-        **kwargs
+            self,
+            view_name: str,
+            expected_status_code: int = HTTPStatus.OK,
+            login: bool = True,
+            **kwargs
     ):
         """
         Helper method to make a GET request to one of the views in this app.
@@ -63,12 +63,12 @@ class ViewTestCase(SORTTestCase):
         return response
 
     def post(
-        self,
-        view_name: str,
-        expected_status_code: int = HTTPStatus.OK,
-        login: bool = True,
-        data: dict = None,
-        **kwargs
+            self,
+            view_name: str,
+            expected_status_code: int = HTTPStatus.OK,
+            login: bool = True,
+            data: dict = None,
+            **kwargs
     ):
         """
         Helper method to make a POST request to one of the views in this app.
@@ -83,7 +83,8 @@ class ViewTestCase(SORTTestCase):
         if login:
             self.login()
         response = self.client.post(
-            django.urls.reverse(view_name, kwargs=kwargs), data=data
+            path=django.urls.reverse(view_name, kwargs=kwargs),
+            data=data,
         )
         self.assertEqual(response.status_code, expected_status_code)
         return response
