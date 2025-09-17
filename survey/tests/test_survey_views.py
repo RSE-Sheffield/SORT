@@ -59,7 +59,10 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
         self.get("survey_configure", pk=self.survey.pk)
 
     def test_survey_configure_post(self):
-        self.post("survey_configure", pk=self.survey.pk)
+        self.post("survey_configure", pk=self.survey.pk, data=dict(
+            consent_config=dict(sections=list()),
+            demography_config=dict(sections=list()),
+        ))
 
     def test_survey_export(self):
         self.get("survey_export", pk=self.survey.pk)

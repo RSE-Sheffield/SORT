@@ -159,7 +159,7 @@ class SurveyConfigureView(LoginRequiredMixin, View):
         if request.method == "POST":
             consent_config = json.loads(request.POST["consent_config"])
             demography_config = json.loads(request.POST["demography_config"])
-            survey_body_path = request.POST["survey_body_path"]
+            survey_body_path = request.POST.get("survey_body_path", survey.survey_body_path)
             survey_service.update_consent_demography_config(
                 request.user,
                 survey,
