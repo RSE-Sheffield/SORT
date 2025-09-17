@@ -97,9 +97,9 @@ class Survey(models.Model):
 
     def initialise(self):
         """
-        Load the default survey configuration.
+        Set up a new survey, populating the question sections.
         """
-        self.update()
+        self.reset()
 
     def get_absolute_url(self):
         return reverse("survey", kwargs={"pk": self.pk})
@@ -334,16 +334,26 @@ class Survey(models.Model):
         with self.template_path.open() as file:
             return json.load(file)
 
-    def update(self, consent_config: dict = None, demography_config: dict = None):
+    def reset(self):
+        """
+        Reset all the questionnaire sections to their default values.
+        """
+
+        self.update(
+            consent_config=self.consent_config_default,
+            demography_config=self.demography_config_default,
+        )
+
+    def update(self, consent_config: dict, demography_config: dict):
         """
         Update the survey question configuration into the survey_config field.
 
         The consent and demographics fields may be overridden by the user, while the SORT questions are hard-coded.
         """
         merged_sections = (
-                consent_config or self.consent_config_default["sections"]
+                consent_config["sections"]
                 + self.sort_config["sections"]
-                + demography_config or self.demography_config_default["sections"]
+                + demography_config["sections"]
         )
         self.survey_config = {"sections": merged_sections}
 
