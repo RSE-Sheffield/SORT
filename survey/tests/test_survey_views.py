@@ -3,7 +3,7 @@ from http import HTTPStatus
 
 import SORT.test.model_factory
 import SORT.test.test_case
-from survey.models import Invitation, Profession
+from survey.models import Invitation
 from survey.services import SurveyService
 
 
