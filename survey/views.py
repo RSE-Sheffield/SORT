@@ -26,7 +26,7 @@ from django.views.generic.edit import CreateView
 from home.models import Project
 from survey.services import survey_service
 
-from .forms import InvitationForm
+from .forms import InvitationForm, SurveyCreateForm
 from .models import (
     Survey,
     SurveyEvidenceFile,
@@ -80,7 +80,7 @@ class SurveyView(LoginRequiredMixin, View):
 class SurveyCreateView(LoginRequiredMixin, CreateView):
     model = Survey
     template_name = "survey/create.html"
-    fields = ["name", "description"]
+    form_class = SurveyCreateForm
 
     def get_success_url(self):
         return self.object.get_absolute_url()

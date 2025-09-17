@@ -28,7 +28,7 @@ class Profession(enum.StrEnum):
     """
     Respondent job category
     """
-    NMAHPS = "NMAHPs"
+    NMAHPs = "Nurses, Midwives and Allied Health Professionals (NMAHPs)"
     NURSES = "Nurses"
     WIDMIVES = "Midwives"
 
@@ -44,7 +44,7 @@ class Survey(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="survey")
     created_at = models.DateTimeField(auto_now_add=True)
     survey_body_path = models.TextField(
-        blank=False, null=False, default=Profession.NMAHPS,
+        blank=False, null=False, default=Profession.NMAHPs,
         help_text="Respondent profession",
         choices=tuple((prof.name, prof.value) for prof in Profession))
     is_active = models.BooleanField(

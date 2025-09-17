@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 import SORT.test.model_factory
 import SORT.test.test_case
-from survey.models import Invitation
+from survey.models import Invitation, Profession
 from survey.services import SurveyService
 
 
@@ -20,9 +20,9 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
         self.service.update_consent_demography_config(
             user=self.user,
             survey=self.survey,
-            consent_config=self.survey.consent_config,
-            demography_config=self.survey.demography_config,
-            survey_body_path="Nurses",
+            consent_config=self.survey.consent_config_default,
+            demography_config=self.survey.demography_config_default,
+            survey_body_path=Profession.NURSES,
         )
 
     def test_survey_get(self):

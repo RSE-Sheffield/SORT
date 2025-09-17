@@ -35,7 +35,8 @@
                 <h1 title="Reference number {{ survey.reference_number }}">{{ survey.name }}</h1>
             </div>
             <div class="card-body">
-                <p><strong>Survey description:</strong></p>
+                <p><strong>Respondent profession:</strong> {{ survey.survey_body_path }}</p>
+                <p><strong>Description:</strong></p>
                 <p>{{ survey.description }}</p>
                 <p><strong>Created on:</strong> {{ survey.created_at }}</p>
                 <p>
