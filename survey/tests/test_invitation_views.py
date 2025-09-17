@@ -19,8 +19,8 @@ class InvitationViewTestCase(SORT.test.test_case.ViewTestCase):
         self.service.update_consent_demography_config(
             user=self.user,
             survey=self.survey,
-            consent_config=self.survey.consent_config,
-            demography_config=self.survey.demography_config,
+            consent_config=self.survey.consent_config_default,
+            demography_config=self.survey.demography_config_default,
             survey_body_path="Nurses",
         )
 
@@ -32,6 +32,5 @@ class InvitationViewTestCase(SORT.test.test_case.ViewTestCase):
             view_name="invite",
             pk=self.survey.pk,
             data=dict(email="test@test.com", message="My message"),
-            # Expect redirection on success
             expected_status_code=HTTPStatus.FOUND,
         )

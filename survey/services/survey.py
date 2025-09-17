@@ -92,7 +92,7 @@ class SurveyService(BasePermissionService):
         survey.demography_config = demography_config
         survey.survey_body_path = survey_body_path
 
-        survey.merge_sections()
+        survey.update(consent_config=consent_config, demography_config=demography_config)
 
         survey.save()
 
@@ -111,8 +111,8 @@ class SurveyService(BasePermissionService):
         self.update_consent_demography_config(
             user,
             new_survey,
-            consent_config=survey.consent_config,
-            demography_config=survey.demography_config,
+            consent_config=survey.consent_config_default,
+            demography_config=survey.demography_config_default,
             survey_body_path=survey.survey_body_path,
         )
 

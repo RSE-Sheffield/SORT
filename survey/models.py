@@ -23,6 +23,15 @@ from home.models import Project
 logger = logging.getLogger(__name__)
 
 
+class Profession(models.TextChoices):
+    """
+    Respondent job category for the target audience that will complete the survey.
+    """
+    NMAHPS = "NMAHPs", "Nurses, Midwives and Allied Health Professionals (NMAHPs)"
+    NURSES = "Nurses", "Nurses"
+    WIDMIVES = "Midwives", "Widwives"
+
+
 class Survey(models.Model):
     """
     Represents a survey that will be sent out to a participant
@@ -31,11 +40,13 @@ class Survey(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     survey_config = models.JSONField(null=True)
-    consent_config = models.JSONField(null=True)
-    demography_config = models.JSONField(null=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="survey")
     created_at = models.DateTimeField(auto_now_add=True)
-    survey_body_path = models.TextField(blank=True, null=True)
+    survey_body_path = models.TextField(
+        blank=False, null=False, default=Profession.NMAHPS,
+        help_text="Respondent profession",
+        choices=Profession
+    )
     is_active = models.BooleanField(
         default=True,
         help_text="Are responses being collected?",
@@ -49,21 +60,46 @@ class Survey(models.Model):
     def organisation(self):
         return self.project.organisation
 
+    @property
+    def consent_config_path(self) -> Path:
+        """The location of the consent configuration file."""
+        return Path(settings.SURVEY_TEMPLATE_DIR).joinpath(settings.CONSENT_TEMPLATE)
+
+    @property
+    def demography_config_filename(self) -> str:
+        """
+        The filename of the demographics questions configuration file for this profession.
+        """
+        return settings.DEMOGRAPHY_TEMPLATES[self.survey_body_path]
+
+    @property
+    def demography_config_path(self) -> Path:
+        """
+        The location of the demographics questions configuration file for this profession
+        """
+        return Path(settings.SURVEY_TEMPLATE_DIR) / self.demography_config_filename
+
+    @property
+    def consent_config_default(self) -> dict:
+        """
+        Survey consent question configuration
+        """
+        with self.consent_config_path.open() as file:
+            return json.load(file)
+
+    @property
+    def demography_config_default(self) -> dict:
+        """
+        The default demographics questions configuration
+        """
+        with self.demography_config_path.open() as file:
+            return json.load(file)
+
     def initialise(self):
         """
-        Load an "empty" survey configuration
+        Set up a new survey, populating the question sections.
         """
-
-        # Consent questions
-        with open("data/survey_config/consent_only_config.json") as file:
-            self.consent_config = json.load(file)
-
-        # Demographics questions
-        with open("data/survey_config/demography_only_config.json") as file:
-            self.demography_config = json.load(file)
-
-        self.survey_body_path = "Nurses"
-        self.merge_sections()
+        self.reset()
 
     def get_absolute_url(self):
         return reverse("survey", kwargs={"pk": self.pk})
@@ -278,27 +314,45 @@ class Survey(models.Model):
 
     @property
     def template_filename(self) -> str:
+        """
+        The filename of the SORT questions config file for this profession e.g. "sort_only_config_midwives.json"
+        """
         return settings.SURVEY_TEMPLATES[self.survey_body_path]
 
     @property
     def template_path(self) -> Path:
+        """
+        The location of the SORT questions configuration for this profession.
+        """
         return settings.SURVEY_TEMPLATE_DIR.joinpath(self.template_filename)
 
     @property
-    def sort_config(self):
+    def sort_config(self) -> dict:
+        """
+        The SORT section configuration for this profession.
+        """
         with self.template_path.open() as file:
             return json.load(file)
 
-    def merge_sections(self, body_path: str = None):
+    def reset(self):
         """
-        Merge all the survey question configuration into the survey_config field.
+        Reset all the questionnaire sections to their default values.
         """
-        merged_sections = (
-                self.consent_config["sections"]
-                + self.sort_config["sections"]
-                + self.demography_config["sections"]
+        self.update(
+            consent_config=self.consent_config_default,
+            demography_config=self.demography_config_default,
         )
-        self.survey_config = {"sections": merged_sections}
+
+    def update(self, consent_config: dict, demography_config: dict):
+        """
+        Update the survey question configuration into the survey_config field.
+
+        The consent and demographics fields may be overridden by the user, while the SORT questions are hard-coded.
+        """
+        self.survey_config = {
+            # Merge sections by concatenating all questions
+            "sections": consent_config["sections"] + self.sort_config["sections"] + demography_config["sections"]
+        }
 
 
 class SurveyEvidenceSection(models.Model):

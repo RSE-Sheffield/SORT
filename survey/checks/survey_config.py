@@ -1,14 +1,14 @@
+import itertools
 from pathlib import Path
 from django.core.checks import Tags, Error
-import django.conf
+from django.conf import settings
 import django.contrib.staticfiles.finders
 
-settings = django.conf.settings
-
-SURVEY_CONFIG_FILE_PATHS = {
-    "data/survey_config/consent_only_config.json",
-    "data/survey_config/demography_only_config.json"
-}
+FILENAMES = itertools.chain(
+    settings.SURVEY_TEMPLATES.values(),
+    settings.DEMOGRAPHY_TEMPLATES.values(),
+    (settings.CONSENT_TEMPLATE,)
+)
 
 
 @django.core.checks.register(Tags.staticfiles)
@@ -18,8 +18,9 @@ def check_survey_config(*args, **kwargs) -> list[Error]:
     """
     errors = list()
 
-    for path in SURVEY_CONFIG_FILE_PATHS:
-        path = Path(path).absolute()
+    # Iterate over survey config files
+    for filename in FILENAMES:
+        path = Path(settings.SURVEY_TEMPLATE_DIR).joinpath(filename).absolute()
         if not path.exists():
             errors.append(
                 Error(f"File not found: {path}", hint="Make sure the survey config file is present.")

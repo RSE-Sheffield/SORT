@@ -259,12 +259,19 @@ LOGGING = {
     },
 }
 
+# Survey content configuration files
 SURVEY_TEMPLATE_DIR = BASE_DIR / "data/survey_config"
 SURVEY_TEMPLATES = {
     "Nurses": "sort_only_config_nurses.json",
     "Midwives": "sort_only_config_midwives.json",
     "NMAHPs": "sort_only_config_nmahps.json",
 }
+DEMOGRAPHY_TEMPLATES = {
+    "Nurses": "demography_only_config_nurses.json",
+    "Midwives": "demography_only_config_midwives.json",
+    "NMAHPs": "demography_only_config_nmahps.json",
+}
+CONSENT_TEMPLATE = "consent_only_config.json"
 
 # Crispy enables Bootstrap styling on Django forms
 # https://django-crispy-forms.readthedocs.io/en/latest/install.html
