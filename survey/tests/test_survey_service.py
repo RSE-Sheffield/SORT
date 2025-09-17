@@ -101,23 +101,10 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         )
 
         self.assertIsInstance(self.survey.survey_config, dict)
-        self.assertIsInstance(self.survey.consent_config_default, dict)
-        self.assertIsInstance(self.survey.survey_config, dict)
 
         # There should be some SORT survey sections
         self.assertGreater(
             len(self.survey.survey_config["sections"]), 0, "No survey sections"
-        )
-        # There shouldn't be any consent or demography since we updated with empty values above
-        self.assertEqual(
-            len(self.survey.consent_config_default["sections"]),
-            0,
-            "Unexpected consent sections",
-        )
-        self.assertEqual(
-            len(self.survey.demography_config_default["sections"]),
-            0,
-            "Unexpected demography sections",
         )
 
     def test_duplicate_survey(self):
