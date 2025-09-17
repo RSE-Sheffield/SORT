@@ -350,12 +350,10 @@ class Survey(models.Model):
 
         The consent and demographics fields may be overridden by the user, while the SORT questions are hard-coded.
         """
-        merged_sections = (
-                consent_config["sections"]
-                + self.sort_config["sections"]
-                + demography_config["sections"]
-        )
-        self.survey_config = {"sections": merged_sections}
+        self.survey_config = {
+            # Merge sections by concatenating all questions
+            "sections": consent_config["sections"] + self.sort_config["sections"] + demography_config["sections"]
+        }
 
 
 class SurveyEvidenceSection(models.Model):
