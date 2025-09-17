@@ -82,7 +82,7 @@ def create_dynamic_formset(field_configs: list):
 class SurveyCreateForm(forms.ModelForm):
     survey_body_path = forms.ChoiceField(
         label="Target audience",
-        choices=[(prof.name, prof.value) for prof in Profession],
+        choices=Profession,
         help_text="Respondent profession",
         widget=forms.Select(attrs={'class': 'form-control'})  # Optional: add CSS classes
     )

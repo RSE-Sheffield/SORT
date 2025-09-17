@@ -24,13 +24,13 @@ from home.models import Project
 logger = logging.getLogger(__name__)
 
 
-class Profession(enum.StrEnum):
+class Profession(models.TextChoices):
     """
-    Respondent job category
+    Respondent job category for the target audience that will complete the survey.
     """
-    NMAHPs = "Nurses, Midwives and Allied Health Professionals (NMAHPs)"
-    NURSES = "Nurses"
-    WIDMIVES = "Midwives"
+    NMAHPS = "NMAHPs", "Nurses, Midwives and Allied Health Professionals (NMAHPs)"
+    NURSES = "Nurses", "Nurses"
+    WIDMIVES = "Midwives", "Widwives"
 
 
 class Survey(models.Model):
@@ -44,9 +44,10 @@ class Survey(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="survey")
     created_at = models.DateTimeField(auto_now_add=True)
     survey_body_path = models.TextField(
-        blank=False, null=False, default=Profession.NMAHPs,
+        blank=False, null=False, default=Profession.NMAHPS,
         help_text="Respondent profession",
-        choices=tuple((prof.name, prof.value) for prof in Profession))
+        choices=Profession
+    )
     is_active = models.BooleanField(
         default=True,
         help_text="Are responses being collected?",
