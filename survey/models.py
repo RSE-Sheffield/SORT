@@ -29,7 +29,7 @@ class Profession(models.TextChoices):
     """
     NMAHPS = "NMAHPs", "Nurses, Midwives and Allied Health Professionals (NMAHPs)"
     NURSES = "Nurses", "Nurses"
-    WIDMIVES = "Midwives", "Widwives"
+    WIDMIVES = "Midwives", "Midwives"
 
 
 class Survey(models.Model):
@@ -37,7 +37,7 @@ class Survey(models.Model):
     Represents a survey that will be sent out to a participant
     """
 
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, help_text="Survey title")
     description = models.TextField(blank=True, null=True)
     survey_config = models.JSONField(null=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="survey")
