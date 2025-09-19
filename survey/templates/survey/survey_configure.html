@@ -12,7 +12,8 @@
                     <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-folder-open"></i> <a href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
+                    <i class="bx bxs-folder-open"></i> <a
+                        href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
                     <i class="bx bxs-chart"></i> <a href="{% url 'survey' survey.id %}"> Survey: {{ survey.name }}</a>
@@ -35,8 +36,8 @@
         ></div>
     </div>
     {{ csrf | json_script:"csrf" }}
-    {{ survey.consent_config_default | json_script:"consentConfig" }}
-    {{ survey.demography_config_default | json_script:"demographyConfig" }}
+    {{ survey.consent_config | json_script:"consentConfig" }}
+    {{ survey.demography_config | json_script:"demographyConfig" }}
     {{ survey.survey_config | json_script:"configData" }}
     {% vite_client %}
     {% vite_asset "src/main.ts" %}

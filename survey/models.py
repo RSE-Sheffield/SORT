@@ -88,6 +88,22 @@ class Survey(models.Model):
             return json.load(file)
 
     @property
+    def consent_config(self) -> dict:
+        """
+        This survey's welcome/consent question configuration.
+        """
+        # Get the first section
+        return dict(sections=[self.survey_config["sections"][0]])
+
+    @property
+    def demography_config(self) -> dict:
+        """
+        This survey's demographics question configuration.
+        """
+        # Get the final section
+        return dict(sections=[self.survey_config["sections"][-1]])
+
+    @property
     def demography_config_default(self) -> dict:
         """
         The default demographics questions configuration
