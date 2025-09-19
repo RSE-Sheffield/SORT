@@ -79,7 +79,7 @@ class SurveyService(BasePermissionService):
             survey: Survey,
             consent_config,
             demography_config,
-            survey_body_path,
+            survey_body_path=None,
     ) -> Survey:
         """
         Modify demographics fields on this survey
@@ -88,9 +88,8 @@ class SurveyService(BasePermissionService):
         if survey.has_responses:
             raise PermissionDenied("Cannot modify survey with responses")
 
-        survey.consent_config = consent_config
-        survey.demography_config = demography_config
-        survey.survey_body_path = survey_body_path
+        if survey_body_path is not None:
+            survey.survey_body_path = survey_body_path
 
         survey.update(consent_config=consent_config, demography_config=demography_config)
 
@@ -111,8 +110,8 @@ class SurveyService(BasePermissionService):
         self.update_consent_demography_config(
             user,
             new_survey,
-            consent_config=survey.consent_config_default,
-            demography_config=survey.demography_config_default,
+            consent_config=survey.consent_config,
+            demography_config=survey.demography_config,
             survey_body_path=survey.survey_body_path,
         )
 

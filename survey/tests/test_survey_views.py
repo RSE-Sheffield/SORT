@@ -56,8 +56,8 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
             view_name="survey_configure",
             pk=self.survey.pk,
             data=dict(
-                consent_config=json.dumps(self.survey.consent_config_default),
-                demography_config=json.dumps(self.survey.demography_config_default),
+                consent_config=json.dumps(self.survey.consent_config),
+                demography_config=json.dumps(self.survey.demography_config),
             ),
             expected_status_code=HTTPStatus.FOUND,
         )
