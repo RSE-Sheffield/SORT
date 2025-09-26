@@ -502,7 +502,7 @@ class OrganisationMembershipDeleteView(
 
 
 class HelpView(LoginRequiredMixin, TemplateView):
-    template_name = "help.html"
+    template_name = "about/help.html"
 
 
 class LicenseAgreementView(LoginRequiredMixin, TemplateView):
@@ -510,4 +510,4 @@ class LicenseAgreementView(LoginRequiredMixin, TemplateView):
     End user license agreement
     """
 
-    template_name = "end_user_license_agreement.html"
+    template_name = "about/end_user_license_agreement.html"
