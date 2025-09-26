@@ -2,6 +2,7 @@
 {% load static %}
 {% load vite_integration %}
 {% load django_bootstrap5 %}
+{% block title %}Report for {{ survey }}{% endblock %}
 {% block content %}
     <div class="container">
         <h1><i class='bx bxs-report'></i> Report: {{ survey.name }}</h1>

@@ -1,6 +1,7 @@
 {% extends 'base_manager.html' %}
 {% load static %}
 {% load vite_integration %}
+{% block title %}Improvement plan for {{ survey }}{% endblock %}
 {% block content %}
     <div class="container mx-auto px-4 py-8 mt-4">
         <nav aria-label="breadcrumb">
@@ -9,7 +10,7 @@
                     <a href="{% url 'home' %}">Home</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">Organisation Dashboard</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
                     <i class="bx bxs-folder-open"></i> <a
@@ -26,9 +27,10 @@
     </div>
     <div class="container mx-auto px-4 py-8">
         <h1><i class='bx bxs-file-plus'></i> Improvement plan</h1>
-        <p>Use this section to create an improvement plan after collecting survey responses and gathering the
-            evidence.</p>
-
+        <p>
+            The improvement plan builder helps you to translate your findings into concrete, actionable steps that will
+            drive meaningful change in your healthcare setting.
+        </p>
         <ul class="nav nav-tabs">
             {% for section in sections %}
                 <li class="nav-item">
@@ -41,14 +43,12 @@
                 </li>
             {% endfor %}
         </ul>
-
         <div class="mb-3 pt-3 ps-3 pe-3">
             <div>
                 <h2>{{ improve_section.title }}</h2>
             </div>
             <div>
                 <h5>Survey summary</h5>
-
                 <div
                         class="sort-response-section-viewer"
                         data-json-config-id="configData"
@@ -66,23 +66,19 @@
                 <h5>Improvement plan</h5>
                 <p>
                     In the table below, list a plan of action you intend to take in the upcoming period using
-                    SMART objectives (Specific, Measurable, Achievable, Relevant and Time-bound).
+                    SMART objectives (Specific, Measurable, Achievable, Relevant and Time-bound). This
+                    approach ensures your plans are realistic, trackable, and more likely to succeed. Each row in the
+                    table should represent one specific action or objective. You can add as many rows as needed to
+                    address your survey findings comprehensively.
                 </p>
                 <div class="sort-smart-table" data-update-url="{{ update_url }}" data-plan="{{ plan }}"></div>
-
             </div>
         </div>
-
-
         {{ csrf | json_script:"csrf" }}
         {{ files_list | json_script:"filesListData" }}
         {{ survey.survey_config | json_script:"configData" }}
         {{ responses | json_script:"responsesData" }}
         {% vite_client %}
         {% vite_asset "src/main.ts" %}
-
     </div>
 {% endblock %}
-
-
-

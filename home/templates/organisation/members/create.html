@@ -7,12 +7,12 @@
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
                         <a href="{% url 'myorganisation' %}">
-                        <i class="bx bxs-buildings"></i> My Organisation
-                            </a>
+                            <i class="bx bxs-buildings"></i> Organisation Dashboard
+                        </a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">
                         <a href="{% url 'members' %}">
-                        <i class="bx bxs-group"></i> Members
+                            <i class="bx bxs-group"></i> Members
                         </a>
                     </li>
                 </ol>
@@ -24,7 +24,11 @@
         <p>{{ organisation.description }}</p>
     </div>
     <div class="container">
-        <h1>Invite new member</h1>
+        <h1><i class='bx bxs-user-plus'></i> Invite new member</h1>
+        <p>
+            Add colleagues to your organisation by sending secure invitation links. New members can join your existing
+            projects, create new surveys, and manage existing surveys.
+        </p>
         <div class="card">
             <div class="card-body">
                 {% if success_message %}

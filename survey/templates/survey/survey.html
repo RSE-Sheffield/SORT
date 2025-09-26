@@ -1,4 +1,5 @@
 {% extends 'base_manager.html' %}
+{% block title %}{{ survey }}{% endblock %}
 {% load qr_code %}
 {% block content %}
     <script lang="js">
@@ -17,7 +18,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">Organisation Dashboard</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
                     <i class="bx bxs-folder-open"></i> <a
@@ -35,6 +36,14 @@
                 <h1 title="Reference number {{ survey.reference_number }}">{{ survey.name }}</h1>
             </div>
             <div class="card-body">
+                <div class="float-end">
+                    <a href="{% url 'survey_edit' survey.pk %}" class="btn btn-primary"
+                       title="Modify the survey title and description">
+                        <i class='bx bxs-edit'></i> Edit</a>
+                    <a href="{% url 'survey_duplicate_config' survey.pk %}" class="btn btn-primary"
+                       title="Create a new survey using current configurations.">
+                        <i class='bx bxs-copy'></i> Duplicate</a>
+                </div>
                 <p><strong>Respondent profession:</strong> {{ survey.survey_body_path }}</p>
                 <p><strong>Description:</strong></p>
                 <p>{{ survey.description }}</p>
@@ -46,31 +55,19 @@
                         <i class="bx bx-copy"></i>
                     </button>
                 </p>
-                <div class="d-flex justify-content-between mt-3">
-                    <div></div>
-                    <div></div>
-                </div>
-                <div class="d-flex justify-content-end mt-3">
-                    <div>
-                        <a href="{% url 'survey_duplicate_config' survey.pk %}" class="btn btn-primary"
-                           title="Create a new survey using current configurations.">
-                            <i class='bx bxs-copy'></i> Duplicate</a>
-                    </div>
-                </div>
             </div>
         </div>
 
-        <div class="mb-3">
-            You can follow the five steps below to carry out the survey:
+        <div>
+            <p>Please follow the five steps below to carry out the survey:</p>
         </div>
-
 
         <div class="card mb-3">
             <div class="card-header">
                 <h2>1. Configure Your Survey</h2>
             </div>
             <div class="card-body">
-                <div class="mb-3 mt-3">
+                <div>
                     {% if survey.has_responses %}
                         <div class="alert alert-warning">
                             <p>

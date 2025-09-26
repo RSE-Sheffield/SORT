@@ -373,7 +373,7 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
         return context
 
     def get_success_url(self):
-        return reverse("myorganisation")
+        return reverse("project", kwargs=dict(project_id=self.object.pk))
 
     def form_valid(self, form):
         try:
@@ -382,7 +382,7 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
             )
             messages.success(
                 self.request,
-                f"Project {self.object.name} has been updated successfully.",
+                f"Saved changes to {self.object}.",
             )
             return redirect(self.get_success_url())
         except PermissionDenied:
@@ -502,7 +502,7 @@ class OrganisationMembershipDeleteView(
 
 
 class HelpView(LoginRequiredMixin, TemplateView):
-    template_name = "help.html"
+    template_name = "about/help.html"
 
 
 class LicenseAgreementView(LoginRequiredMixin, TemplateView):
@@ -510,4 +510,4 @@ class LicenseAgreementView(LoginRequiredMixin, TemplateView):
     End user license agreement
     """
 
-    template_name = "end_user_license_agreement.html"
+    template_name = "about/end_user_license_agreement.html"
