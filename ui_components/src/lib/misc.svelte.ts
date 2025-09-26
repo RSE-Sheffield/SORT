@@ -289,31 +289,31 @@ const colourRange: ColourRange[] = [
         colour: "#d7191c",
         textColour: "#FFF",
         min: 0,
-        max: 1.5,
+        max: 0.5,
     },
     {
         colour: "#fdae61",
+        textColour: "#000",
+        min: 0.5,
+        max: 1.5,
+    },
+    {
+        colour: "#abd9e9",
         textColour: "#000",
         min: 1.5,
         max: 2.5,
     },
     {
-        colour: "#abd9e9",
+        colour: "#74add1",
         textColour: "#000",
         min: 2.5,
         max: 3.5,
     },
     {
-        colour: "#74add1",
-        textColour: "#000",
-        min: 3.5,
-        max: 4.5,
-    },
-    {
         colour: "#2c7bb6",
         textColour: "#FFF",
-        min: 4.5,
-        max: 5.5,
+        min: 3.5,
+        max: 4.5,
     },
 ]
 
@@ -334,13 +334,13 @@ export function getTextColourForMeanValue(mean: number): string {
 }
 
 export function getSortMaturityLabel(score: number) {
-    if (score < 1.5) {
+    if (score < 0.5) {
         return "Not yet planned";
-    } else if (score >= 1.5 && score < 2.5) {
+    } else if (score >= 0.5 && score < 1.5) {
         return "Planned";
-    } else if (score >= 2.5 && score < 3.5) {
+    } else if (score >= 1.5 && score < 2.5) {
         return "Early progress";
-    } else if (score >= 3.5 && score < 4.5) {
+    } else if (score >= 2.5 && score < 3.5) {
         return "Substantial progress";
     } else {
         return "Established"

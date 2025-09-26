@@ -77,9 +77,9 @@
     {/if}
 </p>
 <div class="progress">
-    <div class="progress-bar bg-secondary" role="progressbar" style="width: {0.2*sectionMeanReadiness*100}%"
+    <div class="progress-bar bg-secondary" role="progressbar" style="width: {0.25*sectionMeanReadiness*100}%"
          aria-valuenow="{sectionMeanReadiness}" aria-valuemin="0" aria-valuemax="4">
-        {sectionMeanReadiness.toFixed(1)} / 5
+        {sectionMeanReadiness.toFixed(1)} / 4
     </div>
 </div>
 <h4>Areas of strength</h4>
