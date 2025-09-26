@@ -1,5 +1,6 @@
 {% extends "base_manager.html" %}
 {% load project_filters %}
+{% block title %}Organisation Dashboard{% endblock %}
 {% block content %}
     <div class="container mx-auto px-4 py-8 mt-4">
         <div class="d-flex justify-content-between align-items-center">
@@ -21,10 +22,12 @@
             From this dashboard, you can:
         </p>
         <ul>
-            <li><strong>Invite and Manage Members</strong>&mdash;Add colleagues to your organisation, assign roles and permissions, and track
+            <li><strong>Invite and Manage Members</strong>&mdash;Add colleagues to your organisation, assign roles and
+                permissions, and track
                 who has access to different projects and features. Members are able to create and modify surveys.
             </li>
-            <li><strong>Launch New SORT Projects</strong>&mdash;Set up fresh research readiness assessments for different teams, services, or
+            <li><strong>Launch New SORT Projects</strong>&mdash;Set up fresh research readiness assessments for
+                different teams, services, or
                 departments within your organisation. Each project can be tailored to specific groups or research
                 objectives.
             </li>
@@ -47,7 +50,7 @@
 
     <div class="container mx-auto px-4 py-8">
         <div class="w-100 d-flex justify-content-between align-items-center mt-3 mb-6">
-            <h2 class="text-2xl font-bold d-inline-block"><i class='bx  bx-folder'  ></i> Projects</h2>
+            <h2 class="text-2xl font-bold d-inline-block"><i class='bx  bx-folder'></i> Projects</h2>
 
             <div class="d-flex align-items-center">
                 <div class="me-3">
@@ -68,13 +71,15 @@
             {% for project in projects %}
                 <div class="card w-100">
                     <div class="card-body">
-                        <p class="h5 card-title" title="Project identifier {{ project.pk }}"><i class="bx bxs-folder-open"></i> {{ project.name }}</p>
+                        <p class="h5 card-title" title="Project identifier {{ project.pk }}"><i
+                                class="bx bxs-folder-open"></i> {{ project.name }}</p>
                         <p class="h6 card-subtitle text-muted mb-2">{{ project.description|default_if_none:"No description provided." }}</p>
                         <p class="h7 card-text">Surveys: {{ project.survey.count }}</p>
 
                         <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
                             {% if can_edit|get_item:project.id %}
-                                <a href="{% url 'project_edit' project.id %}" title="Modify the title and description of this project">
+                                <a href="{% url 'project_edit' project.id %}"
+                                   title="Modify the title and description of this project">
                                     <button type="button" class="btn btn-secondary">
                                         <i class="bx bxs-edit"></i> Edit
                                     </button>
@@ -85,7 +90,8 @@
                                     <i class="bx bxs-folder-open"></i> View
                                 </button>
                             </a>
-                            <a href="{% url 'project_delete' project.pk %}" class="btn btn-danger" title="Remove this project and all the surveys within it.">
+                            <a href="{% url 'project_delete' project.pk %}" class="btn btn-danger"
+                               title="Remove this project and all the surveys within it.">
                                 <i class="bx bxs-trash"></i> Delete
                             </a>
                         </div>
