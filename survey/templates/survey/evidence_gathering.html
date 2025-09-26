@@ -26,11 +26,19 @@
         </nav>
     </div>
     <div class="container mx-auto px-4 py-8">
-        <h1><i class='bx bx-collection'></i> Gather evidence</h1>
-        <p>Once you have collected enough responses, use this section to gather evidence in support of the survey
-            results.</p>
-
-
+        <h1><i class='bx bx-collection'></i> Gather supporting evidence</h1>
+        <p>
+            Once you have collected enough responses, use this page to compile evidence to support and contextualizes
+            your findings. Strong supporting evidence will help stakeholders understand the broader implications of your
+            survey results and inform evidence-based decision making.
+        </p>
+        <p>
+            <strong>How to use this page:</strong>
+            Each tab below corresponds to a section of your SORT survey. For each section, you can provide an evidence
+            statement and attach relevant evidence that either corroborates your findings or provides additional context
+            to help interpret the results for that category. Consider including materials such as studies, policy
+            documents, and reports.
+        </p>
         <ul class="nav nav-tabs">
             {% for section in sections %}
                 <li class="nav-item">
@@ -43,10 +51,9 @@
                 </li>
             {% endfor %}
         </ul>
-
         <div class="mb-3 pt-3 ps-3 pe-3">
             <div>
-                <h3>{{ section_config.title }}</h3>
+                <h2>{{ section_config.title }}</h2>
             </div>
             <div>
                 <div
@@ -56,66 +63,51 @@
                         data-section-index="{{ evidence_section.section_id }}"
                         data-use-bar-chart="true"
                 ></div>
-
-
-                <h2>Evidence statement</h2>
-                <p>In support of the survey result, please gather the evidence for this section in the text box
-                    below.</p>
+                <h3>Evidence statement</h3>
+                <p>
+                    In support of the survey result, use the text box below to provide
+                    context for your evidence and explain how it relates to your survey findings.
+                </p>
                 <!-- Create the editor container -->
                 <div class="card">
                     <div class="card-body">
-                        <div class="sort-richtext-field mb-2"
+                        <div class="sort-richtext-field"
                              data-update-url="{% url 'survey_evidence_gathering_update' survey.id evidence_section.section_id %}"
-                             data-init-contents="{{ evidence_section.text }}"></div>
-
+                             data-init-contents="{{ evidence_section.text }}">
+                        </div>
                     </div>
                 </div>
-
-
-                <h2>Attached evidence</h2>
+                <h3>Attach evidence</h3>
                 <p>
-                    Files and reports can be included as evidence, some examples include:
-
-
-                </p>
-                <ul>
-                    <li>
-                        Published report
-                    </li>
-                    <li>
-                        Planning document for the initiatives
-                    </li>
-                    <li>
-                        etc.
-                    </li>
-                </ul>
-
+                    Use the file uploader below to attach documents and reports as evidence.
+                    Supporting evidence should be credible, relevant, and recent. Aim for a mix of quantitative data and
+                    qualitative insights. Ensure any patient or staff data is anonymous.
+                    Some examples of appropriate evidence include published research studies or systematic reviews,
+                    clinical audit reports and quality improvement data, and local or national policy documents and
+                    guidelines.
                 <form action="{% url 'survey_evidence_add_file' survey.id evidence_section.section_id %}"
                       method="post"
                       enctype="multipart/form-data"
                       class="mb-3"
                 >
-
+                    <i class='bxs bxs-paper'></i>
                     {% csrf_token %}
                     <div class="input-group">
                         <input type="file" name="file" class="form-control"/>
-                        <button type="submit" name="submit" class="btn btn-primary">Upload file</button>
+                        <button type="submit" name="submit" class="btn btn-primary">
+                            <i class="bx bx-upload"></i> Upload file
+                        </button>
                     </div>
                 </form>
-
-
                 {# Svelte file preview browser #}
                 <div class="sort-file-browser" data-json-id="filesListData"></div>
-
             </div>
         </div>
-
         {{ csrf | json_script:"csrf" }}
         {{ files_list | json_script:"filesListData" }}
         {{ survey.survey_config | json_script:"configData" }}
         {{ responses | json_script:"responsesData" }}
         {% vite_client %}
         {% vite_asset "src/main.ts" %}
-
     </div>
 {% endblock %}

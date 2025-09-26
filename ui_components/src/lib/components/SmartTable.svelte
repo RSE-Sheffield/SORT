@@ -46,11 +46,26 @@
             <thead>
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Current position</th>
-                <th scope="col">Proposed action</th>
-                <th scope="col">Measurable outcomes</th>
-                <th scope="col">Person responsible</th>
-                <th scope="col">Deadline</th>
+                <th scope="col"
+                    title="Describe the current situation based on your survey findings. Be specific about what your data shows.">
+                    Current position
+                </th>
+                <th scope="col"
+                    title="Detail the specific steps you will take to address the issue. Break down complex changes into smaller, manageable actions.">
+                    Proposed action
+                </th>
+                <th scope="col"
+                    title="Define exactly how you will measure success. Use numbers, percentages, or timeframes wherever possible.">
+                    Measurable outcomes
+                </th>
+                <th scope="col"
+                    title="Assign a specific individual (not a team or department) who will be accountable for ensuring this action happens.">
+                    Person responsible
+                </th>
+                <th scope="col"
+                    title="Set a realistic but definite completion date. Consider dependencies between different actions and allow adequate time for implementation and embedding of changes.">
+                    Deadline
+                </th>
 
                 <th scope="col"></th>
             </tr>
@@ -89,7 +104,7 @@
     </div>
     {#if !viewOnly}
         <div class="d-flex justify-content-end">
-            <button class="btn-primary btn" onclick={handleAddItem}><i class='bx bx-plus'></i> Add item to plan</button>
+            <button class="btn-primary btn" onclick={handleAddItem}><i class='bx bx-plus'></i> Add objective</button>
         </div>
     {/if}
 

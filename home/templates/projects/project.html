@@ -22,11 +22,18 @@
                 <h1>{{ project.name }}</h1>
             </div>
             <div class="card-body">
-                <p><strong>Project description:</strong></p>
                 <p>{{ project.description }}</p>
                 <div class="d-flex justify-content-between mt-3">
                     <div></div>
                     <div></div>
+                </div>
+                <div class="text-end">
+                    <a href="{% url 'project_edit' project.id %}"
+                       title="Modify the title and description of this project">
+                        <button type="button" class="btn btn-secondary">
+                            <i class="bx bxs-edit"></i> Edit
+                        </button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -54,25 +61,28 @@
             {% for survey in surveys %}
                 <div class="card w-100">
                     <div class="card-body">
-                        <h3 class="card-title" title="Survey identifier {{ survey.pk }}">{{ survey.name }}</h3>
+                        <h3 class="card-title" title="Survey identifier {{ survey.pk }}">
+                            <i class="bx bxs-chart"></i>
+                            {{ survey.name }}
+                        </h3>
                         <div class="card-text">
                             <span>Responses: {{ survey.responses_count }}</span>
                         </div>
                         <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
                             {% if can_edit|get_item:survey.id %}
                                 <a href="{% url 'survey_edit' survey.id %}">
-                                    <button type="button" class="btn btn-light">
+                                    <button type="button" class="btn btn-secondary border">
                                         <i class="bx bxs-edit"></i> Edit
                                     </button>
                                 </a>
                             {% endif %}
                             <a href="{% url 'survey' survey.id %}">
-                                <button type="button" class="btn btn-dark">
+                                <button type="button" class="btn btn-primary">
                                     <i class="bx bxs-chart"></i> View
                                 </button>
                             </a>
                             <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger">
-                                <i class="bx bxs-trash"></i> Delete survey
+                                <i class="bx bxs-trash"></i> Delete
                             </a>
                         </div>
                     </div>

@@ -373,7 +373,7 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
         return context
 
     def get_success_url(self):
-        return reverse("myorganisation")
+        return reverse("project", kwargs=dict(project_id=self.object.pk))
 
     def form_valid(self, form):
         try:
@@ -382,7 +382,7 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
             )
             messages.success(
                 self.request,
-                f"Project {self.object.name} has been updated successfully.",
+                f"Saved changes to {self.object}.",
             )
             return redirect(self.get_success_url())
         except PermissionDenied:
