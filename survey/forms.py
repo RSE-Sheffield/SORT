@@ -4,6 +4,8 @@ from strenum import StrEnum
 
 from .validators.email_list_validator import EmailListValidator
 
+from .models import Survey, Profession
+
 
 class InvitationForm(forms.Form):
     email = forms.CharField(
@@ -75,3 +77,20 @@ def create_dynamic_formset(field_configs: list):
                 )
 
     return formset_factory(BlankDynamicForm, BaseTestFormSet, min_num=1, max_num=1)
+
+
+class SurveyCreateForm(forms.ModelForm):
+    survey_body_path = forms.ChoiceField(
+        label="Target audience",
+        choices=Profession,
+        help_text="Respondent profession",
+        widget=forms.Select(attrs={'class': 'form-control'})  # Optional: add CSS classes
+    )
+
+    class Meta:
+        model = Survey
+        fields = ["name", "description", "survey_body_path"]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }

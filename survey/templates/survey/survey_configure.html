@@ -12,7 +12,8 @@
                     <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">Organisation Dashboard</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-folder-open"></i> <a href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
+                    <i class="bx bxs-folder-open"></i> <a
+                        href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
                     <i class="bx bxs-chart"></i> <a href="{% url 'survey' survey.id %}"> Survey: {{ survey.name }}</a>

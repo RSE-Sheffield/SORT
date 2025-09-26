@@ -11,6 +11,11 @@ class TestSurveyEvidenceSection(TestCase):
         self.survey.initialise()
         self.survey.save()
 
+    def test_survey_config(self):
+        self.assertIsNotNone(self.survey.survey_config)
+        self.assertIsInstance(self.survey.survey_config, dict)
+        self.assertIsInstance(self.survey.survey_config["sections"], list)
+
     def test_unique_survey_and_section_index(self):
         """
         Each Survey cannot have more than one section with the same index

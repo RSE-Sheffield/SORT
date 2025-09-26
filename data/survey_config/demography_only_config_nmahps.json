@@ -7,13 +7,13 @@
       "fields": [
         {
           "type": "text",
-          "label": "What is your age",
+          "label": "What is your age?",
           "required": true,
           "sublabels": [],
           "options": [],
           "enforceValueConstraints": false,
           "maxNumChar": 500,
-          "minNumValue": 0,
+          "minNumValue": 18,
           "maxNumValue": 100,
           "textType": "INTEGER_TEXT",
           "disabled": false,
@@ -21,7 +21,7 @@
         },
         {
           "type": "radio",
-          "label": "Your Gender",
+          "label": "What is your gender?",
           "description": "",
           "required": true,
           "sublabels": [],
@@ -50,15 +50,20 @@
         },
         {
           "type": "radio",
-          "label": "What is your current Band/Grade",
+          "label": "What is your current pay band?",
           "required": true,
           "sublabels": [],
           "options": [
+            "Band 2",
+            "Band 3",
             "Band 4",
             "Band 5",
             "Band 6",
             "Band 7",
-            "Band 8",
+            "Band 8a",
+            "Band 8b",
+            "Band 8c",
+            "Band 8d",
             "Band 9"
           ],
           "disabled": false,
@@ -66,7 +71,7 @@
         },
         {
           "type": "radio",
-          "label": "Please describe your current role",
+          "label": "What is your profession?",
           "required": true,
           "sublabels": [],
           "options": [
@@ -95,7 +100,7 @@
           "description": "",
           "disabled": false,
           "enforceValueConstraints": false,
-          "label": "Please provide your job title",
+          "label": "What is your job title?",
           "maxNumChar": 500,
           "maxNumValue": 100,
           "minNumValue": 0,
@@ -110,14 +115,16 @@
         },
         {
           "type": "radio",
-          "label": "Please indicate your highest qualification",
+          "label": "What is your highest level of qualification?",
           "required": true,
           "sublabels": [],
           "options": [
+            "No qualification",
             "Diploma",
             "Degree",
             "Masters",
-            "PhD/Doctorate"
+            "PhD/Doctorate",
+            "Other"
           ],
           "disabled": false,
           "readOnly": true
@@ -126,7 +133,7 @@
           "description": "",
           "disabled": false,
           "enforceValueConstraints": true,
-          "label": "How many years have you been qualified",
+          "label": "How many years have you been qualified?",
           "maxNumChar": 500,
           "maxNumValue": 100,
           "minNumValue": 0,

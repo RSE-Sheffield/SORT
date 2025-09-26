@@ -1,0 +1,165 @@
+{
+  "sections": [
+    {
+      "title": "Demographic",
+      "type": "demographic",
+      "description": "Please fill in your demographic information",
+      "fields": [
+        {
+          "type": "text",
+          "label": "What is your age?",
+          "required": true,
+          "sublabels": [],
+          "options": [],
+          "enforceValueConstraints": false,
+          "maxNumChar": 500,
+          "minNumValue": 18,
+          "maxNumValue": 100,
+          "textType": "INTEGER_TEXT",
+          "disabled": false,
+          "readOnly": true
+        },
+        {
+          "type": "radio",
+          "label": "What is your gender?",
+          "description": "",
+          "required": true,
+          "sublabels": [],
+          "options": [
+            "Male",
+            "Female",
+            "Non-binary",
+            "Prefer not to say"
+          ],
+          "disabled": false,
+          "readOnly": true
+        },
+        {
+          "type": "text",
+          "label": "How long have you been working in your current organisation? (Number of years)",
+          "required": true,
+          "sublabels": [],
+          "options": [],
+          "enforceValueConstraints": false,
+          "maxNumChar": 500,
+          "minNumValue": 0,
+          "maxNumValue": 100,
+          "textType": "INTEGER_TEXT",
+          "disabled": false,
+          "readOnly": true
+        },
+        {
+          "type": "radio",
+          "label": "What is your current pay band?",
+          "required": true,
+          "sublabels": [],
+          "options": [
+            "Band 2",
+            "Band 3",
+            "Band 4",
+            "Band 5",
+            "Band 6",
+            "Band 7",
+            "Band 8a",
+            "Band 8b",
+            "Band 8c",
+            "Band 8d",
+            "Band 9"
+          ],
+          "disabled": false,
+          "readOnly": true
+        },
+        {
+          "type": "radio",
+          "label": "What is your profession?",
+          "required": true,
+          "sublabels": [],
+          "options": [
+            "Registered Staff Nurse",
+            "Senior Nurse",
+            "Specialist Nurse",
+            "Advanced Nurse Practitioner",
+            "Consultant Nurse",
+            "Other"
+          ],
+          "disabled": false,
+          "readOnly": true
+        },
+        {
+          "description": "",
+          "disabled": false,
+          "enforceValueConstraints": false,
+          "label": "What is your job title?",
+          "maxNumChar": 500,
+          "maxNumValue": 100,
+          "minNumValue": 0,
+          "options": [
+          ],
+          "required": true,
+          "sublabels": [
+          ],
+          "textType": "PLAIN_TEXT",
+          "type": "text",
+          "readOnly": true
+        },
+        {
+          "type": "radio",
+          "label": "What is your highest level of qualification?",
+          "required": true,
+          "sublabels": [],
+          "options": [
+            "No qualification",
+            "Diploma",
+            "Degree",
+            "Masters",
+            "PhD/Doctorate",
+            "Other"
+          ],
+          "disabled": false,
+          "readOnly": true
+        },
+        {
+          "description": "",
+          "disabled": false,
+          "enforceValueConstraints": true,
+          "label": "How many years have you been qualified?",
+          "maxNumChar": 500,
+          "maxNumValue": 100,
+          "minNumValue": 0,
+          "options": [],
+          "required": true,
+          "sublabels": [],
+          "textType": "INTEGER_TEXT",
+          "type": "text",
+          "readOnly": true
+        },
+        {
+          "type": "radio",
+          "label": "What is your ethnicity?",
+          "required": true,
+          "sublabels": [],
+          "options": [
+            "Asian British - Bangladeshi",
+            "Asian British - Indian",
+            "Asian British - Pakistani",
+            "Asian - Chinese",
+            "Asian - other",
+            "Black British - African",
+            "Black British - Caribbean",
+            "Black British - other",
+            "Mixed - Black African and White",
+            "Mixed - Black Asian and White",
+            "Mixed - Caribbean and White",
+            "Mixed - other",
+            "White - British",
+            "White - Irish",
+            "White - Romany",
+            "Other"
+          ],
+          "disabled": false,
+          "readOnly": true
+        }
+      ]
+    }
+  ]
+}
