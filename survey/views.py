@@ -11,6 +11,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.files.uploadhandler import UploadFileException
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.template.context_processors import csrf
 from django.urls import reverse, reverse_lazy
 from django.views import View
@@ -417,15 +418,26 @@ class SurveyImprovementPlanUpdateView(LoginRequiredMixin, View):
             request.user, survey, improve_section, data
         )
 
-        return redirect(
-            request.META.get(
-                "HTTP_REFERER",
+        referer_url = request.META.get(
+            "HTTP_REFERER",
+            reverse_lazy(
+                "survey_improvement_plan",
+                kwargs={"pk": survey.pk, "section_id": improve_section.section_id},
+            ),
+        )
+        # Only allow redirecting to safe URLs
+        if url_has_allowed_host_and_scheme(
+            referer_url,
+            allowed_hosts={request.get_host()},
+        ):
+            return redirect(referer_url)
+        else:
+            return redirect(
                 reverse_lazy(
                     "survey_improvement_plan",
                     kwargs={"pk": survey.pk, "section_id": improve_section.section_id},
-                ),
+                )
             )
-        )
 
 
 class SurveyReportView(LoginRequiredMixin, View):
