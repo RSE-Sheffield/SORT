@@ -4,7 +4,7 @@
     import {TextType} from "../interfaces.ts";
     import LikertHistogram from "./graph/LikertHistogram.svelte";
     import LikertBarChart from "./graph/LikertBarChart.svelte";
-    import OptionsHistogram from "./graph/OptionsHistogram.svelte";
+    import OptionsPieChart from "./graph/OptionsPieChart.svelte";
     import CollapsibleCard from "./CollapsibleCard.svelte";
     import SortLikertStats from "./SortLikertStats.svelte";
     import ScalarHistogram from "./graph/ScalarHistogram.svelte";
@@ -55,8 +55,8 @@
                         <h5>{fieldConfig.label}</h5>
                     </div>
                     <div class="card-body">
-                        <OptionsHistogram fieldConfig={fieldConfig}
-                                          fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></OptionsHistogram>
+                        <OptionsPieChart fieldConfig={fieldConfig}
+                                          fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></OptionsPieChart>
                     </div>
                 </div>
             {/if}
