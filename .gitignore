@@ -88,4 +88,5 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-
+# Coding agents
+.claude/

@@ -20,6 +20,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.views import View
 from django.views.generic import (
     CreateView,
@@ -511,3 +512,16 @@ class LicenseAgreementView(LoginRequiredMixin, TemplateView):
     """
 
     template_name = "about/end_user_license_agreement.html"
+
+
+class PrivacyPolicyView(TemplateView):
+    """
+    Privacy policy and data protection notice
+    """
+
+    template_name = "home/privacy.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["current_date"] = timezone.now().strftime("%d %B %Y")
+        return context
