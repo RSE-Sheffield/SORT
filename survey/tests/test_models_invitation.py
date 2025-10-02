@@ -6,10 +6,8 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
-from unittest.mock import patch
-import secrets
 
-from SORT.test.model_factory import SurveyFactory, InvitationFactory
+from SORT.test.model_factory import SurveyFactory
 from survey.models import Invitation
 
 
