@@ -330,14 +330,7 @@ class SurveyEvidenceFileDeleteView(LoginRequiredMixin, View):
         survey_service.remove_evidence_file(
             request.user, evidence_file.evidence_section.survey, evidence_file
         )
-        return redirect(
-            request.META.get(
-                "HTTP_REFERER",
-                reverse_lazy(
-                    "survey_evidence_gathering", kwargs={"pk": pk, "section_id": 0}
-                ),
-            )
-        )
+        return redirect(reverse_lazy("survey_evidence_gathering", kwargs={"pk": pk, "section_id": 0}))
 
 
 class SurveyEvidenceFileView(LoginRequiredMixin, View):
@@ -419,12 +412,9 @@ class SurveyImprovementPlanUpdateView(LoginRequiredMixin, View):
         )
 
         return redirect(
-            request.META.get(
-                "HTTP_REFERER",
-                reverse_lazy(
-                    "survey_improvement_plan",
-                    kwargs={"pk": survey.pk, "section_id": improve_section.section_id},
-                ),
+            reverse_lazy(
+                "survey_improvement_plan",
+                kwargs={"pk": survey.pk, "section_id": improve_section.section_id},
             )
         )
 
