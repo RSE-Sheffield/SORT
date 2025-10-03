@@ -96,4 +96,5 @@ urlpatterns = [
         name="help",
     ),
     path("eula/", views.LicenseAgreementView.as_view(), name="eula"),
+    path("privacy/", views.PrivacyPolicyView.as_view(), name="privacy"),
 ]

@@ -1,0 +1,336 @@
+{% extends "base_anonymous.html" %}
+{% load static %}
+
+{% block title %}Privacy Notice - SORT{% endblock %}
+
+{% block content %}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <h1 class="mb-4">Privacy Notice for Survey Respondents</h1>
+
+                <p class="lead">This privacy notice explains how the University of Sheffield collects, uses, and
+                    protects your information when you complete a
+                    <abbr title="Self-assessment Of Research software sustainability Tool">SORT</abbr> survey.</p>
+
+                <p><strong>Last updated:</strong> {{ current_date|default:"2 October 2025" }}</p>
+
+                <hr class="my-4">
+
+                <section class="mb-5">
+                    <h2>1. Who we are</h2>
+                    <p><strong>Data Controller:</strong> The University of Sheffield</p>
+                    <p><strong>Address:</strong> Western Bank, Sheffield, S10 2TN, United Kingdom</p>
+                    <p><strong>Data Protection Officer:</strong> <a href="mailto:dataprotection@sheffield.ac.uk">dataprotection@sheffield.ac.uk</a>
+                    </p>
+                    <p>The University of Sheffield is the data controller for the information we process when you complete
+                        a SORT survey.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>2. What information we collect</h2>
+                    <p>When you complete a SORT survey, we collect:</p>
+
+                    <h3 class="h5 mt-3">Survey Responses</h3>
+                    <ul>
+                        <li>Assessment scores you provide</li>
+                        <li>Any free-text comments or feedback you submit</li>
+                        <li>Date and time of survey completion</li>
+                    </ul>
+
+                    <h3 class="h5 mt-3">Demographic Information</h3>
+                    <ul>
+                        <li>Professional role</li>
+                        <li>Qualification level</li>
+                        <li>Ethnic origin</li>
+                        <li>Gender</li>
+                        <li>Age</li>
+                    </ul>
+
+                    <p class="alert alert-info mt-3"><strong>Important:</strong> We do not collect your name, email
+                        address, or other directly identifying personal information when you complete a survey. Your
+                        responses are anonymous unless you choose to provide identifying information in free-text fields.
+                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>3. How we collect your information</h2>
+                    <p>We collect information in the following ways:</p>
+                    <ul>
+                        <li><strong>Directly from you</strong> when you complete and submit the survey</li>
+                        <li><strong>Automatically</strong> through server logs when you access the survey
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="mb-5">
+                    <h2>4. Why we process your information (purposes and legal basis)</h2>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Purpose</th>
+                                <th>Legal Basis</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>To collect and analyse survey responses to assess organisational research readiness.</td>
+                                <td>Consent / Public task</td>
+                            </tr
+                            <tr>
+                                <td>To collect and analyse survey responses for research purposes.</td>
+                                <td>Consent / Public task</td>
+                            </tr>
+                            <tr>
+                                <td>To improve research capacity and capability in nursing, midwifery, and allied health professions, in support of the implementation of the Chief Nursing Officer for England's strategy for research.</td>
+                                <td>Public task / Legitimate interests</td>
+                            </tr>
+                            <tr>
+                                <td>To provide aggregated statistics, reports, and improvement planning tools to enable NHS organisations to optimise research readiness.</td>
+                                <td>Public task / Legitimate interests</td>
+                            </tr>
+                            <tr>
+                                <td>To advance understanding of research capacity development across health and care organisations.</td>
+                                <td>Public task / Legitimate interests</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p class="mt-3">By completing and submitting the survey, you are providing your consent for us to use
+                        your responses for the purposes described above.</p>
+
+                    <p>Our legitimate interests include:</p>
+                    <ul>
+                        <li><strong>Improving NHS research practice:</strong> Enhancing the capacity of health and care organisations to engage in and support nursing, midwifery, and allied health professional research, leading to improved patient care and healthcare outcomes</li>
+                        <li><strong>Supporting professional development:</strong> Enabling healthcare professionals to build research skills and integrate evidence-based practice into clinical settings</li>
+                        <li><strong>Advancing research capacity development:</strong> Understanding organisational research readiness across the NHS and health and care system to identify best practices and areas for improvement</li>
+                        <li><strong>Facilitating evidence-based policy:</strong> Providing data to inform strategic planning and resource allocation for research capacity building in line with national healthcare priorities</li>
+                        <li><strong>Promoting health equity:</strong> Supporting research activities that ensure equitable access to research opportunities for all healthcare professionals and the communities they serve</li>
+                        <li><strong>Academic research:</strong> Contributing to the scientific understanding of organisational factors that support research capability in healthcare settings</li>
+                        <li><strong>System integrity:</strong> Maintaining the security, reliability, and effectiveness of the SORT assessment tool</li>
+                    </ul>
+                    <p class="mt-3">These legitimate interests align with the University of Sheffield's public mission and NHS England's strategic objectives to foster a research-centric healthcare environment that benefits patients, professionals, and the wider health system.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>5. Who we share your information with</h2>
+                    <p>Your survey responses may be shared with:</p>
+
+                    <h3 class="h5 mt-3">The Survey Organiser</h3>
+                    <ul>
+                        <li>The organisation that sent you the survey link will have access to all responses</li>
+                        <li>Your responses will be viewed in aggregate with other respondents' answers</li>
+                        <li>Individual responses are anonymous unless you provided identifying information in free-text
+                            fields
+                        </li>
+                    </ul>
+
+                    <h3 class="h5 mt-3">Research Purposes</h3>
+                    <ul>
+                        <li>Anonymised and aggregated survey data may be used for academic research</li>
+                        <li>Statistical summaries may be published in research papers or reports</li>
+                        <li>Individual responses will not be identifiable in any publications</li>
+                    </ul>
+
+                    <h3 class="h5 mt-3">Service Providers</h3>
+                    <ul>
+                        <li>IT hosting and infrastructure providers who support the SORT platform</li>
+                        <li>These providers process data only according to our instructions and have appropriate security
+                            measures in place
+                        </li>
+                    </ul>
+
+                    <h3 class="h5 mt-3">Legal Requirements</h3>
+                    <ul>
+                        <li>Law enforcement or regulatory bodies if required by law</li>
+                    </ul>
+
+                    <p class="mt-3"><strong>We will never sell your survey responses to third parties.</strong></p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>6. How long we keep your information</h2>
+                    <p>We retain your survey responses for:</p>
+
+                    <ul>
+                        <li><strong>Survey responses:</strong> Up to 10 years to support long-term research and comparison
+                            over time
+                        </li>
+                        <li><strong>Technical logs:</strong> Typically 12 months</li>
+                        <li><strong>Anonymised data:</strong> May be retained indefinitely for research purposes</li>
+                    </ul>
+
+                    <p>After these periods, we will securely delete or further anonymise your information.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>7. International data transfers</h2>
+                    <p>Your survey responses are primarily stored and processed within the United Kingdom. If we transfer
+                        data outside the UK or European Economic Area (EEA), we ensure appropriate safeguards are in place,
+                        such as:</p>
+                    <ul>
+                        <li>Standard contractual clauses approved by the UK Information Commissioner's Office</li>
+                        <li>Adequacy decisions recognising equivalent data protection standards</li>
+                    </ul>
+                </section>
+
+                <section class="mb-5">
+                    <h2>8. Your data protection rights</h2>
+                    <p>Under UK data protection law (UK GDPR), you have the following rights:</p>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h3 class="h6 card-title">Right of Access</h3>
+                            <p class="card-text">You can request information about the data we hold. However, as responses
+                                are anonymous, we may not be able to identify your specific submission.</p>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h3 class="h6 card-title">Right to Rectification</h3>
+                            <p class="card-text">You can ask us to correct inaccurate data. However, once submitted,
+                                anonymous survey responses cannot usually be located and corrected.</p>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h3 class="h6 card-title">Right to Erasure ('Right to be Forgotten')</h3>
+                            <p class="card-text">You can request deletion of your data. However, as responses are
+                                anonymous, we may not be able to identify and delete your specific submission.</p>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h3 class="h6 card-title">Right to Withdraw Consent</h3>
+                            <p class="card-text">You can withdraw your consent before submitting the survey by simply
+                                closing your browser. Once submitted, we may not be able to identify and remove your
+                                response due to its anonymous nature.</p>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h3 class="h6 card-title">Right to Object</h3>
+                            <p class="card-text">You can object to processing based on legitimate interests.</p>
+                        </div>
+                    </div>
+
+                    <p class="mt-3">To exercise any of these rights, please contact us at <a
+                            href="mailto:dataprotection@sheffield.ac.uk">dataprotection@sheffield.ac.uk</a>. Please note
+                        that due to the anonymous nature of the survey, we may not be able to identify your specific
+                        response.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>9. Cookies and tracking technologies</h2>
+                    <p>When you complete a SORT survey, we do not use cookies.</p>
+
+                    <p class="mt-3"><strong>We do not use:</strong></p>
+                    <ul>
+                        <li>Marketing or advertising cookies</li>
+                        <li>Social media cookies</li>
+                        <li>Analytics cookies that track your individual behavior</li>
+                    </ul>
+                </section>
+
+                <section class="mb-5">
+                    <h2>10. Security</h2>
+                    <p>We implement appropriate technical and organisational measures to protect your survey responses,
+                        including:</p>
+                    <ul>
+                        <li>Encryption of data in transit using HTTPS/TLS</li>
+                        <li>Secure data storage with access controls</li>
+                        <li>Regular security assessments</li>
+                        <li>Staff training on data protection</li>
+                        <li>Incident response procedures</li>
+                    </ul>
+
+                    <p>While we take security seriously, no system is completely secure. If you suspect any security
+                        breach, please contact us immediately at <a
+                                href="mailto:dataprotection@sheffield.ac.uk">dataprotection@sheffield.ac.uk</a>.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>11. Children's privacy</h2>
+                    <p>SORT surveys are not intended for children under 16 years of age. We do not knowingly collect
+                        information from children. If you are under 16, please do not complete the survey.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>12. Voluntary participation</h2>
+                    <p>Participation in SORT surveys is entirely voluntary. You may:</p>
+                    <ul>
+                        <li>Choose not to participate without any consequences</li>
+                        <li>Skip any optional questions that you prefer not to answer</li>
+                        <li>Close your browser at any time before submitting (your responses will not be saved)</li>
+                    </ul>
+
+                    <p>Once you submit the survey, we cannot retrieve your specific responses as they are stored
+                        anonymously.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>13. Changes to this privacy notice</h2>
+                    <p>We may update this privacy notice from time to time. When we make significant changes, we will
+                        update the "Last updated" date at the top of this notice.</p>
+
+                    <p>We encourage you to review this notice before completing a survey.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>14. How to contact us</h2>
+                    <p>If you have questions about this privacy notice or how we handle survey responses, please contact:
+                    </p>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="mb-2"><strong>Data Protection Officer</strong></p>
+                            <p class="mb-2">University of Sheffield</p>
+                            <p class="mb-2">Western Bank</p>
+                            <p class="mb-2">Sheffield, S10 2TN</p>
+                            <p class="mb-2">United Kingdom</p>
+                            <p class="mb-2">Email: <a href="mailto:dataprotection@sheffield.ac.uk">dataprotection@sheffield.ac.uk</a>
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>15. How to complain</h2>
+                    <p>You have the right to lodge a complaint about how we process survey responses with the supervisory
+                        authority:</p>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="mb-2"><strong>Information Commissioner's Office (ICO)</strong></p>
+                            <p class="mb-2">Wycliffe House</p>
+                            <p class="mb-2">Water Lane</p>
+                            <p class="mb-2">Wilmslow</p>
+                            <p class="mb-2">Cheshire, SK9 5AF</p>
+                            <p class="mb-2">United Kingdom</p>
+                            <p class="mb-2">Helpline: 0303 123 1113</p>
+                            <p class="mb-2">Website: <a href="https://ico.org.uk" target="_blank" rel="noopener">https://ico.org.uk</a>
+                            </p>
+                        </div>
+                    </div>
+
+                    <p class="mt-3">We would appreciate the opportunity to address your concerns before you contact the
+                        ICO, so please contact us first.</p>
+                </section>
+
+                <hr class="my-4">
+
+                <p class="text-muted small">
+                    This privacy notice is provided in accordance with the UK General Data Protection Regulation (UK GDPR)
+                    and the Data Protection Act 2018.
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
