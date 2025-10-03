@@ -28,6 +28,7 @@ from survey.services import survey_service
 
 from .forms import InvitationForm, SurveyCreateForm
 from .models import (
+    Invitation,
     Survey,
     SurveyEvidenceFile,
     SurveyEvidenceSection,
@@ -567,7 +568,7 @@ class InvitationView(FormView):
     form_class = InvitationForm
 
     def form_valid(self, form):
-        recipient_list = tuple(form.cleaned_data["email"].replace(",", " ").split())
+        recipient_list = Invitation.recipient_list(form.cleaned_data["email"])
         message = form.data["message"]
         survey = Survey.objects.get(pk=self.kwargs["pk"])
         # Generate the survey link with the token
