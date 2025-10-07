@@ -16,7 +16,6 @@ from django.conf import settings
 from django.db import models
 from django.http import HttpRequest
 from django.urls import reverse
-from django.utils import timezone
 import django.core.validators
 
 from home.models import Project
