@@ -123,7 +123,7 @@ class Survey(models.Model):
 
     def current_invite_token(self):
         for invite in self.invitation_set.all():
-            if not invite.is_expired and not invite.used:
+            if not invite.used:
                 return invite.token
         return None
 
@@ -501,10 +501,6 @@ class Invitation(models.Model):
                 num_token_tries += 1
 
         super().save(*args, **kwargs)
-
-    @property
-    def is_expired(self) -> bool:
-        return timezone.now() > self.created_at + timezone.timedelta(days=7)
 
     @classmethod
     def recipient_list(cls, text: str) -> set[str]:
