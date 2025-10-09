@@ -163,9 +163,7 @@
                             an invitation</a>
 
                     {% else %}
-                        <p>
-                            Geneate an invitation link for your participants to fill in the survey:
-                        </p>
+                        <p>Generate an invitation link for your participants to fill in the survey:</p>
                         <form method="post" action="{% url 'survey_create_invite' survey.id %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-primary" name="generate_token"><i

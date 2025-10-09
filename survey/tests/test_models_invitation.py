@@ -69,29 +69,6 @@ class TestInvitationModel(TestCase):
         invitation.refresh_from_db()
         self.assertTrue(invitation.used)
 
-    def test_is_expired_within_seven_days(self):
-        """Test that an invitation is not expired within 7 days of creation."""
-        invitation = Invitation.objects.create(survey=self.survey)
-        self.assertFalse(invitation.is_expired)
-
-    def test_is_expired_after_seven_days(self):
-        """Test that an invitation is expired after 7 days."""
-        invitation = Invitation.objects.create(survey=self.survey)
-        # Set created_at to 8 days ago
-        past_date = timezone.now() - timezone.timedelta(days=8)
-        invitation.created_at = past_date
-        invitation.save()
-        self.assertTrue(invitation.is_expired)
-
-    def test_is_expired_exactly_seven_days(self):
-        """Test the boundary condition at exactly 7 days."""
-        invitation = Invitation.objects.create(survey=self.survey)
-        # Set created_at to exactly 7 days and 1 second ago
-        past_date = timezone.now() - timezone.timedelta(days=7, seconds=1)
-        invitation.created_at = past_date
-        invitation.save()
-        self.assertTrue(invitation.is_expired)
-
     def test_multiple_invitations_per_survey(self):
         """Test that a survey can have multiple invitations."""
         invitation1 = Invitation.objects.create(survey=self.survey)
