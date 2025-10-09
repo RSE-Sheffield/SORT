@@ -29,6 +29,7 @@ PrivateTmp=true
 ProtectSystem=strict
 Delegate=yes
 LockPersonality=yes
+MemoryDenyWriteExecute=yes
 
 [Install]
 WantedBy=multi-user.target
