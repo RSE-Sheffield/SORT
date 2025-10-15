@@ -162,7 +162,7 @@
                 <div class="col">
                     <label class="form-label">
                         Min
-                        <input type="range" class="form-range" min={fItem.valueMin} max={filterValues[fItemIndex].max}
+                        <input type="range" class="form-range" min={fItem.valueMin} max={fItem.valueMax}
                                bind:value={filterValues[fItemIndex].min} onchange={handleFilterChange}>
                         <input class="form-control" min={fItem.valueMin} max={fItem.valueMax}
                                bind:value={filterValues[fItemIndex].min}>
@@ -172,7 +172,7 @@
                 <div class="col">
                     <label class="form-label">
                         Max
-                        <input type="range" class="form-range" min={filterValues[fItemIndex].min} max={fItem.valueMax}
+                        <input type="range" class="form-range" min={fItem.valueMin} max={fItem.valueMax}
                                bind:value={filterValues[fItemIndex].max} onchange={handleFilterChange}>
                         <input class="form-control" min={fItem.valueMin} max={fItem.valueMax}
                                bind:value={filterValues[fItemIndex].max}>
