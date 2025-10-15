@@ -11,9 +11,7 @@
         <div class="mb-3">
             <div class="sort-report-app"
                  data-json-config-id="configData"
-                 data-json-responses-id="responsesData"
-                 data-csv-url="{% url 'survey_export' survey.id %}"
-                 data-excel-url="{% url 'survey_export_excel' survey.id %}"></div>
+                 data-json-responses-id="responsesData"></div>
 
             <h3 class="mt-4">Report sections</h3>
             <ul>
@@ -165,29 +163,99 @@
             }
 
             .sorting-control {
-                display: none;
+                display: none !important;
             }
 
-            .survey-report-container .card:has(.form-label),
+            /* Hide filter card specifically by targeting cards with form controls */
+            .survey-report-container .card:has(.form-label:first-of-type),
             .survey-report-container .card:has(.form-select),
             .survey-report-container .card:has(.form-range) {
                 display: none !important;
             }
 
-            .survey-report-container > div:has(.btn-primary) {
-                display: none !important;
-            }
-
+            /* Hide alert boxes that show filter status */
             .survey-report-container .alert-info,
             .survey-report-container .alert-warning {
                 display: none !important;
             }
 
+            /* Hide all buttons (including filter buttons) */
             .survey-report-container button {
                 display: none !important;
             }
+
+            /* Hide the response count text */
+            .survey-report-container > .mb-3:has(strong) {
+                display: none !important;
+            }
+
+            /* Ensure charts and visualizations are visible and print correctly */
+            canvas {
+                display: block !important;
+                max-width: 100% !important;
+                width: auto !important;
+                height: auto !important;
+                page-break-inside: avoid;
+            }
+
+            /* Ensure chart parent containers are visible */
+            .survey-report-container .card:not(:has(.form-label)),
+            .survey-report-container .card:not(:has(.form-select)),
+            .survey-report-container .card:not(:has(.form-range)) {
+                display: block !important;
+                page-break-inside: avoid;
+                background-color: #fff !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .survey-report-container .card-body {
+                display: block !important;
+                width: 100% !important;
+            }
+
+            .survey-report-container .card-body > div {
+                display: block !important;
+                width: 100% !important;
+                min-height: 400px !important;
+            }
+
+            .survey-report-container .card-header {
+                display: block !important;
+                background-color: #f8f9fa !important;
+                border-bottom: 1px solid #dee2e6 !important;
+            }
+
+            /* Ensure flex containers display as block for printing */
+            .survey-report-container .d-flex {
+                display: block !important;
+            }
+
+            /* Fix pie chart containers specifically */
+            .survey-report-container .w-50 {
+                width: 100% !important;
+                max-width: 600px !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+
+            /* Ensure chart wrapper divs maintain proper dimensions */
+            .survey-report-container .card-body canvas {
+                min-height: 300px !important;
+                margin: 0 auto !important;
+            }
         }
 
+    </style>
+    <style>
+        /* Ensure Chart.js canvases render before print */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+        }
     </style>
 {% endblock %}
 
