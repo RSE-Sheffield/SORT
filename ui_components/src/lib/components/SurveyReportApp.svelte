@@ -90,7 +90,7 @@
                         <hr>
                         <p class="mb-1"><strong>Active filters:</strong></p>
                         <ul class="mb-0">
-                            {#each activeFilters as filter}
+                            {#each activeFilters as filter (filter.label)}
                                 <li><strong>{filter.label}:</strong> {filter.value}</li>
                             {/each}
                         </ul>
@@ -119,7 +119,7 @@
                             <strong>Filtered Data:</strong>
                             Showing {filteredResponses.length} of {responses.length} responses
                             {#if activeFilters.length > 0}
-                                ({#each activeFilters as filter, idx}
+                                ({#each activeFilters as filter, idx (filter.label)}
                                     <strong>{filter.label}:</strong> {filter.value}{idx < activeFilters.length - 1 ? ', ' : ''}
                                 {/each})
                             {/if}
