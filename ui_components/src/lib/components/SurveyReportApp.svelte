@@ -9,8 +9,6 @@
     interface SurveyReportAppProps {
         config: SurveyConfig;
         responses: SurveyResponseBatch;
-        csvDownloadUrl: string;
-        excelDownloadUrl: string;
     }
 
     interface ActiveFilter {
@@ -18,7 +16,7 @@
         value: string;
     }
 
-    let {config, responses, csvDownloadUrl, excelDownloadUrl}: SurveyReportAppProps = $props();
+    let {config, responses}: SurveyReportAppProps = $props();
     let filteredResponses = $state(responses);
     let activeFilters = $state<ActiveFilter[]>([]);
     let clearFiltersCallback = $state<(() => void) | null>(null);
