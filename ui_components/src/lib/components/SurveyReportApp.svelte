@@ -5,6 +5,7 @@
     import CollapsibleCard from "./CollapsibleCard.svelte";
     import SortSummaryMatrix from "./SortSummaryMatrix.svelte";
     import SurveySectionDataView from "./SurveySectionDataView.svelte";
+    import FilterAlert from "./FilterAlert.svelte";
 
     interface SurveyReportAppProps {
         config: SurveyConfig;
@@ -69,37 +70,18 @@
                 />
             {/snippet}
         </CollapsibleCard>
-
-        <div class="mb-3 d-flex justify-content-between align-items-center">
-            <strong>Responses shown: {filteredResponses.length} of {responses.length}</strong>
-        </div>
     {/if}
 
     {#if config && surveyStats}
         {#if hasActiveFilters}
-            <div class="alert alert-info mb-3 d-flex justify-content-between align-items-start" role="alert">
-                <div>
-                    <h5 class="alert-heading">
-                        <i class="bx bx-filter"></i> Filtered Data View
-                    </h5>
-                    <p>
-                        You are viewing a filtered subset of the data.
-                        Showing {filteredResponses.length} of {responses.length} responses.
-                    </p>
-                    {#if activeFilters.length > 0}
-                        <hr>
-                        <p class="mb-1"><strong>Active filters:</strong></p>
-                        <ul class="mb-0">
-                            {#each activeFilters as filter (filter.label)}
-                                <li><strong>{filter.label}:</strong> {filter.value}</li>
-                            {/each}
-                        </ul>
-                    {/if}
-                </div>
-                <button class="btn btn-sm btn-outline-primary ms-3" onclick={clearFilters}>
-                    <i class="bx bx-x"></i> Clear Filters
-                </button>
-            </div>
+            <FilterAlert
+                filteredCount={filteredResponses.length}
+                totalCount={responses.length}
+                activeFilters={activeFilters}
+                onClearFilters={clearFilters}
+                variant="info"
+                compact={false}
+            />
         {/if}
 
         <div class="card mb-3">
@@ -113,21 +95,14 @@
         {#each config.sections as sectionConfig, si (si)}
             {#if sectionConfig.type !== "consent"}
                 {#if hasActiveFilters}
-                    <div class="alert alert-warning mb-3 d-flex justify-content-between align-items-center" role="alert">
-                        <div>
-                            <i class="bx bx-filter"></i>
-                            <strong>Filtered Data:</strong>
-                            Showing {filteredResponses.length} of {responses.length} responses
-                            {#if activeFilters.length > 0}
-                                ({#each activeFilters as filter, idx (filter.label)}
-                                    <strong>{filter.label}:</strong> {filter.value}{idx < activeFilters.length - 1 ? ', ' : ''}
-                                {/each})
-                            {/if}
-                        </div>
-                        <button class="btn btn-sm btn-outline-warning ms-3" onclick={clearFilters}>
-                            <i class="bx bx-x"></i> Clear
-                        </button>
-                    </div>
+                    <FilterAlert
+                        filteredCount={filteredResponses.length}
+                        totalCount={responses.length}
+                        activeFilters={activeFilters}
+                        onClearFilters={clearFilters}
+                        variant="warning"
+                        compact={true}
+                    />
                 {/if}
                 <div class="card mb-3" id="report-section-{si}">
                     <div class="card-header">
