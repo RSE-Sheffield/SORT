@@ -74,11 +74,6 @@
 
         <div class="mb-3 d-flex justify-content-between align-items-center">
             <strong>Responses shown: {filteredResponses.length} of {responses.length}</strong>
-            {#if hasActiveFilters}
-                <button class="btn btn-sm btn-outline-secondary" onclick={clearFilters}>
-                    <i class="bx bx-x"></i> Clear Filters
-                </button>
-            {/if}
         </div>
     {/if}
 

@@ -22,7 +22,7 @@
     let filterItems: FilterItem[] = $state([]);
     let filterValues = $state([]);
     let filteredResponses = $state(responses);
-    let initialFilterValues: any[] = [];
+    let initialFilterValues: Array<null | {min: number, max: number}> = [];
 
     onMount(() => {
         for (let si = 0; si < config.sections.length; si++) {
