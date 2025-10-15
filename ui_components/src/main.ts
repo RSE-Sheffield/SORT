@@ -157,9 +157,7 @@ mapMatchedElement(".sort-report-app", (elem) => {
         target: elem,
         props: {
             config: config,
-            responses: responses,
-            csvDownloadUrl: csvUrl,
-            excelDownloadUrl: excelUrl,
+            responses: responses
         }
     });
 });
