@@ -64,4 +64,67 @@
     :global(.likert-container tbody tr:hover) {
         background-color: #f8f9fa;
     }
+
+    /* Enhanced radio button styling for Likert scales */
+    :global(.likert-radio-input) {
+        width: 1.5rem !important;
+        height: 1.5rem !important;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    :global(.likert-radio-input:hover) {
+        transform: scale(1.1);
+        transition: transform 0.2s ease;
+    }
+
+    :global(.likert-radio-label) {
+        display: inline-block;
+        padding: 0.75rem;
+        cursor: pointer;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    :global(.likert-radio-label:hover) {
+        background-color: rgba(13, 110, 253, 0.1);
+        border-radius: 0.25rem;
+    }
+
+    /* Mobile Likert item styling */
+    :global(.likert-mobile-label) {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        cursor: pointer;
+        border-radius: 0.25rem;
+        transition: background-color 0.2s ease;
+    }
+
+    :global(.likert-mobile-label:hover) {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+
+    /* Make table cells with radio buttons easier to click */
+    :global(.likert-container td.text-center) {
+        padding: 0 !important;
+        vertical-align: middle;
+    }
+
+    /* Checked state visual feedback */
+    :global(.likert-radio-input:checked) {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    :global(.likert-radio-label:has(input:checked)) {
+        background-color: rgba(13, 110, 253, 0.15);
+    }
+
+    :global(.likert-mobile-label:has(input:checked)) {
+        background-color: rgba(13, 110, 253, 0.15);
+        font-weight: 600;
+    }
 </style>
