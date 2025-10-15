@@ -14,7 +14,7 @@
     interface Props {
         config: SurveyConfig;
         responses: SurveyResponseBatch;
-        onFilterChange?: (responses) => void
+        onFilterChange?: (responses: SurveyResponseBatch, activeFilters?: Array<{label: string, value: string}>) => void
     }
 
     let {config, responses, onFilterChange}: Props = $props();
@@ -76,6 +76,8 @@
 
     function handleFilterChange() {
         filteredResponses = [];
+        const activeFilters: Array<{label: string, value: string}> = [];
+
         for (let ri = 0; ri < responses.length; ri++) {
             let addToFilteredSet = true;
             for (let filterIndex = 0; filterIndex < filterItems.length; filterIndex++) {
@@ -100,7 +102,32 @@
                 filteredResponses.push(responses[ri])
             }
         }
-        onFilterChange?.(filteredResponses);
+
+        // Build list of active filters for display
+        for (let filterIndex = 0; filterIndex < filterItems.length; filterIndex++) {
+            const filterItem = filterItems[filterIndex];
+            const filterValue = filterValues[filterIndex];
+
+            if (filterItem.fieldConfig.type === "text") {
+                // Check if range filter differs from full range
+                if (filterValue.min !== filterItem.valueMin || filterValue.max !== filterItem.valueMax) {
+                    activeFilters.push({
+                        label: filterItem.fieldConfig.label,
+                        value: `${filterValue.min} to ${filterValue.max}`
+                    });
+                }
+            } else {
+                // Check if categorical filter is set
+                if (filterValue !== null) {
+                    activeFilters.push({
+                        label: filterItem.fieldConfig.label,
+                        value: filterValue
+                    });
+                }
+            }
+        }
+
+        onFilterChange?.(filteredResponses, activeFilters);
     }
 
 </script>

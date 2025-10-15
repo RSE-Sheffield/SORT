@@ -13,8 +13,14 @@
         excelDownloadUrl: string;
     }
 
+    interface ActiveFilter {
+        label: string;
+        value: string;
+    }
+
     let {config, responses, csvDownloadUrl, excelDownloadUrl}: SurveyReportAppProps = $props();
     let filteredResponses = $state(responses);
+    let activeFilters = $state<ActiveFilter[]>([]);
 
     // Calculate section stats based on filtered responses
     let surveyStats: SurveyStats | null = $derived.by(() => {
@@ -27,8 +33,14 @@
         return generateStatsFromSurveyResponses(config, filteredResponses);
     });
 
-    function handleFilterChange(changedFilteredResponses: SurveyResponseBatch) {
+    // Check if any filters are active
+    let hasActiveFilters = $derived(filteredResponses.length < responses.length || activeFilters.length > 0);
+
+    function handleFilterChange(changedFilteredResponses: SurveyResponseBatch, filters?: ActiveFilter[]) {
         filteredResponses = changedFilteredResponses;
+        if (filters) {
+            activeFilters = filters;
+        }
     }
 </script>
 
@@ -54,6 +66,27 @@
     {/if}
 
     {#if config && surveyStats}
+        {#if hasActiveFilters}
+            <div class="alert alert-info mb-3" role="alert">
+                <h5 class="alert-heading">
+                    <i class="bx bx-filter"></i> Filtered Data View
+                </h5>
+                <p>
+                    You are viewing a filtered subset of the data.
+                    Showing {filteredResponses.length} of {responses.length} responses.
+                </p>
+                {#if activeFilters.length > 0}
+                    <hr>
+                    <p class="mb-1"><strong>Active filters:</strong></p>
+                    <ul class="mb-0">
+                        {#each activeFilters as filter}
+                            <li><strong>{filter.label}:</strong> {filter.value}</li>
+                        {/each}
+                    </ul>
+                {/if}
+            </div>
+        {/if}
+
         <div class="card mb-3">
             <div class="card-header"><h3>Summary Ranking Matrix</h3></div>
             <div class="card-body">
@@ -64,6 +97,18 @@
 
         {#each config.sections as sectionConfig, si (si)}
             {#if sectionConfig.type !== "consent"}
+                {#if hasActiveFilters}
+                    <div class="alert alert-warning mb-3" role="alert">
+                        <i class="bx bx-filter"></i>
+                        <strong>Filtered Data:</strong>
+                        Showing {filteredResponses.length} of {responses.length} responses
+                        {#if activeFilters.length > 0}
+                            ({#each activeFilters as filter, idx}
+                                <strong>{filter.label}:</strong> {filter.value}{idx < activeFilters.length - 1 ? ', ' : ''}
+                            {/each})
+                        {/if}
+                    </div>
+                {/if}
                 <div class="card mb-3" id="report-section-{si}">
                     <div class="card-header">
                         <h3>{sectionConfig.title}</h3>
