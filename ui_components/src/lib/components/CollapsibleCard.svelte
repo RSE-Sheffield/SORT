@@ -18,7 +18,6 @@
     let collapseContent: HTMLElement = $state();
     let collapse = $state(startCollapsed);
 
-
     function toggleCollapse(e) {
         e.preventDefault();
         collapse = !collapse;

@@ -9,12 +9,13 @@
         <p>{{ survey.description }}</p>
 
         <div class="mb-3">
-            <h2>Summary Ranking Matrix</h2>
-            <div class="sort-response-summary-matrix"
+            <div class="sort-report-app"
                  data-json-config-id="configData"
-                 data-json-responses-id="responsesData"></div>
+                 data-json-responses-id="responsesData"
+                 data-csv-url="{% url 'survey_export' survey.id %}"
+                 data-excel-url="{% url 'survey_export_excel' survey.id %}"></div>
 
-            <h3>Report sections</h3>
+            <h3 class="mt-4">Report sections</h3>
             <ul>
                 {% for section in sections %}
                     {% if section.section_config.type != "consent" %}
@@ -30,15 +31,6 @@
                         <h2 id="page-section-{{ forloop.counter0 }}">Section {{ section.section_config.title }}</h2>
                     </div>
                     <div>
-                        <div
-                                class="sort-response-section-viewer"
-                                data-json-config-id="configData"
-                                data-json-responses-id="responsesData"
-                                data-json-readiness-descriptions-id="readinessDescriptions"
-                                data-section-index="{{ forloop.counter0 }}"
-                                data-use-bar-chart="false"
-                        ></div>
-
                         {% if section.evidence %}
                             <h3>Evidence statement</h3>
                             <div class="sort-richtext-field"
@@ -174,6 +166,16 @@
 
             .sorting-control {
                 display: none;
+            }
+
+            .survey-report-container .card:has(.form-label),
+            .survey-report-container .card:has(.form-select),
+            .survey-report-container .card:has(.form-range) {
+                display: none !important;
+            }
+
+            .survey-report-container > div:has(.btn-primary) {
+                display: none !important;
             }
         }
 
