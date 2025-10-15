@@ -21,6 +21,7 @@
     let {config, responses, csvDownloadUrl, excelDownloadUrl}: SurveyReportAppProps = $props();
     let filteredResponses = $state(responses);
     let activeFilters = $state<ActiveFilter[]>([]);
+    let clearFiltersCallback = $state<(() => void) | null>(null);
 
     // Calculate section stats based on filtered responses
     let surveyStats: SurveyStats | null = $derived.by(() => {
@@ -42,6 +43,16 @@
             activeFilters = filters;
         }
     }
+
+    function handleClearFiltersCallback(callback: () => void) {
+        clearFiltersCallback = callback;
+    }
+
+    function clearFilters() {
+        if (clearFiltersCallback) {
+            clearFiltersCallback();
+        }
+    }
 </script>
 
 <div class="survey-report-container">
@@ -56,34 +67,45 @@
                         config={config}
                         responses={responses}
                         onFilterChange={handleFilterChange}
+                        onClearFiltersCallback={handleClearFiltersCallback}
                 />
             {/snippet}
         </CollapsibleCard>
 
-        <div class="mb-3">
+        <div class="mb-3 d-flex justify-content-between align-items-center">
             <strong>Responses shown: {filteredResponses.length} of {responses.length}</strong>
+            {#if hasActiveFilters}
+                <button class="btn btn-sm btn-outline-secondary" onclick={clearFilters}>
+                    <i class="bx bx-x"></i> Clear Filters
+                </button>
+            {/if}
         </div>
     {/if}
 
     {#if config && surveyStats}
         {#if hasActiveFilters}
-            <div class="alert alert-info mb-3" role="alert">
-                <h5 class="alert-heading">
-                    <i class="bx bx-filter"></i> Filtered Data View
-                </h5>
-                <p>
-                    You are viewing a filtered subset of the data.
-                    Showing {filteredResponses.length} of {responses.length} responses.
-                </p>
-                {#if activeFilters.length > 0}
-                    <hr>
-                    <p class="mb-1"><strong>Active filters:</strong></p>
-                    <ul class="mb-0">
-                        {#each activeFilters as filter}
-                            <li><strong>{filter.label}:</strong> {filter.value}</li>
-                        {/each}
-                    </ul>
-                {/if}
+            <div class="alert alert-info mb-3 d-flex justify-content-between align-items-start" role="alert">
+                <div>
+                    <h5 class="alert-heading">
+                        <i class="bx bx-filter"></i> Filtered Data View
+                    </h5>
+                    <p>
+                        You are viewing a filtered subset of the data.
+                        Showing {filteredResponses.length} of {responses.length} responses.
+                    </p>
+                    {#if activeFilters.length > 0}
+                        <hr>
+                        <p class="mb-1"><strong>Active filters:</strong></p>
+                        <ul class="mb-0">
+                            {#each activeFilters as filter}
+                                <li><strong>{filter.label}:</strong> {filter.value}</li>
+                            {/each}
+                        </ul>
+                    {/if}
+                </div>
+                <button class="btn btn-sm btn-outline-primary ms-3" onclick={clearFilters}>
+                    <i class="bx bx-x"></i> Clear Filters
+                </button>
             </div>
         {/if}
 
@@ -98,15 +120,20 @@
         {#each config.sections as sectionConfig, si (si)}
             {#if sectionConfig.type !== "consent"}
                 {#if hasActiveFilters}
-                    <div class="alert alert-warning mb-3" role="alert">
-                        <i class="bx bx-filter"></i>
-                        <strong>Filtered Data:</strong>
-                        Showing {filteredResponses.length} of {responses.length} responses
-                        {#if activeFilters.length > 0}
-                            ({#each activeFilters as filter, idx}
-                                <strong>{filter.label}:</strong> {filter.value}{idx < activeFilters.length - 1 ? ', ' : ''}
-                            {/each})
-                        {/if}
+                    <div class="alert alert-warning mb-3 d-flex justify-content-between align-items-center" role="alert">
+                        <div>
+                            <i class="bx bx-filter"></i>
+                            <strong>Filtered Data:</strong>
+                            Showing {filteredResponses.length} of {responses.length} responses
+                            {#if activeFilters.length > 0}
+                                ({#each activeFilters as filter, idx}
+                                    <strong>{filter.label}:</strong> {filter.value}{idx < activeFilters.length - 1 ? ', ' : ''}
+                                {/each})
+                            {/if}
+                        </div>
+                        <button class="btn btn-sm btn-outline-warning ms-3" onclick={clearFilters}>
+                            <i class="bx bx-x"></i> Clear
+                        </button>
                     </div>
                 {/if}
                 <div class="card mb-3" id="report-section-{si}">

@@ -14,13 +14,15 @@
     interface Props {
         config: SurveyConfig;
         responses: SurveyResponseBatch;
-        onFilterChange?: (responses: SurveyResponseBatch, activeFilters?: Array<{label: string, value: string}>) => void
+        onFilterChange?: (responses: SurveyResponseBatch, activeFilters?: Array<{label: string, value: string}>) => void;
+        onClearFiltersCallback?: (clearCallback: () => void) => void;
     }
 
-    let {config, responses, onFilterChange}: Props = $props();
+    let {config, responses, onFilterChange, onClearFiltersCallback}: Props = $props();
     let filterItems: FilterItem[] = $state([]);
     let filterValues = $state([]);
     let filteredResponses = $state(responses);
+    let initialFilterValues: any[] = [];
 
     onMount(() => {
         for (let si = 0; si < config.sections.length; si++) {
@@ -42,6 +44,7 @@
                                 fieldIndex: fi,
                             });
                             filterValues.push(null);
+                            initialFilterValues.push(null);
                             break;
                         case "text":
                             if (fieldConfig.textType === TextType.decimals ||
@@ -60,10 +63,9 @@
                                     valueMax: max,
                                     valueMin: min,
                                 });
-                                filterValues.push({
-                                    min: min,
-                                    max: max,
-                                })
+                                const initialRange = {min: min, max: max};
+                                filterValues.push({...initialRange});
+                                initialFilterValues.push({...initialRange});
                             }
                             break;
 
@@ -71,6 +73,11 @@
 
                 }
             }
+        }
+
+        // Provide clear filters callback to parent
+        if (onClearFiltersCallback) {
+            onClearFiltersCallback(clearFilters);
         }
     });
 
@@ -128,6 +135,21 @@
         }
 
         onFilterChange?.(filteredResponses, activeFilters);
+    }
+
+    function clearFilters() {
+        // Reset all filter values to their initial state
+        for (let i = 0; i < filterValues.length; i++) {
+            if (typeof initialFilterValues[i] === 'object' && initialFilterValues[i] !== null) {
+                // Range filter - deep copy
+                filterValues[i] = {...initialFilterValues[i]};
+            } else {
+                // Categorical filter
+                filterValues[i] = initialFilterValues[i];
+            }
+        }
+        // Trigger filter change with reset values
+        handleFilterChange();
     }
 
 </script>
