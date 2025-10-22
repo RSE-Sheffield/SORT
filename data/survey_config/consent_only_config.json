@@ -12,7 +12,17 @@
           "required": true,
           "sublabels": [],
           "options": [
-              "Yes, I agree to complete the survey"
+              "Yes, I agree to submit my data for internal use within the organisation."
+          ]
+        },
+
+        {
+          "type": "checkbox",
+          "name": "consent-research",
+          "label": "Do you consent for your response to be used for research purposes?",
+          "required": true,
+          "options": [
+              "I have read and agree with the participant information sheet consent for my data to be used for research."
           ]
         }
       ]

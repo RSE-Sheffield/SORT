@@ -68,6 +68,11 @@
 
 </script>
 {#each config.sections as section, index (index)}
+    {#if index == 0}
+    <div class="alert alert-primary" role="alert">
+        <p>ℹ️ You must read to and agree to the <a href="/participant-information">participant information sheet</a> before proceeding.</p>
+    </div>
+    {/if}
     {#if currentPage === index}
         <SectionComponent bind:config={config.sections[index]}
                           editable={false}
