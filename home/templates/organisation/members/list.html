@@ -43,6 +43,7 @@
         </div>
         <div>
             <table class="table">
+                <caption hidden>A list of users and user management options.</caption>
                 <thead class="thead">
                 <tr>
                     <th scope="col">User name</th>
@@ -54,27 +55,27 @@
                 </tr>
                 </thead>
                 {% for membership in memberships %}
-                    <tr>
-                        <th scope="row">{{ membership.user }}</th>
-                        <td>
-                            <a href="mailto:{{ membership.user.email }}">
-                                {{ membership.user.email }}
-                            </a>
-                        </td>
-                        <td class="font-monospace">{{ membership.role }}</td>
-                        <td>
-                            <time datetime="{{ membership.joined_at.isoformat }}">
-                                {{ membership.joined_at }}
-                            </time>
-                        </td>
-                        <td>{{ membership.added_by }}</td>
-                        <td>
-                            <a href="{% url 'member_delete' membership.pk %}" class="btn btn-danger"
-                               title="Remove this user from the organisation">
-                                <i class='bx bxs-user-minus'></i> Remove
-                            </a>
-                        </td>
-                    </tr>
+                <tr>
+                    <th scope="row">{{ membership.user }}</th>
+                    <td>
+                        <a href="mailto:{{ membership.user.email }}">
+                            {{ membership.user.email }}
+                        </a>
+                    </td>
+                    <td class="font-monospace">{{ membership.role }}</td>
+                    <td>
+                        <time datetime="{{ membership.joined_at.isoformat }}">
+                            {{ membership.joined_at }}
+                        </time>
+                    </td>
+                    <td>{{ membership.added_by }}</td>
+                    <td>
+                        <a href="{% url 'member_delete' membership.pk %}" class="btn btn-danger"
+                           title="Remove this user from the organisation">
+                            <i class='bx bxs-user-minus'></i> Remove
+                        </a>
+                    </td>
+                </tr>
                 {% endfor %}
             </table>
         </div>
