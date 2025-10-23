@@ -162,7 +162,7 @@
                         max: 5,
                         title: {
                             display: true,
-                            text: 'Mean Score (1-5)'
+                            text: 'Average Score'
                         },
                         grid: {
                             display: false
