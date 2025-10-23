@@ -25,10 +25,10 @@
   }
 </script>
 
-<td>
+<th scope="row" class="fw-normal">
     <span id={groupLabelId} class={{"is-valid": isValid, "is-invalid": isInvalid}}>{config.sublabels[sublabelIndex]}</span>
     <span class="invalid-feedback">A value must be selected</span>
-</td>
+</th>
 {#each config.options as option, index (option)}
     <td>
         <div class="form-check" role="group" aria-labelledby={groupLabelId}>
