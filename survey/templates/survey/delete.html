@@ -11,9 +11,12 @@
                         Are you sure you want to delete {{ survey.name }}? All of the
                         survey's associated data will also be deleted.
                     </p>
+                    <div class="alert alert-danger" role="alert">
+                        ⚠️ Deleting {{ survey.responses_count }} responses!
+                    </div>
                     <div class="d-flex">
                         <div>
-                            <a href="{% url 'survey' survey.pk%}" class="btn btn-secondary me-4">Cancel</a>
+                            <a href="{% url 'survey' survey.pk%}" class="btn btn-secondary me-3">Cancel</a>
                         </div>
                         <div>
                             <form method="POST">

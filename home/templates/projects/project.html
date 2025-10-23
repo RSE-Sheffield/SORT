@@ -27,12 +27,17 @@
                     <div></div>
                     <div></div>
                 </div>
+                <!-- Project management buttons -->
                 <div class="text-end">
                     <a href="{% url 'project_edit' project.id %}"
-                       title="Modify the title and description of this project">
-                        <button type="button" class="btn btn-secondary">
-                            <i class="bx bxs-edit"></i> Edit
-                        </button>
+                       title="Modify the title and description of this project"
+                       class="btn btn-primary" role="button">
+                        <i class="bx bxs-edit"></i>&nbsp;Edit
+                    </a>
+                    <a href="{% url 'project_delete' project.pk %}"
+                       title="Remove this project and all the surveys within it."
+                       class="btn btn-danger" role="button" aria-pressed="true">
+                        <i class="bx bxs-trash"></i>&nbsp;Delete
                     </a>
                 </div>
             </div>
@@ -47,13 +52,10 @@
                     {% load search_tags %}
                     {% search_bar placeholder="Search surveys..." %}
                 </div>
-
                 {% if can_create %}
-                    <a href="{% url 'survey_create' project.id %}">
-                        <button type="button" class="btn btn-primary">
-                            <i class="bx bx-chart"></i> Create survey
-                        </button>
-                    </a>
+                <a href="{% url 'survey_create' project.id %}" class="btn btn-success" role="button" aria-pressed="true">
+                    <i class="bx bx-chart"></i>&nbsp;Create survey
+                </a>
                 {% endif %}
             </div>
         </div>
@@ -62,27 +64,24 @@
                 <div class="card w-100">
                     <div class="card-body">
                         <h3 class="card-title" title="Survey identifier {{ survey.pk }}">
-                            <i class="bx bxs-chart"></i>
-                            {{ survey.name }}
+                           <a href="{% url 'survey' survey.id %}">
+                               <i class="bx bxs-chart"></i>&nbsp;{{ survey.name }}
+                           </a>
                         </h3>
                         <div class="card-text">
-                            <span>Responses: {{ survey.responses_count }}</span>
+                            <span><strong>Responses:</strong> {{ survey.responses_count }}</span>
                         </div>
                         <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
-                            {% if can_edit|get_item:survey.id %}
-                                <a href="{% url 'survey_edit' survey.id %}">
-                                    <button type="button" class="btn btn-secondary border">
-                                        <i class="bx bxs-edit"></i> Edit
-                                    </button>
-                                </a>
-                            {% endif %}
-                            <a href="{% url 'survey' survey.id %}">
-                                <button type="button" class="btn btn-primary">
-                                    <i class="bx bxs-chart"></i> View
-                                </button>
+                            <a href="{% url 'survey' survey.id %}" class="btn btn-primary" role="button" aria-pressed="true">
+                                <i class="bx bxs-chart"></i>&nbsp;View
                             </a>
+                            {% if can_edit|get_item:survey.id %}
+                            <a href="{% url 'survey_edit' survey.id %}" class="btn btn-primary" role="button" aria-pressed="true">
+                                <i class="bx bxs-edit"></i>&nbsp;Edit
+                            </a>
+                            {% endif %}
                             <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger">
-                                <i class="bx bxs-trash"></i> Delete
+                                <i class="bx bxs-trash"></i>&nbsp;Delete
                             </a>
                         </div>
                     </div>
