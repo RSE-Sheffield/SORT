@@ -16,7 +16,7 @@ Follow these steps to set up and run the app locally:
 
 Prerequisites, ensure the following are already installed on your system:
 
-- Python 3.12
+- Python (the version is defined [.python-version](./.python-version))
 - pip
 - Nodejs (20.x)
 ---
