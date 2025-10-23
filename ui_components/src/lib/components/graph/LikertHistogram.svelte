@@ -49,7 +49,8 @@
 
     let {fieldConfig, fieldStats, maxHistogramCount = 0, sectionTitle = 'Default title'}: LikertHistogramProps = $props();
     let barChartContainer: HTMLCanvasElement = $state()
-    let chartHeight = $derived(fieldConfig.sublabels.length * 5);
+    const barThickness = 30;  // Must match the barThickness in dataset
+    let chartHeightPx = $derived((fieldConfig.sublabels.length * (barThickness + 10)) + 150); // Calculate in pixels
     let chart: Chart | null = $state(null);
     let sortByMean = $state(false);
     let sortAscending = $state(true);
@@ -96,6 +97,7 @@
                 data: values,
                 borderWidth: 1,
                 backgroundColor: colour,
+                barThickness: barThickness,  // Fixed pixel height for bars
                 order: 2  // Draw bars first (higher order = drawn first)
             })
         })
@@ -330,7 +332,7 @@
     </button>
 
 </div>
-<div style="height: {chartHeight}em;">
+<div style="height: {chartHeightPx}px;">
     <canvas bind:this={barChartContainer}></canvas>
 </div>
 
