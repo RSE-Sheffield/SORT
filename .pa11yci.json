@@ -1,0 +1,52 @@
+{
+  "defaults": {
+    "runners": [
+      "axe",
+      "htmlcs"
+    ],
+    "standard": "WCAG2AA",
+    "timeout": 10000,
+    "wait": 2000,
+    "chromeLaunchConfig": {
+      "args": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage"
+      ]
+    },
+    "includeNotices": false,
+    "includeWarnings": true,
+    "threshold": 10,
+    "reporters": [
+      "cli",
+      "json"
+    ]
+  },
+  "urls": [
+    {
+      "url": "http://localhost:8000/",
+      "screenCapture": "screenshots/home.png"
+    },
+    {
+      "url": "http://localhost:8000/about/",
+      "screenCapture": "screenshots/about.png"
+    },
+    {
+      "url": "http://localhost:8000/help/",
+      "screenCapture": "screenshots/help.png"
+    },
+    {
+      "url": "http://localhost:8000/privacy/",
+      "screenCapture": "screenshots/privacy.png"
+    },
+    {
+      "url": "http://localhost:8000/eula/",
+      "screenCapture": "screenshots/eula.png"
+    },
+    {
+      "url": "http://localhost:8000/myorganisation/",
+      "screenCapture": "screenshots/myorganisation.png",
+      "actions": []
+    }
+  ]
+}

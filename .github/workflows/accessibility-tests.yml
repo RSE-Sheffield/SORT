@@ -1,0 +1,170 @@
+name: Accessibility Tests
+
+on:
+  pull_request:
+    branches: [ main, dev ]
+  push:
+    branches: [ main, dev ]
+
+jobs:
+  pa11y-test:
+    name: Pa11y Accessibility Testing
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Python dependencies
+        run: |
+          uv pip install --upgrade pip
+          uv pip install -r requirements.txt
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Run Django migrations
+        env:
+          DJANGO_SECRET_KEY: test-secret-key-for-ci
+          DJANGO_DEBUG: 'False'
+        run: |
+          python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
+
+      - name: Load test data
+        env:
+          DJANGO_SECRET_KEY: test-secret-key-for-ci
+        run: |
+          python manage.py loaddata ./data/*.json || echo "Test data load failed, continuing..."
+
+      - name: Create test session for authenticated pages
+        env:
+          DJANGO_SECRET_KEY: test-secret-key-for-ci
+        run: |
+          # Create test user and get session cookie
+          SESSION_JSON=$(python manage.py create_test_session --email=a11y_test@sort.com --password=a11y_test_123)
+          echo "Session created"
+
+          # Extract session key from JSON output (skip non-JSON lines)
+          SESSION_KEY=$(echo "$SESSION_JSON" | grep -o '"session_key":"[^"]*"' | cut -d'"' -f4)
+          echo "SESSION_KEY=$SESSION_KEY" >> $GITHUB_ENV
+          echo "Session key: $SESSION_KEY"
+
+          # Inject session cookie into Pa11y config
+          python scripts/inject_session_cookie.py "$SESSION_KEY" .pa11yci.json sessionid
+
+      - name: Start Django server
+        env:
+          DJANGO_SECRET_KEY: test-secret-key-for-ci
+          DJANGO_DEBUG: 'False'
+        run: |
+          python manage.py runserver 8000 &
+          sleep 5
+          curl http://localhost:8000 || echo "Server not ready yet"
+          sleep 5
+
+      - name: Install Pa11y
+        run: npm install -g pa11y-ci
+
+      - name: Run Pa11y tests
+        run: npx pa11y-ci --config .pa11yci.json
+        continue-on-error: true
+
+      - name: Upload Pa11y results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pa11y-results
+          path: pa11y-results/
+          retention-days: 30
+
+  lighthouse-test:
+    name: Lighthouse Accessibility Audit
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Python dependencies
+        run: |
+          uv pip install --upgrade pip
+          uv pip install -r requirements.txt
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Run Django migrations
+        env:
+          DJANGO_SECRET_KEY: test-secret-key-for-ci
+          DJANGO_DEBUG: 'False'
+        run: |
+          python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
+
+      - name: Load test data
+        env:
+          DJANGO_SECRET_KEY: test-secret-key-for-ci
+        run: |
+          python manage.py loaddata ./data/*.json || echo "Test data load failed, continuing..."
+
+      - name: Create test session for authenticated pages
+        env:
+          DJANGO_SECRET_KEY: test-secret-key-for-ci
+        run: |
+          # Create test user and get session cookie for authenticated testing
+          python manage.py create_test_session --email=a11y_test@sort.com --password=a11y_test_123
+
+      - name: Start Django server
+        env:
+          DJANGO_SECRET_KEY: test-secret-key-for-ci
+          DJANGO_DEBUG: 'False'
+        run: |
+          python manage.py runserver 8000 &
+          sleep 10
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@latest
+
+      - name: Run Lighthouse CI
+        run: lhci autorun
+        continue-on-error: true
+
+      - name: Upload Lighthouse results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-results
+          path: .lighthouseci/
+          retention-days: 30
