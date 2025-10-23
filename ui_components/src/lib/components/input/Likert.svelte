@@ -2,6 +2,7 @@
   import DOMPurify  from "dompurify";
   import LikertRow from "./LikertRow.svelte";
   import LikertItem from "./LikertItem.svelte";
+  import RequiredBadge from "../RequiredBadge.svelte";
 
 
   let {config, value = $bindable(), viewerMode = false} = $props();
@@ -43,7 +44,7 @@
 </script>
 
 <div class="form-label">
-    {config.label}{#if config.required}<span style="color: red">*</span>{/if}
+    {config.label}{#if config.required}<RequiredBadge />{/if}
     {#if config.description || config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
     <table class="table table-striped d-none d-sm-block" style="width: 100%;">
         <thead>

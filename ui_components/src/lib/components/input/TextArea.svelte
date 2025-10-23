@@ -2,6 +2,7 @@
   import {getUniqueID} from "../../misc.svelte.ts";
   let {config, value = $bindable(), viewerMode = false} = $props();
   import DOMPurify from "dompurify";
+  import RequiredBadge from "../RequiredBadge.svelte";
 
   // Ensure value is always a string when bound
   // If there's undefined then the value passed up is missing, rather
@@ -48,7 +49,7 @@
 
 </script>
 <div class="col-12">
-    <label class="form-label" for={componentId}>{config.label}{#if config.required}<span style="color: red">*</span>{/if}</label>
+    <label class="form-label" for={componentId}>{config.label}{#if config.required}<RequiredBadge />{/if}</label>
     {#if config.description || config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
     <textarea class={{"form-control": true,"is-valid": isValid, "is-invalid": isInvalid}}
               bind:value={value}

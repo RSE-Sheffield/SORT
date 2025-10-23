@@ -1,6 +1,7 @@
 <script lang="ts">
   import {getUniqueIDArray} from "../../misc.svelte.ts";
   import DOMPurify  from "dompurify";
+  import RequiredBadge from "../RequiredBadge.svelte";
 
   let {config, value = $bindable(), viewerMode = false} = $props();
 
@@ -25,7 +26,7 @@
   }
 </script>
 <div class={{"form-label":true }}>
-    {config.label}{#if config.required}<span style="color: red">*</span>{/if}
+    {config.label}{#if config.required}<RequiredBadge />{/if}
     {#if config.description || config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
     {#each config.options as option, index}
         <div class="form-check">
