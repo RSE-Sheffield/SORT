@@ -46,21 +46,19 @@
         }
         return _.orderBy(qm, ["mean"], ["asc"]);
     })
-    let strongestAreas: string = $derived.by(() => {
+    let strongestAreas = $derived.by(() => {
         const strongestList = questionMeanSorted.slice(-2);
-        const output: string[] = [];
-        strongestList.map(qm => {
-            output.push(fieldConfig.sublabels[qm.index]);
-        })
-        return output;
+        return strongestList.map(qm => ({
+            label: fieldConfig.sublabels[qm.index],
+            mean: qm.mean
+        }));
     })
-    let weakestAreas: string = $derived.by(() => {
+    let weakestAreas = $derived.by(() => {
         const weakestList = questionMeanSorted.slice(0, 2);
-        const output: string[] = [];
-        weakestList.map(qm => {
-            output.push(fieldConfig.sublabels[qm.index]);
-        })
-        return output;
+        return weakestList.map(qm => ({
+            label: fieldConfig.sublabels[qm.index],
+            mean: qm.mean
+        }));
     })
     const sectionMeanReadiness: number = surveyStats.sections[sectionIndex].fields[fieldIndex].mean;
     const sectionMeanReadinessInt: bigint = parseInt(sectionMeanReadiness);
@@ -88,7 +86,7 @@
 <p>Areas of strength are demonstrated in the following questions:</p>
 <ul>
     {#each strongestAreas as strongArea }
-        <li>{strongArea}</li>
+        <li>{strongArea.label} <span class="badge bg-success" title="Average score {strongArea.mean.toFixed(1)}/5">{strongArea.mean.toFixed(1)}</span></li>
     {/each}
 </ul>
 <h4>Areas for improvement</h4>
@@ -97,7 +95,7 @@
 </p>
 <ul>
     {#each weakestAreas as weakArea }
-        <li>{weakArea}</li>
+        <li>{weakArea.label} <span class="badge bg-warning" title="Average score {weakArea.mean.toFixed(1)}/5">{weakArea.mean.toFixed(1)}</span></li>
     {/each}
 </ul>
 {#if useBarChart}
