@@ -110,27 +110,3 @@
                     maxHistogramCount={maxHistogramCount}
                     sectionTitle={sectionConfig.title}></LikertHistogram>
 {/if}
-<table class="table table-bordered mt-4">
-    <thead>
-    <tr>
-
-        <th scope="col" style="text-align: center">Statistic</th>
-        <th scope="col" style="text-align: center">Value</th>
-
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <td style="text-align: center">Mean</td>
-        <td style="text-align: center">{formatNumber(surveyStats.sections[sectionIndex].fields[fieldIndex].mean)}</td>
-    </tr>
-    <tr>
-        <td style="text-align: center">Minimum</td>
-        <td style="text-align: center">{surveyStats.sections[sectionIndex].fields[fieldIndex].min}</td>
-    </tr>
-    <tr>
-        <td style="text-align: center">Maximum</td>
-        <td style="text-align: center">{surveyStats.sections[sectionIndex].fields[fieldIndex].max}</td>
-    </tr>
-    </tbody>
-</table>

@@ -5,11 +5,13 @@
         Chart,
         Colors,
         BarController,
+        ScatterController,
         CategoryScale,
         LinearScale,
         BarElement,
         Legend,
         PointElement,
+        LineElement,
         Tooltip,
         Title,
 
@@ -19,11 +21,13 @@
     Chart.register(
         Colors,
         BarController,
+        ScatterController,
         BarElement,
         CategoryScale,
         LinearScale,
         Legend,
         PointElement,
+        LineElement,
         Tooltip,
         Title,
         ChartDataLabels,
@@ -69,14 +73,16 @@
     function generateStats() {
 
         let labels = [];
-        let datasets = []
+        let barDatasets = []
+        let meanValues = [];
 
         // Sorted labels
         indexMean.map(im => {
             labels.push(fieldConfig.sublabels[im.index]);
+            meanValues.push(im.mean);
         });
 
-        // Sorted data
+        // Sorted data for stacked bars
         fieldConfig.options.map((value, optionIndex) => {
             const values: number[] = [];
             for (let i = 0; i < indexMean.length; i++) {
@@ -85,14 +91,36 @@
             }
             const colour = getColourForMeanValue(Number(value));
 
-            datasets.push({
+            barDatasets.push({
                 label: value,
                 data: values,
                 borderWidth: 1,
                 backgroundColor: colour,
+                order: 2  // Draw bars first (higher order = drawn first)
             })
         })
-        return {labels, datasets};
+
+        // Add mean score overlay as a scatter dataset
+        // This is added last and with order: 1 so it's drawn on top
+        const meanDataset = {
+            label: 'Mean Score',
+            data: meanValues,
+            type: 'scatter',
+            backgroundColor: '#fff',
+            borderColor: '#000',
+            borderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointStyle: 'circle',
+            yAxisID: 'y',
+            xAxisID: 'x2',  // Use the secondary x-axis for mean scores
+            order: 1,  // Draw points last (lower order = drawn last, on top)
+            datalabels: {
+                display: false  // Don't show percentage labels on mean points
+            }
+        };
+
+        return {labels, datasets: [...barDatasets, meanDataset]};
     }
 
     $effect(() => {
@@ -125,6 +153,19 @@
                         title: {
                             display: true,
                             text: 'Number of responses'
+                        }
+                    },
+                    x2: {
+                        position: "bottom",
+                        beginAtZero: true,
+                        min: 1,
+                        max: 5,
+                        title: {
+                            display: true,
+                            text: 'Mean Score (1-5)'
+                        },
+                        grid: {
+                            display: false
                         }
                     },
                     y: {
@@ -203,6 +244,13 @@
                     tooltip: {
                         callbacks: {
                             label: function(context) {
+                                // Check if this is the mean score dataset
+                                if (context.dataset.label === 'Mean Score') {
+                                    const meanValue = context.parsed.x;
+                                    return `Mean Score: ${meanValue.toFixed(1)}`;
+                                }
+
+                                // For bar datasets, show count and percentage
                                 const score = context.dataset.label;
                                 const count = context.parsed.x;
 
@@ -210,7 +258,10 @@
                                 const dataIndex = context.dataIndex;
                                 let total = 0;
                                 context.chart.data.datasets.forEach(dataset => {
-                                    total += dataset.data[dataIndex] || 0;
+                                    // Only count bar datasets, not the mean score
+                                    if (dataset.label !== 'Mean Score') {
+                                        total += dataset.data[dataIndex] || 0;
+                                    }
                                 });
 
                                 const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
