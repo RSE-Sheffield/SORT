@@ -1,0 +1,83 @@
+# Automated accessibility checks (WCAG 2.1 AA) using Pa11y CI and Lighthouse CI.
+# Currently advisory: findings are reported but do not fail the build.
+name: Accessibility Tests
+on:
+  push:
+    branches: [ "main" ]
+    paths: &paths
+      - SORT/**
+      - home/**
+      - survey/**
+      - ui_components/**
+      - static/**
+      - requirements*.txt
+      - package*.json
+      - .pa11yci.json
+      - lighthouserc.json
+      - scripts/inject_session_cookie.py
+      - .github/workflows/accessibility-tests.yml
+  pull_request:
+    branches: [ "main" ]
+    paths: *paths
+permissions:
+  contents: read
+jobs:
+  accessibility:
+    name: Pa11y and Lighthouse accessibility checks
+    runs-on: ubuntu-24.04
+    # Advisory for now, see the follow-up issues about tightening these checks
+    continue-on-error: true
+    env:
+      DJANGO_SECRET_KEY: ci-accessibility-test-only
+      DJANGO_DEBUG: 'False'
+      DJANGO_ALLOWED_HOSTS: localhost 127.0.0.1
+      DJANGO_SESSION_COOKIE_SECURE: 'False'
+      DJANGO_CSRF_COOKIE_SECURE: 'False'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: .python-version
+          cache: "pip"
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+      - name: Install dependencies and build
+        run: |
+          pip install --requirement requirements.txt
+          npm ci
+          npm run build
+      - name: Prepare database and static files
+        run: |
+          python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
+      - name: Add session cookie for authenticated pages
+        run: |
+          session_key="$(python manage.py create_test_session | python -c 'import json, sys; print(json.load(sys.stdin)["session_key"])')"
+          echo "::add-mask::${session_key}"
+          python scripts/inject_session_cookie.py "${session_key}" .pa11yci.json
+      - name: Start Django server
+        run: |
+          # --insecure serves static files with DEBUG off
+          python manage.py runserver 8000 --insecure --noreload &
+          curl --silent --show-error --retry 15 --retry-connrefused --retry-delay 2 --output /dev/null http://localhost:8000/
+      - name: Run Pa11y
+        run: npx --yes pa11y-ci@4.0.1 --config .pa11yci.json
+      - name: Run Lighthouse
+        run: npx --yes @lhci/cli@0.15.1 autorun
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: accessibility-results
+          path: |
+            .lighthouseci/
+          if-no-files-found: ignore
+          retention-days: 30
