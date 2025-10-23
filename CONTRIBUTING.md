@@ -82,3 +82,14 @@ We expect all contributors to follow the SORT [Code of Conduct](CODE_OF_CONDUCT.
 # Testing
 
 Please read the [testing documentation](docs/testing.md).
+
+# Accessibility
+
+## Manual checks
+
+Use the [WAVE extension](https://wave.webaim.org/extension/) for your web browser to check the production website for errors. It doesn't work as well in development because of the Django debug toolbar.
+
+## Automatic checks
+
+There is a GitHub Actions workflow in [`.github/workflows/accessibility-tests.yml`](./.github/workflows/accessibility-tests.yml) that uses a couple of different frameworks to inspect the website for access issues.
+
