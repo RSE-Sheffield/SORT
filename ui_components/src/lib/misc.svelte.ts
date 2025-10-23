@@ -286,34 +286,34 @@ type ColourRange = {
 
 const colourRange: ColourRange[] = [
     {
-        colour: "#d7191c",
-        textColour: "#FFF",
+        colour: "#ccccdd",
+        textColour: "#000",
         min: 0,
-        max: 1.5,
+        max: 1,
     },
     {
-        colour: "#fdae61",
+        colour: "#aa99cc",
         textColour: "#000",
-        min: 1.5,
-        max: 2.5,
+        min: 1,
+        max: 2,
     },
     {
-        colour: "#abd9e9",
-        textColour: "#000",
-        min: 2.5,
-        max: 3.5,
-    },
-    {
-        colour: "#74add1",
-        textColour: "#000",
-        min: 3.5,
-        max: 4.5,
-    },
-    {
-        colour: "#2c7bb6",
+        colour: "#8866bb",
         textColour: "#FFF",
-        min: 4.5,
-        max: 5.5,
+        min: 2,
+        max: 3,
+    },
+    {
+        colour: "#6633aa",
+        textColour: "#FFF",
+        min: 3,
+        max: 4,
+    },
+    {
+        colour: "#440099",
+        textColour: "#FFF",
+        min: 4,
+        max: 5,
     },
 ]
 

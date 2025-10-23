@@ -49,7 +49,8 @@
                     {:else}
                     <LikertHistogram fieldConfig={fieldConfig}
                                      fieldStats={surveyStats.sections[sectionIndex].fields[fi]}
-                                     maxHistogramCount={maxHistogramCount}></LikertHistogram>
+                                     maxHistogramCount={maxHistogramCount}
+                                     sectionTitle={sectionConfig.title}></LikertHistogram>
                     {/if}
                 </div>
             {/if}

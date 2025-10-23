@@ -11,6 +11,7 @@
         Legend,
         PointElement,
         Tooltip,
+        Title,
 
     } from 'chart.js'
     import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -24,6 +25,7 @@
         Legend,
         PointElement,
         Tooltip,
+        Title,
         ChartDataLabels,
     );
     import type {FieldConfig, FieldStats} from "../../interfaces.ts";
@@ -38,9 +40,10 @@
         fieldConfig: FieldConfig;
         fieldStats: FieldStats;
         maxHistogramCount?: number;
+        sectionTitle?: string;
     }
 
-    let {fieldConfig, fieldStats, maxHistogramCount = 0}: LikertHistogramProps = $props();
+    let {fieldConfig, fieldStats, maxHistogramCount = 0, sectionTitle = 'Default title'}: LikertHistogramProps = $props();
     let barChartContainer: HTMLCanvasElement = $state()
     let chartHeight = $derived(fieldConfig.sublabels.length * 5);
     let chart: Chart | null = $state(null);
@@ -118,17 +121,23 @@
                         beginAtZero: true,
                         min: 0,
                         stacked: true,
-                        ...(maxHistogramCount > 0 && { max: maxHistogramCount })
+                        ...(maxHistogramCount > 0 && { max: maxHistogramCount }),
+                        title: {
+                            display: true,
+                            text: 'Number of responses'
+                        }
                     },
                     y: {
                         beginAtZero: true,
                         stacked: true,
                         ticks: {
+                            autoSkip: false,
                             callback: function(value) {
                                 const labelValue: string = fieldConfig.sublabels[indexMean[value].index];
-                                const maxCharsPerLine = 50;
+                                const maxCharsPerLine = 40;
+                                const maxLines = 2;
 
-                                // Split long labels into multiple lines
+                                // Split long labels into multiple lines with truncation
                                 if (labelValue.length <= maxCharsPerLine) {
                                     return labelValue;
                                 }
@@ -138,15 +147,29 @@
                                 let currentLine = '';
 
                                 for (const word of words) {
+                                    if (lines.length >= maxLines) break;
+
                                     const testLine = currentLine + (currentLine ? ' ' : '') + word;
                                     if (testLine.length <= maxCharsPerLine) {
                                         currentLine = testLine;
                                     } else {
-                                        if (currentLine) lines.push(currentLine);
-                                        currentLine = word;
+                                        if (currentLine) {
+                                            lines.push(currentLine);
+                                            currentLine = word;
+                                        } else {
+                                            // Word is too long, truncate it
+                                            lines.push(word.substring(0, maxCharsPerLine - 3) + '...');
+                                            currentLine = '';
+                                        }
                                     }
                                 }
-                                if (currentLine) lines.push(currentLine);
+
+                                if (currentLine && lines.length < maxLines) {
+                                    lines.push(currentLine);
+                                } else if (lines.length >= maxLines && currentLine) {
+                                    // Truncate last line if we have more content
+                                    lines[maxLines - 1] = lines[maxLines - 1].substring(0, maxCharsPerLine - 3) + '...';
+                                }
 
                                 return lines;
                             }
@@ -157,6 +180,18 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
+                    title: {
+                        display: sectionTitle.length > 0,
+                        text: sectionTitle,
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: {
+                            top: 10,
+                            bottom: 10
+                        }
+                    },
                     legend: {
                         display: true,
                         position: 'top',
@@ -170,7 +205,16 @@
                             label: function(context) {
                                 const score = context.dataset.label;
                                 const count = context.parsed.x;
-                                return `Score ${score}: ${count} responses`;
+
+                                // Calculate total responses for this row
+                                const dataIndex = context.dataIndex;
+                                let total = 0;
+                                context.chart.data.datasets.forEach(dataset => {
+                                    total += dataset.data[dataIndex] || 0;
+                                });
+
+                                const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                                return `Score ${score}: ${count} responses (${percentage}%)`;
                             }
                         }
                     },
@@ -178,11 +222,20 @@
                         color: '#fff',
                         font: {
                             weight: 'bold',
-                            size: 12
+                            size: 11
                         },
                         formatter: (value, context) => {
-                            // Only show label if the segment is large enough
-                            return value > 0 ? value : '';
+                            if (value === 0) return '';
+
+                            // Calculate total responses for this row
+                            const dataIndex = context.dataIndex;
+                            let total = 0;
+                            context.chart.data.datasets.forEach(dataset => {
+                                total += dataset.data[dataIndex] || 0;
+                            });
+
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(0) : 0;
+                            return `${percentage}%`;
                         },
                         anchor: 'center',
                         align: 'center',
