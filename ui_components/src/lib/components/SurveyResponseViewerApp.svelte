@@ -24,11 +24,12 @@
         <div class="card-body">
 
             <div class="mb-3">
-                <strong>Responses collected: { responses.length }</strong>
+                <strong>Responses collected:</strong> { responses.length }
             </div>
             <div>
-                <a href={csvDownloadUrl} class="btn btn-primary" download>
-                    <i class="bx bx-export"></i>Export survey data as CSV</a>
+                <a href={csvDownloadUrl} class="btn btn-primary" download
+                title="Download the responses in comma-separated values format">
+                    <i class="bx bx-export"></i>&nbsp;Export survey data as CSV</a>
             </div>
 
         </div>
@@ -52,10 +53,12 @@
     </ul>
 
     {#if currentPage === 0}
+        <!-- Summary analytics -->
         <SurveyDataView config={config} responses={responses}></SurveyDataView>
     {/if}
 
     {#if currentPage === 1}
+        <!-- Individual form submissions -->
         <SurveyResponsesViewer config={config} responses={responses}/>
     {/if}
 

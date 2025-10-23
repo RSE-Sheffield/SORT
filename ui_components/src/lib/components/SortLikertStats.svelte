@@ -20,7 +20,8 @@
         sectionIndex: number,
         fieldIndex: number,
         readinessDescriptions: string[],
-        useBarChart: boolean
+        useBarChart: boolean,
+        maxHistogramCount: number
     }
 
     let {
@@ -29,7 +30,8 @@
         sectionIndex,
         fieldIndex,
         readinessDescriptions = [],
-        useBarChart = true
+        useBarChart = true,
+        maxHistogramCount = 0
     }: Props = $props();
 
     let sectionConfig = $derived(config.sections[sectionIndex]);
@@ -100,10 +102,12 @@
 </ul>
 {#if useBarChart}
     <LikertBarChart fieldConfig={fieldConfig}
-                     fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}></LikertBarChart>
+                     fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}
+                     maxHistogramCount={maxHistogramCount}></LikertBarChart>
 {:else}
     <LikertHistogram fieldConfig={fieldConfig}
-                    fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}></LikertHistogram>
+                    fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}
+                    maxHistogramCount={maxHistogramCount}></LikertHistogram>
 {/if}
 <table class="table table-bordered mt-4">
     <thead>

@@ -13,6 +13,7 @@
         Tooltip,
 
     } from 'chart.js'
+    import ChartDataLabels from 'chartjs-plugin-datalabels';
 
     Chart.register(
         Colors,
@@ -23,6 +24,7 @@
         Legend,
         PointElement,
         Tooltip,
+        ChartDataLabels,
     );
     import type {FieldConfig, FieldStats} from "../../interfaces.ts";
     import {getColourForMeanValue, getHistogramMean} from "../../misc.svelte.js";
@@ -35,9 +37,10 @@
     interface LikertHistogramProps {
         fieldConfig: FieldConfig;
         fieldStats: FieldStats;
+        maxHistogramCount?: number;
     }
 
-    let {fieldConfig, fieldStats}: LikertHistogramProps = $props();
+    let {fieldConfig, fieldStats, maxHistogramCount = 0}: LikertHistogramProps = $props();
     let barChartContainer: HTMLCanvasElement = $state()
     let chartHeight = $derived(fieldConfig.sublabels.length * 5);
     let chart: Chart | null = $state(null);
@@ -111,18 +114,41 @@
             options: {
                 scales: {
                     x: {
-                        position: "top"
+                        position: "top",
+                        beginAtZero: true,
+                        min: 0,
+                        stacked: true,
+                        ...(maxHistogramCount > 0 && { max: maxHistogramCount })
                     },
                     y: {
                         beginAtZero: true,
+                        stacked: true,
                         ticks: {
-                            callback: (value) => {
-                                const maxCutoff = 80;
+                            callback: function(value) {
                                 const labelValue: string = fieldConfig.sublabels[indexMean[value].index];
-                                if (labelValue.length > maxCutoff)
-                                    return labelValue.substring(0, maxCutoff) + "...";
-                                else
+                                const maxCharsPerLine = 50;
+
+                                // Split long labels into multiple lines
+                                if (labelValue.length <= maxCharsPerLine) {
                                     return labelValue;
+                                }
+
+                                const words = labelValue.split(' ');
+                                const lines: string[] = [];
+                                let currentLine = '';
+
+                                for (const word of words) {
+                                    const testLine = currentLine + (currentLine ? ' ' : '') + word;
+                                    if (testLine.length <= maxCharsPerLine) {
+                                        currentLine = testLine;
+                                    } else {
+                                        if (currentLine) lines.push(currentLine);
+                                        currentLine = word;
+                                    }
+                                }
+                                if (currentLine) lines.push(currentLine);
+
+                                return lines;
                             }
                         }
                     }
@@ -130,6 +156,38 @@
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        title: {
+                            display: true,
+                            text: 'Score'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const score = context.dataset.label;
+                                const count = context.parsed.x;
+                                return `Score ${score}: ${count} responses`;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: {
+                            weight: 'bold',
+                            size: 12
+                        },
+                        formatter: (value, context) => {
+                            // Only show label if the segment is large enough
+                            return value > 0 ? value : '';
+                        },
+                        anchor: 'center',
+                        align: 'center',
+                    }
+                }
             }
         });
 

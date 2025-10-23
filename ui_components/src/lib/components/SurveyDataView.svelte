@@ -25,6 +25,32 @@
         return generateStatsFromSurveyResponses(config, filteredResponses);
     })
 
+    // Calculate the maximum STACKED count across all histograms in all sections
+    // Since bars are stacked, we need the total of all option counts for each question
+    let maxHistogramCount: number = $derived.by(() => {
+        if (!surveyStats) return 0;
+
+        let maxCount = 0;
+        for (const section of surveyStats.sections) {
+            for (const field of section.fields) {
+                if (field.histograms) {
+                    // For likert fields with multiple histograms (one per sublabel/question)
+                    // Each histogram has counts for each option (1-5)
+                    // Sum all option counts for each question (stacked bar height)
+                    for (const histogram of field.histograms) {
+                        const stackedTotal = histogram.reduce((sum, valueCount) => sum + valueCount.count, 0);
+                        maxCount = Math.max(maxCount, stackedTotal);
+                    }
+                } else if (field.histogram) {
+                    // For other field types with single histogram
+                    const stackedTotal = field.histogram.reduce((sum, valueCount) => sum + valueCount.count, 0);
+                    maxCount = Math.max(maxCount, stackedTotal);
+                }
+            }
+        }
+        return maxCount;
+    })
+
     function handleFilterChange(changedFilteredResponses: SurveyResponseBatch) {
         filteredResponses = changedFilteredResponses;
     }
@@ -71,7 +97,8 @@
                         <SurveySectionDataView
                                 config={config}
                                 surveyStats={surveyStats}
-                                sectionIndex={si}>
+                                sectionIndex={si}
+                                maxHistogramCount={maxHistogramCount}>
                         </SurveySectionDataView>
                     </div>
                 </div>
