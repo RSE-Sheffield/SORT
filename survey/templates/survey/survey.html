@@ -122,7 +122,7 @@
                                         <div class="card-body">
                                             <div class="card-text text-center">
                                                 <button onclick="downloadQRCode()" class="btn btn-primary">
-                                                    <i class='bx bx-download'></i> Download invitation QR code
+                                                    <i class='bx bx-download'></i> Download invitation <abbr title="Quick Response">QR</abbr> code
                                                 </button>
                                             </div>
 
@@ -230,7 +230,7 @@
                         <div class="btn-group" role="group" aria-label="Survey data export">
                             <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download
                                title="Export survey data as comma-separated values (CSV)">
-                                <i class="bx bx-export"></i> Export survey data as CSV</a>
+                                <i class="bx bx-export"></i> Export survey data as <abbr title="Comma-Separated Values">CSV</abbr></a>
                             <a href="{% url 'survey_export_excel' survey.id %}" class="btn btn-primary" download
                                title="Export survey data as an Excel workbook">
                                 <i class="bx bx-spreadsheet"></i> Excel</a>
