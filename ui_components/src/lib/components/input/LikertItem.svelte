@@ -1,7 +1,7 @@
 <script lang="ts">
   import {getUniqueIDArray} from "../../misc.svelte.ts";
 
-  let {config, sublabelIndex, value = $bindable(), viewerMode=false} = $props();
+  let {config, sublabelIndex, value = $bindable(), viewerMode = false} = $props();
 
   const radioIds = getUniqueIDArray(config.options.length);
 
