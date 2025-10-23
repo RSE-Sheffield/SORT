@@ -1,7 +1,7 @@
 {% extends "base_manager.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-    <div class="container mx-auto px-4 py-8 mt-4">
+    <div class="container mx-auto py-8 mt-4">
         <div class="d-flex justify-content-between align-items-center">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
@@ -18,10 +18,6 @@
                 </ol>
             </nav>
         </div>
-    </div>
-    <div class="container">
-        <h1>{{ organisation.name }}</h1>
-        <p>{{ organisation.description }}</p>
     </div>
     <div class="container">
         <h1><i class='bx bxs-user-plus'></i> Invite new member</h1>
