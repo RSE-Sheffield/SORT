@@ -16,7 +16,7 @@
         isInvalid = !valid;
     }
 
-    function clearValidation(){
+    function clearValidation() {
         isValid = false;
         isInvalid = false;
     }
@@ -68,11 +68,6 @@
 
 </script>
 {#each config.sections as section, index (index)}
-    {#if index == 0}
-    <div class="alert alert-primary" role="alert">
-        <p>ℹ️ You must read to and agree to the <a href="/participant-information">participant information sheet</a> before proceeding.</p>
-    </div>
-    {/if}
     {#if currentPage === index}
         <SectionComponent bind:config={config.sections[index]}
                           editable={false}
@@ -83,21 +78,21 @@
     {/if}
 {/each}
 {#if isInvalid}
-<div class="alert alert-danger mb-3">
-    Values are incorrect or missing. Please check the values above before continuing.
-</div>
+    <div class="alert alert-danger mb-3">
+        Values are incorrect or missing. Please check the values above before continuing.
+    </div>
 {/if}
 
 <div class="d-flex">
-        <button class="btn btn-primary me-3"  disabled={currentPage < 1} onclick={previousPage}>&lt; Previous</button>
+    <button class="btn btn-primary me-3" disabled={currentPage < 1} onclick={previousPage}>&lt; Previous</button>
 
-        {#if currentPage < config.sections.length - 1}
-            <button class="btn btn-primary" onclick={nextPage}>Next &gt;</button>
-        {:else}
-            <form method="post" onsubmit={onSubmitHandler}>
-                <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}"/>
-                <input type="hidden" name="value" value="{valueStr}"/>
-                <button type="submit" class="btn btn-primary">Submit <i class="bx bxs-send" ></i></button>
-            </form>
-        {/if}
+    {#if currentPage < config.sections.length - 1}
+        <button class="btn btn-primary" onclick={nextPage}>Next &gt;</button>
+    {:else}
+        <form method="post" onsubmit={onSubmitHandler}>
+            <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}"/>
+            <input type="hidden" name="value" value="{valueStr}"/>
+            <button type="submit" class="btn btn-primary">Submit <i class="bx bxs-send"></i></button>
+        </form>
+    {/if}
 </div>
