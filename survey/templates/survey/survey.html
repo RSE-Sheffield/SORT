@@ -39,10 +39,13 @@
                 <div class="float-end">
                     <a href="{% url 'survey_edit' survey.pk %}" class="btn btn-primary"
                        title="Modify the survey title and description">
-                        <i class='bx bxs-edit'></i> Edit</a>
+                        <i class='bx bxs-edit'></i>&nbsp;Edit</a>
                     <a href="{% url 'survey_duplicate_config' survey.pk %}" class="btn btn-primary"
                        title="Create a new survey using current configurations.">
-                        <i class='bx bxs-copy'></i> Duplicate</a>
+                        <i class='bx bxs-copy'></i>&nbsp;Duplicate</a>
+                    <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger"
+                       title="Remove this survey and all its responses">
+                        <i class='bx bxs-trash'></i>&nbsp;Delete</a>
                 </div>
                 <p><strong>Respondent profession:</strong> {{ survey.survey_body_path }}</p>
                 <p><strong>Description:</strong></p>
