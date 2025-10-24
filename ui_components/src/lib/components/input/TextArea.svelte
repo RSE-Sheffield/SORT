@@ -48,17 +48,22 @@
 
 </script>
 <div class="col-12">
-    <label class="form-label" for={componentId}>{config.label}{#if config.required}<span style="color: red">*</span>{/if}</label>
-    {#if config.description || config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
-    <textarea class={{"form-control": true,"is-valid": isValid, "is-invalid": isInvalid}}
-              bind:value={value}
-              required={config.required}
-              id={componentId}
-              disabled={viewerMode}
-    ></textarea>
-    <span class="invalid-feedback">
-        {validationErrorFeedback}
-    </span>
+    <div class="textarea-container card mb-4 shadow-sm">
+        <div class="card-body">
+            <label class="form-label fw-bold" for={componentId}>{config.label}{#if config.required}<span style="color: red">*</span>{/if}</label>
+            {#if config.description || config.description.length > 0}<p class="form-text text-muted">{@html DOMPurify.sanitize(config.description)}</p>{/if}
+            <textarea class={{"form-control": true,"is-valid": isValid, "is-invalid": isInvalid}}
+                      bind:value={value}
+                      required={config.required}
+                      id={componentId}
+                      disabled={viewerMode}
+                      rows="4"
+            ></textarea>
+            <span class="invalid-feedback">
+                {validationErrorFeedback}
+            </span>
+        </div>
+    </div>
 </div>
 
 

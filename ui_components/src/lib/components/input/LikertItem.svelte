@@ -39,15 +39,16 @@
         {#each config.options as option (option)}
             <div class="col">
                 <div class="form-check">
-                    <label class="form-check-label">
-                        {option}
-                        <input class={{"form-check-input": true, "is-valid": isValid, "is-invalid": isInvalid}}
+                    <label class="form-check-label likert-mobile-label">
+                        <input class={{"form-check-input likert-radio-input": true, "is-valid": isValid, "is-invalid": isInvalid}}
                                type="radio"
                                value={option}
                                bind:group={value}
                                required={config.required}
                                disabled={viewerMode}
-                        /></label>
+                        />
+                        <span class="ms-2">{option}</span>
+                    </label>
                 </div>
             </div>
         {/each}

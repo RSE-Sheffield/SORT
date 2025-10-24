@@ -42,43 +42,49 @@
 
 </script>
 
-<div class="form-label">
-    {config.label}{#if config.required}<span style="color: red">*</span>{/if}
-    {#if config.description || config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
-    <table class="table table-striped d-none d-sm-block" style="width: 100%;">
-        <thead>
-        <tr>
-            <th>Statement</th>
-            {#each config.options as option, index (index)}
-                <th scope="col">{option}</th>
-            {/each}
+<div class="likert-container card mb-4 shadow-sm">
+    <div class="card-body">
+        <div class="form-label mb-3">
+            <h5 class="card-title">{config.label}{#if config.required}<span style="color: red">*</span>{/if}</h5>
+            {#if config.description || config.description.length > 0}<p class="form-text text-muted">{@html DOMPurify.sanitize(config.description)}</p>{/if}
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover d-none d-sm-block" style="width: 100%;">
+                <thead class="table-light">
+                <tr>
+                    <th class="fw-bold">Statement</th>
+                    {#each config.options as option, index (index)}
+                        <th scope="col" class="text-center">{option}</th>
+                    {/each}
 
-        </tr>
+                </tr>
 
-        </thead>
-        <tbody>
-        {#each config.sublabels as sublabel, sublabelIndex (sublabelIndex)}
-            <tr>
-                <LikertRow config={config}
-                           sublabelIndex={sublabelIndex}
-                           bind:value={compsValue[sublabelIndex]}
-                           bind:this={_likertRows[sublabelIndex]}
-                           viewerMode={viewerMode}
+                </thead>
+                <tbody>
+                {#each config.sublabels as sublabel, sublabelIndex (sublabelIndex)}
+                    <tr>
+                        <LikertRow config={config}
+                                   sublabelIndex={sublabelIndex}
+                                   bind:value={compsValue[sublabelIndex]}
+                                   bind:this={_likertRows[sublabelIndex]}
+                                   viewerMode={viewerMode}
+                        />
+                    </tr>
+                {/each}
+                </tbody>
+            </table>
+        </div>
+        <div class="d-block d-sm-none">
+            {#each config.sublabels as sublabel, sublabelIndex (sublabelIndex)}
+                <LikertItem config={config}
+                               sublabelIndex={sublabelIndex}
+                               bind:value={compsValue[sublabelIndex]}
+                               bind:this={_likertItems[sublabelIndex]}
+                                viewerMode={viewerMode}
                 />
-            </tr>
-        {/each}
-        </tbody>
-    </table>
-    <div class="d-block d-sm-none">
-        {#each config.sublabels as sublabel, sublabelIndex (sublabelIndex)}
-            <LikertItem config={config}
-                           sublabelIndex={sublabelIndex}
-                           bind:value={compsValue[sublabelIndex]}
-                           bind:this={_likertItems[sublabelIndex]}
-                            viewerMode={viewerMode}
-            />
 
-        {/each}
-        <hr/>
+            {/each}
+            <hr/>
+        </div>
     </div>
 </div>
