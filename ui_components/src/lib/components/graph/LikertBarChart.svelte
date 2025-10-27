@@ -34,9 +34,10 @@
     interface LikertHistogramProps {
         fieldConfig: FieldConfig;
         fieldStats: FieldStats;
+        maxHistogramCount?: number;
     }
 
-    let {fieldConfig, fieldStats}: LikertHistogramProps = $props();
+    let {fieldConfig, fieldStats, maxHistogramCount = 0}: LikertHistogramProps = $props();
     let barChartContainer: HTMLCanvasElement = $state()
     let chartHeight = $derived(fieldConfig.sublabels.length * 2.5); // Reduced height since we're showing less data
     let chart: Chart | null = $state(null);
@@ -98,10 +99,8 @@
                     x: {
                         position: "top",
                         beginAtZero: true,
-                        max: Math.max(...fieldConfig.options.map(Number)), // Set max to highest possible score
-                        ticks: {
-                            stepSize: 0.5 // Adjust based on your scale
-                        }
+                        min: 0,
+                        ...(maxHistogramCount > 0 && { max: maxHistogramCount })
                     },
                     y: {
                         ticks: {
