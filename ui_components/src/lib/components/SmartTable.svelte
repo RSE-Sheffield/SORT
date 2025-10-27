@@ -66,8 +66,9 @@
                     title="Set a realistic but definite completion date. Consider dependencies between different actions and allow adequate time for implementation and embedding of changes.">
                     Deadline
                 </th>
-
-                <th scope="col"></th>
+                {#if !viewOnly}
+                    <th scope="col">Actions</th>
+                {/if}
             </tr>
             </thead>
             <tbody>
@@ -80,7 +81,6 @@
                         <td>{action.outcomes}</td>
                         <td>{action.personResponsible}</td>
                         <td>{action.deadline}</td>
-                        <td></td>
                     </tr>
                 {:else}
                     <tr>
