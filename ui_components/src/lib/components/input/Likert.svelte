@@ -81,5 +81,4 @@
             {/each}
             <hr/>
         </div>
-    </div>
 </div>
