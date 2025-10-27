@@ -136,3 +136,23 @@ h1, h2, h3, h4, h5, h6 {
 .breadcrumb a {
     color: var(--primary-colour);
 }
+
+/* Ensure sufficient contrast for all body links (WCAG AA compliant) */
+main a {
+    color: #005A8F;
+    text-decoration: underline;
+}
+
+main a:visited {
+    color: var(--primary-colour);
+}
+
+main a:hover {
+    color: #003D5C;
+    text-decoration: underline;
+}
+
+main a:focus {
+    outline: 2px solid #005A8F;
+    outline-offset: 2px;
+}

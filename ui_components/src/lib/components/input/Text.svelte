@@ -2,6 +2,7 @@
   import DOMPurify  from "dompurify";
   import {getUniqueID} from "../../misc.svelte.js";
   import {TextType} from "../../interfaces.ts";
+  import RequiredBadge from "../RequiredBadge.svelte";
 
 
   let {config, value = $bindable(), viewerMode = false} = $props();
@@ -96,7 +97,7 @@
 
 </script>
 <div class="col-12">
-    <label class="form-label" for={componentId}>{config.label}{#if config.required}<span style="color: red">*</span>{/if}</label>
+    <label class="form-label" for={componentId}>{config.label}{#if config.required}<RequiredBadge />{/if}</label>
     {#if config.description || config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
     <input type="text"
            class={{"form-control": true,"is-valid": isValid, "is-invalid": isInvalid}}
