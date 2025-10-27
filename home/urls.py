@@ -102,4 +102,9 @@ urlpatterns = [
     ),
     path("eula/", views.LicenseAgreementView.as_view(), name="eula"),
     path("privacy/", views.PrivacyPolicyView.as_view(), name="privacy"),
+    path(
+        "participant-information/",
+        views.ParticipantInformationView.as_view(),
+        name="participant_information",
+    ),
 ]

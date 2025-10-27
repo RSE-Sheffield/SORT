@@ -523,9 +523,17 @@ class PrivacyPolicyView(TemplateView):
     Privacy policy and data protection notice
     """
 
-    template_name = "home/privacy.html"
+    template_name = "about/privacy.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["current_date"] = timezone.now().strftime("%d %B %Y")
         return context
+
+
+class ParticipantInformationView(TemplateView):
+    """
+    Participant information sheet for research study
+    """
+
+    template_name = "about/participant_information.html"
