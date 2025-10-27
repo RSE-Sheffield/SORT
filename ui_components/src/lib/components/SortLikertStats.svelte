@@ -3,10 +3,14 @@
     import type {SurveyConfig, SurveyStats} from "../interfaces.ts";
     import LikertHistogram from "./graph/LikertHistogram.svelte";
     import LikertBarChart from "./graph/LikertBarChart.svelte";
+    import LikertMeanChart from "./graph/LikertMeanChart.svelte";
     import {
         formatNumber,
         getHighestHistogramValue,
-        getHistogramMean, getSortMaturityLabel,
+        getHistogramMean,
+        getSortMaturityLabel,
+        getColourForMeanValue,
+        getTextColourForMeanValue,
     } from "../misc.svelte.ts";
 
     type QM = {
@@ -86,7 +90,7 @@
 <p>Areas of strength are demonstrated in the following questions:</p>
 <ul>
     {#each strongestAreas as strongArea }
-        <li>{strongArea.label} <span class="badge bg-success" title="Average score {strongArea.mean.toFixed(1)}/5">{strongArea.mean.toFixed(1)}</span></li>
+        <li>{strongArea.label} <span class="badge" style="background-color: {getColourForMeanValue(strongArea.mean)}; color: {getTextColourForMeanValue(strongArea.mean)};" title="Average score {strongArea.mean.toFixed(1)}/5">{strongArea.mean.toFixed(1)}</span></li>
     {/each}
 </ul>
 <h4>Areas for improvement</h4>
@@ -95,9 +99,16 @@
 </p>
 <ul>
     {#each weakestAreas as weakArea }
-        <li>{weakArea.label} <span class="badge bg-warning" title="Average score {weakArea.mean.toFixed(1)}/5">{weakArea.mean.toFixed(1)}</span></li>
+        <li>{weakArea.label} <span class="badge" style="background-color: {getColourForMeanValue(weakArea.mean)}; color: {getTextColourForMeanValue(weakArea.mean)};" title="Average score {weakArea.mean.toFixed(1)}/5">{weakArea.mean.toFixed(1)}</span></li>
     {/each}
 </ul>
+<h4>Mean scores by question</h4>
+<p>The chart below shows the average (mean) score for each question in this section. Each bar represents the overall performance for that question, with colours indicating the maturity level achieved.</p>
+<LikertMeanChart fieldConfig={fieldConfig}
+                 fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}>
+</LikertMeanChart>
+<h4>Response distribution</h4>
+<p>The chart below shows the detailed breakdown of all responses for each question. Each bar is divided into segments representing the number of responses at each maturity level (Not Yet Planned, Planned, Early Progress, Substantial Progress, Established).</p>
 {#if useBarChart}
     <LikertBarChart fieldConfig={fieldConfig}
                      fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}

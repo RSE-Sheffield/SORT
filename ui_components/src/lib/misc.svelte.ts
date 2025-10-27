@@ -333,19 +333,22 @@ export function getTextColourForMeanValue(mean: number): string {
     return colourRange[0].textColour;
 }
 
-export function getSortMaturityLabel(score: number) {
+export function getSortMaturityLabel(score: number | string) {
     // The scale goes 1 - 5 (doesn't start at zero)
-    if (score < 1 || 5 < score) {
-        throw new Error("Invalid score")
-    } else if (score >= 1.0 && score < 2.0) {
-        return "Not Net Planned";
-    } else if (score >= 2.0 && score < 3.0) {
-        return "Planned";
-    } else if (score >= 3.0 && score < 4.0) {
-        return "Early Progress";
-    } else if (score >= 4.0 && score < 5.0) {
-        return "Substantial Progress";
-    } else {
-        return "Established"
+    const numScore = Math.round(Number(score));
+
+    switch (numScore) {
+        case 1:
+            return "Not Yet Planned";
+        case 2:
+            return "Planned";
+        case 3:
+            return "Early Progress";
+        case 4:
+            return "Substantial Progress";
+        case 5:
+            return "Established";
+        default:
+            throw new Error(`Invalid score: ${score}. Score must be between 1 and 5 inclusive.`);
     }
 }
