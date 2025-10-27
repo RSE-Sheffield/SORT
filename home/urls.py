@@ -107,4 +107,9 @@ urlpatterns = [
         views.ParticipantInformationView.as_view(),
         name="participant_information",
     ),
+    path(
+        "data-sharing-agreement/",
+        views.DataSharingAgreementView.as_view(),
+        name="data_sharing_agreement",
+    ),
 ]

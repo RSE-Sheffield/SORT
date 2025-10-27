@@ -537,3 +537,12 @@ class ParticipantInformationView(TemplateView):
     """
 
     template_name = "about/participant_information.html"
+
+
+class DataSharingAgreementView(LoginRequiredMixin, TemplateView):
+    """
+    Data Sharing Agreement between NHS organisations and University of Sheffield
+    for research data sharing through SORT Online
+    """
+
+    template_name = "about/data_sharing_agreement.html"

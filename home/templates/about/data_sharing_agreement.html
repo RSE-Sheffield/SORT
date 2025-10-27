@@ -1,0 +1,155 @@
+{% extends "base_manager.html" %}
+{% load static %}
+
+{% block title %}Data Sharing Agreement - SORT{% endblock %}
+
+{% block content %}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <h1 class="mb-4">Data Sharing Agreement</h1>
+
+                <p class="lead">This Data Sharing Agreement governs the sharing of data between NHS organisations
+                    and the University of Sheffield through the SORT Online application.</p>
+
+                <p><strong>Last updated:</strong> [DATE TO BE ADDED]</p>
+
+                <hr class="my-4">
+
+                <div class="alert alert-info">
+                    <strong>Note:</strong> This page displays the Data Sharing Agreement that NHS managers
+                    must review and accept before using SORT Online. The actual agreement content will be
+                    provided by the legal team.
+                </div>
+
+                <section class="mb-5">
+                    <h2>1. Parties to this Agreement</h2>
+                    <p>[Content to be provided by legal team]</p>
+                    <ul>
+                        <li><strong>Data Controller 1:</strong> NHS Organisation (name to be specified)</li>
+                        <li><strong>Data Controller 2:</strong> The University of Sheffield</li>
+                    </ul>
+                </section>
+
+                <section class="mb-5">
+                    <h2>2. Purpose of Data Sharing</h2>
+                    <p>[Content to be provided by legal team]</p>
+                    <p>The purpose of this agreement is to enable:</p>
+                    <ul>
+                        <li>NHS organisations to assess and improve research readiness</li>
+                        <li>University of Sheffield to conduct research on organisational research capacity</li>
+                        <li>Aggregated analysis to support healthcare research development</li>
+                    </ul>
+                </section>
+
+                <section class="mb-5">
+                    <h2>3. Data Categories</h2>
+                    <p>[Content to be provided by legal team]</p>
+                    <p>The following categories of data will be shared:</p>
+                    <ul>
+                        <li>Survey responses from healthcare staff</li>
+                        <li>Organisational assessment scores</li>
+                        <li>Demographic information (non-identifying)</li>
+                        <li>Improvement planning data</li>
+                    </ul>
+                </section>
+
+                <section class="mb-5">
+                    <h2>4. Legal Basis for Processing</h2>
+                    <p>[Content to be provided by legal team]</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>5. Data Protection and Security</h2>
+                    <p>[Content to be provided by legal team]</p>
+                    <p>Both parties commit to:</p>
+                    <ul>
+                        <li>Compliance with UK GDPR and Data Protection Act 2018</li>
+                        <li>Appropriate technical and organisational security measures</li>
+                        <li>Confidentiality of shared data</li>
+                        <li>Regular security assessments</li>
+                    </ul>
+                </section>
+
+                <section class="mb-5">
+                    <h2>6. Data Retention and Disposal</h2>
+                    <p>[Content to be provided by legal team]</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>7. Rights and Responsibilities</h2>
+                    <p>[Content to be provided by legal team]</p>
+
+                    <h3 class="h5 mt-3">NHS Organisation Responsibilities:</h3>
+                    <ul>
+                        <li>[To be specified]</li>
+                    </ul>
+
+                    <h3 class="h5 mt-3">University of Sheffield Responsibilities:</h3>
+                    <ul>
+                        <li>[To be specified]</li>
+                    </ul>
+                </section>
+
+                <section class="mb-5">
+                    <h2>8. Data Sharing Procedures</h2>
+                    <p>[Content to be provided by legal team]</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>9. Breach Notification</h2>
+                    <p>[Content to be provided by legal team]</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>10. Duration and Termination</h2>
+                    <p>[Content to be provided by legal team]</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>11. Dispute Resolution</h2>
+                    <p>[Content to be provided by legal team]</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>12. Amendments</h2>
+                    <p>[Content to be provided by legal team]</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>13. Contact Information</h2>
+
+                    <h3 class="h5 mt-3">University of Sheffield</h3>
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <p class="mb-2"><strong>Data Protection Officer</strong></p>
+                            <p class="mb-2">University of Sheffield</p>
+                            <p class="mb-2">Western Bank</p>
+                            <p class="mb-2">Sheffield, S10 2TN</p>
+                            <p class="mb-2">United Kingdom</p>
+                            <p class="mb-2">Email: <a href="mailto:dataprotection@sheffield.ac.uk">dataprotection@sheffield.ac.uk</a></p>
+                        </div>
+                    </div>
+
+                    <h3 class="h5 mt-3">SORT Online Support</h3>
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="mb-2">Email: <a href="mailto:sort-online-support-group@sheffield.ac.uk">sort-online-support-group@sheffield.ac.uk</a></p>
+                        </div>
+                    </div>
+                </section>
+
+                <hr class="my-4">
+
+                <p class="text-muted small">
+                    This Data Sharing Agreement is provided in accordance with the UK General Data Protection
+                    Regulation (UK GDPR) and the Data Protection Act 2018.
+                </p>
+
+                <div class="mt-4">
+                    <a href="{% url 'myorganisation' %}" class="btn btn-primary">Return to My Organisation</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
