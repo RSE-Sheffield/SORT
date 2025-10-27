@@ -13,9 +13,14 @@
                         project's {{ project.survey_set.count }} survey(s) and associated
                         data will also be deleted.
                     </p>
+                    <ul style="list-style-type: '🗑️ ';">
+                        {% for survey in project.surveys %}
+                        <li>{{ survey }} ({{ survey.reference_number }})</li>
+                        {% endfor %}
+                    </ul>
                     <div class="d-flex">
                         <div>
-                            <a href="{% url 'project' project.pk %}" class="btn btn-secondary me-4">Cancel</a>
+                            <a href="{% url 'project' project.pk %}" class="btn btn-secondary me-3">Cancel</a>
                         </div>
                         <div>
                             <form method="POST">

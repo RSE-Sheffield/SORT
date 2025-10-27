@@ -132,3 +132,7 @@ class Project(models.Model):
         Does this project contain any active surveys?
         """
         return any(self.survey.values_list("is_active", flat=True))
+
+    @property
+    def surveys(self):
+        return self.survey.all()
