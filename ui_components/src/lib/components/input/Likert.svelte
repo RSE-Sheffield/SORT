@@ -78,7 +78,8 @@
                             viewerMode={viewerMode}
             />
 
-        {/each}
-        <hr/>
+            {/each}
+            <hr/>
+        </div>
     </div>
 </div>
