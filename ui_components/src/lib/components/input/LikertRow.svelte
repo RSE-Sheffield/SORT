@@ -26,9 +26,9 @@
     <span class="invalid-feedback">A value must be selected</span>
 </td>
 {#each config.options as option (option)}
-    <td>
-        <div class="form-check">
-            <input class={{"form-check-input": true, "is-valid": isValid, "is-invalid": isInvalid}}
+    <td class="text-center">
+        <label class="likert-radio-label">
+            <input class={{"form-check-input likert-radio-input": true, "is-valid": isValid, "is-invalid": isInvalid}}
                    type="radio"
                    value={option}
                    bind:group={value}
@@ -36,6 +36,6 @@
                    placeholder={option}
                    disabled={viewerMode}
             />
-        </div>
+        </label>
     </td>
 {/each}
