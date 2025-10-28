@@ -70,6 +70,11 @@ urlpatterns = [
         name="member_invite_accept",
     ),
     path(
+        "myorganisation/data-sharing-agreement/",
+        views.DataSharingAgreementView.as_view(),
+        name="data_sharing_agreement",
+    ),
+    path(
         "organisation/create/",
         views.OrganisationCreateView.as_view(),
         name="organisation_create",
@@ -106,10 +111,5 @@ urlpatterns = [
         "participant-information/",
         views.ParticipantInformationView.as_view(),
         name="participant_information",
-    ),
-    path(
-        "data-sharing-agreement/",
-        views.DataSharingAgreementView.as_view(),
-        name="data_sharing_agreement",
     ),
 ]
