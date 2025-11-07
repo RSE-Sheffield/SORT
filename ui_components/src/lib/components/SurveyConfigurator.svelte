@@ -50,8 +50,12 @@
     }
 
     function handleMoveRequest(srcSectionIndex: number, srcFieldIndex: number, destSectionIndex: number, destFieldIndex: number){
+
         if(!editable || srcSectionIndex < 0 || destSectionIndex < 0 || srcFieldIndex < 0)
             return;
+
+        if(srcSectionIndex === destSectionIndex && destFieldIndex < 0)
+            return; // Don't move if dropped into the same section
 
         if(destFieldIndex >= 0){
             // Move within or between sections with existing elements
