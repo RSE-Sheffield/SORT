@@ -55,7 +55,8 @@ class Survey(models.Model):
     is_shared = models.BooleanField(
         verbose_name="Confirm data sharing agreement",
         default=True,
-        help_text="Do you accept the terms of the data sharing agreement between your organisation and the University of Sheffield?",
+        help_text="Do you accept the terms of the data sharing agreement"
+                  "between your organisation and the University of Sheffield?",
         null=False,
     )
 
