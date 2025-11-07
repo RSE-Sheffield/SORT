@@ -58,6 +58,14 @@
                         <i class="bx bx-copy"></i>
                     </button>
                 </p>
+                {% if survey.is_shared %}
+                    <div class="alert alert-secondary">
+                        The responses to this survey are available to the University of Sheffield as described in
+                        the <a href="{% url 'data_sharing_agreement' %}"
+                               title="View the data sharing agreement between your organisation and the University">
+                        <i class="bx bxs-note"></i> Data Sharing Agreement</a>.
+                    </div>
+                {% endif %}
             </div>
         </div>
 
@@ -110,7 +118,8 @@
                                     <div class="input-group-prepend">
                                         <label for="invitation_link" class="input-group-text">Invitation link</label>
                                     </div>
-                                    <input type="text" id="invitation_link" class="form-control" disabled value="{{ invite_link }}"/>
+                                    <input type="text" id="invitation_link" class="form-control" disabled
+                                           value="{{ invite_link }}"/>
                                     <div class="input-group-append">
                                         <button class="btn btn-primary" type="button"
                                                 onclick="copyInviteLink()"><i
@@ -124,7 +133,8 @@
                                         <div class="card-body">
                                             <div class="card-text text-center">
                                                 <button onclick="downloadQRCode()" class="btn btn-primary">
-                                                    <i class='bx bx-download'></i> Download invitation <abbr title="Quick Response">QR</abbr> code
+                                                    <i class='bx bx-download'></i> Download invitation <abbr
+                                                        title="Quick Response">QR</abbr> code
                                                 </button>
                                             </div>
 
