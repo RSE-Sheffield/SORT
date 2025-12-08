@@ -21,9 +21,8 @@ mkdir --parents "$BACKUP_DIR"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
 # Backup PostgreSQL database (password prompt should appear)
-# echo "Backing up SQL database..."
-# pg_dump -U "$DB_USER" "$DB_NAME" --password | gzip > "$BACKUP_DIR/sort-db.sql.gz"
-# $python manage.py dbshell -- -c "pg_dump $DB_NAME" | gzip > "$BACKUP_DIR/sort-pg_dump.sql.gz"
+echo "Backing up SQL database..."
+pg_dump -U "$DB_USER" -h 127.0.0.1 "$DB_NAME" | gzip > "$BACKUP_DIR/sort-pg_dump.sql.gz"
 
 # Django data export
 # https://docs.djangoproject.com/en/5.2/ref/django-admin/#dumpdata
