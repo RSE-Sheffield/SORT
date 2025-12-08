@@ -74,6 +74,7 @@
         onDuplicateRequest: () => void;
         onDeleteRequest: () => void;
         onMoveRequest: MoveRequestHandler;
+        canDisableFields: boolean;
     }
 
 
