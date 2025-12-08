@@ -7,6 +7,7 @@ import {
     type SurveyStats,
     type ValueCount
 } from "./interfaces.ts";
+import {Exception} from "sass-embedded";
 
 
 /**
@@ -333,17 +334,59 @@ export function getTextColourForMeanValue(mean: number): string {
     return colourRange[0].textColour;
 }
 
-export function getSortMaturityLabel(score: number) {
-    // Equal-range boundaries (each label has an equal size of 4/5 = 0.8)
-    if (score < 0.8) {
-        return "Not yet planned";
-    } else if (score >= 0.8 && score < 1.6) {
-        return "Planned";
-    } else if (score >= 1.6 && score < 2.4) {
-        return "Early progress";
-    } else if (score >= 2.4 && score < 3.2) {
-        return "Substantial progress";
-    } else {
-        return "Established"
+/**
+ * Readiness level boundaries
+ *
+ * Scores are mapped to labels using midpoint boundaries:
+ * - [0.0, 0.5): "Not yet planned"
+ * - [0.5, 1.5): "Planned"
+ * - [1.5, 2.5): "Early progress"
+ * - [2.5, 3.5): "Substantial progress"
+ * - [3.5, 4.0]: "Established"
+ */
+const MATURITY_BOUNDARIES = {
+    PLANNED: 0.5,
+    EARLY_PROGRESS: 1.5,
+    SUBSTANTIAL_PROGRESS: 2.5,
+    ESTABLISHED: 3.5
+} as const;
+
+/**
+ * Readiness level labels
+ */
+export const MATURITY_LABELS = {
+    NOT_YET_PLANNED: "Not yet planned",
+    PLANNED: "Planned",
+    EARLY_PROGRESS: "Early progress",
+    SUBSTANTIAL_PROGRESS: "Substantial progress",
+    ESTABLISHED: "Established"
+} as const;
+
+/**
+ * Maturity label type - union of all possible maturity level labels
+ */
+export type MaturityLabel = typeof MATURITY_LABELS[keyof typeof MATURITY_LABELS];
+
+/**
+ * Get the readiness level label for a given mean score.
+ *
+ * @param score The maturity score (0.0 to 4.0 inclusive)
+ * @returns The human-readable maturity level label
+ * @throws {RangeError} If score is outside the valid range [0, 4]
+ *
+ * @example
+ * getSortMaturityLabel(0.3);  // "Not yet planned"
+ * getSortMaturityLabel(2.8);  // "Substantial progress"
+ */
+export function getSortMaturityLabel(score: number): MaturityLabel {
+    // Validate input
+    if (!Number.isFinite(score) || score < 0.0 || score > 4.0) {
+        throw new RangeError(`Score must be between 0 and 4, got: ${score}`);
     }
+    // Use midpoint boundaries between adjacent readiness levels
+    if (score < MATURITY_BOUNDARIES.PLANNED) return MATURITY_LABELS.NOT_YET_PLANNED;
+    if (score < MATURITY_BOUNDARIES.EARLY_PROGRESS) return MATURITY_LABELS.PLANNED;
+    if (score < MATURITY_BOUNDARIES.SUBSTANTIAL_PROGRESS) return MATURITY_LABELS.EARLY_PROGRESS;
+    if (score < MATURITY_BOUNDARIES.ESTABLISHED) return MATURITY_LABELS.SUBSTANTIAL_PROGRESS;
+    return MATURITY_LABELS.ESTABLISHED;
 }
