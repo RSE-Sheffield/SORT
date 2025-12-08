@@ -7,7 +7,6 @@ import {
     type SurveyStats,
     type ValueCount
 } from "./interfaces.ts";
-import {Exception} from "sass-embedded";
 
 
 /**
@@ -278,62 +277,6 @@ export function formatNumber(num: number) {
     return numFormat.format(num)
 }
 
-type ColourRange = {
-    colour: string;
-    textColour: string;
-    min: number;
-    max: number;
-}
-
-const colourRange: ColourRange[] = [
-    {
-        colour: "#d7191c",
-        textColour: "#FFF",
-        min: 0,
-        max: 0.5,
-    },
-    {
-        colour: "#fdae61",
-        textColour: "#000",
-        min: 0.5,
-        max: 1.5,
-    },
-    {
-        colour: "#abd9e9",
-        textColour: "#000",
-        min: 1.5,
-        max: 2.5,
-    },
-    {
-        colour: "#74add1",
-        textColour: "#000",
-        min: 2.5,
-        max: 3.5,
-    },
-    {
-        colour: "#2c7bb6",
-        textColour: "#FFF",
-        min: 3.5,
-        max: 4.5,
-    },
-]
-
-export function getColourForMeanValue(mean: number): string {
-    for (let i = 0; i < colourRange.length; i++) {
-        if (mean >= colourRange[i].min && mean <= colourRange[i].max)
-            return colourRange[i].colour;
-    }
-    return colourRange[0].colour;
-}
-
-export function getTextColourForMeanValue(mean: number): string {
-    for (let i = 0; i < colourRange.length; i++) {
-        if (mean >= colourRange[i].min && mean <= colourRange[i].max)
-            return colourRange[i].textColour;
-    }
-    return colourRange[0].textColour;
-}
-
 /**
  * Readiness level boundaries
  *
@@ -366,6 +309,62 @@ export const MATURITY_LABELS = {
  * Maturity label type - union of all possible maturity level labels
  */
 export type MaturityLabel = typeof MATURITY_LABELS[keyof typeof MATURITY_LABELS];
+
+type ColourRange = {
+    colour: string;
+    textColour: string;
+    min: number;
+    max: number;
+}
+
+const colourRange: ColourRange[] = [
+    {
+        colour: "#d7191c",
+        textColour: "#FFF",
+        min: 0,
+        max: MATURITY_BOUNDARIES.PLANNED,
+    },
+    {
+        colour: "#fdae61",
+        textColour: "#000",
+        min: MATURITY_BOUNDARIES.PLANNED,
+        max: MATURITY_BOUNDARIES.EARLY_PROGRESS,
+    },
+    {
+        colour: "#abd9e9",
+        textColour: "#000",
+        min: MATURITY_BOUNDARIES.EARLY_PROGRESS,
+        max: MATURITY_BOUNDARIES.SUBSTANTIAL_PROGRESS,
+    },
+    {
+        colour: "#74add1",
+        textColour: "#000",
+        min: MATURITY_BOUNDARIES.SUBSTANTIAL_PROGRESS,
+        max: MATURITY_BOUNDARIES.ESTABLISHED,
+    },
+    {
+        colour: "#2c7bb6",
+        textColour: "#FFF",
+        min: MATURITY_BOUNDARIES.ESTABLISHED,
+        max: 4.5,
+    },
+]
+
+export function getColourForMeanValue(mean: number): string {
+    for (let i = 0; i < colourRange.length; i++) {
+        if (mean >= colourRange[i].min && mean <= colourRange[i].max)
+            return colourRange[i].colour;
+    }
+    return colourRange[0].colour;
+}
+
+export function getTextColourForMeanValue(mean: number): string {
+    for (let i = 0; i < colourRange.length; i++) {
+        if (mean >= colourRange[i].min && mean <= colourRange[i].max)
+            return colourRange[i].textColour;
+    }
+    return colourRange[0].textColour;
+}
 
 /**
  * Get the readiness level label for a given mean score.
