@@ -21,13 +21,15 @@ mkdir --parents "$BACKUP_DIR"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
 # Backup PostgreSQL database (password prompt should appear)
-echo "Backing up SQL database..."
-pg_dump -U "$DB_USER" "$DB_NAME" --password | gzip > "$BACKUP_DIR/sort-db.sql.gz"
+# echo "Backing up SQL database..."
+# pg_dump -U "$DB_USER" "$DB_NAME" --password | gzip > "$BACKUP_DIR/sort-db.sql.gz"
+# $python manage.py dbshell -- -c "pg_dump $DB_NAME" | gzip > "$BACKUP_DIR/sort-pg_dump.sql.gz"
 
 # Django data export
 # https://docs.djangoproject.com/en/5.2/ref/django-admin/#dumpdata
 echo "Backing up Django data..."
-(cd "$SORT_DIR" && $python manage.py dumpdata --indent 2 | gzip > "$BACKUP_DIR/sort-django-dumpdata.json.gz")
+# Use sudo so we can read .env
+(cd "$SORT_DIR" && PYTHONIOENCODING=utf-8 sudo -E $python manage.py dumpdata --indent 2 | gzip > "$BACKUP_DIR/sort-django-dumpdata.json.gz")
 
 # Backup uploaded media files
 echo "Backing up media files..."
