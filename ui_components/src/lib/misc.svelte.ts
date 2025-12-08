@@ -334,13 +334,14 @@ export function getTextColourForMeanValue(mean: number): string {
 }
 
 export function getSortMaturityLabel(score: number) {
-    if (score < 0.5) {
+    // Equal-range boundaries (each label has an equal size of 4/5 = 0.8)
+    if (score < 0.8) {
         return "Not yet planned";
-    } else if (score >= 0.5 && score < 1.5) {
+    } else if (score >= 0.8 && score < 1.6) {
         return "Planned";
-    } else if (score >= 1.5 && score < 2.5) {
+    } else if (score >= 1.6 && score < 2.4) {
         return "Early progress";
-    } else if (score >= 2.5 && score < 3.5) {
+    } else if (score >= 2.4 && score < 3.2) {
         return "Substantial progress";
     } else {
         return "Established"
