@@ -319,13 +319,13 @@ type ColourRange = {
 
 const colourRange: ColourRange[] = [
     {
-        colour: "#d7191c",
-        textColour: "#FFF",
+        colour: "#ccccdd",
+        textColour: "#000",
         min: 0,
         max: MATURITY_BOUNDARIES.PLANNED,
     },
     {
-        colour: "#fdae61",
+        colour: "#aa99cc",
         textColour: "#000",
         min: MATURITY_BOUNDARIES.PLANNED,
         max: MATURITY_BOUNDARIES.EARLY_PROGRESS,
@@ -343,7 +343,7 @@ const colourRange: ColourRange[] = [
         max: MATURITY_BOUNDARIES.ESTABLISHED,
     },
     {
-        colour: "#2c7bb6",
+        colour: "#440099",
         textColour: "#FFF",
         min: MATURITY_BOUNDARIES.ESTABLISHED,
         max: 4.5,

@@ -4,7 +4,7 @@
     import {TextType} from "../interfaces.ts";
     import LikertHistogram from "./graph/LikertHistogram.svelte";
     import LikertBarChart from "./graph/LikertBarChart.svelte";
-    import OptionsHistogram from "./graph/OptionsHistogram.svelte";
+    import OptionsPieChart from "./graph/OptionsPieChart.svelte";
     import CollapsibleCard from "./CollapsibleCard.svelte";
     import SortLikertStats from "./SortLikertStats.svelte";
     import ScalarHistogram from "./graph/ScalarHistogram.svelte";
@@ -14,10 +14,11 @@
         surveyStats: SurveyStats | null,
         sectionIndex: number,
         readinessDescriptions: string[],
-        useBarChart: boolean
+        useBarChart: boolean,
+        maxHistogramCount: number
     }
 
-    let {config, surveyStats, sectionIndex = 0, readinessDescriptions, useBarChart = false}: Props = $props();
+    let {config, surveyStats, sectionIndex = 0, readinessDescriptions, useBarChart = false, maxHistogramCount = 0}: Props = $props();
     let sectionConfig = $derived(config.sections[sectionIndex]);
 
 </script>
@@ -34,7 +35,8 @@
                             sectionIndex={sectionIndex}
                             fieldIndex={fi}
                             readinessDescriptions={readinessDescriptions}
-                            useBarChart={useBarChart}>
+                            useBarChart={useBarChart}
+                            maxHistogramCount={maxHistogramCount}>
                     </SortLikertStats>
                 </div>
 
@@ -42,10 +44,13 @@
                 <div class="mb-3 flex-grow-1 flex-fill w-100">
                     {#if useBarChart}
                     <LikertBarChart fieldConfig={fieldConfig}
-                                     fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></LikertBarChart>
+                                     fieldStats={surveyStats.sections[sectionIndex].fields[fi]}
+                                     maxHistogramCount={maxHistogramCount}></LikertBarChart>
                     {:else}
                     <LikertHistogram fieldConfig={fieldConfig}
-                                     fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></LikertHistogram>
+                                     fieldStats={surveyStats.sections[sectionIndex].fields[fi]}
+                                     maxHistogramCount={maxHistogramCount}
+                                     sectionTitle={sectionConfig.title}></LikertHistogram>
                     {/if}
                 </div>
             {/if}
@@ -55,8 +60,8 @@
                         <h5>{fieldConfig.label}</h5>
                     </div>
                     <div class="card-body">
-                        <OptionsHistogram fieldConfig={fieldConfig}
-                                          fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></OptionsHistogram>
+                        <OptionsPieChart fieldConfig={fieldConfig}
+                                          fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></OptionsPieChart>
                     </div>
                 </div>
             {/if}

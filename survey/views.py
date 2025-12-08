@@ -28,6 +28,7 @@ from survey.services import survey_service
 
 from .forms import InvitationForm, SurveyCreateForm
 from .models import (
+    Invitation,
     Survey,
     SurveyEvidenceFile,
     SurveyEvidenceSection,
@@ -329,14 +330,7 @@ class SurveyEvidenceFileDeleteView(LoginRequiredMixin, View):
         survey_service.remove_evidence_file(
             request.user, evidence_file.evidence_section.survey, evidence_file
         )
-        return redirect(
-            request.META.get(
-                "HTTP_REFERER",
-                reverse_lazy(
-                    "survey_evidence_gathering", kwargs={"pk": pk, "section_id": 0}
-                ),
-            )
-        )
+        return redirect(reverse_lazy("survey_evidence_gathering", kwargs={"pk": pk, "section_id": 0}))
 
 
 class SurveyEvidenceFileView(LoginRequiredMixin, View):
@@ -418,12 +412,9 @@ class SurveyImprovementPlanUpdateView(LoginRequiredMixin, View):
         )
 
         return redirect(
-            request.META.get(
-                "HTTP_REFERER",
-                reverse_lazy(
-                    "survey_improvement_plan",
-                    kwargs={"pk": survey.pk, "section_id": improve_section.section_id},
-                ),
+            reverse_lazy(
+                "survey_improvement_plan",
+                kwargs={"pk": survey.pk, "section_id": improve_section.section_id},
             )
         )
 
@@ -567,7 +558,7 @@ class InvitationView(FormView):
     form_class = InvitationForm
 
     def form_valid(self, form):
-        recipient_list = tuple(form.cleaned_data["email"].replace(",", " ").split())
+        recipient_list = Invitation.recipient_list(form.cleaned_data["email"])
         message = form.data["message"]
         survey = Survey.objects.get(pk=self.kwargs["pk"])
         # Generate the survey link with the token

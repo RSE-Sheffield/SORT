@@ -8,7 +8,9 @@ test("Likert", () => {
     props: {
       config: {
         description: "My likert description",
+        options: ["1", "2", "3", "4", "5"],
         sublabels: ["Test sublabel A", "Test sublabel B", "Test sublabel C"],
+        required: false,
       },
     },
   });

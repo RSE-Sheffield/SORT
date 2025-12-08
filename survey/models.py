@@ -16,7 +16,7 @@ from django.conf import settings
 from django.db import models
 from django.http import HttpRequest
 from django.urls import reverse
-from django.utils import timezone
+import django.core.validators
 
 from home.models import Project
 
@@ -122,7 +122,7 @@ class Survey(models.Model):
 
     def current_invite_token(self):
         for invite in self.invitation_set.all():
-            if not invite.is_expired() and not invite.used:
+            if not invite.used:
                 return invite.token
         return None
 
@@ -501,5 +501,18 @@ class Invitation(models.Model):
 
         super().save(*args, **kwargs)
 
-    def is_expired(self):
-        return timezone.now() > self.created_at + timezone.timedelta(days=7)
+    @classmethod
+    def recipient_list(cls, text: str) -> set[str]:
+        """
+        Parse email field into multiple email addresses.
+        """
+        # Replace delimiters with whitespace
+        for delim in {",", ";", ":", "|"}:
+            text = text.replace(delim, "\n")
+        # Create a collection of email addresses
+        email_addresses = set(text.split())
+        # Check 'em
+        for email in email_addresses:
+            django.core.validators.validate_email(email)
+
+        return email_addresses

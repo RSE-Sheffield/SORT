@@ -1,0 +1,126 @@
+{% extends "base_manager.html" %}
+{% block title %}Troubleshooting{% endblock %}
+{% block content %}
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'help' %}">Help</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Troubleshooting</li>
+            </ol>
+        </nav>
+
+        <h1>🛠️ Troubleshooting Guide</h1>
+
+        <div>
+            <h2>🧱 NHS Network and Firewall Issues</h2>
+
+            <p>
+                If you are experiencing difficulties accessing the SORT online tool from an NHS device or network,
+                this may be due to security measures and firewall restrictions implemented by your NHS organisation.
+                The NHS has strict security policies in place that often block or restrict access to external web applications.
+            </p>
+
+            <h3>Step 1: Verify the Issue</h3>
+
+            <div>
+                <p><strong>Test from a non-NHS device:</strong></p>
+                <ol>
+                    <li>Try logging into the SORT tool from a personal device (e.g., home computer, mobile phone) or a private browser session using your NHS login credentials.</li>
+                    <li>If login works successfully on the non-NHS device, proceed to test on your NHS machine.</li>
+                    <li>If you experience issues on your NHS machine but not on your personal device, this confirms the issue is related to your NHS organisation's network restrictions.</li>
+                </ol>
+            </div>
+
+            <h3>Step 2: Contact NHS IT Support</h3>
+
+            <div>
+                <p>
+                    If the tool works on a non-NHS device but not on your NHS machine, you will need to log a support ticket
+                    with your local NHS organisation's IT department.
+                </p>
+                <p>
+                    When raising the ticket, explain that you need access to the SORT online tool for research purposes
+                    and that the issue appears to be caused by network restrictions or firewall rules.
+                </p>
+            </div>
+
+            <h3>Step 3: Requesting Firewall Exemptions</h3>
+
+            <div>
+                <p>
+                    Your NHS IT department will need to troubleshoot the connectivity issue. If the problem is confirmed
+                    to be firewall-related, your IT team will need to go through an NHS risk assessment process before
+                    making any firewall changes.
+                </p>
+
+                <p><strong>When contacting your NHS IT support, provide the following information:</strong></p>
+                <ul>
+                    <li>The URL of the SORT tool that you're trying to access</li>
+                    <li>The purpose: Research tool for systematic reviews</li>
+                    <li>The specific error messages or behaviour you're experiencing</li>
+                    <li>Confirmation that the tool works from non-NHS networks</li>
+                </ul>
+
+                <p><strong>Sample ticket description:</strong></p>
+                <blockquote class="blockquote">
+                    <p>
+                        "I am conducting research using the SORT online tool https://app.sort-online.org/. The tool works successfully
+                        when accessed from my personal device but fails to connect from my NHS workstation. This appears
+                        to be a firewall or network restriction issue. Could you please investigate and, if necessary,
+                        request a firewall exemption through the appropriate risk assessment process? This tool is essential
+                        for our research project."
+                    </p>
+                </blockquote>
+            </div>
+
+            <h3>Step 4: If Firewall Changes Cannot Be Made</h3>
+
+            <div>
+                <p>
+                    In some cases, your NHS organisation may not be able or willing to modify firewall rules, even after
+                    a risk assessment. This decision is typically based on local security policies and risk management frameworks.
+                </p>
+                <p><strong>If this occurs, consider the following workarounds:</strong></p>
+                <ul>
+                    <li><strong>Use a non-NHS device:</strong> Access the SORT tool from a personal computer or device when working remotely or outside of the NHS network.</li>
+                    <li><strong>Mobile access:</strong> Use your mobile phone with cellular data (not NHS Wi-Fi) to access the tool.</li>
+                    <li><strong>Scheduled access times:</strong> Dedicate specific times to work on the SORT tool from a non-NHS device.</li>
+                    <li><strong>Discuss with your research team:</strong> This may impact your research timeline and workflow. Inform your research supervisor or team lead about the access limitations so alternative arrangements can be made.</li>
+                </ul>
+            </div>
+
+            <h3>Understanding the Process</h3>
+
+            <p>
+                NHS organisations implement strict security measures to protect sensitive patient data and comply with
+                information governance requirements. While these measures are essential for security, they can sometimes
+                restrict access to legitimate research tools.
+            </p>
+
+            <p>
+                The process of requesting firewall exemptions typically involves:
+            </p>
+            <ul>
+                <li>Security risk assessment by the NHS IT security team</li>
+                <li>Review by information governance officers</li>
+                <li>Approval from relevant management or security committees</li>
+                <li>Implementation and testing by network administrators</li>
+            </ul>
+
+            <p>
+                This process can take several days to weeks, depending on your organisation's procedures.
+            </p>
+        </div>
+
+        <div>
+            <h2>Additional Support</h2>
+            <p>
+                If you continue to experience issues after following these steps, or if you have questions about
+                using the SORT tool, please contact your research team lead or the SORT support team.
+            </p>
+            <p>
+                <a href="{% url 'help' %}">← Back to Help</a>
+            </p>
+        </div>
+    </div>
+{% endblock %}

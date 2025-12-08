@@ -14,13 +14,15 @@
     interface Props {
         config: SurveyConfig;
         responses: SurveyResponseBatch;
-        onFilterChange?: (responses) => void
+        onFilterChange?: (responses: SurveyResponseBatch, activeFilters?: Array<{label: string, value: string}>) => void;
+        onClearFiltersCallback?: (clearCallback: () => void) => void;
     }
 
-    let {config, responses, onFilterChange}: Props = $props();
+    let {config, responses, onFilterChange, onClearFiltersCallback}: Props = $props();
     let filterItems: FilterItem[] = $state([]);
     let filterValues = $state([]);
     let filteredResponses = $state(responses);
+    let initialFilterValues: Array<null | {min: number, max: number}> = [];
 
     onMount(() => {
         for (let si = 0; si < config.sections.length; si++) {
@@ -42,6 +44,7 @@
                                 fieldIndex: fi,
                             });
                             filterValues.push(null);
+                            initialFilterValues.push(null);
                             break;
                         case "text":
                             if (fieldConfig.textType === TextType.decimals ||
@@ -60,10 +63,9 @@
                                     valueMax: max,
                                     valueMin: min,
                                 });
-                                filterValues.push({
-                                    min: min,
-                                    max: max,
-                                })
+                                const initialRange = {min: min, max: max};
+                                filterValues.push({...initialRange});
+                                initialFilterValues.push({...initialRange});
                             }
                             break;
 
@@ -72,10 +74,17 @@
                 }
             }
         }
+
+        // Provide clear filters callback to parent
+        if (onClearFiltersCallback) {
+            onClearFiltersCallback(clearFilters);
+        }
     });
 
     function handleFilterChange() {
         filteredResponses = [];
+        const activeFilters: Array<{label: string, value: string}> = [];
+
         for (let ri = 0; ri < responses.length; ri++) {
             let addToFilteredSet = true;
             for (let filterIndex = 0; filterIndex < filterItems.length; filterIndex++) {
@@ -100,7 +109,47 @@
                 filteredResponses.push(responses[ri])
             }
         }
-        onFilterChange?.(filteredResponses);
+
+        // Build list of active filters for display
+        for (let filterIndex = 0; filterIndex < filterItems.length; filterIndex++) {
+            const filterItem = filterItems[filterIndex];
+            const filterValue = filterValues[filterIndex];
+
+            if (filterItem.fieldConfig.type === "text") {
+                // Check if range filter differs from full range
+                if (filterValue.min !== filterItem.valueMin || filterValue.max !== filterItem.valueMax) {
+                    activeFilters.push({
+                        label: filterItem.fieldConfig.label,
+                        value: `${filterValue.min} to ${filterValue.max}`
+                    });
+                }
+            } else {
+                // Check if categorical filter is set
+                if (filterValue !== null) {
+                    activeFilters.push({
+                        label: filterItem.fieldConfig.label,
+                        value: filterValue
+                    });
+                }
+            }
+        }
+
+        onFilterChange?.(filteredResponses, activeFilters);
+    }
+
+    function clearFilters() {
+        // Reset all filter values to their initial state
+        for (let i = 0; i < filterValues.length; i++) {
+            if (typeof initialFilterValues[i] === 'object' && initialFilterValues[i] !== null) {
+                // Range filter - deep copy
+                filterValues[i] = {...initialFilterValues[i]};
+            } else {
+                // Categorical filter
+                filterValues[i] = initialFilterValues[i];
+            }
+        }
+        // Trigger filter change with reset values
+        handleFilterChange();
     }
 
 </script>
@@ -112,7 +161,7 @@
             <div class="row">
                 <div class="col">
                     <label class="form-label">
-                        Min
+                        Minimum
                         <input type="range" class="form-range" min={fItem.valueMin} max={filterValues[fItemIndex].max}
                                bind:value={filterValues[fItemIndex].min} onchange={handleFilterChange}>
                         <input class="form-control" min={fItem.valueMin} max={fItem.valueMax}
@@ -122,7 +171,7 @@
                 </div>
                 <div class="col">
                     <label class="form-label">
-                        Max
+                        Maximum
                         <input type="range" class="form-range" min={filterValues[fItemIndex].min} max={fItem.valueMax}
                                bind:value={filterValues[fItemIndex].max} onchange={handleFilterChange}>
                         <input class="form-control" min={fItem.valueMin} max={fItem.valueMax}

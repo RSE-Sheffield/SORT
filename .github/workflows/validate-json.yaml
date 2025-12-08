@@ -13,7 +13,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5.5.0
         with:
-          python-version: "3.12"
+          python-version-file: .python-version
       - name: Validate JSON files
         # https://manpages.ubuntu.com/manpages/noble/man1/find.1.html
         # https://docs.python.org/3/library/json.html#module-json.tool

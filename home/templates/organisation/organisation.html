@@ -1,12 +1,13 @@
 {% extends "base_manager.html" %}
 {% load project_filters %}
+{% block title %}Organisation Dashboard{% endblock %}
 {% block content %}
     <div class="container mx-auto px-4 py-8 mt-4">
         <div class="d-flex justify-content-between align-items-center">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item active" aria-current="page">
-                        <i class="bx bxs-buildings"></i> My Organisation
+                        <i class="bx bxs-buildings"></i> Organisation Dashboard
                     </li>
                 </ol>
             </nav>
@@ -15,17 +16,41 @@
     <div class="container mx-auto px-4 py-8">
         <h1>{{ organisation.name }}</h1>
         <p>{{ organisation.description }}</p>
-
-        <div>
-            <a href="{% url 'members' %}" class="btn btn-primary">
-                <i class='bx bx-group'></i> Manage members
+        <p>
+            This is your central hub for managing your SORT Online projects. From here, you
+            can oversee all aspects of your research readiness assessments and coordinate your team's participation.
+            From this dashboard, you can:
+        </p>
+        <ul>
+            <li><strong>Invite and Manage Members</strong>&mdash;Add colleagues to your organisation, assign roles and
+                permissions, and track
+                who has access to different projects and features. Members are able to create and modify surveys.
+            </li>
+            <li><strong>Launch New SORT Projects</strong>&mdash;Set up fresh research readiness assessments for
+                different teams, services, or
+                departments within your organisation. Each project can be tailored to specific groups or research
+                objectives.
+            </li>
+        </ul>
+        <p>Select an action below to get started with your most common tasks. If you're new to SORT Online, consider
+            launching your first project to begin assessing your organisation's research readiness journey.</p>
+        <p>
+            <a href="{% url 'members' %}" class="btn btn-primary" role="button"
+               title="Add colleagues to your organisation, assign roles and permissions, and track who has access to different projects and features.">
+                <i class='bx bx-group'></i> Manage members</a>
+            <a href="{% url 'member_invite' %}" class="btn btn-primary" role="button"
+               title="Invite a new user to join this organisation">
+                <i class='bx bxs-user-plus'></i> Invite new member
             </a>
+        </p>
+        <div>
+
         </div>
     </div>
 
     <div class="container mx-auto px-4 py-8">
         <div class="w-100 d-flex justify-content-between align-items-center mt-3 mb-6">
-            <h2 class="text-2xl font-bold d-inline-block">Projects</h2>
+            <h2 class="text-2xl font-bold d-inline-block"><i class='bx bx-folder'></i>&nbsp;Projects</h2>
 
             <div class="d-flex align-items-center">
                 <div class="me-3">
@@ -34,10 +59,9 @@
                 </div>
 
                 {% if can_create %}
-                    <a href="{% url 'project_create' organisation.id %}">
-                        <button type="button" class="btn btn-primary">
-                            <i class="bx bxs-folder-plus"></i> Create project
-                        </button>
+                    <a href="{% url 'project_create' organisation.id %}" class="btn btn-success"
+                       role="button" aria-pressed="true">
+                        <i class="bx bxs-folder-plus"></i> Create project
                     </a>
                 {% endif %}
             </div>
@@ -46,25 +70,31 @@
             {% for project in projects %}
                 <div class="card w-100">
                     <div class="card-body">
-                        <p class="h5 card-title" title="Project identifier {{ project.pk }}">{{ project.name }}</p>
-                        <p class="h6 card-subtitle text-muted mb-2">{{ project.description|default_if_none:"No description provided." }}</p>
-                        <p class="h7 card-text">Surveys: {{ project.survey.count }}</p>
+                        <p class="h5 card-title" title="Project identifier {{ project.pk }}">
+                            <a href="{% url 'project' project_id=project.pk %}">
+                                <i class="bx bxs-folder-open"></i>
+                                {{ project.name }}
+                            </a>
+                        </p>
+                        <p class="text-muted mb-2">{{ project.description|default_if_none:"No description provided." }}</p>
+                        <p class="card-text"><strong>Surveys:</strong> {{ project.survey.count }}</p>
 
                         <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
+                            <a href="{% url 'project' project.id %}" title="Explore the surveys within this project"
+                               class="btn btn-primary" role="button" aria-pressed="true">
+                                <i class="bx bxs-folder-open"></i>&nbsp;View
+                            </a>
                             {% if can_edit|get_item:project.id %}
-                                <a href="{% url 'project_edit' project.id %}">
-                                    <button type="button" class="btn btn-light">
-                                        <i class="bx bxs-edit"></i> Edit
-                                    </button>
+                                <a href="{% url 'project_edit' project.id %}"
+                                   title="Modify the title and description of this project"
+                                   class="btn btn-primary" role="button" aria-pressed="true">
+                                    <i class="bx bxs-edit"></i>&nbsp;Edit
                                 </a>
                             {% endif %}
-                            <a href="{% url 'project' project.id %}">
-                                <button type="button" class="btn btn-dark">
-                                    <i class="bx bxs-folder-open"></i> View
-                                </button>
-                            </a>
-                            <a href="{% url 'project_delete' project.pk %}" class="btn btn-danger">
-                                <i class="bx bxs-trash"></i> Delete project
+                            <a href="{% url 'project_delete' project.pk %}"
+                               title="Remove this project and all the surveys within it."
+                               class="btn btn-danger" role="button" aria-pressed="true">
+                                <i class="bx bxs-trash"></i>&nbsp;Delete
                             </a>
                         </div>
                     </div>

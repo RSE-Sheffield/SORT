@@ -2,18 +2,25 @@
 {% load static %}
 {% load vite_integration %}
 {% load django_bootstrap5 %}
+{% block title %}Report for {{ survey }}{% endblock %}
 {% block content %}
     <div class="container">
         <h1><i class='bx bxs-report'></i> Report: {{ survey.name }}</h1>
         <p>{{ survey.description }}</p>
 
         <div class="mb-3">
-            <h2>Summary Ranking Matrix</h2>
-            <div class="sort-response-summary-matrix"
+            <div class="sort-report-app"
                  data-json-config-id="configData"
                  data-json-responses-id="responsesData"></div>
-
-            <h3>Report sections</h3>
+            <h2><i class='bx bx-collection'></i> Supporting Evidence</h2>
+            <p>
+                This section presents the supporting evidence to <strong>contextualize the assessment</strong> findings
+                and provide stakeholders with a comprehensive understanding of your organization's research readiness.
+            </p>
+            <p>
+                For each section, evidence statements and supporting documentation have been provided to corroborate
+                survey findings and offer additional context for interpreting maturity levels.
+            </p>
             <ul>
                 {% for section in sections %}
                     {% if section.section_config.type != "consent" %}
@@ -26,31 +33,23 @@
                 {% if section.section_config.type != "consent" %}
                     <div class="page-break"></div>
                     <div>
-                        <h2 id="page-section-{{ forloop.counter0 }}">Section {{ section.section_config.title }}</h2>
+                        <h3 id="page-section-{{ forloop.counter0 }}">Section {{ section.section_config.title }}</h3>
+                        <p>{{ section.section_config.description }}</p>
                     </div>
                     <div>
-                        <div
-                                class="sort-response-section-viewer"
-                                data-json-config-id="configData"
-                                data-json-responses-id="responsesData"
-                                data-json-readiness-descriptions-id="readinessDescriptions"
-                                data-section-index="{{ forloop.counter0 }}"
-                                data-use-bar-chart="false"
-                        ></div>
-
                         {% if section.evidence %}
-                            <h3>Evidence statement</h3>
+                            <h4>Evidence statement</h4>
                             <div class="sort-richtext-field"
                                  data-update-url="{% url 'survey_evidence_gathering_update' survey.id forloop.counter0 %}"
                                  data-init-contents="{{ section.evidence.text }}" data-view-only="true"></div>
                         {% endif %}
 
                         {% if section.improvement %}
-                            <h3>Improvement plan</h3>
+                            <h4>Improvement plan</h4>
                             <p>
                                 In the table below, list a plan of action you intend to take in the upcoming period
-                                using
-                                SMART objectives (Specific, Measurable, Achievable, Relevant and Time-bound).
+                                using <abbr title="Specific, Measurable, Achievable, Relevant and Time-bound">SMART
+                                objectives</abbr>.
                             </p>
                             <div class="sort-smart-table" data-update-url="{{ update_url }}"
                                  data-plan="{{ section.improvement.plan }}" data-view-only="true"></div>
@@ -172,10 +171,99 @@
             }
 
             .sorting-control {
-                display: none;
+                display: none !important;
+            }
+
+            /* Hide filter card specifically by targeting cards with form controls */
+            .survey-report-container .card:has(.form-label:first-of-type),
+            .survey-report-container .card:has(.form-select),
+            .survey-report-container .card:has(.form-range) {
+                display: none !important;
+            }
+
+            /* Hide alert boxes that show filter status */
+            .survey-report-container .alert-info,
+            .survey-report-container .alert-warning {
+                display: none !important;
+            }
+
+            /* Hide all buttons (including filter buttons) */
+            .survey-report-container button {
+                display: none !important;
+            }
+
+            /* Hide the response count text */
+            .survey-report-container > .mb-3:has(strong) {
+                display: none !important;
+            }
+
+            /* Ensure charts and visualizations are visible and print correctly */
+            canvas {
+                display: block !important;
+                max-width: 100% !important;
+                width: auto !important;
+                height: auto !important;
+                page-break-inside: avoid;
+            }
+
+            /* Ensure chart parent containers are visible */
+            .survey-report-container .card:not(:has(.form-label)),
+            .survey-report-container .card:not(:has(.form-select)),
+            .survey-report-container .card:not(:has(.form-range)) {
+                display: block !important;
+                page-break-inside: avoid;
+                background-color: #fff !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .survey-report-container .card-body {
+                display: block !important;
+                width: 100% !important;
+            }
+
+            .survey-report-container .card-body > div {
+                display: block !important;
+                width: 100% !important;
+                min-height: 400px !important;
+            }
+
+            .survey-report-container .card-header {
+                display: block !important;
+                background-color: #f8f9fa !important;
+                border-bottom: 1px solid #dee2e6 !important;
+            }
+
+            /* Ensure flex containers display as block for printing */
+            .survey-report-container .d-flex {
+                display: block !important;
+            }
+
+            /* Fix pie chart containers specifically */
+            .survey-report-container .w-50 {
+                width: 100% !important;
+                max-width: 600px !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+
+            /* Ensure chart wrapper divs maintain proper dimensions */
+            .survey-report-container .card-body canvas {
+                min-height: 300px !important;
+                margin: 0 auto !important;
             }
         }
 
+    </style>
+    <style>
+        /* Ensure Chart.js canvases render before print */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+        }
     </style>
 {% endblock %}
 

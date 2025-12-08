@@ -1,4 +1,5 @@
 {% extends 'base_manager.html' %}
+{% block title %}{{ survey }}{% endblock %}
 {% load qr_code %}
 {% block content %}
     <script lang="js">
@@ -17,7 +18,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">Organisation Dashboard</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
                     <i class="bx bxs-folder-open"></i> <a
@@ -35,6 +36,17 @@
                 <h1 title="Reference number {{ survey.reference_number }}">{{ survey.name }}</h1>
             </div>
             <div class="card-body">
+                <div class="float-end">
+                    <a href="{% url 'survey_edit' survey.pk %}" class="btn btn-primary"
+                       title="Modify the survey title and description">
+                        <i class='bx bxs-edit'></i>&nbsp;Edit</a>
+                    <a href="{% url 'survey_duplicate_config' survey.pk %}" class="btn btn-primary"
+                       title="Create a new survey using current configurations.">
+                        <i class='bx bxs-copy'></i>&nbsp;Duplicate</a>
+                    <a href="{% url 'survey_delete' survey.pk %}" class="btn btn-danger"
+                       title="Remove this survey and all its responses">
+                        <i class='bx bxs-trash'></i>&nbsp;Delete</a>
+                </div>
                 <p><strong>Respondent profession:</strong> {{ survey.survey_body_path }}</p>
                 <p><strong>Description:</strong></p>
                 <p>{{ survey.description }}</p>
@@ -46,31 +58,19 @@
                         <i class="bx bx-copy"></i>
                     </button>
                 </p>
-                <div class="d-flex justify-content-between mt-3">
-                    <div></div>
-                    <div></div>
-                </div>
-                <div class="d-flex justify-content-end mt-3">
-                    <div>
-                        <a href="{% url 'survey_duplicate_config' survey.pk %}" class="btn btn-primary"
-                           title="Create a new survey using current configurations.">
-                            <i class='bx bxs-copy'></i> Duplicate</a>
-                    </div>
-                </div>
             </div>
         </div>
 
-        <div class="mb-3">
-            You can follow the five steps below to carry out the survey:
+        <div>
+            <p>Please follow the five steps below to carry out the survey:</p>
         </div>
-
 
         <div class="card mb-3">
             <div class="card-header">
                 <h2>1. Configure Your Survey</h2>
             </div>
             <div class="card-body">
-                <div class="mb-3 mt-3">
+                <div>
                     {% if survey.has_responses %}
                         <div class="alert alert-warning">
                             <p>
@@ -108,10 +108,9 @@
                             <div class="col-lg-10">
                                 <div class="input-group mb-3">
                                     <div class="input-group-prepend">
-                                        <span class="input-group-text">Invitation link</span>
+                                        <label for="invitation_link" class="input-group-text">Invitation link</label>
                                     </div>
-                                    <input type="text" id="invitation_link" class="form-control" disabled
-                                           value="{{ invite_link }}"/>
+                                    <input type="text" id="invitation_link" class="form-control" disabled value="{{ invite_link }}"/>
                                     <div class="input-group-append">
                                         <button class="btn btn-primary" type="button"
                                                 onclick="copyInviteLink()"><i
@@ -125,7 +124,7 @@
                                         <div class="card-body">
                                             <div class="card-text text-center">
                                                 <button onclick="downloadQRCode()" class="btn btn-primary">
-                                                    <i class='bx bx-download'></i> Download invitation QR code
+                                                    <i class='bx bx-download'></i> Download invitation <abbr title="Quick Response">QR</abbr> code
                                                 </button>
                                             </div>
 
@@ -166,9 +165,7 @@
                             an invitation</a>
 
                     {% else %}
-                        <p>
-                            Geneate an invitation link for your participants to fill in the survey:
-                        </p>
+                        <p>Generate an invitation link for your participants to fill in the survey:</p>
                         <form method="post" action="{% url 'survey_create_invite' survey.id %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-primary" name="generate_token"><i
@@ -235,7 +232,7 @@
                         <div class="btn-group" role="group" aria-label="Survey data export">
                             <a href="{% url 'survey_export' survey.id %}" class="btn btn-primary" download
                                title="Export survey data as comma-separated values (CSV)">
-                                <i class="bx bx-export"></i> Export survey data as CSV</a>
+                                <i class="bx bx-export"></i> Export survey data as <abbr title="Comma-Separated Values">CSV</abbr></a>
                             <a href="{% url 'survey_export_excel' survey.id %}" class="btn btn-primary" download
                                title="Export survey data as an Excel workbook">
                                 <i class="bx bx-spreadsheet"></i> Excel</a>

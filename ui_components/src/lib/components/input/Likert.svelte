@@ -2,6 +2,7 @@
   import DOMPurify  from "dompurify";
   import LikertRow from "./LikertRow.svelte";
   import LikertItem from "./LikertItem.svelte";
+  import RequiredBadge from "../RequiredBadge.svelte";
 
 
   let {config, value = $bindable(), viewerMode = false} = $props();
@@ -43,18 +44,16 @@
 </script>
 
 <div class="form-label">
-    {config.label}{#if config.required}<span style="color: red">*</span>{/if}
+    <span id="question-label">{config.label}</span>{#if config.required}<RequiredBadge />{/if}
     {#if config.description || config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
     <table class="table table-striped d-none d-sm-block" style="width: 100%;">
-        <thead>
+        <thead aria-hidden="true">
         <tr>
-            <th>Statement</th>
+            <th scope="col">Statement</th>
             {#each config.options as option, index (index)}
                 <th scope="col">{option}</th>
             {/each}
-
         </tr>
-
         </thead>
         <tbody>
         {#each config.sublabels as sublabel, sublabelIndex (sublabelIndex)}
@@ -68,6 +67,7 @@
             </tr>
         {/each}
         </tbody>
+        <caption hidden>This table contains SORT questions for {config.label}</caption>
     </table>
     <div class="d-block d-sm-none">
         {#each config.sublabels as sublabel, sublabelIndex (sublabelIndex)}
@@ -78,7 +78,7 @@
                             viewerMode={viewerMode}
             />
 
-        {/each}
-        <hr/>
-    </div>
+            {/each}
+            <hr/>
+        </div>
 </div>

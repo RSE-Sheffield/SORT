@@ -3,10 +3,14 @@
     import type {SurveyConfig, SurveyStats} from "../interfaces.ts";
     import LikertHistogram from "./graph/LikertHistogram.svelte";
     import LikertBarChart from "./graph/LikertBarChart.svelte";
+    import LikertMeanChart from "./graph/LikertMeanChart.svelte";
     import {
         formatNumber,
         getHighestHistogramValue,
-        getHistogramMean, getSortMaturityLabel,
+        getHistogramMean,
+        getSortMaturityLabel,
+        getColourForMeanValue,
+        getTextColourForMeanValue,
     } from "../misc.svelte.ts";
 
     type QM = {
@@ -20,7 +24,8 @@
         sectionIndex: number,
         fieldIndex: number,
         readinessDescriptions: string[],
-        useBarChart: boolean
+        useBarChart: boolean,
+        maxHistogramCount: number
     }
 
     let {
@@ -29,7 +34,8 @@
         sectionIndex,
         fieldIndex,
         readinessDescriptions = [],
-        useBarChart = true
+        useBarChart = true,
+        maxHistogramCount = 0
     }: Props = $props();
 
     let sectionConfig = $derived(config.sections[sectionIndex]);
@@ -44,21 +50,19 @@
         }
         return _.orderBy(qm, ["mean"], ["asc"]);
     })
-    let strongestAreas: string = $derived.by(() => {
+    let strongestAreas = $derived.by(() => {
         const strongestList = questionMeanSorted.slice(-2);
-        const output: string[] = [];
-        strongestList.map(qm => {
-            output.push(fieldConfig.sublabels[qm.index]);
-        })
-        return output;
+        return strongestList.map(qm => ({
+            label: fieldConfig.sublabels[qm.index],
+            mean: qm.mean
+        }));
     })
-    let weakestAreas: string = $derived.by(() => {
+    let weakestAreas = $derived.by(() => {
         const weakestList = questionMeanSorted.slice(0, 2);
-        const output: string[] = [];
-        weakestList.map(qm => {
-            output.push(fieldConfig.sublabels[qm.index]);
-        })
-        return output;
+        return weakestList.map(qm => ({
+            label: fieldConfig.sublabels[qm.index],
+            mean: qm.mean
+        }));
     })
     const sectionMeanReadiness: number = surveyStats.sections[sectionIndex].fields[fieldIndex].mean;
     const sectionMeanReadinessInt: bigint = parseInt(sectionMeanReadiness);
@@ -86,7 +90,7 @@
 <p>Areas of strength are demonstrated in the following questions:</p>
 <ul>
     {#each strongestAreas as strongArea }
-        <li>{strongArea}</li>
+        <li>{strongArea.label} <span class="badge" style="background-color: {getColourForMeanValue(strongArea.mean)}; color: {getTextColourForMeanValue(strongArea.mean)};" title="Average score {strongArea.mean.toFixed(1)}/5">{strongArea.mean.toFixed(1)}</span></li>
     {/each}
 </ul>
 <h4>Areas for improvement</h4>
@@ -95,37 +99,23 @@
 </p>
 <ul>
     {#each weakestAreas as weakArea }
-        <li>{weakArea}</li>
+        <li>{weakArea.label} <span class="badge" style="background-color: {getColourForMeanValue(weakArea.mean)}; color: {getTextColourForMeanValue(weakArea.mean)};" title="Average score {weakArea.mean.toFixed(1)}/5">{weakArea.mean.toFixed(1)}</span></li>
     {/each}
 </ul>
+<h4>Mean scores by question</h4>
+<p>The chart below shows the average (mean) score for each question in this section. Each bar represents the overall performance for that question, with colours indicating the maturity level achieved.</p>
+<LikertMeanChart fieldConfig={fieldConfig}
+                 fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}>
+</LikertMeanChart>
+<h4>Response distribution</h4>
+<p>The chart below shows the detailed breakdown of all responses for each question. Each bar is divided into segments representing the number of responses at each maturity level (Not Yet Planned, Planned, Early Progress, Substantial Progress, Established).</p>
 {#if useBarChart}
     <LikertBarChart fieldConfig={fieldConfig}
-                     fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}></LikertBarChart>
+                     fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}
+                     maxHistogramCount={maxHistogramCount}></LikertBarChart>
 {:else}
     <LikertHistogram fieldConfig={fieldConfig}
-                    fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}></LikertHistogram>
+                    fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}
+                    maxHistogramCount={maxHistogramCount}
+                    sectionTitle={sectionConfig.title}></LikertHistogram>
 {/if}
-<table class="table table-bordered mt-4">
-    <thead>
-    <tr>
-
-        <th scope="col" style="text-align: center">Statistic</th>
-        <th scope="col" style="text-align: center">Value</th>
-
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <td style="text-align: center">Mean</td>
-        <td style="text-align: center">{formatNumber(surveyStats.sections[sectionIndex].fields[fieldIndex].mean)}</td>
-    </tr>
-    <tr>
-        <td style="text-align: center">Min</td>
-        <td style="text-align: center">{surveyStats.sections[sectionIndex].fields[fieldIndex].min}</td>
-    </tr>
-    <tr>
-        <td style="text-align: center">Max</td>
-        <td style="text-align: center">{surveyStats.sections[sectionIndex].fields[fieldIndex].max}</td>
-    </tr>
-    </tbody>
-</table>

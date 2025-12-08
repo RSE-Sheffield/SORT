@@ -15,7 +15,7 @@ set -e
 sort_dir="/opt/sort"
 venv_dir="$sort_dir/venv"
 pip="$venv_dir/bin/pip"
-python_version="python3.12"
+python_version="python$(cat .python-version | xargs)"
 python="$venv_dir/bin/python"
 env_file="$sort_dir/.env"
 node_version=20

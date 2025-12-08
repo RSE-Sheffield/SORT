@@ -112,7 +112,7 @@ class Project(models.Model):
     """
     A project is an organisation unit for surveys within an organisation.
     """
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, help_text="Project title")
     description = models.TextField(blank=True, null=True)
     organisation = models.ForeignKey(
         Organisation, on_delete=models.CASCADE, related_name="projects"
@@ -132,3 +132,7 @@ class Project(models.Model):
         Does this project contain any active surveys?
         """
         return any(self.survey.values_list("is_active", flat=True))
+
+    @property
+    def surveys(self):
+        return self.survey.all()

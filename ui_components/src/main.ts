@@ -9,6 +9,7 @@ import RichtextFormField from "./lib/components/RichtextFormField.svelte";
 import SurveyResponseViewerApp from "./lib/components/SurveyResponseViewerApp.svelte";
 import SurveySectionDataView from "./lib/components/SurveySectionDataView.svelte";
 import SortSummaryMatrix from "./lib/components/SortSummaryMatrix.svelte";
+import SurveyReportApp from "./lib/components/SurveyReportApp.svelte";
 
 const csrf: string = getDataInElem("csrf", []);
 
@@ -141,6 +142,22 @@ mapMatchedElement(".sort-response-summary-matrix", (elem) => {
         props: {
             config: config,
             surveyStats: surveyStats,
+        }
+    });
+});
+
+mapMatchedElement(".sort-report-app", (elem) => {
+    const configId = elem.dataset.jsonConfigId;
+    const responsesId = elem.dataset.jsonResponsesId;
+    const csvUrl = elem.dataset.csvUrl ?? "";
+    const excelUrl = elem.dataset.excelUrl ?? "";
+    const config = getDataInElem(configId, {}) as SurveyConfig;
+    const responses: SurveyResponseBatch = getDataInElem(responsesId, []) as [];
+    mount(SurveyReportApp, {
+        target: elem,
+        props: {
+            config: config,
+            responses: responses
         }
     });
 });

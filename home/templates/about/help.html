@@ -1,4 +1,5 @@
 {% extends "base_manager.html" %}
+{% block title %}Help{% endblock %}
 {% block content %}
     <div class="container mx-auto px-4 py-8">
         <h1>How to use the SORT online tool</h1>
@@ -10,5 +11,12 @@
                 allow="autoplay *; fullscreen *; encrypted-media *"
                 sandbox="allow-downloads allow-forms allow-same-origin allow-scripts allow-top-navigation allow-pointer-lock allow-popups allow-modals allow-orientation-lock allow-popups-to-escape-sandbox allow-presentation allow-top-navigation-by-user-activation"
                 title="SORT Application Introduction"></iframe>
+
+        <div class="mt-8 pt-6 border-t border-gray-300">
+            <h2 class="text-2xl font-semibold mb-3">Need More Help?</h2>
+            <p class="mb-3">
+                If you're experiencing issues accessing the SORT tool, particularly from an NHS device or network,
+                please see our <a href="{% url 'troubleshooting' %}">Troubleshooting Guide</a>.
+        </div>
     </div>
 {% endblock %}
