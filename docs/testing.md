@@ -2,6 +2,8 @@
 
 There are two testing frameworks in place: one for the frontend (JavaScript and Node.js) and another for the backend (Python Django).
 
+See also: [manual testing checklist](./testing-manual.md).
+
 # Frontend testing
 
 ## Usage
