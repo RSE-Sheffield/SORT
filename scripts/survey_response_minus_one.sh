@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Script to reduce Likert response values by 1 in Django survey export JSON
-# Usage: ./survey_response_minus_one.sh <input_file.json>
+# Usage: ./scripts/survey_response_minus_one.sh <input_file.json>
 # Example:
 # ./scripts/survey_response_minus_one.sh [input_file] > [output_file]
 
