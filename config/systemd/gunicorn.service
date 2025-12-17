@@ -6,6 +6,7 @@
 Description=gunicorn service
 Requires=gunicorn.socket
 After=network.target
+Documentation=https://github.com/RSE-Sheffield/SORT/blob/main/docs/deployment.md
 
 [Service]
 # gunicorn can let systemd know when it is ready
@@ -14,11 +15,11 @@ NotifyAccess=main
 # the specific user that our service will run as
 User=gunicorn
 Group=gunicorn
-# this user can be transiently created by systemd
-DynamicUser=true
+# this user is created by the deployment script as a system user
+DynamicUser=false
 RuntimeDirectory=gunicorn
 WorkingDirectory=/opt/sort
-# DJANGO_MEDIA_ROOT
+# path specified in DJANGO_MEDIA_ROOT environment variable
 ReadWritePaths=/srv/www/sort/uploads/
 ExecStart=/opt/sort/venv/bin/gunicorn SORT.wsgi
 ExecReload=/bin/kill -s HUP $MAINPID

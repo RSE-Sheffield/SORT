@@ -36,6 +36,17 @@ python3 -m venv "$venv_dir"
 $pip install --quiet -r requirements.txt
 cp --recursive * "$sort_dir/"
 
+# Create gunicorn system user if it doesn't exist
+if ! id -u gunicorn > /dev/null 2>&1; then
+    useradd --system --no-create-home --shell /bin/false gunicorn
+fi
+
+# Create uploads directory with proper permissions
+# Path configured via DJANGO_MEDIA_ROOT environment variable
+mkdir -p /srv/www/sort/uploads
+chown gunicorn:gunicorn /srv/www/sort/uploads
+chmod 755 /srv/www/sort/uploads
+
 # Create environment file
 sudo touch "$env_file"
 sudo chown gunicorn:gunicorn "$env_file"
