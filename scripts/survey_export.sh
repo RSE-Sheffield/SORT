@@ -33,6 +33,11 @@ echo "Exporting survey responses..."
 python manage.py dumpdata survey.SurveyResponse --indent=2 --natural-primary | \
   jq --argjson pk "$primary_key" '[.[] | select(.fields.survey == $pk)]' > "$working_dir/survey_responses.json"
 
+# Export invitations for that survey
+echo "Exporting invitations..."
+python manage.py dumpdata survey.Invitation --indent=2 --natural-primary | \
+  jq --argjson pk "$primary_key" '[.[] | select(.fields.survey == $pk)]' > "$working_dir/invitations.json"
+
 # Export evidence sections for that survey
 echo "Exporting evidence sections..."
 python manage.py dumpdata survey.SurveyEvidenceSection --indent=2 --natural-primary | \
@@ -54,13 +59,14 @@ output_file="${2:-survey_${primary_key}_export.json}"
 jq -s 'add' \
   "$working_dir/survey_$primary_key.json" \
   "$working_dir/survey_responses.json" \
+  "$working_dir/invitations.json" \
   "$working_dir/evidence_sections.json" \
   "$working_dir/evidence_files.json" \
   "$working_dir/improvement_sections.json" \
   > "$output_file"
 
 echo ""
-echo "✓ Export complete: $output_file"
+echo "[OK] Export complete: $output_file"
 echo ""
 
 # List file paths
