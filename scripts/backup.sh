@@ -2,6 +2,9 @@
 # One-time backup of SORT Online database
 # This is an interactive script that requires the database password to be entered.
 
+# Usage:
+# bash scripts/backup.sh
+
 # Stop on errors
 set -e
 
@@ -13,9 +16,11 @@ SORT_DIR="/opt/sort"
 SORT_VENV="/opt/sort/venv"
 python="$SORT_VENV/bin/python3"
 LOG_FILE="$BACKUP_DIR/backup.log"
+uploads_path="/srv/www/sort/uploads"
 
 # Create backup folder
 mkdir --parents "$BACKUP_DIR"
+echo "Backing up to $BACKUP_DIR..."
 
 # Write to log file (and to screen)
 exec > >(tee -a "$LOG_FILE") 2>&1
@@ -32,7 +37,7 @@ echo "Backing up Django data..."
 
 # Backup uploaded media files
 echo "Backing up media files..."
-tar -czf "$BACKUP_DIR/sort-uploads.tar.gz" --directory /opt/sort uploads/
+tar -czf "$BACKUP_DIR/sort-uploads.tar.gz" --directory "$uploads_path"
 
 # List what was backed up
 echo ""
