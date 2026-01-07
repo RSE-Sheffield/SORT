@@ -100,8 +100,8 @@
                     x: {
                         position: "top",
                         beginAtZero: true,
-                        min: 1,
-                        max: 5,
+                        min: 0,
+                        max: 4,
                         title: {
                             display: true,
                             text: 'Mean Score'
