@@ -37,7 +37,7 @@ echo "Backing up Django data..."
 
 # Backup uploaded media files
 echo "Backing up media files..."
-tar -czf "$BACKUP_DIR/sort-uploads.tar.gz" --directory "$uploads_path"
+tar -czf "$BACKUP_DIR/sort-uploads.tar.gz" --directory "$uploads_path" .
 
 # List what was backed up
 echo ""
