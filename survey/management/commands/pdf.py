@@ -1,8 +1,12 @@
-import os
 from pathlib import Path
 
 from django.conf import settings
-from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, SESSION_KEY, get_user_model
+from django.contrib.auth import (
+    BACKEND_SESSION_KEY,
+    HASH_SESSION_KEY,
+    SESSION_KEY,
+    get_user_model,
+)
 from django.contrib.sessions.backends.db import SessionStore
 from django.core.management import BaseCommand
 from django.urls import reverse
@@ -82,7 +86,9 @@ class Command(BaseCommand):
         base_url = options["base_url"]
         headless = options["headless"]
 
-        self.stdout.write(f"Exporting survey report for Survey {survey.pk}: {survey.name}")
+        self.stdout.write(
+            f"Exporting survey report for Survey {survey.pk}: {survey.name}"
+        )
         self.stdout.write(f"Output directory: {output_dir.absolute()}")
 
         # Get a superuser for authentication
@@ -129,11 +135,16 @@ class Command(BaseCommand):
                 self.stdout.write(f"Processing Survey {survey.pk}: {survey.name}...")
 
                 # Navigate to report page
-                report_url = f"{base_url}{reverse('survey_report', kwargs={'pk': survey.pk})}"
+                report_url = (
+                    f"{base_url}{reverse('survey_report', kwargs={'pk': survey.pk})}"
+                )
                 page.goto(report_url, wait_until="networkidle")
 
                 # Check for errors
-                if page.locator("text=/error|not found|permission denied/i").count() > 0:
+                if (
+                    page.locator("text=/error|not found|permission denied/i").count()
+                    > 0
+                ):
                     self.stderr.write(
                         self.style.WARNING(
                             f"Warning: Possible error on page for Survey {survey.pk}"
@@ -157,15 +168,11 @@ class Command(BaseCommand):
                     },
                 )
 
-                self.stdout.write(
-                    self.style.SUCCESS(f"Exported: {output_path}")
-                )
+                self.stdout.write(self.style.SUCCESS(f"Exported: {output_path}"))
 
             except Exception as e:
                 self.stderr.write(
-                    self.style.ERROR(
-                        f"Failed to export Survey {survey.pk}: {str(e)}"
-                    )
+                    self.style.ERROR(f"Failed to export Survey {survey.pk}: {str(e)}")
                 )
             finally:
                 browser.close()
