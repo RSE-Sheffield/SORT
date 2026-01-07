@@ -101,8 +101,6 @@ Environment="DJANGO_SECRET_KEY=********"
 Environment="DEBUG=off"
 ```
 
-
-
 # Database installation
 
 The database may be administered using command-line tools and SQL statements that are run as the `postgres` user. For more details, please refer to the [PostgreSQL documentation](https://www.postgresql.org/docs/16/index.html) and [this guide](https://dev.to/matthewhegarty/postgresql-better-security-for-django-applications-3c7m).
