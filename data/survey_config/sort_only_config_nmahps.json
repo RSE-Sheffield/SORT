@@ -8,11 +8,11 @@
         {
           "type": "likert",
           "name": "releasing_potential",
-          "label": "Your perception on releasing potential:",
-          "description": "Rate the following statements from 1 (strongly disagree) to 5 (strongly agree)",
+          "label": "Your point of view on releasing potential:",
+          "description": "Rate the following statements from 0 to 4 (0 Not yet planned; 1 Planned; 2 Early progress; 3 Substantial Progress; 4 Established). Answer 0 if you don't know or the question is irrelevant. There is a comment box at the bottom for detailed responses.",
           "required": true,
           "sublabels": [
-            "A1. Our organisation has a system to talent spot and support individuals who are active in-service development/ QI to progress on to research",
+            "A1. Our organisation has a system to talent spot and support individuals who are active in-service development/quality improvement (QI) to progress on to research",
             "A2. Our organisation has research role models and named research leaders",
             "A3. Our organisation identifies and celebrates success in the research related activity",
             "A4. Our organisation provides research advice sessions where NMAHPs can explore ideas for project development",
@@ -36,11 +36,11 @@
             "A22. Our organisation provides opportunities to use research skills and experience of leadership at post-doctoral levels."
           ],
           "options": [
+            "0",
             "1",
             "2",
             "3",
-            "4",
-            "5"
+            "4"
           ]
         },
         {
@@ -61,8 +61,8 @@
         {
           "type": "likert",
           "name": "embedding_research",
-          "label": "Your perception on embedding research:",
-          "description": "Rate the following statements from 1 (strongly disagree) to 5 (strongly agree)",
+          "label": "Your point of view on embedding research:",
+          "description": "Rate the following statements from 0 to 4 (0 Not yet planned; 1 Planned; 2 Early progress; 3 Substantial Progress; 4 Established). Answer 0 if you don't know or the question is irrelevant. There is a comment box at the bottom for detailed responses.",
           "required": true,
           "sublabels": [
             "B1. Our organisation  provides protected time for NMAHPs to support research related activities",
@@ -72,11 +72,11 @@
             "B5. Our organisation actively communicates to the NMAHP workforce, clinical managers and executive team about how the involvement of NMAHPs in research has made a difference to services and people"
           ],
           "options": [
+            "0",
             "1",
             "2",
             "3",
-            "4",
-            "5"
+            "4"
           ]
         },
         {
@@ -97,8 +97,8 @@
         {
           "type": "likert",
           "name": "linkages_and_leadership",
-          "label": "Your perception on linkages and leadership:",
-          "description": "Rate the following statements from 1 (strongly disagree) to 5 (strongly agree)",
+          "label": "Your point of view on linkages and leadership:",
+          "description": "Rate the following statements from 0 to 4 (0 Not yet planned; 1 Planned; 2 Early progress; 3 Substantial Progress; 4 Established). Answer 0 if you don't know or the question is irrelevant. There is a comment box at the bottom for detailed responses.",
           "required": true,
           "sublabels": [
             "C1. Our organisation take part in research leadership and advisory activities outside our organisation (for example, sitting on ethics committees; funding committees; editorial boards and reviewing papers)",
@@ -107,11 +107,11 @@
             "C4. Our organisation are members of forums outside our organisation which support research activity"
           ],
           "options": [
+            "0",
             "1",
             "2",
             "3",
-            "4",
-            "5"
+            "4"
           ]
         },
         {
@@ -132,8 +132,8 @@
         {
           "type": "likert",
           "name": "inclusive_research_delivery",
-          "label": "Your perception on inclusive research delivery:",
-          "description": "Rate the following statements from 1 (strongly disagree) to 5 (strongly agree)",
+          "label": "Your point of view on inclusive research delivery:",
+          "description": "Rate the following statements from 0 to 4 (0 Not yet planned; 1 Planned; 2 Early progress; 3 Substantial Progress; 4 Established). Answer 0 if you don't know or the question is irrelevant. There is a comment box at the bottom for detailed responses.",
           "required": true,
           "sublabels": [
             "D1. Our organisation has skills to support Public and Patient Involvement and Engagement",
@@ -142,11 +142,11 @@
             "D4. Our organisation who work at an advanced, specialist, and consultant levels of practice act as principal investigators (PIs) for portfolio research"
           ],
           "options": [
+            "0",
             "1",
             "2",
             "3",
-            "4",
-            "5"
+            "4"
           ]
         },
         {
@@ -167,8 +167,8 @@
         {
           "type": "likert",
           "name": "digital_enabled_research",
-          "label": "Your perception on digital enabled research:",
-          "description": "Rate the following statements from 1 (strongly disagree) to 5 (strongly agree)",
+          "label": "Your point of view on digital enabled research:",
+          "description": "Rate the following statements from 0 to 4 (0 Not yet planned; 1 Planned; 2 Early progress; 3 Substantial Progress; 4 Established). Answer 0 if you don't know or the question is irrelevant. There is a comment box at the bottom for detailed responses.",
           "required": true,
           "sublabels": [
             "E1. Our organisation provides training for NMAHPs to enable them to practise effectively in a digitally enabled environment",
@@ -182,11 +182,11 @@
             "E9. Our organisation collects and shares case study examples of improvements to research using digital technology"
           ],
           "options": [
+            "0",
             "1",
             "2",
             "3",
-            "4",
-            "5"
+            "4"
           ]
         },
         {
