@@ -61,7 +61,7 @@ node --version
 
 # Install JavaScript package
 # (Use a sub-shell to avoid changing directory.)
-(cd "$sort_dir" && npm ci && npm run build)
+(cd "$sort_dir" && npm ci && npm audit fix && npm run build)
 
 # Install static files into DJANGO_STATIC_ROOT
 # This runs in a subshell because it's changing directory
