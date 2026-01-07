@@ -14,6 +14,7 @@ set -euo pipefail
 # https://docs.djangoproject.com/en/5.2/ref/django-admin/#dumpdata
 
 working_dir="$(mktemp --directory)"
+echo "Temporary directory: $working_dir"
 
 # Check if survey ID was provided
 if [ $# -eq 0 ]; then
@@ -27,6 +28,33 @@ primary_key="$1"
 
 echo "Exporting survey PK $primary_key..."
 python manage.py dumpdata survey.Survey --pks "$primary_key" --indent 2 --output "$working_dir/survey_$primary_key.json" --format json
+
+# Extract project FK from survey
+project_pk=$(jq -r '.[0].fields.project' "$working_dir/survey_$primary_key.json")
+
+# Export the associated project
+echo "Exporting project PK $project_pk..."
+python manage.py dumpdata home.Project --pks "$project_pk" --indent 2 --output "$working_dir/project_$project_pk.json" --format json
+
+# Extract organisation FK from project
+organisation_pk=$(jq -r '.[0].fields.organisation' "$working_dir/project_$project_pk.json")
+
+# Export the associated organisation
+echo "Exporting organisation PK $organisation_pk..."
+python manage.py dumpdata home.Organisation --pks "$organisation_pk" --indent 2 --output "$working_dir/organisation_$organisation_pk.json" --format json
+
+# Export organisation memberships for that organisation
+echo "Exporting organisation memberships..."
+python manage.py dumpdata home.OrganisationMembership --indent=2 --natural-primary | \
+  jq --argjson pk "$organisation_pk" '[.[] | select(.fields.organisation == $pk)]' > "$working_dir/organisation_memberships.json"
+
+# Extract user PKs from memberships (both 'user' and 'added_by' fields)
+user_pks=$(jq '[.[].fields.user, .[].fields.added_by] | unique | map(select(. != null))' "$working_dir/organisation_memberships.json")
+
+# Export all users associated with the organisation
+echo "Exporting users (PKs $user_pks)..."
+python manage.py dumpdata home.User --indent=2 | \
+  jq --argjson pks "$user_pks" '[.[] | select(.pk as $id | $pks | contains([$id]))]' > "$working_dir/users.json"
 
 # Export all responses for that survey (filter by survey FK)
 echo "Exporting survey responses..."
@@ -57,6 +85,10 @@ python manage.py dumpdata survey.SurveyImprovementPlanSection --indent=2 --natur
 # Combine all exports
 output_file="${2:-survey_${primary_key}_export.json}"
 jq -s 'add' \
+  "$working_dir/users.json" \
+  "$working_dir/organisation_$organisation_pk.json" \
+  "$working_dir/organisation_memberships.json" \
+  "$working_dir/project_$project_pk.json" \
   "$working_dir/survey_$primary_key.json" \
   "$working_dir/survey_responses.json" \
   "$working_dir/invitations.json" \
