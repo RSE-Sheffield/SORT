@@ -352,16 +352,28 @@ const colourRange: ColourRange[] = [
 
 export function getColourForMeanValue(mean: number): string {
     for (let i = 0; i < colourRange.length; i++) {
-        if (mean >= colourRange[i].min && mean <= colourRange[i].max)
+        // Use exclusive upper bound for all ranges except the last one
+        const matchesRange = i === colourRange.length - 1
+            ? mean >= colourRange[i].min && mean <= colourRange[i].max
+            : mean >= colourRange[i].min && mean < colourRange[i].max;
+
+        if (matchesRange) {
             return colourRange[i].colour;
+        }
     }
     return colourRange[0].colour;
 }
 
 export function getTextColourForMeanValue(mean: number): string {
     for (let i = 0; i < colourRange.length; i++) {
-        if (mean >= colourRange[i].min && mean <= colourRange[i].max)
+        // Use exclusive upper bound for all ranges except the last one
+        const matchesRange = i === colourRange.length - 1
+            ? mean >= colourRange[i].min && mean <= colourRange[i].max
+            : mean >= colourRange[i].min && mean < colourRange[i].max;
+
+        if (matchesRange) {
             return colourRange[i].textColour;
+        }
     }
     return colourRange[0].textColour;
 }
