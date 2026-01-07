@@ -129,7 +129,7 @@ We can list databases using `psql --list`.
 
 The SORT app needs credentials to access the database. We'll create a database user that the application will use to read and write data.
 
-Create a user:
+[Create a user](https://www.postgresql.org/docs/16/app-createuser.html):
 
 ```bash
 createuser sort
@@ -210,7 +210,7 @@ $ sudo $psql
 sort=>
 ```
 
-Once you're in the `psql` shell, you can exit using the `\q` command.
+Once you're in the `psql` shell, you can exit using the `\q` command.
 
 ## Manage tables
 
