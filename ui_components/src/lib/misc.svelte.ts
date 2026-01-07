@@ -371,6 +371,7 @@ export function getTextColourForMeanValue(mean: number): string {
  *
  * @param score The maturity score (0.0 to 4.0 inclusive)
  * @returns The human-readable maturity level label
+ * @throws {TypeError} If score is not a number
  * @throws {RangeError} If score is outside the valid range [0, 4]
  *
  * @example
@@ -379,6 +380,11 @@ export function getTextColourForMeanValue(mean: number): string {
  */
 export function getSortMaturityLabel(score: number): MaturityLabel {
     // Validate input
+    // Reject string inputs
+    if (typeof score === 'string') {
+        throw new TypeError(`Score must be a number, not a string. Got: ${score}`);
+    }
+    // Reject numbers out of range
     if (!Number.isFinite(score) || score < 0.0 || score > 4.0) {
         throw new RangeError(`Score must be between 0 and 4, got: ${score}`);
     }
