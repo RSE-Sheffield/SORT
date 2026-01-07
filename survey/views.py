@@ -441,8 +441,8 @@ class SurveyReportView(LoginRequiredMixin, View):
             sections.append(
                 {
                     "section_config": section,
-                    "evidence": evidence_sections.get(index, None),
-                    "improvement": improve_sections.get(index, None),
+                    "evidence": evidence_sections.get(index, list()),
+                    "improvement": improve_sections.get(index, list()),
                 }
             )
 

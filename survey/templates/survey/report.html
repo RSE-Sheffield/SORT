@@ -52,7 +52,7 @@
                                 objectives</abbr>.
                             </p>
                             <div class="sort-smart-table" data-update-url="{{ update_url }}"
-                                 data-plan="{{ section.improvement.plan }}" data-view-only="true"></div>
+                                 data-plan="{{ section.improvement.plan|default:'[]' }}" data-view-only="true"></div>
                         {% endif %}
 
                     </div>
