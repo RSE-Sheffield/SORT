@@ -88,7 +88,7 @@ python manage.py dumpdata survey.SurveyImprovementPlanSection --indent=2 --natur
   jq --argjson pk "$primary_key" '[.[] | select(.fields.survey == $pk)]' > "$working_dir/improvement_sections.json"
 
 # Combine all exports
-output_file="${2:-survey_${primary_key}_export.json}"
+output_file="$working_dir/${2:-survey_${primary_key}_export.json}"
 jq -s 'add' \
   "$working_dir/users.json" \
   "$working_dir/organisation_$organisation_pk.json" \
