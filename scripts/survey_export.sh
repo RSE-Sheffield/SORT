@@ -10,6 +10,11 @@
 # Stop on errors
 set -euo pipefail
 
+# Enable UTF-8 mode
+export PYTHONIOENCODING=UTF-8
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
 # Django data export
 # https://docs.djangoproject.com/en/5.2/ref/django-admin/#dumpdata
 
