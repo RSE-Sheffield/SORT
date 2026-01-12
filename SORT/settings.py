@@ -124,6 +124,9 @@ DATABASES = {
         "PASSWORD": os.getenv("DJANGO_DATABASE_PASSWORD"),
         "HOST": os.getenv("DJANGO_DATABASE_HOST"),
         "PORT": os.getenv("DJANGO_DATABASE_PORT"),
+        "OPTIONS": {
+            'client_encoding': os.getenv("DJANGO_DATABASE_CLIENT_ENCODING", "UTF8"),
+        },
     }
 }
 
