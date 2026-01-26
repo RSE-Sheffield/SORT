@@ -101,3 +101,44 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
             "https://github.com/RSE-Sheffield/SORT/pull/170#issuecomment-2740200064"
         )
         self.get("success_invitation")
+
+    def test_survey_create_with_research_consent(self):
+        """Test creating a survey with research data consent enabled"""
+        from survey.models import Survey, Profession
+
+        response = self.post(
+            view_name="survey_create",
+            project_id=self.project.pk,
+            data={
+                "name": "Test Survey with Consent",
+                "description": "Test description",
+                "survey_body_path": Profession.NMAHPS,
+                "research_data_consent": "on",
+            },
+            expected_status_code=HTTPStatus.FOUND,
+        )
+
+        # Get the created survey
+        survey = Survey.objects.filter(name="Test Survey with Consent").first()
+        self.assertIsNotNone(survey)
+        self.assertTrue(survey.research_data_consent)
+
+    def test_survey_create_without_research_consent(self):
+        """Test creating a survey without research data consent (default)"""
+        from survey.models import Survey, Profession
+
+        response = self.post(
+            view_name="survey_create",
+            project_id=self.project.pk,
+            data={
+                "name": "Test Survey without Consent",
+                "description": "Test description",
+                "survey_body_path": Profession.NMAHPS,
+            },
+            expected_status_code=HTTPStatus.FOUND,
+        )
+
+        # Get the created survey
+        survey = Survey.objects.filter(name="Test Survey without Consent").first()
+        self.assertIsNotNone(survey)
+        self.assertFalse(survey.research_data_consent)
