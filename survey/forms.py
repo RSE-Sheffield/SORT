@@ -87,20 +87,6 @@ class SurveyCreateForm(forms.ModelForm):
         widget=forms.Select(attrs={"class": "form-control"}),
     )
 
-    research_data_consent = forms.BooleanField(
-        required=False,
-        label="Allow research data sharing with the University of Sheffield",
-        help_text=(
-            "When enabled, anonymised survey response data may be shared with researchers at the "
-            "University of Sheffield for studies of organisational research capacity. This requires "
-            "both your consent here and each participant's individual consent when they submit their response. "
-            "Shared data is extracted periodically, anonymised, and stored separately from this application. "
-            "As responses are anonymous by default, individual responses cannot be identified or removed, "
-            "though all data for an organisation, project, or survey can be removed on request."
-        ),
-        widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
-    )
-
     class Meta:
         model = Survey
         fields = ["name", "description", "survey_body_path"]

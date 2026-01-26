@@ -8,7 +8,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ("survey", "0022_survey_is_shared"),
         ("survey", "0023_alter_survey_survey_body_path"),
-        ("survey", "0023_survey_research_data_consent"),
     ]
 
     operations = []
