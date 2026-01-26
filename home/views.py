@@ -89,17 +89,31 @@ class SignupView(CreateView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user, backend="django.contrib.auth.backends.ModelBackend")
-        return redirect(reverse_lazy("home"))
+        return redirect(reverse_lazy("dashboard"))
+
+
+class LandingView(TemplateView):
+    """
+    Public landing page for new visitors arriving from sort-online.org.
+    Redirects authenticated users to their dashboard.
+    """
+
+    template_name = "home/landing.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("dashboard")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class LogoutInterfaceView(LogoutView):
-    success_url = reverse_lazy("login")
+    success_url = reverse_lazy("landing")
 
 
 class LoginInterfaceView(LoginView):
     template_name = "home/login.html"
     form_class = ManagerLoginForm
-    success_url = reverse_lazy("home")
+    success_url = reverse_lazy("dashboard")
 
     def form_invalid(self, form):
         messages.error(self.request, "Invalid email or password.")
@@ -107,11 +121,15 @@ class LoginInterfaceView(LoginView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect("home")
+            return redirect("dashboard")
         return super().dispatch(request, *args, **kwargs)
 
 
 class HomeView(LoginRequiredMixin, View):
+    """
+    Dashboard view for authenticated users showing their projects.
+    """
+
     template_name = "home/welcome.html"
     context_object_name = "projects"
 
@@ -236,7 +254,7 @@ class OrganisationCreateView(LoginRequiredMixin, CreateView):
             messages.error(
                 self.request, "You don't have permission to create organisations."
             )
-            return redirect("home")
+            return redirect("dashboard")
 
 
 class ProjectView(LoginRequiredMixin, ListView):

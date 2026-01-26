@@ -31,6 +31,9 @@ Delegate=yes
 LockPersonality=yes
 MemoryDenyWriteExecute=yes
 NoNewPrivileges=yes
+# https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Credentials
+LoadCredential=.env:/opt/sort/.env
+EnvironmentFile=${CREDENTIALS_DIRECTORY}/.env
 
 [Install]
 WantedBy=multi-user.target

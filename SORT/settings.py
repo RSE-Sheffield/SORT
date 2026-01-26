@@ -32,8 +32,12 @@ def cast_to_boolean(obj: Any) -> bool:
     return obj[0] in {"1", "y", "t", "o"}
 
 
+# Load environment variables and secrets
+# https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Credentials
+CREDENTIALS_DIRECTORY = Path(os.getenv("CREDENTIALS_DIRECTORY", "."))
+DJANGO_ENV_PATH = Path(os.getenv("DJANGO_ENV_PATH", CREDENTIALS_DIRECTORY.joinpath(".env")))
 # Load environment variables from .env file
-load_dotenv(dotenv_path=os.getenv("DJANGO_ENV_PATH", ".env"))
+load_dotenv(DJANGO_ENV_PATH)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -177,7 +181,9 @@ STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR / "staticfiles")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_REDIRECT_URL = "/"
+# Authentication settings
+# https://docs.djangoproject.com/en/6.0/ref/settings/#auth
+LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/"
 
 # FA: End session when the browser is closed

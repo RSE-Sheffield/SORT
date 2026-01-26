@@ -3,6 +3,7 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
+    <h3 class="text-center mb-4">Login to SORT</h3>
 
     <form method="post">
         {% csrf_token %}
@@ -16,13 +17,22 @@
         </div>
         <button type="submit" class="btn btn-primary w-100">Login</button>
     </form>
-    <div class="text-center mt-3 small-text" style="font-size: 0.7rem;">
-        <div class="text-center mt-2 small-text" style="font-size: 0.7rem;">
-            <a href="{% url 'password_reset' %}" class="small">Forgot Password?</a>
-        </div>
-        <div class="text-center mt-2 small-text" style="font-size: 0.7rem;">
-            <a href="{% url 'account_signup' %}" class="small">Don't have an account? Sign up</a>
-        </div>
+
+    <div class="text-center mt-3">
+        <a href="{% url 'password_reset' %}" class="small" style="font-size: 0.8rem;">Forgot Password?</a>
+    </div>
+
+    <hr class="my-4">
+
+    <div class="text-center">
+        <p class="mb-2" style="font-size: 0.9rem;">Don't have an account?</p>
+        <a href="{% url 'account_signup' %}" class="btn btn-outline-primary w-100">
+            Create New Account
+        </a>
+    </div>
+
+    <div class="text-center mt-3">
+        <a href="{% url 'landing' %}" class="small" style="font-size: 0.75rem;">← Back to Home</a>
     </div>
 
 {% endblock %}

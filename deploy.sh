@@ -19,6 +19,7 @@ python_version="python$(cat .python-version | xargs)"
 python="$venv_dir/bin/python"
 env_file="$sort_dir/.env"
 node_version=20
+django_media_root="/srv/www/sort/uploads/"
 
 # Install British UTF-8 locale so we can use this with PostgreSQL.
 # This is important to avoid the limitations of the LATIN1 character set.
@@ -34,7 +35,8 @@ python3 -m venv "$venv_dir"
 
 # Install the SORT Django app package
 $pip install --quiet -r requirements.txt
-cp --recursive * "$sort_dir/"
+sudo rm -r "$sort_dir"/**/migrations
+cp --recursive ./* "$sort_dir/"
 
 # Create gunicorn group if it doesn't exist
 if ! getent group gunicorn > /dev/null 2>&1; then
@@ -48,7 +50,6 @@ fi
 
 # Create environment file
 sudo touch "$env_file"
-sudo chown gunicorn:gunicorn "$env_file"
 sudo chmod 600 "$env_file"
 
 # Install Node.js package manager
@@ -67,6 +68,9 @@ node --version
 # This runs in a subshell because it's changing directory
 (cd "$sort_dir" && exec $python manage.py collectstatic --no-input)
 
+# Create uploads folder
+sudo mkdir --parents "$django_media_root"
+
 # Install Gunicorn service
 cp --verbose config/systemd/gunicorn.service /etc/systemd/system/gunicorn.service
 cp --verbose config/systemd/gunicorn.socket /etc/systemd/system/gunicorn.socket
@@ -75,6 +79,7 @@ systemctl enable gunicorn.service
 systemctl enable gunicorn.socket
 systemctl start gunicorn.service
 systemctl reload gunicorn.service
+systemctl restart gunicorn.service
 
 # Install web reverse proxy server
 # Install nginx
