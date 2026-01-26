@@ -57,9 +57,11 @@ class Survey(models.Model):
         help_text="Are responses being collected?",
         null=False,
     )
-    research_data_consent = models.BooleanField(
-        default=False,
-        help_text="Allow anonymised survey data to be shared with University of Sheffield researchers",
+    is_shared = models.BooleanField(
+        verbose_name="Confirm data sharing agreement",
+        default=True,
+        help_text="Do you accept the terms of the data sharing agreement"
+                  "between your organisation and the University of Sheffield?",
         null=False,
     )
 

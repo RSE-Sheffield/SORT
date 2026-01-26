@@ -58,14 +58,14 @@
                         <i class="bx bx-copy"></i>
                     </button>
                 </p>
-                <p>
-                    <strong>Research data sharing consent:</strong>
-                    {% if survey.research_data_consent %}
-                        <span class="badge bg-success"><i class="bx bx-check-circle"></i> Enabled</span>
-                    {% else %}
-                        <span class="badge bg-secondary"><i class="bx bx-x-circle"></i> Not enabled</span>
-                    {% endif %}
-                </p>
+                {% if survey.is_shared %}
+                    <div class="alert alert-secondary">
+                        The responses to this survey are available to the University of Sheffield as described in
+                        the <a href="{% url 'data_sharing_agreement' %}"
+                               title="View the data sharing agreement between your organisation and the University">
+                        <i class="bx bxs-note"></i> Data Sharing Agreement</a>.
+                    </div>
+                {% endif %}
             </div>
         </div>
 

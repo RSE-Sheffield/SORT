@@ -47,6 +47,21 @@
                             {% endif %}
                         </div>
                     {% endfor %}
+
+                    <!-- Confirm data sharing agreement -->
+                    <div class="mb-3">
+                        <p>
+                            Do you agree to share the responses to this survey with researchers at the University of
+                            Sheffield as described in the
+                            <a href="{% url 'data_sharing_agreement' %}"
+                               title="View the data sharing agreement between your organisation and the University">
+                                <i class="bx bxs-note"></i> Data Sharing Agreement</a>?
+                        </p>
+                        <input type="checkbox" name="is_shared" id="is_shared" checked>
+                        <label for="is_shared">Confirm data sharing agreement</label>
+                    </div>
+
+                    <!-- Submit button -->
                     <div class="text-center">
                         <button type="submit" class="btn btn-primary" style="background-color: #6933AD; border: none;">
                             <i class="bx bx-chart"></i> Create Survey
