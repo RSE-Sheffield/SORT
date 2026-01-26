@@ -27,6 +27,7 @@ class Profession(models.TextChoices):
     """
     Respondent job category for the target audience that will complete the survey.
     """
+
     NMAHPS = "NMAHPs", "Nurses, Midwives and Allied Health Professionals (NMAHPs)"
     NURSES = "Nurses", "Nurses"
     WIDMIVES = "Midwives", "Midwives"
@@ -40,12 +41,16 @@ class Survey(models.Model):
     name = models.CharField(max_length=200, help_text="Survey title")
     description = models.TextField(blank=True, null=True)
     survey_config = models.JSONField(null=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="survey")
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, null=True, related_name="survey"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     survey_body_path = models.TextField(
-        blank=False, null=False, default=Profession.NMAHPS,
+        blank=False,
+        null=False,
+        default=Profession.NMAHPS,
         help_text="Respondent profession",
-        choices=Profession
+        choices=Profession,
     )
     is_active = models.BooleanField(
         default=True,
@@ -374,7 +379,9 @@ class Survey(models.Model):
         """
         self.survey_config = {
             # Merge sections by concatenating all questions
-            "sections": consent_config["sections"] + self.sort_config["sections"] + demography_config["sections"]
+            "sections": consent_config["sections"]
+            + self.sort_config["sections"]
+            + demography_config["sections"]
         }
 
 
@@ -494,7 +501,6 @@ class Invitation(models.Model):
         return f"Invitation for {self.survey.name}"
 
     def save(self, *args, **kwargs):
-
         if not self.token:
             # Try a new token until it doesn't clash with an existing one
             num_token_tries = 0
