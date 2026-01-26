@@ -106,7 +106,7 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
         """Test creating a survey with research data consent enabled"""
         from survey.models import Survey, Profession
 
-        response = self.post(
+        self.post(
             view_name="survey_create",
             project_id=self.project.pk,
             data={
@@ -127,7 +127,7 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
         """Test creating a survey without research data consent (default)"""
         from survey.models import Survey, Profession
 
-        response = self.post(
+        self.post(
             view_name="survey_create",
             project_id=self.project.pk,
             data={
