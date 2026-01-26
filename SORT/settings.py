@@ -115,19 +115,24 @@ WSGI_APPLICATION = os.getenv("DJANGO_WSGI_APPLICATION", "SORT.wsgi.application")
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-DATABASES = {
-    # Set the database settings using environment variables, or default to a local SQLite database file.
-    "default": {
-        "ENGINE": os.getenv("DJANGO_DATABASE_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.getenv("DJANGO_DATABASE_NAME", BASE_DIR / "db.sqlite3"),
-        "USER": os.getenv("DJANGO_DATABASE_USER"),
-        "PASSWORD": os.getenv("DJANGO_DATABASE_PASSWORD"),
-        "HOST": os.getenv("DJANGO_DATABASE_HOST"),
-        "PORT": os.getenv("DJANGO_DATABASE_PORT"),
-        "OPTIONS": {
-            'client_encoding': os.getenv("DJANGO_DATABASE_CLIENT_ENCODING", "UTF8"),
-        },
+db_engine = os.getenv("DJANGO_DATABASE_ENGINE", "django.db.backends.sqlite3")
+db_config = {
+    "ENGINE": db_engine,
+    "NAME": os.getenv("DJANGO_DATABASE_NAME", BASE_DIR / "db.sqlite3"),
+    "USER": os.getenv("DJANGO_DATABASE_USER"),
+    "PASSWORD": os.getenv("DJANGO_DATABASE_PASSWORD"),
+    "HOST": os.getenv("DJANGO_DATABASE_HOST"),
+    "PORT": os.getenv("DJANGO_DATABASE_PORT"),
+}
+
+# Add PostgreSQL-specific options only when using PostgreSQL
+if "postgresql" in db_engine:
+    db_config["OPTIONS"] = {
+        'client_encoding': os.getenv("DJANGO_DATABASE_CLIENT_ENCODING", "UTF8"),
     }
+
+DATABASES = {
+    "default": db_config
 }
 
 # Password validation
