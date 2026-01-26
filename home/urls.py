@@ -102,6 +102,11 @@ urlpatterns = [
         name="help",
     ),
     path(
+        "help/video-tutorial/",
+        views.VideoTutorialView.as_view(),
+        name="video_tutorial",
+    ),
+    path(
         "help/troubleshooting/",
         views.TroubleshootingView.as_view(),
         name="troubleshooting",

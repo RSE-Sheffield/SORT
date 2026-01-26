@@ -522,11 +522,21 @@ class OrganisationMembershipDeleteView(
 
 
 class HelpView(LoginRequiredMixin, TemplateView):
-    template_name = "about/help.html"
+    """
+    User guide
+    """
+    template_name = "help/index.html"
+
+
+class VideoTutorialView(LoginRequiredMixin, TemplateView):
+    """
+    Beginner's intro video.
+    """
+    template_name = "help/video-tutorial.html"
 
 
 class TroubleshootingView(LoginRequiredMixin, TemplateView):
-    template_name = "about/troubleshooting.html"
+    template_name = "help/troubleshooting.html"
 
 
 class FAQView(LoginRequiredMixin, TemplateView):
