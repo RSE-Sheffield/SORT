@@ -7,7 +7,9 @@ from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
-    path("", views.HomeView.as_view(), name="home"),
+    path("", views.LandingView.as_view(), name="landing"),
+    path("dashboard/", views.HomeView.as_view(), name="dashboard"),
+    path("home/", views.HomeView.as_view(), name="home"),  # Backwards compatibility alias
     path("login/", views.LoginInterfaceView.as_view(), name="login"),
     path("logout/", views.LogoutInterfaceView.as_view(), name="logout"),
     re_path(
@@ -68,6 +70,11 @@ urlpatterns = [
         r"^myorganisation/members/accept/(?P<key>\w+)/?$",
         views.MyOrganisationAcceptInviteView.as_view(),
         name="member_invite_accept",
+    ),
+    path(
+        "myorganisation/data-sharing-agreement/",
+        views.DataSharingAgreementView.as_view(),
+        name="data_sharing_agreement",
     ),
     path(
         "organisation/create/",

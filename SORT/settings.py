@@ -181,7 +181,9 @@ STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR / "staticfiles")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_REDIRECT_URL = "/"
+# Authentication settings
+# https://docs.djangoproject.com/en/6.0/ref/settings/#auth
+LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/"
 
 # FA: End session when the browser is closed
@@ -277,11 +279,13 @@ SURVEY_TEMPLATES = {
     "Nurses": "sort_only_config_nurses.json",
     "Midwives": "sort_only_config_midwives.json",
     "NMAHPs": "sort_only_config_nmahps.json",
+    "AHP": "sort_only_config_ahp.json",
 }
 DEMOGRAPHY_TEMPLATES = {
     "Nurses": "demography_only_config_nurses.json",
     "Midwives": "demography_only_config_midwives.json",
     "NMAHPs": "demography_only_config_nmahps.json",
+    "AHP": "demography_only_config_ahp.json",
 }
 CONSENT_TEMPLATE = "consent_only_config.json"
 
