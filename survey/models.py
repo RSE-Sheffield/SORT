@@ -52,6 +52,13 @@ class Survey(models.Model):
         help_text="Are responses being collected?",
         null=False,
     )
+    is_shared = models.BooleanField(
+        verbose_name="Confirm data sharing agreement",
+        default=True,
+        help_text="Do you accept the terms of the data sharing agreement"
+                  "between your organisation and the University of Sheffield?",
+        null=False,
+    )
 
     def __str__(self):
         return self.name

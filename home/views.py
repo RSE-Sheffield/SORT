@@ -25,6 +25,7 @@ from django.views import View
 from django.views.generic import (
     CreateView,
     DeleteView,
+    DetailView,
     ListView,
     TemplateView,
     UpdateView,
@@ -537,3 +538,31 @@ class ParticipantInformationView(TemplateView):
     """
 
     template_name = "about/participant_information.html"
+
+
+class DataSharingAgreementView(LoginRequiredMixin, DetailView):
+    """
+    Data Sharing Agreement between NHS organisations and University of Sheffield
+    for research data sharing through SORT Online
+    """
+
+    model = Organisation
+    template_name = "organisation/data_sharing_agreement.html"
+    context_object_name = "organisation"
+
+    def get_object(self, queryset=None):
+        """
+        Get the organisation and verify user has access to it.
+        """
+
+        organisation = self.request.user.organisation_set.first()
+
+        # Verify user is a member of this organisation
+        if not organisation_service.can_view(self.request.user, organisation):
+            messages.error(
+                self.request,
+                "You don't have permission to view this organisation's data sharing agreement.",
+            )
+            return redirect("myorganisation")
+
+        return organisation
