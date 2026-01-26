@@ -30,6 +30,7 @@ class Profession(models.TextChoices):
     NMAHPS = "NMAHPs", "Nurses, Midwives and Allied Health Professionals (NMAHPs)"
     NURSES = "Nurses", "Nurses"
     WIDMIVES = "Midwives", "Midwives"
+    NURSES_MIDWIVES = "Nurses & Midwives", "Nurses and Midwives"
 
 
 class Survey(models.Model):
