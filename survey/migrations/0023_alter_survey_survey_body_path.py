@@ -4,6 +4,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ("survey", "0022_alter_survey_name_alter_survey_project_and_more"),
     ]
@@ -21,6 +22,7 @@ class Migration(migrations.Migration):
                     ("Nurses", "Nurses"),
                     ("Midwives", "Midwives"),
                     ("Nurses & Midwives", "Nurses and Midwives"),
+                    ("AHP", "Allied Health Professionals (AHP)"),
                 ],
                 default="NMAHPs",
                 help_text="Respondent profession",
