@@ -510,6 +510,13 @@ class TroubleshootingView(LoginRequiredMixin, TemplateView):
     template_name = "about/troubleshooting.html"
 
 
+class FAQView(LoginRequiredMixin, TemplateView):
+    """
+    Frequently asked questions (FAQs)
+    """
+    template_name = "help/faq.html"
+
+
 class LicenseAgreementView(LoginRequiredMixin, TemplateView):
     """
     End user license agreement
