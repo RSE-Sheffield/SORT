@@ -277,6 +277,39 @@ export function formatNumber(num: number) {
     return numFormat.format(num)
 }
 
+/**
+ * Readiness level boundaries
+ *
+ * Scores are mapped to labels using midpoint boundaries:
+ * - [0.0, 0.5): "Not yet planned"
+ * - [0.5, 1.5): "Planned"
+ * - [1.5, 2.5): "Early progress"
+ * - [2.5, 3.5): "Substantial progress"
+ * - [3.5, 4.0]: "Established"
+ */
+const MATURITY_BOUNDARIES = {
+    PLANNED: 0.5,
+    EARLY_PROGRESS: 1.5,
+    SUBSTANTIAL_PROGRESS: 2.5,
+    ESTABLISHED: 3.5
+} as const;
+
+/**
+ * Readiness level labels
+ */
+export const MATURITY_LABELS = {
+    NOT_YET_PLANNED: "Not yet planned",
+    PLANNED: "Planned",
+    EARLY_PROGRESS: "Early progress",
+    SUBSTANTIAL_PROGRESS: "Substantial progress",
+    ESTABLISHED: "Established"
+} as const;
+
+/**
+ * Maturity label type - union of all possible maturity level labels
+ */
+export type MaturityLabel = typeof MATURITY_LABELS[keyof typeof MATURITY_LABELS];
+
 type ColourRange = {
     colour: string;
     textColour: string;
@@ -289,66 +322,88 @@ const colourRange: ColourRange[] = [
         colour: "#ccccdd",
         textColour: "#000",
         min: 0,
-        max: 1,
+        max: MATURITY_BOUNDARIES.PLANNED,
     },
     {
         colour: "#aa99cc",
         textColour: "#000",
-        min: 1,
-        max: 2,
+        min: MATURITY_BOUNDARIES.PLANNED,
+        max: MATURITY_BOUNDARIES.EARLY_PROGRESS,
     },
     {
-        colour: "#8866bb",
-        textColour: "#FFF",
-        min: 2,
-        max: 3,
+        colour: "#abd9e9",
+        textColour: "#000",
+        min: MATURITY_BOUNDARIES.EARLY_PROGRESS,
+        max: MATURITY_BOUNDARIES.SUBSTANTIAL_PROGRESS,
     },
     {
-        colour: "#6633aa",
-        textColour: "#FFF",
-        min: 3,
-        max: 4,
+        colour: "#74add1",
+        textColour: "#000",
+        min: MATURITY_BOUNDARIES.SUBSTANTIAL_PROGRESS,
+        max: MATURITY_BOUNDARIES.ESTABLISHED,
     },
     {
         colour: "#440099",
         textColour: "#FFF",
-        min: 4,
-        max: 5,
+        min: MATURITY_BOUNDARIES.ESTABLISHED,
+        max: 4.5,
     },
 ]
 
 export function getColourForMeanValue(mean: number): string {
     for (let i = 0; i < colourRange.length; i++) {
-        if (mean >= colourRange[i].min && mean <= colourRange[i].max)
+        // Use exclusive upper bound for all ranges except the last one
+        const matchesRange = i === colourRange.length - 1
+            ? mean >= colourRange[i].min && mean <= colourRange[i].max
+            : mean >= colourRange[i].min && mean < colourRange[i].max;
+
+        if (matchesRange) {
             return colourRange[i].colour;
+        }
     }
     return colourRange[0].colour;
 }
 
 export function getTextColourForMeanValue(mean: number): string {
     for (let i = 0; i < colourRange.length; i++) {
-        if (mean >= colourRange[i].min && mean <= colourRange[i].max)
+        // Use exclusive upper bound for all ranges except the last one
+        const matchesRange = i === colourRange.length - 1
+            ? mean >= colourRange[i].min && mean <= colourRange[i].max
+            : mean >= colourRange[i].min && mean < colourRange[i].max;
+
+        if (matchesRange) {
             return colourRange[i].textColour;
+        }
     }
     return colourRange[0].textColour;
 }
 
-export function getSortMaturityLabel(score: number | string) {
-    // The scale goes 1 - 5 (doesn't start at zero)
-    const numScore = Math.round(Number(score));
-
-    switch (numScore) {
-        case 1:
-            return "Not Yet Planned";
-        case 2:
-            return "Planned";
-        case 3:
-            return "Early Progress";
-        case 4:
-            return "Substantial Progress";
-        case 5:
-            return "Established";
-        default:
-            throw new Error(`Invalid score: ${score}. Score must be between 1 and 5 inclusive.`);
+/**
+ * Get the readiness level label for a given mean score.
+ *
+ * @param score The maturity score (0.0 to 4.0 inclusive)
+ * @returns The human-readable maturity level label
+ * @throws {TypeError} If score is not a number
+ * @throws {RangeError} If score is outside the valid range [0, 4]
+ *
+ * @example
+ * getSortMaturityLabel(0.3);  // "Not yet planned"
+ * getSortMaturityLabel(2.8);  // "Substantial progress"
+ */
+export function getSortMaturityLabel(score: number): MaturityLabel {
+    // Validate input
+    // Reject string inputs
+    if (typeof score === 'string') {
+        throw new TypeError(`Score must be a number, not a string. Got: ${score}`);
     }
+    // Reject numbers out of range
+    if (!Number.isFinite(score) || score < 0.0 || score > 4.0) {
+        throw new RangeError(`Score must be between 0 and 4, got: ${score}`);
+    }
+    // Use midpoint boundaries between adjacent readiness levels
+    if (score < MATURITY_BOUNDARIES.PLANNED) return MATURITY_LABELS.NOT_YET_PLANNED;
+    if (score < MATURITY_BOUNDARIES.EARLY_PROGRESS) return MATURITY_LABELS.PLANNED;
+    if (score < MATURITY_BOUNDARIES.SUBSTANTIAL_PROGRESS) return MATURITY_LABELS.EARLY_PROGRESS;
+    if (score < MATURITY_BOUNDARIES.ESTABLISHED) return MATURITY_LABELS.SUBSTANTIAL_PROGRESS;
+    return MATURITY_LABELS.ESTABLISHED;
 }

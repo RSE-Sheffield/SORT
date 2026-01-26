@@ -89,6 +89,7 @@ class SurveyCreateForm(forms.ModelForm):
 
     class Meta:
         model = Survey
+        # is_shared is defined manually in the HTML because we need a link to the DSA.
         fields = ["name", "description", "survey_body_path"]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),

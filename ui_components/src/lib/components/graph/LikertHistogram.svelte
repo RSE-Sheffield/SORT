@@ -85,7 +85,7 @@
             const colour = getColourForMeanValue(Number(value));
 
             barDatasets.push({
-                label: getSortMaturityLabel(value),
+                label: getSortMaturityLabel(Number(value)),
                 data: values,
                 borderWidth: 1,
                 backgroundColor: colour,
