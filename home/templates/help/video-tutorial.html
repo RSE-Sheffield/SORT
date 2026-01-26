@@ -1,0 +1,45 @@
+{% extends "base_manager.html" %}
+{% block title %}Video Tutorial{% endblock %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'help' %}"><i class="bx bxs-help-circle"></i> Help</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bx bx-video"></i> Video Tutorial
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <h1><i class="bx bx-video"></i> Video Tutorial</h1>
+        <p class="lead">
+            Watch this introductory video for an overview of how to use the SORT Online tool.
+        </p>
+
+        <div class="card mb-5">
+            <div class="card-header">
+                <h2><i class="bx bx-play-circle"></i> SORT Online Introduction</h2>
+            </div>
+            <div class="card-body">
+                <div class="ratio ratio-16x9" style="max-width: 800px;">
+                    <iframe id="kaltura_player"
+                            src="https://cdnapisec.kaltura.com/p/2103181/embedPlaykitJs/uiconf_id/53345422?iframeembed=true&amp;entry_id=1_e1eky7pw&amp;config%5Bprovider%5D=%7B%22widgetId%22%3A%221_t5fs1o53%22%7D&amp;config%5Bplayback%5D=%7B%22startTime%22%3A0%7D"
+                            allowfullscreen webkitallowfullscreen mozAllowFullScreen
+                            allow="autoplay *; fullscreen *; encrypted-media *"
+                            sandbox="allow-downloads allow-forms allow-same-origin allow-scripts allow-top-navigation allow-pointer-lock allow-popups allow-modals allow-orientation-lock allow-popups-to-escape-sandbox allow-presentation allow-top-navigation-by-user-activation"
+                            title="SORT Application Introduction"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-center">
+            <a href="{% url 'help' %}" class="btn btn-outline-secondary">
+                <i class="bx bx-arrow-back"></i> Back to User Guide
+            </a>
+        </p>
+    </div>
+{% endblock %}
