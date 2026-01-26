@@ -36,6 +36,16 @@ python3 -m venv "$venv_dir"
 $pip install --quiet -r requirements.txt
 cp --recursive * "$sort_dir/"
 
+# Create gunicorn group if it doesn't exist
+if ! getent group gunicorn > /dev/null 2>&1; then
+    groupadd --system gunicorn
+fi
+
+# Create gunicorn user if it doesn't exist
+if ! getent passwd gunicorn > /dev/null 2>&1; then
+    useradd --system --gid gunicorn --home-dir /nonexistent --no-create-home --shell /bin/false gunicorn
+fi
+
 # Create environment file
 sudo touch "$env_file"
 sudo chown gunicorn:gunicorn "$env_file"
@@ -51,7 +61,7 @@ node --version
 
 # Install JavaScript package
 # (Use a sub-shell to avoid changing directory.)
-(cd "$sort_dir" && npm ci && npm run build)
+(cd "$sort_dir" && npm ci && npm audit fix && npm run build)
 
 # Install static files into DJANGO_STATIC_ROOT
 # This runs in a subshell because it's changing directory

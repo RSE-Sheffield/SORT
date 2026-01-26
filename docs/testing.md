@@ -2,6 +2,8 @@
 
 There are two testing frameworks in place: one for the frontend (JavaScript and Node.js) and another for the backend (Python Django).
 
+There is a testing script for Windows at [scripts/test.bat](../scripts/test.bat).
+
 # Frontend testing
 
 ## Usage

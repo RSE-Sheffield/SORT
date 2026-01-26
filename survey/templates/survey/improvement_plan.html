@@ -71,7 +71,7 @@
                     table should represent one specific action or objective. You can add as many rows as needed to
                     address your survey findings comprehensively.
                 </p>
-                <div class="sort-smart-table" data-update-url="{{ update_url }}" data-plan="{{ plan }}"></div>
+                <div class="sort-smart-table" data-update-url="{{ update_url }}" data-plan="{{ plan|default:'[]' }}"></div>
             </div>
         </div>
         {{ csrf | json_script:"csrf" }}
