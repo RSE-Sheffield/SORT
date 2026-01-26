@@ -1,0 +1,538 @@
+{% extends "base_manager.html" %}
+{% block title %}Frequently Asked Questions{% endblock %}
+{% block content %}
+    <div class="container py-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'help' %}">Help</a></li>
+                <li class="breadcrumb-item active" aria-current="page">FAQs</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="mb-4">Frequently Asked Questions</h1>
+                <p class="lead text-muted mb-4">
+                    Find answers to common questions about SORT Online.
+                </p>
+
+                <!-- About SORT Online Section -->
+                <section class="mb-5">
+                    <h2 class="h4 mb-3">
+                        <i class="bx bx-info-circle text-primary"></i> About SORT Online
+                    </h2>
+                    <div class="accordion" id="faqAbout">
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-ab-1"
+                                        aria-expanded="false" aria-controls="faq-ab-1">
+                                    What is SORT Online?
+                                </button>
+                            </h3>
+                            <div id="faq-ab-1" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqAbout">
+                                <div class="accordion-body">
+                                    <p>
+                                        SORT Online is a secure digital platform that enables health and care
+                                        organisations to use the Self-Assessment of Organisational Readiness
+                                        for Research Tool (SORT) within their own organisation.
+                                    </p>
+                                    <p>
+                                        SORT is a validated framework designed to help organisations understand
+                                        and strengthen their research readiness and research culture, particularly
+                                        for nurses, midwives, and allied health professionals (NMAHPs).
+                                    </p>
+                                    <p>
+                                        SORT Online does not assess individuals and is not a workforce register.
+                                        Instead, it provides organisations with a practical, structured way to
+                                        implement the SORT tool locally, gather staff perspectives, analyse results,
+                                        and generate reports to support organisational development and improvement planning.
+                                    </p>
+                                    <p class="mb-0">
+                                        Using SORT Online, organisations remain fully in control of:
+                                    </p>
+                                    <ul>
+                                        <li>how the tool is configured</li>
+                                        <li>which staff groups are invited to take part</li>
+                                        <li>how results are interpreted and used locally</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-ab-2"
+                                        aria-expanded="false" aria-controls="faq-ab-2">
+                                    How does SORT Online work?
+                                </button>
+                            </h3>
+                            <div id="faq-ab-2" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqAbout">
+                                <div class="accordion-body">
+                                    <p>Through SORT Online, organisations can:</p>
+                                    <ul>
+                                        <li>Create an organisational account and nominate authorised users</li>
+                                        <li>Configure an already designed and validated SORT survey</li>
+                                        <li>Choose which professional groups they wish to include, for example:
+                                            <ul>
+                                                <li>nurses only</li>
+                                                <li>midwives only</li>
+                                                <li>AHPs only</li>
+                                                <li>nurses and midwives</li>
+                                                <li>nurses, midwives, and AHPs</li>
+                                            </ul>
+                                        </li>
+                                        <li>Use the appropriate version of the survey for the selected group or groups,
+                                            noting that survey questions differ depending on the professional group to
+                                            reflect role-specific contexts and experiences</li>
+                                        <li>Invite staff to complete the survey</li>
+                                        <li>Automatically gather, analyse, and interpret responses</li>
+                                        <li>Generate reports to support organisational assessment, planning, and evaluation</li>
+                                    </ul>
+                                    <p class="mb-0">
+                                        SORT Online functions as a facilitation, analytics, and reporting platform to
+                                        support organisational learning and improvement.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-ab-3"
+                                        aria-expanded="false" aria-controls="faq-ab-3">
+                                    What is SORT Online not?
+                                </button>
+                            </h3>
+                            <div id="faq-ab-3" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqAbout">
+                                <div class="accordion-body">
+                                    <p>SORT Online is:</p>
+                                    <ul>
+                                        <li>not an individual performance tool</li>
+                                        <li>not a workforce register</li>
+                                        <li>not a reporting mechanism to national bodies</li>
+                                        <li>not a regulatory or compliance system</li>
+                                    </ul>
+                                    <p class="mb-0">
+                                        Its purpose is organisational learning, development, and improvement.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Using the Survey Section -->
+                <section class="mb-5">
+                    <h2 class="h4 mb-3">
+                        <i class="bx bx-list-check text-primary"></i> Using the Survey
+                    </h2>
+                    <div class="accordion" id="faqSurvey">
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-sv-1"
+                                        aria-expanded="false" aria-controls="faq-sv-1">
+                                    Is SORT Online an individual assessment?
+                                </button>
+                            </h3>
+                            <div id="faq-sv-1" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqSurvey">
+                                <div class="accordion-body">
+                                    <p>
+                                        No. SORT Online supports an organisational-level self-assessment.
+                                    </p>
+                                    <p>
+                                        While individual staff members complete the survey, they do so at the request
+                                        of their organisation. Responses are aggregated to provide an organisational
+                                        view of research readiness and culture.
+                                    </p>
+                                    <p class="mb-0">
+                                        SORT Online is not used to assess, monitor, or profile individual staff members.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-sv-2"
+                                        aria-expanded="false" aria-controls="faq-sv-2">
+                                    Why does the survey ask whether someone is a nurse, midwife, or AHP?
+                                </button>
+                            </h3>
+                            <div id="faq-sv-2" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqSurvey">
+                                <div class="accordion-body">
+                                    <p>
+                                        Organisations can choose to survey different professional groups, either
+                                        separately or together. Identifying professional group ensures that:
+                                    </p>
+                                    <ul>
+                                        <li>the correct version of the survey is used, and</li>
+                                        <li>results can be interpreted meaningfully at an organisational level</li>
+                                    </ul>
+                                    <p class="mb-0">
+                                        This information is used for contextual and analytical purposes only and does
+                                        not turn the survey into an individual assessment.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-sv-3"
+                                        aria-expanded="false" aria-controls="faq-sv-3">
+                                    Who decides which staff are invited to complete the survey?
+                                </button>
+                            </h3>
+                            <div id="faq-sv-3" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqSurvey">
+                                <div class="accordion-body">
+                                    <p>The organisation does.</p>
+                                    <p>Each organisation decides:</p>
+                                    <ul>
+                                        <li>which professional groups to include</li>
+                                        <li>how widely to distribute the survey</li>
+                                        <li>how results will be used for local development and improvement</li>
+                                    </ul>
+                                    <p class="mb-0">
+                                        SORT Online does not send surveys directly to staff without organisational instruction.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data & Privacy Section -->
+                <section class="mb-5">
+                    <h2 class="h4 mb-3">
+                        <i class="bx bx-shield-quarter text-primary"></i> Data & Privacy
+                    </h2>
+                    <div class="accordion" id="faqPrivacy">
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-dp-1"
+                                        aria-expanded="false" aria-controls="faq-dp-1">
+                                    Who can access the data?
+                                </button>
+                            </h3>
+                            <div id="faq-dp-1" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqPrivacy">
+                                <div class="accordion-body">
+                                    <p>
+                                        Each organisation can access its own data only within its secure workspace.
+                                    </p>
+                                    <p class="mb-0">
+                                        There is no default access to other organisations' data, and no automatic
+                                        benchmarking unless this is locally agreed and managed.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-dp-6"
+                                        aria-expanded="false" aria-controls="faq-dp-6">
+                                    Does the data remain with our organisation, or can those hosting the system see it?
+                                </button>
+                            </h3>
+                            <div id="faq-dp-6" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqPrivacy">
+                                <div class="accordion-body">
+                                    <p>
+                                        The ownership of data belongs to the organisation collecting it. Data can be
+                                        shared with the University of Sheffield only with consent from both the
+                                        organisation and participant.
+                                    </p>
+                                    <p>
+                                        We are compliant with GDPR and can remove data for an entire organisation,
+                                        project, or survey by request. However, it may be impossible to identify and
+                                        remove individual survey responses as they are submitted anonymously by default.
+                                    </p>
+                                    <p>
+                                        The data required for normal operation of the application (survey data, user
+                                        accounts, evidence/action statements and attachments, etc.) is stored on a
+                                        secure virtual machine hosting the SORT Online application. This data is only
+                                        accessible to our system administrators who require access to perform maintenance
+                                        on the system.
+                                    </p>
+                                    <p class="mb-0">
+                                        Data provided to the University of Sheffield under consent is periodically
+                                        extracted from the system, anonymised, and stored in separate secure research
+                                        storage. Consent is provided via a tick box when creating a survey and a tick
+                                        box shown to participants when completing a survey.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-dp-2"
+                                        aria-expanded="false" aria-controls="faq-dp-2">
+                                    Is the data anonymous?
+                                </button>
+                            </h3>
+                            <div id="faq-dp-2" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqPrivacy">
+                                <div class="accordion-body">
+                                    <p>Yes. Individual survey responses are anonymous.</p>
+                                    <p class="mb-0">
+                                        SORT Online does not collect names, email addresses, IP addresses, or other
+                                        identifiable information from respondents. Reporting is aggregated and focused
+                                        on organisational insight rather than individual profiling.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-dp-3"
+                                        aria-expanded="false" aria-controls="faq-dp-3">
+                                    Is SORT Online linked to national workforce or regulatory systems?
+                                </button>
+                            </h3>
+                            <div id="faq-dp-3" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqPrivacy">
+                                <div class="accordion-body">
+                                    <p>
+                                        No. SORT Online is not linked to national workforce registers, regulatory
+                                        systems, or performance reporting.
+                                    </p>
+                                    <p class="mb-0">
+                                        Data entered into SORT Online are not automatically shared with NHS England
+                                        or any other national body.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-dp-4"
+                                        aria-expanded="false" aria-controls="faq-dp-4">
+                                    Can data be used for research?
+                                </button>
+                            </h3>
+                            <div id="faq-dp-4" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqPrivacy">
+                                <div class="accordion-body">
+                                    <p>
+                                        Organisations may choose to consent for their anonymised, aggregated data to
+                                        be included in approved research studies aimed at understanding and improving
+                                        research capacity across the health and care sector.
+                                    </p>
+                                    <p class="mb-0">
+                                        This is optional and separate from using SORT Online for organisational improvement.
+                                        Organisations can use the platform without consenting to research use of their data.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-dp-5"
+                                        aria-expanded="false" aria-controls="faq-dp-5">
+                                    Can organisations withdraw their data?
+                                </button>
+                            </h3>
+                            <div id="faq-dp-5" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqPrivacy">
+                                <div class="accordion-body">
+                                    <p class="mb-0">
+                                        Yes. Organisations can withdraw consent for research use of their anonymised
+                                        data at any time. Their data will continue to remain available for their own
+                                        organisational use within the platform.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Getting Started Section -->
+                <section class="mb-5">
+                    <h2 class="h4 mb-3">
+                        <i class="bx bx-rocket text-primary"></i> Getting Started
+                    </h2>
+                    <div class="accordion" id="faqGettingStarted">
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-gs-1"
+                                        aria-expanded="false" aria-controls="faq-gs-1">
+                                    Do I need to pay to use SORT Online?
+                                </button>
+                            </h3>
+                            <div id="faq-gs-1" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqGettingStarted">
+                                <div class="accordion-body">
+                                    <p class="mb-0">
+                                        No, SORT Online is free to use.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-gs-2"
+                                        aria-expanded="false" aria-controls="faq-gs-2">
+                                    Should we create multiple accounts to share access, or use one shared login?
+                                </button>
+                            </h3>
+                            <div id="faq-gs-2" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqGettingStarted">
+                                <div class="accordion-body">
+                                    <p>
+                                        You should create a separate account for each individual who will be
+                                        administering your surveys. All these accounts would be contained within
+                                        one Organisation.
+                                    </p>
+                                    <p>
+                                        If you register with the tool and create an organisation, you can then
+                                        invite others to join that organisation. These users will then be able to
+                                        manage the surveys within that Organisation.
+                                    </p>
+                                    <p class="mb-0">
+                                        Note: Participants who respond to the surveys do not need to register
+                                        accounts, as the surveys are anonymous.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-gs-3"
+                                        aria-expanded="false" aria-controls="faq-gs-3">
+                                    How should we set up SORT Online for multiple Trusts or care groups?
+                                </button>
+                            </h3>
+                            <div id="faq-gs-3" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqGettingStarted">
+                                <div class="accordion-body">
+                                    <p>
+                                        This depends on whether Trust managers need to see each other's surveys
+                                        and results:
+                                    </p>
+                                    <p>
+                                        <strong>If sharing is acceptable:</strong> You can create a single
+                                        organisation and invite all the Trust managers to it. Each Trust manager
+                                        can then create projects representing their individual Trust or CBU/care
+                                        group and administer their own surveys.
+                                    </p>
+                                    <p>
+                                        <strong>If data must be isolated:</strong> We recommend each Trust creates
+                                        their own organisation. It is possible to export survey data and analyse
+                                        it outside of the platform if needed.
+                                    </p>
+                                    <p class="mb-0">
+                                        For every survey you create, you can modify the demographic questions to
+                                        include the various CBU/care groups being surveyed, and this can be
+                                        tailored for each Trust.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Technical Issues Section -->
+                <section class="mb-5">
+                    <h2 class="h4 mb-3">
+                        <i class="bx bx-wrench text-primary"></i> Technical Issues
+                    </h2>
+                    <div class="accordion" id="faqTechnical">
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq-ti-1"
+                                        aria-expanded="false" aria-controls="faq-ti-1">
+                                    I'm having trouble accessing the tool from my NHS device
+                                </button>
+                            </h3>
+                            <div id="faq-ti-1" class="accordion-collapse collapse"
+                                 data-bs-parent="#faqTechnical">
+                                <div class="accordion-body">
+                                    <p>
+                                        NHS networks often have strict firewall restrictions that may
+                                        block access to external web applications. Please see our
+                                        <a href="{% url 'troubleshooting' %}">Troubleshooting Guide</a>
+                                        for detailed steps to resolve this issue.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Still Need Help Section -->
+                <section class="bg-light rounded p-4">
+                    <h2 class="h5 mb-3">
+                        <i class="bx bx-help-circle"></i> Still have questions?
+                    </h2>
+                    <p class="mb-3">
+                        If you couldn't find the answer you were looking for, please get in touch
+                        with our support team.
+                    </p>
+                    <a href="mailto:sort-online-support-group@sheffield.ac.uk" class="btn btn-primary">
+                        <i class="bx bx-envelope"></i> Contact Support
+                    </a>
+                </section>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="card mt-4 mt-lg-0">
+                    <div class="card-header">
+                        <i class="bx bx-link"></i> Quick Links
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <a href="{% url 'help' %}">
+                                <i class="bx bx-play-circle"></i> Video Tutorial
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{% url 'troubleshooting' %}">
+                                <i class="bx bx-wrench"></i> Troubleshooting Guide
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{% url 'privacy' %}">
+                                <i class="bx bx-lock-alt"></i> Privacy Policy
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{% url 'participant_information' %}">
+                                <i class="bx bx-info-circle"></i> Participant Information
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
