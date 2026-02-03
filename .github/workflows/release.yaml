@@ -1,0 +1,154 @@
+name: Create Release
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0). Leave empty to auto-increment patch version.'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and create release
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for release notes
+
+      - name: Setup Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version-file: .python-version
+          cache: "pip"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: Install Python dependencies
+        run: pip install --requirement requirements.txt --requirement requirements-dev.txt
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Run Django system checks
+        run: |
+          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
+          python manage.py check
+
+      - name: Run Django tests
+        run: |
+          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
+          for test_dir in **/tests
+          do
+            echo "Testing $test_dir"
+            coverage run --source="home,survey" manage.py test "$test_dir" --verbosity=2 --parallel=auto
+          done
+
+      - name: Run JavaScript tests
+        run: npm test
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            # Manual workflow dispatch with version input
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            # Auto-increment patch version from VERSION file
+            CURRENT_VERSION=$(cat VERSION)
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+            PATCH=$((PATCH + 1))
+            VERSION="$MAJOR.$MINOR.$PATCH"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: v$VERSION"
+
+      - name: Update VERSION file
+        run: |
+          echo "${{ steps.version.outputs.version }}" > VERSION
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" || echo "No version change"
+          git push || echo "No changes to push"
+
+      - name: Update package.json version
+        run: |
+          npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+          git add package.json package-lock.json
+          git commit -m "chore: update package.json to ${{ steps.version.outputs.version }}" || echo "No package.json change"
+          git push || echo "No changes to push"
+
+      - name: Create release archive
+        run: |
+          mkdir -p release-artifacts
+          # Include built frontend assets
+          tar -czf release-artifacts/sort-frontend-${{ steps.version.outputs.version }}.tar.gz static/ui-components/
+          # Create source archive with built assets
+          git archive --format=tar.gz --prefix=SORT-${{ steps.version.outputs.version }}/ HEAD > release-artifacts/SORT-${{ steps.version.outputs.version }}.tar.gz
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          # Get the last tag (if any)
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -z "$LAST_TAG" ]; then
+            # First release - use all commits
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --reverse)
+            echo "## First Release" > release_notes.md
+            echo "" >> release_notes.md
+            echo "Initial release of SORT (Self-Assessment of Organisational Readiness Tool)." >> release_notes.md
+            echo "" >> release_notes.md
+            echo "### Changes" >> release_notes.md
+            echo "$COMMITS" >> release_notes.md
+          else
+            # Get commits since last tag
+            COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" --reverse)
+            echo "## What's Changed" > release_notes.md
+            echo "" >> release_notes.md
+            echo "$COMMITS" >> release_notes.md
+          fi
+
+          echo "" >> release_notes.md
+          echo "---" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/$LAST_TAG...${{ steps.version.outputs.tag }}" >> release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: |
+            release-artifacts/*.tar.gz
+          generate_release_notes: false
+
+      - name: Summary
+        run: |
+          echo "## Release Created Successfully! 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release URL**: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend assets: \`sort-frontend-${{ steps.version.outputs.version }}.tar.gz\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Source archive: \`SORT-${{ steps.version.outputs.version }}.tar.gz\`" >> $GITHUB_STEP_SUMMARY
