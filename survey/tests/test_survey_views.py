@@ -121,7 +121,8 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
         # Get the created survey
         survey = Survey.objects.filter(name="Test Survey with Consent").first()
         self.assertIsNotNone(survey)
-        self.assertTrue(survey.is_shared)
+        # This field should default to "no" because consent must be explicitly granted.
+        self.assertFalse(survey.is_shared)
 
     def test_survey_create_without_research_consent(self):
         """Test creating a survey without research data consent (default)"""
