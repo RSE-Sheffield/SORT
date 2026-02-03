@@ -33,7 +33,7 @@ Bump the semantic version before creating a release.
 
 This script updates both `VERSION` file and `package.json`. After bumping, commit the changes and merge to `main` to trigger an automatic release.
 
-See [../.github/RELEASE.md](../.github/RELEASE.md) for complete release documentation.
+See [RELEASING.md](./RELEASING.md) for complete release documentation.
 
 ## Data Management
 

@@ -227,7 +227,7 @@ git add VERSION package.json package-lock.json
 git commit -m "chore: bump version to $(cat VERSION)"
 ```
 
-See [.github/RELEASE.md](.github/RELEASE.md) for complete release documentation.
+See [RELEASING.md](RELEASING.md) for complete release documentation.
 
 ### Environment Variables
 
