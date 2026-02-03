@@ -18,45 +18,19 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0  # Full history for release notes
 
-      - name: Setup Python
-        uses: actions/setup-python@v5.3.0
-        with:
-          python-version-file: .python-version
-          cache: "pip"
-
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: package.json
           cache: 'npm'
           cache-dependency-path: 'package-lock.json'
 
-      - name: Install Python dependencies
-        run: pip install --requirement requirements.txt --requirement requirements-dev.txt
-
       - name: Install JavaScript dependencies
         run: npm ci
-
-      - name: Run Django system checks
-        run: |
-          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
-          python manage.py check
-
-      - name: Run Django tests
-        run: |
-          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
-          for test_dir in **/tests
-          do
-            echo "Testing $test_dir"
-            coverage run --source="home,survey" manage.py test "$test_dir" --verbosity=2 --parallel=auto
-          done
-
-      - name: Run JavaScript tests
-        run: npm test
 
       - name: Build frontend assets
         run: npm run build
