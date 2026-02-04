@@ -199,3 +199,264 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
             if section["type"] == "sort"
         ]
         self.assertEqual(self.survey.evidence_sections.count(), len(sort_sections))
+
+    def test_update_consent_demography_config_with_responses_denied(self):
+        """Test that updating config is denied when survey has responses"""
+        self.service.initialise_survey(
+            user=self.admin, project=self.project, survey=self.survey
+        )
+
+        # Add a response to the survey
+        self.service.accept_response(
+            survey=self.survey, responseValues=json.dumps([])
+        )
+
+        # Now try to update config - should fail
+        with self.assertRaises(django.core.exceptions.PermissionDenied):
+            self.service.update_consent_demography_config(
+                user=self.admin,
+                survey=self.survey,
+                consent_config=dict(sections=list()),
+                demography_config=dict(sections=list()),
+                survey_body_path="Nurses",
+            )
+
+    def test_update_evidence_section(self):
+        """Test updating evidence section text"""
+        self.service.initialise_survey(
+            user=self.admin, project=self.project, survey=self.survey
+        )
+        self.service.update_consent_demography_config(
+            user=self.admin,
+            survey=self.survey,
+            consent_config=self.survey.consent_config_default,
+            demography_config=self.survey.demography_config_default,
+            survey_body_path="Nurses",
+        )
+
+        evidence_section = self.survey.evidence_sections.first()
+        self.assertIsNotNone(evidence_section)
+
+        new_text = "This is updated evidence text"
+        self.service.update_evidence_section(
+            user=self.admin,
+            survey=self.survey,
+            evidence_section=evidence_section,
+            text=new_text,
+        )
+
+        evidence_section.refresh_from_db()
+        self.assertEqual(evidence_section.text, new_text)
+
+    def test_update_improvement_section(self):
+        """Test updating improvement plan section"""
+        self.service.initialise_survey(
+            user=self.admin, project=self.project, survey=self.survey
+        )
+        self.service.update_consent_demography_config(
+            user=self.admin,
+            survey=self.survey,
+            consent_config=self.survey.consent_config_default,
+            demography_config=self.survey.demography_config_default,
+            survey_body_path="Nurses",
+        )
+
+        improvement_section = self.survey.improvement_plan_sections.first()
+        self.assertIsNotNone(improvement_section)
+
+        new_plan = "This is an updated improvement plan"
+        self.service.update_improvement_section(
+            user=self.admin,
+            survey=self.survey,
+            improve_section=improvement_section,
+            text=new_plan,
+        )
+
+        improvement_section.refresh_from_db()
+        self.assertEqual(improvement_section.plan, new_plan)
+
+    def test_get_survey_from_token_with_invalid_token(self):
+        """Test that invalid token raises exception"""
+        from survey.services.survey import InvalidInviteTokenException
+
+        with self.assertRaises(InvalidInviteTokenException):
+            self.service.get_survey_from_token(token="invalid_token_123")
+
+    def test_get_survey_from_token_with_used_token(self):
+        """Test that used token raises exception"""
+        from survey.services.survey import InvalidInviteTokenException
+
+        token = self.survey.current_invite_token()
+        invitation = Invitation.objects.get(token=token)
+        invitation.used = True
+        invitation.save()
+
+        with self.assertRaises(InvalidInviteTokenException):
+            self.service.get_survey_from_token(token=token)
+
+    def test_export_excel(self):
+        """Test exporting survey to Excel format"""
+        self.service.initialise_survey(
+            user=self.admin, project=self.project, survey=self.survey
+        )
+        excel_data = self.service.export_excel(user=self.admin, survey=self.survey)
+        self.assertIsNotNone(excel_data)
+
+    def test_export_csv_unauthorized(self):
+        """Test that unauthorized user cannot export CSV"""
+        self.service.initialise_survey(
+            user=self.admin, project=self.project, survey=self.survey
+        )
+
+        with self.assertRaises(django.core.exceptions.PermissionDenied):
+            self.service.export_csv(user=self.anonymous_user, survey=self.survey)
+
+    def test_export_excel_unauthorized(self):
+        """Test that unauthorized user cannot export Excel"""
+        self.service.initialise_survey(
+            user=self.admin, project=self.project, survey=self.survey
+        )
+
+        with self.assertRaises(django.core.exceptions.PermissionDenied):
+            self.service.export_excel(user=self.anonymous_user, survey=self.survey)
+
+    def test_update_evidence_section_unauthorized(self):
+        """Test that unauthorized user cannot update evidence section"""
+        self.service.initialise_survey(
+            user=self.admin, project=self.project, survey=self.survey
+        )
+        self.service.update_consent_demography_config(
+            user=self.admin,
+            survey=self.survey,
+            consent_config=self.survey.consent_config_default,
+            demography_config=self.survey.demography_config_default,
+            survey_body_path="Nurses",
+        )
+
+        evidence_section = self.survey.evidence_sections.first()
+
+        with self.assertRaises(django.core.exceptions.PermissionDenied):
+            self.service.update_evidence_section(
+                user=self.anonymous_user,
+                survey=self.survey,
+                evidence_section=evidence_section,
+                text="Unauthorized text",
+            )
+
+    def test_update_improvement_section_unauthorized(self):
+        """Test that unauthorized user cannot update improvement section"""
+        self.service.initialise_survey(
+            user=self.admin, project=self.project, survey=self.survey
+        )
+        self.service.update_consent_demography_config(
+            user=self.admin,
+            survey=self.survey,
+            consent_config=self.survey.consent_config_default,
+            demography_config=self.survey.demography_config_default,
+            survey_body_path="Nurses",
+        )
+
+        improvement_section = self.survey.improvement_plan_sections.first()
+
+        with self.assertRaises(django.core.exceptions.PermissionDenied):
+            self.service.update_improvement_section(
+                user=self.anonymous_user,
+                survey=self.survey,
+                improve_section=improvement_section,
+                text="Unauthorized plan",
+            )
+
+    def test_get_user_role_with_anonymous_user(self):
+        """Test get_user_role with anonymous user returns None"""
+        from django.contrib.auth.models import AnonymousUser
+
+        anon = AnonymousUser()
+        role = self.service.get_user_role(user=anon, survey=self.survey)
+        self.assertIsNone(role)
+
+    def test_can_create_with_project(self):
+        """Test can_create checks permission on project"""
+        self.assertTrue(self.service.can_create(self.admin, self.project))
+        self.assertFalse(self.service.can_create(self.anonymous_user, self.project))
+
+    def test_accept_response_creates_survey_response(self):
+        """Test that accept_response creates a SurveyResponse object"""
+        response_data = json.dumps({"field1": "value1", "field2": "value2"})
+
+        initial_count = SurveyResponse.objects.filter(survey=self.survey).count()
+
+        self.service.accept_response(survey=self.survey, responseValues=response_data)
+
+        final_count = SurveyResponse.objects.filter(survey=self.survey).count()
+        self.assertEqual(final_count, initial_count + 1)
+
+        # Check the response was stored correctly
+        response = SurveyResponse.objects.filter(survey=self.survey).latest("id")
+        self.assertEqual(response.answers, response_data)
+
+    def test_generate_mock_responses_superuser_only(self):
+        """Test that only superuser can generate mock responses"""
+        with self.assertRaises(django.core.exceptions.PermissionDenied):
+            self.service.generate_mock_responses(
+                user=self.admin, survey=self.survey, num_responses=5
+            )
+
+    def test_create_invitation_invalidates_old_tokens(self):
+        """Test that creating new invitation invalidates all old ones"""
+        # Create multiple invitations
+        inv1 = self.service.create_invitation(user=self.admin, survey=self.survey)
+        inv2 = self.service.create_invitation(user=self.admin, survey=self.survey)
+        inv3 = self.service.create_invitation(user=self.admin, survey=self.survey)
+
+        # Refresh from DB
+        inv1.refresh_from_db()
+        inv2.refresh_from_db()
+
+        # Old invitations should be marked as used
+        self.assertTrue(inv1.used)
+        self.assertTrue(inv2.used)
+
+        # Latest invitation should not be used
+        self.assertFalse(inv3.used)
+
+    def test_initialise_survey_sets_config(self):
+        """Test that initialise_survey sets survey configuration"""
+        self.assertIsNone(self.survey.survey_config)
+
+        self.service.initialise_survey(
+            user=self.admin, project=self.project, survey=self.survey
+        )
+
+        self.survey.refresh_from_db()
+        self.assertIsNotNone(self.survey.survey_config)
+        self.assertIsInstance(self.survey.survey_config, dict)
+
+    def test_duplicate_survey_copies_all_fields(self):
+        """Test that duplicate_survey copies all relevant fields"""
+        # Properly initialise the survey
+        self.service.initialise_survey(self.admin, self.project, self.survey)
+        self.service.update_consent_demography_config(
+            self.admin,
+            self.survey,
+            demography_config=self.survey.demography_config_default,
+            survey_body_path=self.survey.survey_body_path,
+            consent_config=self.survey.consent_config_default,
+        )
+
+        original_description = "Original description"
+        self.survey.description = original_description
+        self.survey.save()
+
+        duplicated = self.service.duplicate_survey(user=self.admin, survey=self.survey)
+
+        # Check fields are copied
+        self.assertEqual(duplicated.description, original_description)
+        self.assertEqual(duplicated.project, self.survey.project)
+        self.assertEqual(duplicated.survey_body_path, self.survey.survey_body_path)
+
+    def test_initialise_survey_unauthorized(self):
+        """Test that unauthorized user cannot initialise survey"""
+        with self.assertRaises(django.core.exceptions.PermissionDenied):
+            self.service.initialise_survey(
+                user=self.anonymous_user, project=self.project, survey=self.survey
+            )
