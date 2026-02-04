@@ -1,17 +1,14 @@
 <script lang="ts" module>
-    import type {SurveyConfig} from "../interfaces.ts";
 
-    export function getDefaultSurveyConfig(){
-        return {
-            sections: [],
-        } as SurveyConfig;
 
-    }
+
 </script>
 <script lang="ts">
 
+    import {type SurveyConfig, getDefaultSurveyConfig} from "../interfaces.ts";
     import * as _ from "lodash-es"
-    import SectionComponent, {getDefaultSectionConfig} from "./input/SectionComponent.svelte";
+    import {getDefaultSectionConfig} from "../interfaces.ts";
+    import SectionComponent from "./input/SectionComponent.svelte";
 
     interface Props {
         config: SurveyConfig;
