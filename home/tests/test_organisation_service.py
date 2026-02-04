@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 
 import SORT.test.test_case
-from home.constants import ROLE_ADMIN, ROLES
+from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
 from home.models import Organisation, OrganisationMembership
 from home.services import OrganisationService
 from SORT.test.model_factory import OrganisationFactory, UserFactory

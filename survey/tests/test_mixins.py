@@ -4,7 +4,6 @@ Unit tests for survey.mixins module
 
 from unittest.mock import Mock
 
-from django.http import HttpRequest
 from django.test import RequestFactory, TestCase
 from django.views import View
 
@@ -128,7 +127,7 @@ class TokenAuthenticationMixinTestCase(TestCase):
 
         tracking_view = TrackingView()
         tracking_view.setup(request, token=self.valid_token)
-        response = tracking_view.dispatch(request, token=self.valid_token)
+        tracking_view.dispatch(request, token=self.valid_token)
 
         self.assertTrue(tracking_view.is_valid_token_called)
         self.assertEqual(tracking_view.token_checked, self.valid_token)

@@ -102,7 +102,7 @@ class OrganisationRequiredMixinTestCase(TestCase):
         test_kwargs = {"key1": "value1", "key2": "value2"}
 
         tracking_view.setup(request, *test_args, **test_kwargs)
-        response = tracking_view.dispatch(request, *test_args, **test_kwargs)
+        tracking_view.dispatch(request, *test_args, **test_kwargs)
 
         self.assertEqual(tracking_view.received_args, test_args)
         self.assertEqual(tracking_view.received_kwargs, test_kwargs)

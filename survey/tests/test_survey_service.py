@@ -16,6 +16,7 @@ from survey.models import (
     Survey,
     SurveyEvidenceSection,
     SurveyImprovementPlanSection,
+    SurveyResponse,
 )
 from survey.services import SurveyService
 
