@@ -521,32 +521,32 @@ class OrganisationMembershipDeleteView(
         return django.http.HttpResponseRedirect(self.get_success_url())
 
 
-class HelpView(LoginRequiredMixin, TemplateView):
+class HelpView(TemplateView):
     """
     User guide
     """
     template_name = "help/index.html"
 
 
-class VideoTutorialView(LoginRequiredMixin, TemplateView):
+class VideoTutorialView(TemplateView):
     """
     Beginner's intro video.
     """
     template_name = "help/video-tutorial.html"
 
 
-class TroubleshootingView(LoginRequiredMixin, TemplateView):
+class TroubleshootingView(TemplateView):
     template_name = "help/troubleshooting.html"
 
 
-class FAQView(LoginRequiredMixin, TemplateView):
+class FAQView(TemplateView):
     """
     Frequently asked questions (FAQs)
     """
     template_name = "help/faq.html"
 
 
-class LicenseAgreementView(LoginRequiredMixin, TemplateView):
+class LicenseAgreementView(TemplateView):
     """
     End user license agreement
     """
