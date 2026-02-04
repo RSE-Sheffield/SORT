@@ -19,7 +19,7 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ol class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">
+                            <a class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}" href="{% url 'dashboard' %}">
                                 <i class="bx bxs-home"></i>&nbsp;Home</a>
                         </li>
                         <li class="nav-item">
@@ -38,7 +38,7 @@
                                href="{% url 'profile' %}"><i class="bx bxs-user"></i> Profile</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if '/help;' in request.path %}active{% endif %}"
+                            <a class="nav-link {% if '/help' in request.path %}active{% endif %}"
                                href="{% url 'help' %}"><i class='bx bxs-help-circle'></i> Help</a>
                         </li>
                         <li class="nav-item">

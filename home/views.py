@@ -25,6 +25,7 @@ from django.views import View
 from django.views.generic import (
     CreateView,
     DeleteView,
+    DetailView,
     ListView,
     TemplateView,
     UpdateView,
@@ -88,17 +89,31 @@ class SignupView(CreateView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user, backend="django.contrib.auth.backends.ModelBackend")
-        return redirect(reverse_lazy("home"))
+        return redirect(reverse_lazy("dashboard"))
+
+
+class LandingView(TemplateView):
+    """
+    Public landing page for new visitors arriving from sort-online.org.
+    Redirects authenticated users to their dashboard.
+    """
+
+    template_name = "home/landing.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("dashboard")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class LogoutInterfaceView(LogoutView):
-    success_url = reverse_lazy("login")
+    success_url = reverse_lazy("landing")
 
 
 class LoginInterfaceView(LoginView):
     template_name = "home/login.html"
     form_class = ManagerLoginForm
-    success_url = reverse_lazy("home")
+    success_url = reverse_lazy("dashboard")
 
     def form_invalid(self, form):
         messages.error(self.request, "Invalid email or password.")
@@ -106,11 +121,15 @@ class LoginInterfaceView(LoginView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect("home")
+            return redirect("dashboard")
         return super().dispatch(request, *args, **kwargs)
 
 
 class HomeView(LoginRequiredMixin, View):
+    """
+    Dashboard view for authenticated users showing their projects.
+    """
+
     template_name = "home/welcome.html"
     context_object_name = "projects"
 
@@ -235,7 +254,7 @@ class OrganisationCreateView(LoginRequiredMixin, CreateView):
             messages.error(
                 self.request, "You don't have permission to create organisations."
             )
-            return redirect("home")
+            return redirect("dashboard")
 
 
 class ProjectView(LoginRequiredMixin, ListView):
@@ -502,15 +521,32 @@ class OrganisationMembershipDeleteView(
         return django.http.HttpResponseRedirect(self.get_success_url())
 
 
-class HelpView(LoginRequiredMixin, TemplateView):
-    template_name = "about/help.html"
+class HelpView(TemplateView):
+    """
+    User guide
+    """
+    template_name = "help/index.html"
 
 
-class TroubleshootingView(LoginRequiredMixin, TemplateView):
-    template_name = "about/troubleshooting.html"
+class VideoTutorialView(TemplateView):
+    """
+    Beginner's intro video.
+    """
+    template_name = "help/video-tutorial.html"
 
 
-class LicenseAgreementView(LoginRequiredMixin, TemplateView):
+class TroubleshootingView(TemplateView):
+    template_name = "help/troubleshooting.html"
+
+
+class FAQView(TemplateView):
+    """
+    Frequently asked questions (FAQs)
+    """
+    template_name = "help/faq.html"
+
+
+class LicenseAgreementView(TemplateView):
     """
     End user license agreement
     """
@@ -537,3 +573,31 @@ class ParticipantInformationView(TemplateView):
     """
 
     template_name = "about/participant_information.html"
+
+
+class DataSharingAgreementView(LoginRequiredMixin, DetailView):
+    """
+    Data Sharing Agreement between NHS organisations and University of Sheffield
+    for research data sharing through SORT Online
+    """
+
+    model = Organisation
+    template_name = "organisation/data_sharing_agreement.html"
+    context_object_name = "organisation"
+
+    def get_object(self, queryset=None):
+        """
+        Get the organisation and verify user has access to it.
+        """
+
+        organisation = self.request.user.organisation_set.first()
+
+        # Verify user is a member of this organisation
+        if not organisation_service.can_view(self.request.user, organisation):
+            messages.error(
+                self.request,
+                "You don't have permission to view this organisation's data sharing agreement.",
+            )
+            return redirect("myorganisation")
+
+        return organisation

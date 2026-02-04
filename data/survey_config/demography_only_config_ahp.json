@@ -89,8 +89,6 @@
             "Prosthetist or Orthotist",
             "Radiographer",
             "Speech and Language Therapist",
-            "Registered Nurse",
-            "Registered Midwife",
             "Other"
           ],
           "disabled": false,

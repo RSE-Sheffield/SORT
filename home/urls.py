@@ -1,13 +1,14 @@
 __author__ = "Farhad Allian"
 
-
 import django.urls
 from django.urls import path, re_path
 
 from . import views
 
 urlpatterns = [
-    path("", views.HomeView.as_view(), name="home"),
+    path("", views.LandingView.as_view(), name="landing"),
+    path("dashboard/", views.HomeView.as_view(), name="dashboard"),
+    path("home/", views.HomeView.as_view(), name="home"),  # Backwards compatibility alias
     path("login/", views.LoginInterfaceView.as_view(), name="login"),
     path("logout/", views.LogoutInterfaceView.as_view(), name="logout"),
     re_path(
@@ -70,6 +71,11 @@ urlpatterns = [
         name="member_invite_accept",
     ),
     path(
+        "myorganisation/data-sharing-agreement/",
+        views.DataSharingAgreementView.as_view(),
+        name="data_sharing_agreement",
+    ),
+    path(
         "organisation/create/",
         views.OrganisationCreateView.as_view(),
         name="organisation_create",
@@ -96,10 +102,16 @@ urlpatterns = [
         name="help",
     ),
     path(
+        "help/video-tutorial/",
+        views.VideoTutorialView.as_view(),
+        name="video_tutorial",
+    ),
+    path(
         "help/troubleshooting/",
         views.TroubleshootingView.as_view(),
         name="troubleshooting",
     ),
+    path("help/faq/", views.FAQView.as_view(), name="faq", ),
     path("eula/", views.LicenseAgreementView.as_view(), name="eula"),
     path("privacy/", views.PrivacyPolicyView.as_view(), name="privacy"),
     path(
