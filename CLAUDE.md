@@ -195,8 +195,7 @@ Components use Bootstrap 5 for styling and Chart.js for visualizations.
 
 ### Branching Strategy
 
-- **dev branch**: Development environment, merge feature branches here first
-- **main branch**: Production environment, merge from dev after approval
+- **main branch**: Primary branch for all development and production
 - Branch naming: Use semantic prefixes (`feat/`, `fix/`, `docs/`, etc.)
 
 ### Making Changes
@@ -205,7 +204,7 @@ Components use Bootstrap 5 for styling and Chart.js for visualizations.
 2. Create a branch associated with that issue
 3. Make changes and create a draft PR
 4. Mark PR "Ready for review" when complete
-5. Merge to `dev` branch first, then to `main` after testing
+5. Merge to `main` branch after review and approval
 
 ### Releases
 
