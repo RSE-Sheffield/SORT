@@ -113,6 +113,7 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
                 "name": "Test Survey with Consent",
                 "description": "Test description",
                 "survey_body_path": Profession.NMAHPS,
+                # Grant consent
                 "is_shared": "on",
             },
             expected_status_code=HTTPStatus.FOUND,
@@ -121,6 +122,7 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
         # Get the created survey
         survey = Survey.objects.filter(name="Test Survey with Consent").first()
         self.assertIsNotNone(survey)
+        self.assertIsInstance(survey.is_shared, bool)
         # This field should default to "no" because consent must be explicitly granted.
         self.assertFalse(survey.is_shared)
 

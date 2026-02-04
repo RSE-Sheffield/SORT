@@ -9,6 +9,8 @@ omit =
     SORT/*
     */admin.py
     */tests/*
+    home/management/*
+    survey/management/*
 
 [report]
 format = markdown

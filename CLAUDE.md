@@ -206,6 +206,28 @@ Components use Bootstrap 5 for styling and Chart.js for visualizations.
 4. Mark PR "Ready for review" when complete
 5. Merge to `main` branch after review and approval
 
+### Releases
+
+SORT uses **semantic versioning** (MAJOR.MINOR.PATCH) with automatic releases:
+
+- **Automatic releases**: Every merge to `main` triggers a release workflow that auto-increments the patch version
+- **Version tracking**: Version is stored in the `VERSION` file and `package.json`
+- **Release artifacts**: Each release includes built frontend assets and source archives
+- **Release notes**: Auto-generated from commit messages between releases
+
+**For patch releases** (bug fixes):
+- Simply merge to main - version auto-increments (e.g., 0.1.0 → 0.1.1)
+
+**For minor/major releases** (new features/breaking changes):
+```bash
+# Bump version before merging to main
+./scripts/bump-version.sh minor  # or 'major'
+git add VERSION package.json package-lock.json
+git commit -m "chore: bump version to $(cat VERSION)"
+```
+
+See [RELEASING.md](RELEASING.md) for complete release documentation.
+
 ### Environment Variables
 
 Required `.env` file (development only):
