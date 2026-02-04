@@ -103,7 +103,7 @@ class SurveyCreateForm(forms.ModelForm):
 
     class Meta:
         model = Survey
-        fields = ["name", "description", "survey_body_path"]
+        fields = ["name", "description", "survey_body_path", "is_shared"]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
             "description": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
