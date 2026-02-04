@@ -87,7 +87,7 @@ class SurveyCreateForm(forms.ModelForm):
         widget=forms.Select(attrs={"class": "form-control"}),
     )
 
-    research_data_consent = forms.BooleanField(
+    is_shared = forms.BooleanField(
         required=False,
         label="Allow research data sharing with the University of Sheffield",
         help_text=(

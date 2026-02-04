@@ -113,7 +113,8 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
                 "name": "Test Survey with Consent",
                 "description": "Test description",
                 "survey_body_path": Profession.NMAHPS,
-                "research_data_consent": "on",
+                # Grant consent
+                "is_shared": "on",
             },
             expected_status_code=HTTPStatus.FOUND,
         )
@@ -121,7 +122,8 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
         # Get the created survey
         survey = Survey.objects.filter(name="Test Survey with Consent").first()
         self.assertIsNotNone(survey)
-        self.assertTrue(survey.research_data_consent)
+        self.assertIsInstance(survey.is_shared, bool)
+        self.assertTrue(survey.is_shared)
 
     def test_survey_create_without_research_consent(self):
         """Test creating a survey without research data consent (default)"""
@@ -141,4 +143,4 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
         # Get the created survey
         survey = Survey.objects.filter(name="Test Survey without Consent").first()
         self.assertIsNotNone(survey)
-        self.assertFalse(survey.research_data_consent)
+        self.assertFalse(survey.is_shared)

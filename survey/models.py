@@ -61,7 +61,8 @@ class Survey(models.Model):
     )
     is_shared = models.BooleanField(
         verbose_name="Confirm data sharing agreement",
-        default=True,
+        # Consent must be explicitly granted
+        default=False,
         help_text="Do you accept the terms of the data sharing agreement"
                   "between your organisation and the University of Sheffield?",
         null=False,
@@ -382,8 +383,8 @@ class Survey(models.Model):
         self.survey_config = {
             # Merge sections by concatenating all questions
             "sections": consent_config["sections"]
-            + self.sort_config["sections"]
-            + demography_config["sections"]
+                        + self.sort_config["sections"]
+                        + demography_config["sections"]
         }
 
 
