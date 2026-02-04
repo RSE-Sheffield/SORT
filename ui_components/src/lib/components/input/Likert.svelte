@@ -1,6 +1,9 @@
-<script>
+<script lang="ts">
+  import DOMPurify  from "dompurify";
   import LikertRow from "./LikertRow.svelte";
   import LikertItem from "./LikertItem.svelte";
+  import RequiredBadge from "../RequiredBadge.svelte";
+
 
   let {config, value = $bindable(), viewerMode = false} = $props();
 
@@ -21,10 +24,10 @@
     value = output;
   });
 
-  let _likertRows = $state([]);
+  let _likertRows: LikertRow[] = $state([]);
   let likertRows = $derived(_likertRows.filter(Boolean));
 
-  let _likertItems = $state([]);
+  let _likertItems: LikertItem[] = $state([]);
   let likertItems = $derived(_likertItems.filter(Boolean));
 
 
@@ -41,21 +44,19 @@
 </script>
 
 <div class="form-label">
-    {config.label}{#if config.required}<span style="color: red">*</span>{/if}
-    {#if config.description || config.description.length > 0}<p class="form-text">{config.description}</p>{/if}
+    <span id="question-label">{config.label}</span>{#if config.required}<RequiredBadge />{/if}
+    {#if config.description || config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
     <table class="table table-striped d-none d-sm-block" style="width: 100%;">
-        <thead>
+        <thead aria-hidden="true">
         <tr>
-            <th>Statement</th>
-            {#each config.options as option}
+            <th scope="col">Statement</th>
+            {#each config.options as option, index (index)}
                 <th scope="col">{option}</th>
             {/each}
-
         </tr>
-
         </thead>
         <tbody>
-        {#each config.sublabels as sublabel, sublabelIndex }
+        {#each config.sublabels as sublabel, sublabelIndex (sublabelIndex)}
             <tr>
                 <LikertRow config={config}
                            sublabelIndex={sublabelIndex}
@@ -66,9 +67,10 @@
             </tr>
         {/each}
         </tbody>
+        <caption hidden>This table contains SORT questions for {config.label}</caption>
     </table>
     <div class="d-block d-sm-none">
-        {#each config.sublabels as sublabel, sublabelIndex }
+        {#each config.sublabels as sublabel, sublabelIndex (sublabelIndex)}
             <LikertItem config={config}
                            sublabelIndex={sublabelIndex}
                            bind:value={compsValue[sublabelIndex]}
@@ -76,7 +78,7 @@
                             viewerMode={viewerMode}
             />
 
-        {/each}
-        <hr/>
-    </div>
+            {/each}
+            <hr/>
+        </div>
 </div>

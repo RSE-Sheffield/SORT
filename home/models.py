@@ -6,7 +6,7 @@ from django.contrib.auth.models import (
 from django.db import models
 from django.urls import reverse
 
-from .constants import ROLE_PROJECT_MANAGER, ROLES, ROLE_ADMIN
+from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
 
 
 class UserManager(BaseUserManager):
@@ -50,7 +50,29 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
+        # If they didn't enter their name, default to email address
+        if not self.first_name and not self.last_name:
+            return self.email
         return f"{self.first_name} {self.last_name}"
+
+    @property
+    def active_projects(self) -> int:
+        """
+        Count the number of active surveys associated with this user.
+        """
+        active_surveys = 0
+        for project in self.projects_iter():
+            if project.is_active:
+                active_surveys += 1
+
+        return active_surveys
+
+    def projects_iter(self):
+        """
+        Iterate over all this user's projects.
+        """
+        for organisation in self.organisation_set.all():
+            yield from organisation.projects.all()
 
 
 class Organisation(models.Model):
@@ -87,7 +109,10 @@ class OrganisationMembership(models.Model):
 
 
 class Project(models.Model):
-    name = models.CharField(max_length=100)
+    """
+    A project is an organisation unit for surveys within an organisation.
+    """
+    name = models.CharField(max_length=100, help_text="Project title")
     description = models.TextField(blank=True, null=True)
     organisation = models.ForeignKey(
         Organisation, on_delete=models.CASCADE, related_name="projects"
@@ -100,3 +125,14 @@ class Project(models.Model):
 
     def get_absolute_url(self):
         return reverse("project", kwargs={"project_id": self.pk})
+
+    @property
+    def is_active(self) -> bool:
+        """
+        Does this project contain any active surveys?
+        """
+        return any(self.survey.values_list("is_active", flat=True))
+
+    @property
+    def surveys(self):
+        return self.survey.all()

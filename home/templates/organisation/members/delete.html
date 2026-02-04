@@ -1,0 +1,39 @@
+{% extends "base_manager.html" %}
+{% block content %}
+    <div class="container mt-3">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'myorganisation' %}">
+                            <i class="bx bxs-buildings"></i> Organisation Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <a href="{% url 'members' %}">
+                            <i class="bx bxs-group"></i> Members
+                        </a>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+        <h1>Remove user</h1>
+        <p>
+            Please confirm that you would like to remove permission for
+            <strong>{{ organisation_membership.user }}</strong> to
+            access <strong>{{ organisation_membership.organisation }}</strong>.
+        </p>
+        <!-- Delete organisation membership form -->
+        <form method="post">
+            {% csrf_token %}
+            {{ form }}
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="confirm" required>
+                <label class="form-check-label" for="confirm">
+                    I confirm that this user should be removed.
+                </label>
+            </div>
+            <button type="submit" class="btn btn-danger"><i class="bx bxs-user-minus"></i>&nbsp;Remove</button>
+        </form>
+    </div>
+{% endblock %}

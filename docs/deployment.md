@@ -101,8 +101,6 @@ Environment="DJANGO_SECRET_KEY=********"
 Environment="DEBUG=off"
 ```
 
-
-
 # Database installation
 
 The database may be administered using command-line tools and SQL statements that are run as the `postgres` user. For more details, please refer to the [PostgreSQL documentation](https://www.postgresql.org/docs/16/index.html) and [this guide](https://dev.to/matthewhegarty/postgresql-better-security-for-django-applications-3c7m).
@@ -129,7 +127,7 @@ We can list databases using `psql --list`.
 
 The SORT app needs credentials to access the database. We'll create a database user that the application will use to read and write data.
 
-Create a user:
+[Create a user](https://www.postgresql.org/docs/16/app-createuser.html):
 
 ```bash
 createuser sort

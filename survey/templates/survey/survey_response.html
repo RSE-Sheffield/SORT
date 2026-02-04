@@ -2,7 +2,6 @@
 {% load static %}
 {% load vite_integration %}
 {% block content %}
-
 <div class="container mx-auto px-4 py-8 m-3">
     <div class="sort-survey-response" data-json-config-id="configData"></div>
 </div>
@@ -11,4 +10,10 @@
 {{ survey.survey_config | json_script:"configData" }}
 {% vite_client %}
 {% vite_asset 'src/main.ts' %}
+<div class="container">
+    <p class="text-sm-center">
+        <strong>Survey reference number:</strong>
+        <span class="user-select-all">{{ survey.reference_number }}</span>
+    </p>
+</div>
 {% endblock %}

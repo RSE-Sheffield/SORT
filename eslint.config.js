@@ -46,6 +46,8 @@ export default ts.config(
       // 'svelte/rule-name': 'error'
       'svelte/require-each-key': 'warn',
       '@typescript-eslint/no-unused-vars' : 'warn',
+      'svelte/no-at-html-tags': 'warn',
+      "no-import-assign": "off",
     }
   }
 );

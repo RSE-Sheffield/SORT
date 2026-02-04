@@ -1,3 +1,9 @@
+from typing import Optional
+
+import django.contrib.auth.views
+import django.http
+import invitations.models
+import invitations.views
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -9,22 +15,32 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
     PasswordResetView,
 )
+from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.views import View
-from django.views.generic import ListView
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
 
 from survey.models import Survey
+from survey.services import survey_service
 
 from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
-from .forms import ManagerLoginForm, ManagerSignupForm, UserProfileForm
+from .forms.manager_login import ManagerLoginForm
+from .forms.manager_signup import ManagerSignupForm
+from .forms.user_profile import UserProfileForm
 from .mixins import OrganisationRequiredMixin
-from .models import Organisation, Project
+from .models import Organisation, OrganisationMembership, Project
 from .services import organisation_service, project_service
-from survey.services import survey_service
 
 User = get_user_model()
 
@@ -33,20 +49,71 @@ class SignupView(CreateView):
     form_class = ManagerSignupForm
     template_name = "home/register.html"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._invitation: Optional[invitations.models.Invitation] = None
+
+    @property
+    def invitation(self) -> invitations.models.Invitation:
+        """
+        The user invite that was emailed to the new user. Each
+        invitation is uniquely identified by its secret key and email address.
+        """
+        if self._invitation is None:
+            try:
+                self._invitation = invitations.models.Invitation.objects.get(
+                    key=self.kwargs["key"]
+                )
+            # This signup must have an invitation
+            except invitations.models.Invitation.DoesNotExist:
+                raise PermissionDenied("You must be invited to sign up.")
+        return self._invitation
+
+    def get_context_data(self, **context):
+        context = super().get_context_data(**context)
+
+        # The invited user will be invited to the same organisation
+        # as the manager who invited them.
+        context["organisation"] = organisation_service.get_user_organisation(
+            self.invitation.inviter
+        )
+        context["email"] = self.invitation.email
+
+        return context
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["key"] = self.invitation.key
+        return initial
+
     def form_valid(self, form):
         user = form.save()
-        login(self.request, user)
-        return redirect(reverse_lazy("home"))
+        login(self.request, user, backend="django.contrib.auth.backends.ModelBackend")
+        return redirect(reverse_lazy("dashboard"))
+
+
+class LandingView(TemplateView):
+    """
+    Public landing page for new visitors arriving from sort-online.org.
+    Redirects authenticated users to their dashboard.
+    """
+
+    template_name = "home/landing.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("dashboard")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class LogoutInterfaceView(LogoutView):
-    success_url = reverse_lazy("login")
+    success_url = reverse_lazy("landing")
 
 
 class LoginInterfaceView(LoginView):
     template_name = "home/login.html"
     form_class = ManagerLoginForm
-    success_url = reverse_lazy("home")
+    success_url = reverse_lazy("dashboard")
 
     def form_invalid(self, form):
         messages.error(self.request, "Invalid email or password.")
@@ -54,15 +121,23 @@ class LoginInterfaceView(LoginView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect("home")
+            return redirect("dashboard")
         return super().dispatch(request, *args, **kwargs)
 
 
 class HomeView(LoginRequiredMixin, View):
+    """
+    Dashboard view for authenticated users showing their projects.
+    """
+
     template_name = "home/welcome.html"
+    context_object_name = "projects"
 
     def get(self, request):
-        return render(request, self.template_name, {})
+        user = self.request.user
+        # all projects for current user
+        projects = project_service.get_user_projects(user)
+        return render(request, self.template_name, context=dict(projects=projects))
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
@@ -142,10 +217,6 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
         projects = context["projects"]
         user_role = self.organisation.get_user_role(user)
 
-        # add survey count to each project
-        for project in projects:
-            project.survey_count = project.survey_set.count()
-
         context.update(
             {
                 "organisation": self.organisation,
@@ -183,7 +254,7 @@ class OrganisationCreateView(LoginRequiredMixin, CreateView):
             messages.error(
                 self.request, "You don't have permission to create organisations."
             )
-            return redirect("home")
+            return redirect("dashboard")
 
 
 class ProjectView(LoginRequiredMixin, ListView):
@@ -200,7 +271,7 @@ class ProjectView(LoginRequiredMixin, ListView):
             self.project = None
 
     def get(self, request, *args, **kwargs):
-        if not hasattr(self, 'project') or not self.project:
+        if not hasattr(self, "project") or not self.project:
             messages.error(request, "Project not found.")
             return redirect("myorganisation")
 
@@ -294,7 +365,7 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         project = get_object_or_404(
-            Project.objects.select_related('organisation'),
+            Project.objects.select_related("organisation"),
             id=self.kwargs["project_id"],
         )
 
@@ -322,7 +393,7 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
         return context
 
     def get_success_url(self):
-        return reverse("myorganisation")
+        return reverse("project", kwargs=dict(project_id=self.object.pk))
 
     def form_valid(self, form):
         try:
@@ -331,7 +402,7 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
             )
             messages.success(
                 self.request,
-                f"Project {self.object.name} has been updated successfully.",
+                f"Saved changes to {self.object}.",
             )
             return redirect(self.get_success_url())
         except PermissionDenied:
@@ -356,3 +427,177 @@ class ProjectDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy("myorganisation")
+
+
+class PasswordChangeView(django.contrib.auth.views.PasswordChangeView):
+    def form_valid(self, form):
+        messages.success(self.request, "Your password has been changed.")
+        return super().form_valid(form=form)
+
+
+class OrganisationMembershipListView(
+    LoginRequiredMixin, OrganisationRequiredMixin, ListView
+):
+    model = OrganisationMembership
+    context_object_name = "memberships"
+    template_name = "organisation/members/list.html"
+
+    @property
+    def organisation(self) -> Organisation:
+        return organisation_service.get_user_organisation(self.request.user)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(organisation=self.organisation)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["organisation"] = self.organisation
+        return context
+
+
+class MyOrganisationInviteView(
+    LoginRequiredMixin, OrganisationRequiredMixin, invitations.views.SendInvite
+):
+    """
+    Invite a new member to join an organisation via email.
+
+    https://django-invitations.readthedocs.io/en/latest/usage.html
+    """
+
+    # Based on the template in the django-invitations plugin
+    # https://github.com/jazzband/django-invitations/blob/master/invitations/templates/invitations/forms/_invite.html
+    template_name = "organisation/members/create.html"
+
+
+class MyOrganisationAcceptInviteView(invitations.views.AcceptInvite):
+    """
+    Accept an invitation to join an organisation as a manager.
+
+    This inherits from the view in the django-invitations app, but
+    also passes the key to the form to improve security.
+    """
+
+    def post(self, *args, **kwargs):
+        import django.urls
+
+        try:
+            super().post(*args, **kwargs)
+        # There is no public signup URL
+        except django.urls.NoReverseMatch:
+            pass
+
+        # Signup requires a key from an invitation
+        return redirect("signup", key=self.object.key)
+
+
+class OrganisationMembershipDeleteView(
+    LoginRequiredMixin, OrganisationRequiredMixin, SuccessMessageMixin, DeleteView
+):
+    """
+    Remove a user from an organisation.
+    """
+
+    model = OrganisationMembership
+    template_name = "organisation/members/delete.html"
+    context_object_name = "organisation_membership"
+    success_url = reverse_lazy("members")
+    success_message = "The user was removed from the organisation."
+
+    def form_valid(self, form):
+        """
+        After the confirmation form has been submitted successfully, remove the user from the organisation.
+        """
+        # Override this function so we can use the appropriate service
+        organisation_service.remove_user_from_organisation(
+            user=self.request.user,
+            organisation=self.object.organisation,
+            removed_user=self.object.user,
+        )
+        messages.success(
+            self.request,
+            message=f"The user {self.object.user} was removed from {self.object.organisation}.",
+        )
+        return django.http.HttpResponseRedirect(self.get_success_url())
+
+
+class HelpView(TemplateView):
+    """
+    User guide
+    """
+    template_name = "help/index.html"
+
+
+class VideoTutorialView(TemplateView):
+    """
+    Beginner's intro video.
+    """
+    template_name = "help/video-tutorial.html"
+
+
+class TroubleshootingView(TemplateView):
+    template_name = "help/troubleshooting.html"
+
+
+class FAQView(TemplateView):
+    """
+    Frequently asked questions (FAQs)
+    """
+    template_name = "help/faq.html"
+
+
+class LicenseAgreementView(TemplateView):
+    """
+    End user license agreement
+    """
+
+    template_name = "about/end_user_license_agreement.html"
+
+
+class PrivacyPolicyView(TemplateView):
+    """
+    Privacy policy and data protection notice
+    """
+
+    template_name = "about/privacy.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["current_date"] = timezone.now().strftime("%d %B %Y")
+        return context
+
+
+class ParticipantInformationView(TemplateView):
+    """
+    Participant information sheet for research study
+    """
+
+    template_name = "about/participant_information.html"
+
+
+class DataSharingAgreementView(LoginRequiredMixin, DetailView):
+    """
+    Data Sharing Agreement between NHS organisations and University of Sheffield
+    for research data sharing through SORT Online
+    """
+
+    model = Organisation
+    template_name = "organisation/data_sharing_agreement.html"
+    context_object_name = "organisation"
+
+    def get_object(self, queryset=None):
+        """
+        Get the organisation and verify user has access to it.
+        """
+
+        organisation = self.request.user.organisation_set.first()
+
+        # Verify user is a member of this organisation
+        if not organisation_service.can_view(self.request.user, organisation):
+            messages.error(
+                self.request,
+                "You don't have permission to view this organisation's data sharing agreement.",
+            )
+            return redirect("myorganisation")
+
+        return organisation

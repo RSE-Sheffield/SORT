@@ -20,6 +20,7 @@
     "allowImportingTsExtensions": true,
     "allowArbitraryExtensions": true,
     "verbatimModuleSyntax": true,
+    "allowSyntheticDefaultImports": true,
   },
   "include": ["ui_components/src/**/*.ts", "ui_components/src/**/*.js", "ui_components/src/**/*.svelte"]
 }

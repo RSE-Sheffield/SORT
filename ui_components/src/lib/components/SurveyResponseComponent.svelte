@@ -11,19 +11,19 @@
     let isValid = $state();
     let isInvalid = $state();
 
-    function setIsValid(valid) {
+    function setIsValid(valid: boolean) {
         isValid = valid;
         isInvalid = !valid;
     }
 
-    function clearValidation(){
+    function clearValidation() {
         isValid = false;
         isInvalid = false;
     }
 
     // Keeps track of all section components
     // when components are deleted the derived property filters this out
-    let currentSectionComponent = $state();
+    let currentSectionComponent: SectionComponent | undefined = $state();
 
     // Value in plaintext for submitting to the backend
     let valueStr = $derived(JSON.stringify(value))
@@ -37,7 +37,7 @@
     let currentPage = $state(0);
 
     function validate() {
-        const currentPageValidates = currentSectionComponent.validate();
+        const currentPageValidates = currentSectionComponent?.validate() ?? false;
         setIsValid(currentPageValidates)
         return currentPageValidates;
     }
@@ -58,7 +58,7 @@
         }
     }
 
-    function onSubmitHandler(e) {
+    function onSubmitHandler(e: Event) {
         if (!validate()) {
             // Don't submit if there's still an error on the page
             e.preventDefault();
@@ -78,21 +78,21 @@
     {/if}
 {/each}
 {#if isInvalid}
-<div class="alert alert-danger mb-3">
-    Values are incorrect or missing. Please check the values above before continuing.
-</div>
+    <div class="alert alert-danger mb-3">
+        Values are incorrect or missing. Please check the values above before continuing.
+    </div>
 {/if}
 
 <div class="d-flex">
-        <button class="btn btn-primary me-3"  disabled={currentPage < 1} onclick={previousPage}>&lt; Previous</button>
+    <button class="btn btn-primary me-3" disabled={currentPage < 1} onclick={previousPage}>&lt; Previous</button>
 
-        {#if currentPage < config.sections.length - 1}
-            <button class="btn btn-primary" onclick={nextPage}>Next &gt;</button>
-        {:else}
-            <form method="post" onsubmit={onSubmitHandler}>
-                <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}"/>
-                <input type="hidden" name="value" value="{valueStr}"/>
-                <button type="submit" class="btn btn-primary">Submit <i class="bx bxs-send" ></i></button>
-            </form>
-        {/if}
+    {#if currentPage < config.sections.length - 1}
+        <button class="btn btn-primary" onclick={nextPage}>Next &gt;</button>
+    {:else}
+        <form method="post" onsubmit={onSubmitHandler}>
+            <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}"/>
+            <input type="hidden" name="value" value="{valueStr}"/>
+            <button type="submit" class="btn btn-primary">Submit <i class="bx bxs-send"></i></button>
+        </form>
+    {/if}
 </div>

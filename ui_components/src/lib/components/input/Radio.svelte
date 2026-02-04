@@ -1,5 +1,8 @@
 <script lang="ts">
+  import DOMPurify  from "dompurify";
   import {getUniqueIDArray} from "../../misc.svelte.ts";
+  import RequiredBadge from "../RequiredBadge.svelte";
+
 
   let {config, value = $bindable(), viewerMode = false} = $props();
 
@@ -8,7 +11,7 @@
   let isValid = $state(false);
   let isInvalid = $state(false);
 
-  function setIsValid(valid) {
+  function setIsValid(valid: boolean) {
     isValid = valid;
     isInvalid = !valid;
   }
@@ -25,10 +28,10 @@
 
 </script>
 <div class="form-label">
-    {config.label}{#if config.required}<span style="color: red">*</span>{/if}
-    {#if config.description || config.description.length > 0}<p class="form-text">{config.description}</p>{/if}
+    {config.label}{#if config.required}<RequiredBadge />{/if}
+    {#if config.description || config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
 
-    {#each config.options as option, index}
+    {#each config.options as option, index (index)}
         <div class="form-check">
             <input class={{"form-check-input": true, "is-valid": isValid, "is-invalid": isInvalid}}
                    type="radio"

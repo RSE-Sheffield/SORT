@@ -2,24 +2,22 @@ name: Lint Python code
 on:
   push:
     branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev", "main" ]
+permissions:
+  contents: read
 jobs:
   lint:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install linters
-        run: pip install black flake8 isort
-      - name: Lint Python code
-        run: |
-          dirs="SORT home survey"
-          isort $dirs --skip-glob '*/migrations/*'
-          black $dirs --exclude '/migrations/'
-          flake8 $dirs --exclude '*/migrations/*'
-      # Suggest merging any changes into the branch that ran this workflow
-      - name: Create Pull Request
-        # https://github.com/marketplace/actions/create-pull-request
-        uses: peter-evans/create-pull-request@v7
+      - name: Setup Python
+        uses: actions/setup-python@v5.6.0
         with:
-          body: "Python code reformatted with black and isort"
-          branch: "chore/python-formatting"
+          python-version-file: .python-version
+          cache: "pip"
+      - name: Install linter
+        run: pip install flake8
+      - name: Lint Python code
+        run: flake8

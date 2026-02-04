@@ -1,18 +1,14 @@
 """
 Organisation service with integrated permissions
 """
+
 from typing import Dict, Optional, Set
-from django.core.exceptions import PermissionDenied
+
 from django.db.models import Count
 from django.db.models.query import QuerySet
 
 from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
-from ..models import (
-    Organisation,
-    OrganisationMembership,
-    Project,
-    User
-)
+from ..models import Organisation, OrganisationMembership, Project, User
 from .base import BasePermissionService, requires_permission
 
 
@@ -21,7 +17,9 @@ class OrganisationService(BasePermissionService):
 
     def get_user_role(self, user: User, organisation: Organisation) -> Optional[str]:
         try:
-            membership = organisation.organisationmembership_set.filter(user=user).first()
+            membership = organisation.organisationmembership_set.filter(
+                user=user
+            ).first()
             return membership.role if membership else None
         except AttributeError:  # In case user is AnonymousUser
             return None
@@ -77,7 +75,7 @@ class OrganisationService(BasePermissionService):
 
     @requires_permission("edit", obj_param="organisation")
     def update_organisation(
-            self, user: User, organisation: Organisation, data: Dict
+        self, user: User, organisation: Organisation, data: Dict
     ) -> Organisation:
         """Update organisation with provided data"""
         for key, value in data.items():
@@ -86,7 +84,7 @@ class OrganisationService(BasePermissionService):
         return organisation
 
     def create_organisation(
-            self, user: User, name: str, description: str = None
+        self, user: User, name: str, description: str = None
     ) -> Organisation:
         """
         Create a new organisation, and add the creator to it.
@@ -101,13 +99,20 @@ class OrganisationService(BasePermissionService):
 
     @requires_permission("edit", obj_param="organisation")
     def add_user_to_organisation(
-            self,
-            user: User,
-            user_to_add: User,
-            organisation: Organisation,
-            role: str,
+        self,
+        user: User,
+        user_to_add: User,
+        organisation: Organisation,
+        role: str,
     ) -> OrganisationMembership:
-        """Add a user to an organisation with specified role"""
+        """
+        Add a user to an organisation with specified role
+
+        @param user: user who is adding the user to the organisation
+        @param user_to_add: user to add
+        @param organisation: The organisation to add the user to
+        @param role: The role that the user has in the organisation
+        """
         if role not in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]:
             raise ValueError(
                 f"Role must be either {ROLE_ADMIN} or {ROLE_PROJECT_MANAGER}"
@@ -119,15 +124,26 @@ class OrganisationService(BasePermissionService):
 
     @requires_permission("edit", obj_param="organisation")
     def remove_user_from_organisation(
-            self, user: User, organisation: Organisation, removed_user: User
+        self, user: User, organisation: Organisation, removed_user: User
     ) -> None:
-        """Remove user from organisation"""
-        OrganisationMembership.objects.filter(
+        """
+        Remove a user from organisation
+
+        @param user: The organisation manager/admin
+        @param organisation: The organisation to remove the user from
+        @param removed_user: The user to revoke permissions from
+        """
+        if not self.can_edit(user, organisation):
+            raise PermissionError(
+                f"User '{user}' does not have permission to remove users from organisation '{organisation}'"
+            )
+
+        OrganisationMembership.objects.get(
             user=removed_user, organisation=organisation
         ).delete()
 
     def get_organisation_projects(
-            self, organisation: Organisation, user: User = None, with_metrics: bool = True
+        self, organisation: Organisation, user: User = None, with_metrics: bool = True
     ) -> QuerySet[Project]:
         """Get projects for an organisation with optional metrics"""
         if not self.can_view(user, organisation):
@@ -137,7 +153,7 @@ class OrganisationService(BasePermissionService):
 
         # Add metrics
         if with_metrics:
-            projects = base_query.annotate(
+            base_query = base_query.annotate(
                 survey_count=Count("survey__id", distinct=True),
             ).select_related("created_by", "organisation")
 
@@ -145,7 +161,7 @@ class OrganisationService(BasePermissionService):
 
     @requires_permission("view", obj_param="organisation")
     def get_organisation_members(
-            self, user: User, organisation: Organisation
+        self, user: User, organisation: Organisation
     ) -> QuerySet[OrganisationMembership]:
         """Get all members of an organisation with their roles"""
         return OrganisationMembership.objects.filter(

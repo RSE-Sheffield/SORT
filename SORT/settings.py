@@ -54,10 +54,9 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(os.getenv("DJANGO_DEBUG", "False"))
 
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "sort-web-app.shef.ac.uk").split()
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split()
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -65,14 +64,23 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Plugin apps
+    "allauth",
+    "allauth.account",
     "django_bootstrap5",
     "django_extensions",
-    "debug_toolbar",
     "qr_code",
-    # apps created by FA:
+    "crispy_forms",
+    "crispy_bootstrap5",
+    "invitations",
+    # SORT apps
     "home",
     "survey",
 ]
+
+if DEBUG:
+    # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
+    INSTALLED_APPS.append("debug_toolbar")
 
 MIDDLEWARE = [
     # Implement security in the web server, not in Django.
@@ -84,8 +92,10 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
+if DEBUG:
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
 ROOT_URLCONF = "SORT.urls"
 
@@ -109,16 +119,24 @@ WSGI_APPLICATION = os.getenv("DJANGO_WSGI_APPLICATION", "SORT.wsgi.application")
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-DATABASES = {
-    # Set the database settings using environment variables, or default to a local SQLite database file.
-    "default": {
-        "ENGINE": os.getenv("DJANGO_DATABASE_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.getenv("DJANGO_DATABASE_NAME", BASE_DIR / "db.sqlite3"),
-        "USER": os.getenv("DJANGO_DATABASE_USER"),
-        "PASSWORD": os.getenv("DJANGO_DATABASE_PASSWORD"),
-        "HOST": os.getenv("DJANGO_DATABASE_HOST"),
-        "PORT": os.getenv("DJANGO_DATABASE_PORT"),
+db_engine = os.getenv("DJANGO_DATABASE_ENGINE", "django.db.backends.sqlite3")
+db_config = {
+    "ENGINE": db_engine,
+    "NAME": os.getenv("DJANGO_DATABASE_NAME", BASE_DIR / "db.sqlite3"),
+    "USER": os.getenv("DJANGO_DATABASE_USER"),
+    "PASSWORD": os.getenv("DJANGO_DATABASE_PASSWORD"),
+    "HOST": os.getenv("DJANGO_DATABASE_HOST"),
+    "PORT": os.getenv("DJANGO_DATABASE_PORT"),
+}
+
+# Add PostgreSQL-specific options only when using PostgreSQL
+if "postgresql" in db_engine:
+    db_config["OPTIONS"] = {
+        'client_encoding': os.getenv("DJANGO_DATABASE_CLIENT_ENCODING", "UTF8"),
     }
+
+DATABASES = {
+    "default": db_config
 }
 
 # Password validation
@@ -163,7 +181,9 @@ STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR / "staticfiles")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_REDIRECT_URL = "/"
+# Authentication settings
+# https://docs.djangoproject.com/en/6.0/ref/settings/#auth
+LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/"
 
 # FA: End session when the browser is closed
@@ -174,11 +194,29 @@ SESSION_COOKIE_AGE = 1800
 
 PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 
-# FA: for local testing emails:
+# Email settings
+# https://docs.djangoproject.com/en/5.1/topics/email/#email-backends
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = os.getenv(
+    "DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
+)
+EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("DJANGO_EMAIL_PORT", 465))
+EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("DJANGO_EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_TLS", False))
+EMAIL_USE_SSL = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_SSL", True))
+EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", 3))
+EMAIL_SSL_KEYFILE = os.getenv("DJANGO_EMAIL_SSL_KEYFILE")
+EMAIL_SSL_CERTFILE = os.getenv("DJANGO_EMAIL_SSL_CERTFILE")
+EMAIL_SUBJECT_PREFIX = os.getenv("DJANGO_EMAIL_SUBJECT_PREFIX", "[SORT] ")
+EMAIL_USE_LOCALTIME = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_LOCALTIME", True))
+DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "noreply@noreply.com")
 
-AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
 
 # For django-debug-toolbar
 INTERNAL_IPS = [
@@ -189,19 +227,28 @@ INTERNAL_IPS = [
 AUTH_USER_MODEL = "home.User"  # FA: replace username with email as unique identifiers
 
 # Vite integration
-VITE_BASE_URL = "http://localhost:5173"  # Url of vite dev server
-VITE_STATIC_DIR = "ui-components"  # Path to vite-generated asset directory in the static folder
-VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, "manifest.json")
-
-# FA: for production:
-
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+if DEBUG:
+    VITE_BASE_URL = "http://localhost:5173"
+    "URL of Vite local development server"
+VITE_STATIC_DIR = "ui-components"
+"Path to vite-generated asset directory in the static folder"
+VITE_MANIFEST_FILE_PATH = Path(os.path.join(VITE_STATIC_DIR, "manifest.json"))
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 # File uploading
 MEDIA_ROOT = os.getenv("DJANGO_MEDIA_ROOT", BASE_DIR / "uploads")
-MEDIA_SUPPORTED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf", ".doc", ".docx", ".txt", ".csv", ".json"]
+MEDIA_SUPPORTED_EXTENSIONS = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".txt",
+    ".csv",
+    ".json",
+]
 
 # Security settings
 SESSION_COOKIE_SECURE = cast_to_boolean(
@@ -226,9 +273,38 @@ LOGGING = {
     },
 }
 
+# Survey content configuration files
 SURVEY_TEMPLATE_DIR = BASE_DIR / "data/survey_config"
 SURVEY_TEMPLATES = {
     "Nurses": "sort_only_config_nurses.json",
     "Midwives": "sort_only_config_midwives.json",
     "NMAHPs": "sort_only_config_nmahps.json",
+    "Nurses & Midwives": "sort_only_config_nurses_midwives.json",
+    "AHP": "sort_only_config_ahp.json",
 }
+DEMOGRAPHY_TEMPLATES = {
+    "Nurses": "demography_only_config_nurses.json",
+    "Midwives": "demography_only_config_midwives.json",
+    "NMAHPs": "demography_only_config_nmahps.json",
+    "Nurses & Midwives": "demography_only_config_nurses_midwives.json",
+    "AHP": "demography_only_config_ahp.json",
+}
+CONSENT_TEMPLATE = "consent_only_config.json"
+
+# Crispy enables Bootstrap styling on Django forms
+# https://django-crispy-forms.readthedocs.io/en/latest/install.html
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+# Invitations options
+# https://django-invitations.readthedocs.io/en/latest/configuration.html
+INVITATIONS_SIGNUP_REDIRECT = "signup"
+INVITATIONS_CONFIRMATION_URL_NAME = "member_invite_accept"
+INVITATIONS_EMAIL_SUBJECT_PREFIX = "SORT"
+
+# AllAuth authentication options
+# https://docs.allauth.org/en/latest/account/configuration.html
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+ACCOUNT_LOGIN_METHODS = {"email"}
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"

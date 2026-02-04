@@ -18,6 +18,7 @@ Group=gunicorn
 DynamicUser=true
 RuntimeDirectory=gunicorn
 WorkingDirectory=/opt/sort
+# DJANGO_MEDIA_ROOT
 ReadWritePaths=/srv/www/sort/uploads/
 ExecStart=/opt/sort/venv/bin/gunicorn SORT.wsgi
 ExecReload=/bin/kill -s HUP $MAINPID
@@ -28,6 +29,8 @@ PrivateTmp=true
 ProtectSystem=strict
 Delegate=yes
 LockPersonality=yes
+MemoryDenyWriteExecute=yes
+NoNewPrivileges=yes
 # https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Credentials
 LoadCredential=.env:/opt/sort/.env
 EnvironmentFile=${CREDENTIALS_DIRECTORY}/.env

@@ -25,7 +25,33 @@
         return generateStatsFromSurveyResponses(config, filteredResponses);
     })
 
-    function handleFilterChange(changedFilteredResponses) {
+    // Calculate the maximum STACKED count across all histograms in all sections
+    // Since bars are stacked, we need the total of all option counts for each question
+    let maxHistogramCount: number = $derived.by(() => {
+        if (!surveyStats) return 0;
+
+        let maxCount = 0;
+        for (const section of surveyStats.sections) {
+            for (const field of section.fields) {
+                if (field.histograms) {
+                    // For likert fields with multiple histograms (one per sublabel/question)
+                    // Each histogram has counts for each option (1-5)
+                    // Sum all option counts for each question (stacked bar height)
+                    for (const histogram of field.histograms) {
+                        const stackedTotal = histogram.reduce((sum, valueCount) => sum + valueCount.count, 0);
+                        maxCount = Math.max(maxCount, stackedTotal);
+                    }
+                } else if (field.histogram) {
+                    // For other field types with single histogram
+                    const stackedTotal = field.histogram.reduce((sum, valueCount) => sum + valueCount.count, 0);
+                    maxCount = Math.max(maxCount, stackedTotal);
+                }
+            }
+        }
+        return maxCount;
+    })
+
+    function handleFilterChange(changedFilteredResponses: SurveyResponseBatch) {
         filteredResponses = changedFilteredResponses;
     }
 
@@ -53,6 +79,13 @@
     {/if}
     {#if config && surveyStats}
 
+        <div class="card mb-3">
+            <div class="card-header"><h3>Summary Ranking Matrix</h3></div>
+            <div class="card-body">
+                <p>Summary of survey participant's overall average perception for each section.</p>
+                <SortSummaryMatrix config={config} surveyStats={surveyStats}></SortSummaryMatrix>
+            </div>
+        </div>
 
         {#each config.sections as sectionConfig, si (si)}
             {#if sectionConfig.type !== "consent"}
@@ -64,20 +97,15 @@
                         <SurveySectionDataView
                                 config={config}
                                 surveyStats={surveyStats}
-                                sectionIndex={si}>
+                                sectionIndex={si}
+                                maxHistogramCount={maxHistogramCount}>
                         </SurveySectionDataView>
                     </div>
                 </div>
             {/if}
         {/each}
 
-        <div class="card mb-3">
-            <div class="card-header"><h3>Summary Ranking Matrix</h3></div>
-            <div class="card-body">
-                <p>Summary of survey participant's overall average perception for each section.</p>
-                <SortSummaryMatrix config={config} surveyStats={surveyStats}></SortSummaryMatrix>
-            </div>
-        </div>
+
     {:else}
         <p>No statistics available.</p>
     {/if}

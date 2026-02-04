@@ -1,0 +1,52 @@
+{% extends "base_manager.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="container mx-auto py-8 mt-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'myorganisation' %}">
+                            <i class="bx bxs-buildings"></i> Organisation Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <a href="{% url 'members' %}">
+                            <i class="bx bxs-group"></i> Members
+                        </a>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="container">
+        <h1><i class='bx bxs-user-plus'></i> Invite new member</h1>
+        <p>
+            Add colleagues to your organisation by sending secure invitation links. New members can join your existing
+            projects, create new surveys, and manage existing surveys.
+        </p>
+        <div class="card">
+            <div class="card-body">
+                {% if success_message %}
+                    <!-- New user invited -->
+                    <div class="alert alert-success" role="alert">
+                        <i class="bx bxs-envelope"></i> {{ success_message }}
+                    </div>
+                    <div>
+                        <a href="{% url 'member_invite' %}" type="button" class="btn btn-primary">
+                            <i class='bx bxs-user-plus'></i> Invite another person
+                        </a>
+                    </div>
+                {% else %}
+                    <!-- Invite organisation member form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form | crispy }}
+
+                        <button class="btn btn-primary"><i class="bx bxs-user-plus"></i>&nbsp;Invite</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

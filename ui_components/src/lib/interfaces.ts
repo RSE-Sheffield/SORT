@@ -26,11 +26,13 @@ export type FieldConfig = {
     sublabels: string[];
     options: string[];
     // Text and Textarea options
-    enforceValueConstraints?: boolean,
-    maxNumChar?: number,
-    minNumValue?: number,
-    maxNumValue?: number,
-    textType?: TextType,
+    enforceValueConstraints?: boolean;
+    maxNumChar?: number;
+    minNumValue?: number;
+    maxNumValue?: number;
+    textType?: TextType;
+    readOnly?: boolean;
+    disabled?: boolean;
 }
 
 export type SectionConfig = {

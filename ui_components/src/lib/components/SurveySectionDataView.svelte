@@ -3,7 +3,8 @@
     import type {SurveyConfig, SurveyStats} from "../interfaces.ts";
     import {TextType} from "../interfaces.ts";
     import LikertHistogram from "./graph/LikertHistogram.svelte";
-    import OptionsHistogram from "./graph/OptionsHistogram.svelte";
+    import LikertBarChart from "./graph/LikertBarChart.svelte";
+    import OptionsPieChart from "./graph/OptionsPieChart.svelte";
     import CollapsibleCard from "./CollapsibleCard.svelte";
     import SortLikertStats from "./SortLikertStats.svelte";
     import ScalarHistogram from "./graph/ScalarHistogram.svelte";
@@ -11,16 +12,20 @@
     interface Props {
         config: SurveyConfig,
         surveyStats: SurveyStats | null,
-        sectionIndex: number
+        sectionIndex: number,
+        readinessDescriptions: string[],
+        useBarChart: boolean,
+        maxHistogramCount: number
     }
 
-    let {config, surveyStats, sectionIndex = 0}: Props = $props();
+    let {config, surveyStats, sectionIndex = 0, readinessDescriptions, useBarChart = false, maxHistogramCount = 0}: Props = $props();
     let sectionConfig = $derived(config.sections[sectionIndex]);
 
 </script>
 {#if surveyStats && config}
     <div class="d-flex flex-wrap">
-        {#each sectionConfig.fields as fieldConfig, fi}
+        {#each sectionConfig.fields as fieldConfig, fi (fi)}
+            {#if !fieldConfig.disabled}
             {#if fieldConfig.type === "likert" && sectionConfig.type === "sort"}
                 <div class="mb-3 flex-grow-1 flex-fill w-100">
 
@@ -28,15 +33,25 @@
                             config={config}
                             surveyStats={surveyStats}
                             sectionIndex={sectionIndex}
-                            fieldIndex={fi}>
+                            fieldIndex={fi}
+                            readinessDescriptions={readinessDescriptions}
+                            useBarChart={useBarChart}
+                            maxHistogramCount={maxHistogramCount}>
                     </SortLikertStats>
                 </div>
 
             {:else if fieldConfig.type === "likert" }
                 <div class="mb-3 flex-grow-1 flex-fill w-100">
-
+                    {#if useBarChart}
+                    <LikertBarChart fieldConfig={fieldConfig}
+                                     fieldStats={surveyStats.sections[sectionIndex].fields[fi]}
+                                     maxHistogramCount={maxHistogramCount}></LikertBarChart>
+                    {:else}
                     <LikertHistogram fieldConfig={fieldConfig}
-                                     fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></LikertHistogram>
+                                     fieldStats={surveyStats.sections[sectionIndex].fields[fi]}
+                                     maxHistogramCount={maxHistogramCount}
+                                     sectionTitle={sectionConfig.title}></LikertHistogram>
+                    {/if}
                 </div>
             {/if}
             {#if fieldConfig.type === "radio" || fieldConfig.type === "select" || fieldConfig.type === "checkbox"}
@@ -45,8 +60,8 @@
                         <h5>{fieldConfig.label}</h5>
                     </div>
                     <div class="card-body">
-                        <OptionsHistogram fieldConfig={fieldConfig}
-                                          fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></OptionsHistogram>
+                        <OptionsPieChart fieldConfig={fieldConfig}
+                                          fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></OptionsPieChart>
                     </div>
                 </div>
             {/if}
@@ -69,7 +84,7 @@
                     >
                         {#snippet content()}
                             <ul class="list-group">
-                                {#each surveyStats.sections[sectionIndex].fields[fi].values as text}
+                                {#each surveyStats.sections[sectionIndex].fields[fi].values as text, index (index)}
 
                                     <li class="list-group-item">{text}</li>
                                 {/each}
@@ -77,6 +92,7 @@
                         {/snippet}
                     </CollapsibleCard>
                 </div>
+            {/if}
             {/if}
         {/each}
     </div>

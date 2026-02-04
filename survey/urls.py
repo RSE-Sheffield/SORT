@@ -22,7 +22,12 @@ urlpatterns = [
     path(
         "survey/<int:pk>/create_invite",
         views.SurveyCreateInviteView.as_view(),
-        name="suvey_create_invite",
+        name="survey_create_invite",
+    ),
+    path(
+        "survey/<int:pk>/duplicate_config",
+        views.SurveyDuplicateConfigView.as_view(),
+        name="survey_duplicate_config",
     ),
     path(
         "survey/<int:pk>/mock_responses",
@@ -32,10 +37,17 @@ urlpatterns = [
     path(
         "survey/<int:pk>/add_file",
         views.SurveyFileUploadView.as_view(),
-        name="survey_add_file"
+        name="survey_add_file",
     ),
     path(
-        "survey/<int:pk>/export", views.SurveyExportView.as_view(), name="survey_export"
+        "survey/<int:pk>/export/csv",
+        views.SurveyExportCsvView.as_view(),
+        name="survey_export",
+    ),
+    path(
+        "survey/<int:pk>/export/excel",
+        views.SurveyExportExcelView.as_view(),
+        name="survey_export_excel",
     ),
     path(
         "survey/<int:pk>/response_data",
@@ -55,17 +67,17 @@ urlpatterns = [
     path(
         "survey/<int:pk>/evidence_gathering/<int:section_id>/add_file",
         views.SurveyEvidenceFileUploadView.as_view(),
-        name="survey_evidence_add_file"
+        name="survey_evidence_add_file",
     ),
     path(
         "survey_evidence/remove_file/<int:pk>",
         views.SurveyEvidenceFileDeleteView.as_view(),
-        name="survey_evidence_remove_file"
+        name="survey_evidence_remove_file",
     ),
     path(
         "survey_evidence/file/<int:pk>",
         views.SurveyEvidenceFileView.as_view(),
-        name="survey_evidence_file"
+        name="survey_evidence_file",
     ),
     path(
         "survey/<int:pk>/improvement_plan/<int:section_id>",
@@ -87,6 +99,21 @@ urlpatterns = [
         views.SurveyCreateView.as_view(),
         name="survey_create",
     ),
+    path(
+        "survey/<int:pk>/activate",
+        views.SurveyActivateView.as_view(),
+        name="survey_activate",
+    ),
+    path(
+        "survey/<int:pk>/deactivate",
+        views.SurveyDeactivateView.as_view(),
+        name="survey_deactivate",
+    ),
+    path(
+        "survey_response/inactive",
+        views.SurveyResponseInactiveView.as_view(),
+        name="survey_response_inactive",
+    ),
     path("completion/", views.CompletionView.as_view(), name="completion_page"),
     path(
         "survey_response/<str:token>",
@@ -98,10 +125,5 @@ urlpatterns = [
         views.SurveyLinkInvalidView.as_view(),
         name="survey_link_invalid",
     ),
-    path("invite/<int:pk>", views.InvitationView.as_view(), name="invite"),
-    path(
-        "invite/success/",
-        views.SuccessInvitationView.as_view(),
-        name="success_invitation",
-    ),
+    path("survey/<int:pk>/invite", views.InvitationView.as_view(), name="invite"),
 ]
