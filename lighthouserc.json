@@ -1,0 +1,29 @@
+{
+  "ci": {
+    "collect": {
+      "url": [
+        "http://localhost:8000/",
+        "http://localhost:8000/about/",
+        "http://localhost:8000/help/",
+        "http://localhost:8000/privacy/",
+        "http://localhost:8000/eula/"
+      ],
+      "numberOfRuns": 1,
+      "settings": {
+        "chromeFlags": "--no-sandbox --disable-setuid-sandbox",
+        "onlyCategories": ["accessibility", "best-practices", "seo"]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    },
+    "assert": {
+      "preset": "lighthouse:recommended",
+      "assertions": {
+        "categories:accessibility": ["error", {"minScore": 0.90}],
+        "categories:best-practices": ["warn", {"minScore": 0.85}],
+        "categories:seo": ["warn", {"minScore": 0.80}]
+      }
+    }
+  }
+}
