@@ -1,6 +1,5 @@
 __author__ = "Farhad Allian"
 
-
 import django.urls
 from django.urls import path, re_path
 
@@ -103,10 +102,16 @@ urlpatterns = [
         name="help",
     ),
     path(
+        "help/video-tutorial/",
+        views.VideoTutorialView.as_view(),
+        name="video_tutorial",
+    ),
+    path(
         "help/troubleshooting/",
         views.TroubleshootingView.as_view(),
         name="troubleshooting",
     ),
+    path("help/faq/", views.FAQView.as_view(), name="faq", ),
     path("eula/", views.LicenseAgreementView.as_view(), name="eula"),
     path("privacy/", views.PrivacyPolicyView.as_view(), name="privacy"),
     path(
