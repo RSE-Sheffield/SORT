@@ -30,6 +30,7 @@ sudo update-locale
 # Create Python virtual environment
 mkdir --parents "$sort_dir"
 apt update -qq
+apt upgrade --yes -qq
 apt install --upgrade --yes -qq "$python_version" "$python_version-venv" curl
 python3 -m venv "$venv_dir"
 
@@ -172,9 +173,9 @@ echo "Schema: $db_schema"
 # Run deployment checks
 echo "Checking Django system..."
 # https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-(cd "$sort_dir" && exec $python manage.py check --deploy)
+(cd "$sort_dir" && set -a && source "$env_file" && set +a && exec $python manage.py check --deploy)
 
 # Migrate database changes
 # https://docs.djangoproject.com/en/5.1/topics/migrations/
 echo "Applying Django migrations..."
-(cd "$sort_dir" && $python manage.py migrate)
+(cd "$sort_dir" && set -a && source "$env_file" && set +a && $python manage.py migrate)
