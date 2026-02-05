@@ -63,6 +63,12 @@ sudo -E bash nodesource_setup.sh
 apt-get install -y --allow-downgrades nodejs="$node_version.*"
 node --version
 
+# Upgrade npm to latest stable version
+# https://github.com/RSE-Sheffield/SORT/issues/494
+echo "Upgrading npm to latest stable version..."
+npm install -g npm@latest
+npm --version
+
 # Install JavaScript package
 # (Use a sub-shell to avoid changing directory.)
 (cd "$sort_dir" && npm ci && npm run build)
