@@ -38,8 +38,6 @@ python3 -m venv "$venv_dir"
 
 # Install the SORT Django app package
 $pip install --quiet -r requirements.txt
-# Ensure clean migrations from the repo
-sudo rm -r "$sort_dir"/**/migrations
 cp --recursive ./* "$sort_dir/"
 
 # Create gunicorn group if it doesn't exist
