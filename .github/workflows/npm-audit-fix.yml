@@ -1,0 +1,75 @@
+name: NPM Audit
+
+on:
+  schedule:
+    # Run every Monday at 9:00 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch: # Allow manual triggering
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  npm-audit-fix:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: npm audit fix
+        id: audit-fix
+        run: |
+          npm audit fix
+
+          # Check if there are any changes
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected after npm audit fix"
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "No changes from npm audit fix"
+          fi
+
+      - name: Create Pull Request
+        if: steps.audit-fix.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: fix npm security vulnerabilities'
+          branch: chore/npm-audit-fix
+          delete-branch: true
+          title: 'chore: fix npm security vulnerabilities'
+          body: |
+            ## Automated npm audit fix
+
+            This PR was automatically created by the weekly npm audit fix workflow.
+
+            ### Changes
+
+            This PR contains security vulnerability fixes from `npm audit fix`.
+
+            ### Review checklist
+
+            - [ ] Review package-lock.json changes
+            - [ ] Verify no breaking changes introduced
+            - [ ] Run tests locally: `npm test`
+            - [ ] Check build succeeds: `npm run build`
+
+            ### Testing
+
+            Please ensure all tests pass and the application works as expected before merging.
+          labels: |
+            dependencies
+            security
+            automated
+          assignees: ${{ github.repository_owner }}
