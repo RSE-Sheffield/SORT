@@ -82,3 +82,7 @@ We expect all contributors to follow the SORT [Code of Conduct](CODE_OF_CONDUCT.
 # Testing
 
 Please read the [testing documentation](docs/testing.md).
+
+# Documentation
+
+Developer documentation is available in the [docs/](docs/) directory. See [docs/README.md](docs/README.md) for a guide to navigating the documentation.
