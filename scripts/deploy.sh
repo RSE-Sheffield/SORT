@@ -9,7 +9,7 @@ set -e
 # Clone the repository
 # git clone git@github.com:RSE-Sheffield/SORT.git
 # cd SORT
-# sudo bash -x deploy.sh
+# sudo bash -x scripts/deploy.sh
 
 # Options
 sort_dir="/opt/sort"

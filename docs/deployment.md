@@ -37,10 +37,10 @@ The relevant files are:
 
 # Deployment process
 
-This app can be deployed to a web server using the script [`deploy.sh`](../deploy.sh) and configured as described in the section below.
+This app can be deployed to a web server using the script [`scripts/deploy.sh`](../scripts/deploy.sh) and configured as described in the section below.
 
 1. Configure the `.env` file as described below.
-2. Run the deployment script: `sudo bash -x deploy.sh`
+2. Run the deployment script: `sudo bash -x scripts/deploy.sh`
 3. Configure the database
 4. Run database migrations: `sudo /opt/sort/venv/bin/python /opt/sort/manage.py migrate`
 
