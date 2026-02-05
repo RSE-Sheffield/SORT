@@ -2,13 +2,15 @@
 set -e
 
 # SORT deployment script for Ubuntu 22.04 LTS
-# See: How to deploy Django
-# https://docs.djangoproject.com/en/5.1/howto/deployment/wsgi/#the-application-object
+# Please read
+# https://github.com/RSE-Sheffield/SORT/blob/main/docs/deployment.md
 
 # Usage:
 # Clone the repository
 # git clone git@github.com:RSE-Sheffield/SORT.git
 # cd SORT
+# sudo bash scripts/deploy.sh
+# If you need more verbosity, use the -x option
 # sudo bash -x scripts/deploy.sh
 
 # Options
@@ -111,7 +113,18 @@ echo "Configuring PostgreSQL database..."
 # Get database credentials from environment or use defaults
 db_name="${DJANGO_DATABASE_NAME:-sort}"
 db_user="${DJANGO_DATABASE_USER:-sort}"
-db_password="${DJANGO_DATABASE_PASSWORD:-$(openssl rand -base64 32)}"
+
+# Check if password already exists in .env file, if not generate a new one
+if [ -f "$env_file" ] && grep -q "DJANGO_DATABASE_PASSWORD" "$env_file"; then
+    # Extract existing password from .env file
+    db_password=$(grep "DJANGO_DATABASE_PASSWORD" "$env_file" | cut -d'=' -f2-)
+    echo "Using existing database password from $env_file"
+else
+    # Generate new password
+    db_password="${DJANGO_DATABASE_PASSWORD:-$(openssl rand -base64 32)}"
+    echo "Generated new database password"
+fi
+
 db_schema="${db_name}"  # Use same name for schema as database
 
 # Create database with proper encoding and locale
@@ -146,36 +159,51 @@ EOSQL
 
 # Update environment file with database credentials
 echo "Updating environment configuration..."
-if ! grep -q "DJANGO_DATABASE_ENGINE" "$env_file"; then
-    echo "DJANGO_DATABASE_ENGINE=django.db.backends.postgresql" >> "$env_file"
-fi
-if ! grep -q "DJANGO_DATABASE_NAME" "$env_file"; then
-    echo "DJANGO_DATABASE_NAME=$db_name" >> "$env_file"
-fi
-if ! grep -q "DJANGO_DATABASE_USER" "$env_file"; then
-    echo "DJANGO_DATABASE_USER=$db_user" >> "$env_file"
-fi
-if ! grep -q "DJANGO_DATABASE_PASSWORD" "$env_file"; then
-    echo "DJANGO_DATABASE_PASSWORD=$db_password" >> "$env_file"
-fi
-if ! grep -q "DJANGO_DATABASE_HOST" "$env_file"; then
-    echo "DJANGO_DATABASE_HOST=127.0.0.1" >> "$env_file"
-fi
-if ! grep -q "DJANGO_DATABASE_PORT" "$env_file"; then
-    echo "DJANGO_DATABASE_PORT=5432" >> "$env_file"
-fi
+# Helper function to set or update environment variable
+update_env_var() {
+    local key=$1
+    local value=$2
+    if grep -q "^${key}=" "$env_file" 2>/dev/null; then
+        # Update existing value
+        sed -i "s|^${key}=.*|${key}=${value}|" "$env_file"
+    else
+        # Add new value
+        echo "${key}=${value}" >> "$env_file"
+    fi
+}
+
+update_env_var "DJANGO_DATABASE_ENGINE" "django.db.backends.postgresql"
+update_env_var "DJANGO_DATABASE_NAME" "$db_name"
+update_env_var "DJANGO_DATABASE_USER" "$db_user"
+update_env_var "DJANGO_DATABASE_PASSWORD" "$db_password"
+update_env_var "DJANGO_DATABASE_HOST" "127.0.0.1"
+update_env_var "DJANGO_DATABASE_PORT" "5432"
 
 echo "Database credentials saved to $env_file"
 echo "Database: $db_name"
 echo "User: $db_user"
 echo "Schema: $db_schema"
 
+# Test database connection
+echo "Testing database connection..."
+if ! PGPASSWORD="$db_password" psql -h 127.0.0.1 -U "$db_user" -d "$db_name" -c "SELECT 1;" >/dev/null 2>&1; then
+    echo "ERROR: Database connection test failed"
+    echo "Please check:"
+    echo "  1. PostgreSQL is running: systemctl status postgresql"
+    echo "  2. Database credentials in $env_file"
+    echo "  3. PostgreSQL authentication settings in /etc/postgresql/*/main/pg_hba.conf"
+    exit 1
+fi
+echo "Database connection successful"
+
 # Run deployment checks
 echo "Checking Django system..."
 # https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+# shellcheck source=/opt/sort/.env
 (cd "$sort_dir" && set -a && source "$env_file" && set +a && exec $python manage.py check --deploy)
 
 # Migrate database changes
 # https://docs.djangoproject.com/en/5.1/topics/migrations/
 echo "Applying Django migrations..."
+# shellcheck source=/opt/sort/.env
 (cd "$sort_dir" && set -a && source "$env_file" && set +a && $python manage.py migrate)
