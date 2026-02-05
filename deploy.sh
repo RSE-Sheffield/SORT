@@ -35,6 +35,7 @@ python3 -m venv "$venv_dir"
 
 # Install the SORT Django app package
 $pip install --quiet -r requirements.txt
+# Ensure clean migrations from the repo
 sudo rm -r "$sort_dir"/**/migrations
 cp --recursive ./* "$sort_dir/"
 
@@ -103,3 +104,7 @@ systemctl restart postgresql
 # Run deployment checks
 # https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 (cd "$sort_dir" && exec $python manage.py check --deploy)
+
+# Migrate database changes
+# https://docs.djangoproject.com/en/5.1/topics/migrations/
+(cd "$sort_dir" && $python manage.py migrate)
