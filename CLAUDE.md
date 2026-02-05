@@ -247,6 +247,16 @@ DJANGO_LOG_LEVEL=DEBUG
 - **Database**: SQLite (dev), PostgreSQL (production)
 - **Third-party Django apps**: django-allauth, django-invitations, crispy-forms, qr-code
 
+## Further Documentation
+
+Detailed technical documentation is available in the [docs/](docs/) directory:
+
+- [docs/data-model.md](docs/data-model.md) - Database schema and entity relationships
+- [docs/deployment.md](docs/deployment.md) - Production deployment and server configuration
+- [docs/testing.md](docs/testing.md) - Testing frameworks and writing tests
+
+See [docs/README.md](docs/README.md) for a complete documentation index.
+
 ## Important Notes
 
 - Always use the service layer for business logic operations
