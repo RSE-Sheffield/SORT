@@ -115,12 +115,20 @@ db_name="${DJANGO_DATABASE_NAME:-sort}"
 db_user="${DJANGO_DATABASE_USER:-sort}"
 
 # Check if password already exists in .env file, if not generate a new one
-if [ -f "$env_file" ] && grep -q "DJANGO_DATABASE_PASSWORD" "$env_file"; then
+if [ -f "$env_file" ] && grep -q "^DJANGO_DATABASE_PASSWORD=" "$env_file"; then
     # Extract existing password from .env file
-    db_password=$(grep "DJANGO_DATABASE_PASSWORD" "$env_file" | cut -d'=' -f2-)
+    db_password=$(grep "^DJANGO_DATABASE_PASSWORD=" "$env_file" | cut -d'=' -f2-)
+
+    # Validate password is not empty
+    if [ -z "$db_password" ]; then
+        echo "ERROR: DJANGO_DATABASE_PASSWORD in $env_file is empty or invalid"
+        echo "Please set a valid password in $env_file or remove the line to generate a new one"
+        exit 1
+    fi
+
     echo "Using existing database password from $env_file"
 else
-    # Generate new password
+    # Generate new password (check env var first, then generate)
     db_password="${DJANGO_DATABASE_PASSWORD:-$(openssl rand -base64 32)}"
     echo "Generated new database password"
 fi
@@ -131,14 +139,25 @@ db_schema="${db_name}"  # Use same name for schema as database
 # See: docs/deployment.md
 sudo -u postgres createdb --template=template0 --encoding=UTF8 --locale=en_GB.UTF-8 "$db_name" "SORT application" 2>/dev/null || echo "Database $db_name already exists"
 
-# Create database user
-sudo -u postgres createuser "$db_user" 2>/dev/null || echo "User $db_user already exists"
+# Check if database user exists
+user_exists=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$db_user'" 2>/dev/null)
+if [ "$user_exists" = "1" ]; then
+    user_is_new=false
+else
+    echo "Creating new database user: $db_user"
+    sudo -u postgres createuser "$db_user"
+    user_is_new=true
+fi
 
-# Set user password and configure Django-recommended settings
+# Configure user settings and permissions (safe to run idempotently)
+# Only set password for NEW users to avoid overwriting existing passwords
+if [ "$user_is_new" = true ]; then
+    echo "Setting password for new database user..."
+    sudo -u postgres psql "$db_name" -c "ALTER USER $db_user WITH PASSWORD '$db_password';"
+fi
+
+# Apply common database configuration (idempotent operations)
 sudo -u postgres psql "$db_name" <<-EOSQL
-	-- Set password for the user
-	ALTER USER $db_user WITH PASSWORD '$db_password';
-
 	-- Create schema and set ownership
 	CREATE SCHEMA IF NOT EXISTS $db_schema AUTHORIZATION $db_user;
 
@@ -175,9 +194,14 @@ update_env_var() {
 update_env_var "DJANGO_DATABASE_ENGINE" "django.db.backends.postgresql"
 update_env_var "DJANGO_DATABASE_NAME" "$db_name"
 update_env_var "DJANGO_DATABASE_USER" "$db_user"
-update_env_var "DJANGO_DATABASE_PASSWORD" "$db_password"
 update_env_var "DJANGO_DATABASE_HOST" "127.0.0.1"
 update_env_var "DJANGO_DATABASE_PORT" "5432"
+
+# Only write password to .env if it's a new user or password doesn't exist in .env
+if [ "$user_is_new" = true ] || ! grep -q "^DJANGO_DATABASE_PASSWORD=" "$env_file" 2>/dev/null; then
+    update_env_var "DJANGO_DATABASE_PASSWORD" "$db_password"
+    echo "Database password written to $env_file"
+fi
 
 echo "Database credentials saved to $env_file"
 echo "Database: $db_name"
