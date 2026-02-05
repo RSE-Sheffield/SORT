@@ -6,10 +6,18 @@ on:
     branches: [ "main" ]
     paths:
       - ui_components/**
+      - package*.json
+      - tsconfig*.json
+      - vite*.json
+      - svelte*.json
   pull_request:
     branches: [ "main" ]
     paths:
       - ui_components/**
+      - package*.json
+      - tsconfig*.json
+      - vite*.json
+      - svelte*.json
 permissions:
   contents: read
   pull-requests: write  # post coverage reports
