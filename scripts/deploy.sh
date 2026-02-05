@@ -141,9 +141,7 @@ sudo -u postgres createdb --template=template0 --encoding=UTF8 --locale=en_GB.UT
 
 # Check if database user exists
 user_exists=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$db_user'" 2>/dev/null)
-
 if [ "$user_exists" = "1" ]; then
-    echo "Database user $db_user already exists, preserving existing password"
     user_is_new=false
 else
     echo "Creating new database user: $db_user"
@@ -154,48 +152,29 @@ fi
 # Configure user settings and permissions (safe to run idempotently)
 # Only set password for NEW users to avoid overwriting existing passwords
 if [ "$user_is_new" = true ]; then
-    sudo -u postgres psql "$db_name" <<-EOSQL
-	-- Set password for the new user
-	ALTER USER $db_user WITH PASSWORD '$db_password';
-
-	-- Create schema and set ownership
-	CREATE SCHEMA IF NOT EXISTS $db_schema AUTHORIZATION $db_user;
-
-	-- Restrict user to only see their schema
-	ALTER ROLE $db_user SET SEARCH_PATH TO $db_schema;
-
-	-- Configure Django-recommended settings
-	ALTER ROLE $db_user SET client_encoding TO 'utf8';
-	ALTER ROLE $db_user SET default_transaction_isolation TO 'read committed';
-	ALTER ROLE $db_user SET timezone TO 'Europe/London';
-
-	-- Grant necessary permissions
-	GRANT CONNECT ON DATABASE $db_name TO $db_user;
-	GRANT USAGE ON SCHEMA $db_schema TO $db_user;
-	GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA $db_schema TO $db_user;
-	ALTER DEFAULT PRIVILEGES FOR USER $db_user GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO $db_user;
-EOSQL
-else
-    # User already exists - only update settings, NOT password
-    sudo -u postgres psql "$db_name" <<-EOSQL
-	-- Create schema and set ownership
-	CREATE SCHEMA IF NOT EXISTS $db_schema AUTHORIZATION $db_user;
-
-	-- Restrict user to only see their schema
-	ALTER ROLE $db_user SET SEARCH_PATH TO $db_schema;
-
-	-- Configure Django-recommended settings
-	ALTER ROLE $db_user SET client_encoding TO 'utf8';
-	ALTER ROLE $db_user SET default_transaction_isolation TO 'read committed';
-	ALTER ROLE $db_user SET timezone TO 'Europe/London';
-
-	-- Grant necessary permissions
-	GRANT CONNECT ON DATABASE $db_name TO $db_user;
-	GRANT USAGE ON SCHEMA $db_schema TO $db_user;
-	GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA $db_schema TO $db_user;
-	ALTER DEFAULT PRIVILEGES FOR USER $db_user GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO $db_user;
-EOSQL
+    echo "Setting password for new database user..."
+    sudo -u postgres psql "$db_name" -c "ALTER USER $db_user WITH PASSWORD '$db_password';"
 fi
+
+# Apply common database configuration (idempotent operations)
+sudo -u postgres psql "$db_name" <<-EOSQL
+	-- Create schema and set ownership
+	CREATE SCHEMA IF NOT EXISTS $db_schema AUTHORIZATION $db_user;
+
+	-- Restrict user to only see their schema
+	ALTER ROLE $db_user SET SEARCH_PATH TO $db_schema;
+
+	-- Configure Django-recommended settings
+	ALTER ROLE $db_user SET client_encoding TO 'utf8';
+	ALTER ROLE $db_user SET default_transaction_isolation TO 'read committed';
+	ALTER ROLE $db_user SET timezone TO 'Europe/London';
+
+	-- Grant necessary permissions
+	GRANT CONNECT ON DATABASE $db_name TO $db_user;
+	GRANT USAGE ON SCHEMA $db_schema TO $db_user;
+	GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA $db_schema TO $db_user;
+	ALTER DEFAULT PRIVILEGES FOR USER $db_user GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO $db_user;
+EOSQL
 
 # Update environment file with database credentials
 echo "Updating environment configuration..."
@@ -215,17 +194,14 @@ update_env_var() {
 update_env_var "DJANGO_DATABASE_ENGINE" "django.db.backends.postgresql"
 update_env_var "DJANGO_DATABASE_NAME" "$db_name"
 update_env_var "DJANGO_DATABASE_USER" "$db_user"
+update_env_var "DJANGO_DATABASE_HOST" "127.0.0.1"
+update_env_var "DJANGO_DATABASE_PORT" "5432"
 
 # Only write password to .env if it's a new user or password doesn't exist in .env
 if [ "$user_is_new" = true ] || ! grep -q "^DJANGO_DATABASE_PASSWORD=" "$env_file" 2>/dev/null; then
     update_env_var "DJANGO_DATABASE_PASSWORD" "$db_password"
     echo "Database password written to $env_file"
-else
-    echo "Preserving existing database password in $env_file"
 fi
-
-update_env_var "DJANGO_DATABASE_HOST" "127.0.0.1"
-update_env_var "DJANGO_DATABASE_PORT" "5432"
 
 echo "Database credentials saved to $env_file"
 echo "Database: $db_name"
