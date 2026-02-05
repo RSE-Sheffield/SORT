@@ -1,7 +1,13 @@
 name: Validate JSON files
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
+    paths:
+      - '**/*.json'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - '**/*.json'
 permissions:
   contents: read
 jobs:

@@ -1,9 +1,17 @@
 name: Lint Python code
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "main" ]
+    paths:
+      - SORT/**/*.py
+      - home/**/*.py
+      - survey/**/*.py
   pull_request:
-    branches: [ "dev", "main" ]
+    branches: [ "main" ]
+    paths:
+      - SORT/**/*.py
+      - home/**/*.py
+      - survey/**/*.py
 permissions:
   contents: read
 jobs:

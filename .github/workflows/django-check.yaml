@@ -1,9 +1,21 @@
 name: Run Django tests
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
+    paths:
+      - SORT/**
+      - home/**
+      - survey/**
+      - requirements*.txt
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
+    paths:
+      - SORT/**
+      - home/**
+      - survey/**
+      - requirements*.txt
+permissions:
+  contents: read
 jobs:
   django-test:
     name: Run Django automated checks and tests

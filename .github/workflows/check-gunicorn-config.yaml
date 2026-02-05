@@ -1,9 +1,15 @@
 name: Check Gunicorn configuration
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
+    paths:
+      - config/**
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
+    paths:
+      - config/**
+permissions:
+  contents: read
 jobs:
   check-config:
     name: Check Gunicorn configuration
