@@ -1,0 +1,55 @@
+<script lang="ts">
+  import DOMPurify  from "dompurify";
+  import {getUniqueIDArray} from "../../misc.svelte.ts";
+  import RequiredBadge from "../RequiredBadge.svelte";
+
+
+  let {config, value = $bindable(), viewerMode = false} = $props();
+
+  const componentId = getUniqueIDArray(config.options.length);
+
+  let isValid = $state(false);
+  let isInvalid = $state(false);
+
+  function setIsValid(valid: boolean) {
+    isValid = valid;
+    isInvalid = !valid;
+  }
+
+  export function validate() {
+    if (config.required && !value) {
+      setIsValid(false);
+      return false;
+    }
+
+    setIsValid(true);
+    return true;
+  }
+
+</script>
+<div class="form-label">
+    {config.label}{#if config.required}<RequiredBadge />{/if}
+    {#if config.description || config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
+
+    {#each config.options as option, index (index)}
+        <div class="form-check">
+            <input class={{"form-check-input": true, "is-valid": isValid, "is-invalid": isInvalid}}
+                   type="radio"
+                   value={option} id={componentId[index]}
+                   bind:group={value}
+                   placeholder={option}
+                   disabled={viewerMode}
+            />
+            <label class="form-check-label" for="{componentId[index]}">{option}</label>
+            {#if config.options && index >= config.options.length - 1}
+            <!-- Feedback on the last component only -->
+            <div class="invalid-feedback">
+                At least one option must be selected.
+            </div>
+            {/if}
+        </div>
+    {/each}
+</div>
+
+
+

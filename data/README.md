@@ -8,5 +8,14 @@ of the mocked test data:
 python manage.py loaddata ./data/*.json
 ```
 
-The password for users is their respective role name in lowercases.
+or the following if you're using PowerShell:
 
+```powershell
+$files = Get-ChildItem -Path "data" -Filter "*.json"
+
+foreach ($file in $files) {
+  python manage.py loaddata $file.FullName
+}
+```
+
+The password for users is their respective role name in lower case.

@@ -11,6 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install systemdlint
-        run: pip install systemdlint==1.*
+        run: pip install systemdlint==1.4.0
       - name: Lint systemd units
-        run: systemdlint ./config/systemd/*
+        # Don't check if files exist since we're in CI environment
+        run: systemdlint --norootfs ./config/systemd/*

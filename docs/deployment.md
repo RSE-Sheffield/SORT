@@ -42,7 +42,7 @@ This app can be deployed to a web server using the script [`deploy.sh`](../deplo
 1. Configure the `.env` file as described below.
 2. Run the deployment script: `sudo bash -x deploy.sh`
 3. Configure the database
-4. Run database migrations
+4. Run database migrations: `sudo /opt/sort/venv/bin/python /opt/sort/manage.py migrate`
 
 We can run commands and Bash scripts as the superuser (`root`) using the [`sudo` command](https://manpages.ubuntu.com/manpages/noble/en/man8/sudo.8.html).
 
@@ -101,8 +101,6 @@ Environment="DJANGO_SECRET_KEY=********"
 Environment="DEBUG=off"
 ```
 
-
-
 # Database installation
 
 The database may be administered using command-line tools and SQL statements that are run as the `postgres` user. For more details, please refer to the [PostgreSQL documentation](https://www.postgresql.org/docs/16/index.html) and [this guide](https://dev.to/matthewhegarty/postgresql-better-security-for-django-applications-3c7m).
@@ -129,7 +127,7 @@ We can list databases using `psql --list`.
 
 The SORT app needs credentials to access the database. We'll create a database user that the application will use to read and write data.
 
-Create a user:
+[Create a user](https://www.postgresql.org/docs/16/app-createuser.html):
 
 ```bash
 createuser sort
@@ -210,7 +208,7 @@ $ sudo $psql
 sort=>
 ```
 
-Once you're in the `psql` shell, you can exit using the `\q` command.
+Once you're in the `psql` shell, you can exit using the `\q` command.
 
 ## Manage tables
 

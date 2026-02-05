@@ -36,8 +36,8 @@ header {
     color: lightgrey;
 }
 
-.nav-link:hover,
-.nav-link.active {
+#navbarSupportedContent .nav-link:hover,
+#navbarSupportedContent .nav-link.active {
     color: white !important;
     filter: brightness(1.0);
 }
@@ -135,4 +135,25 @@ h1, h2, h3, h4, h5, h6 {
 
 .breadcrumb a {
     color: var(--primary-colour);
+}
+
+/* Ensure sufficient contrast for all body links (WCAG AA compliant) */
+/* Exclude buttons and button-styled links from these styles */
+main a:not(.btn):not(.page-link):not(.breadcrumb-item):not(.navbar-brand):not(.nav-link) {
+    color: #005A8F;
+    text-decoration: underline;
+}
+
+main a:not(.btn):not(.page-link):not(.breadcrumb-item):not(.navbar-brand):not(.nav-link):visited {
+    color: var(--primary-colour);
+}
+
+main a:not(.btn):not(.page-link):not(.breadcrumb-item):not(.navbar-brand):not(.nav-link):hover {
+    color: #003D5C;
+    text-decoration: underline;
+}
+
+main a:not(.btn):not(.page-link):not(.breadcrumb-item):not(.navbar-brand):not(.nav-link):focus {
+    outline: 2px solid #005A8F;
+    outline-offset: 2px;
 }

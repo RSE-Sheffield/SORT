@@ -6,7 +6,7 @@ from django.contrib.auth.models import (
 from django.db import models
 from django.urls import reverse
 
-from .constants import PERMISSION_CHOICES, PERMISSION_VIEW, ROLE_PROJECT_MANAGER, ROLES
+from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
 
 
 class UserManager(BaseUserManager):
@@ -50,7 +50,29 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
+        # If they didn't enter their name, default to email address
+        if not self.first_name and not self.last_name:
+            return self.email
         return f"{self.first_name} {self.last_name}"
+
+    @property
+    def active_projects(self) -> int:
+        """
+        Count the number of active surveys associated with this user.
+        """
+        active_surveys = 0
+        for project in self.projects_iter():
+            if project.is_active:
+                active_surveys += 1
+
+        return active_surveys
+
+    def projects_iter(self):
+        """
+        Iterate over all this user's projects.
+        """
+        for organisation in self.organisation_set.all():
+            yield from organisation.projects.all()
 
 
 class Organisation(models.Model):
@@ -64,8 +86,12 @@ class Organisation(models.Model):
     def __str__(self):
         return self.name
 
-    def get_user_role(self, user):
+    def get_user_role(self, user: User):
+        if user.is_superuser or user.is_staff:
+            return ROLE_ADMIN
+
         membership = self.organisationmembership_set.filter(user=user).first()
+
         return membership.role if membership else None
 
 
@@ -83,11 +109,16 @@ class OrganisationMembership(models.Model):
 
 
 class Project(models.Model):
-    name = models.CharField(max_length=100)
+    """
+    A project is an organisation unit for surveys within an organisation.
+    """
+    name = models.CharField(max_length=100, help_text="Project title")
     description = models.TextField(blank=True, null=True)
-    organisations = models.ManyToManyField(Organisation, through="ProjectOrganisation")
+    organisation = models.ForeignKey(
+        Organisation, on_delete=models.CASCADE, related_name="projects"
+    )
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    created_on = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -95,30 +126,13 @@ class Project(models.Model):
     def get_absolute_url(self):
         return reverse("project", kwargs={"project_id": self.pk})
 
+    @property
+    def is_active(self) -> bool:
+        """
+        Does this project contain any active surveys?
+        """
+        return any(self.survey.values_list("is_active", flat=True))
 
-class ProjectOrganisation(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
-    added_at = models.DateTimeField(auto_now_add=True)
-    added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-
-    class Meta:
-        unique_together = ["project", "organisation"]
-
-
-class ProjectManagerPermission(models.Model):
-    """Defines the permission level for project managers within a project"""
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    permission = models.CharField(
-        max_length=10, choices=PERMISSION_CHOICES, default=PERMISSION_VIEW
-    )
-    granted_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="granted_permissions"
-    )
-    granted_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ["user", "project"]
-        verbose_name_plural = "Project manager permissions"
+    @property
+    def surveys(self):
+        return self.survey.all()

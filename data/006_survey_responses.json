@@ -1,0 +1,26 @@
+[
+  {
+    "model": "survey.surveyresponse",
+    "pk": 1,
+    "fields": {
+      "survey": 1,
+      "answers": {
+        "q1": "4",
+        "q2": "The interface could be more intuitive"
+      },
+      "created_at": "2024-01-15T00:00:00Z"
+    }
+  },
+  {
+    "model": "survey.surveyresponse",
+    "pk": 2,
+    "fields": {
+      "survey": 1,
+      "answers": {
+        "q1": "5",
+        "q2": "Everything works great!"
+      },
+      "created_at": "2024-01-15T00:00:00Z"
+    }
+  }
+]

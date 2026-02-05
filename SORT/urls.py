@@ -23,6 +23,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("home.urls")),
     path("", include("survey.urls"), name="survey"),
+    path("accounts/", include("allauth.urls")),
 ]
 
 if settings.DEBUG:

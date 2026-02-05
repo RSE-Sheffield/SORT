@@ -1,135 +1,180 @@
 {% extends "base_manager.html" %}
 {% load project_filters %}
+{% block title %}Organisation Dashboard{% endblock %}
 {% block content %}
-<div class="container mx-auto px-4 py-8 mt-4">
-    <div class="d-flex justify-content-between align-items-center">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item active" aria-current="page">
-                    <i class="bx bxs-buildings"></i> My Organisation
-                </li>
-            </ol>
-        </nav>
-        <div class="ms-auto">
-            {% load search_tags %}
-            {% search_bar placeholder="Search projects..." %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="bx bxs-buildings"></i> Organisation Dashboard
+                    </li>
+                </ol>
+            </nav>
         </div>
     </div>
-</div>
-  <div class="container mx-auto px-4 py-8">
-    <h1>{{ organisation.name }}</h1>
-    <p>{{ organisation.description }}</p>
-  </div>
-  <div class="container mx-auto px-4 py-8">
-    <div class="w-100 d-flex justify-content-between align-items-center mt-3 mb-6">
-      <h2 class="text-2xl font-bold d-inline-block">Projects</h2>
-      {% if can_create %}
-        <a href="{% url 'project_create' organisation.id %}">
-          <button type="button" class="btn btn-primary">
-            <i class="bx bxs-folder-plus"></i> Create project
-          </button>
-        </a>
-      {% endif %}
-    </div>
-    <div class="d-flex flex-column gap-3">
-      {% for project in projects %}
-        <div class="card w-100">
-          <div class="card-body">
-              <div class="flex flex-wrap gap-2 mb-3">
-                {% for org in project_orgs|get_item:project.id %}<span class="badge text-bg-primary">{{ org.name }}</span>{% endfor %}
-              </div>
-            <p class="h5 card-title">{{ project.name }}</p>
-            <p class="h6 card-title">{{ project.description }}</p>
-            <p class="h7 card-title">Surveys: {{ project.survey_count }}</p>
-
-            <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
-              {% if can_edit|get_item:project.id %}
-                <a href="{% url 'project_edit' project.id %}">
-                  <button type="button" class="btn btn-light">
-                    <i class="bx bxs-edit"></i> Edit
-                  </button>
-                </a>
-              {% endif %}
-              <a href="{% url 'project' project.id %}">
-                <button type="button" class="btn btn-dark">
-                  <i class="bx bxs-folder-open"></i> View
-                </button>
-              </a>
-            </div>
-          </div>
-        </div>
-      {% empty %}
-        <p class="text-gray-600">No projects found.</p>
-      {% endfor %}
-    </div>
-    {% comment %} pagination {% endcomment %}
-    {% if page_obj.has_other_pages %}
-      <nav aria-label="Project navigation" class="mt-3">
-        <ul class="pagination justify-content-center">
-          <!-- First Page -->
-          {% if page_obj.has_previous %}
-            <li class="page-item">
-              <a class="page-link" href="?page=1" aria-label="First">
-                <span aria-hidden="true">&laquo;&laquo;</span>
-              </a>
+    <div class="container mx-auto px-4 py-8">
+        <h1>{{ organisation.name }}</h1>
+        <p>{{ organisation.description }}</p>
+        <p>
+            This is your central hub for managing your SORT Online projects. From here, you
+            can oversee all aspects of your research readiness assessments and coordinate your team's participation.
+            From this dashboard, you can:
+        </p>
+        <ul>
+            <li><strong>Invite and Manage Members</strong>&mdash;Add colleagues to your organisation, assign roles and
+                permissions, and track
+                who has access to different projects and features. Members are able to create and modify surveys.
             </li>
-            <!-- Previous -->
-            <li class="page-item">
-              <a class="page-link"
-                 href="?page={{ page_obj.previous_page_number }}"
-                 aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-              </a>
+            <li><strong>Launch New SORT Projects</strong>&mdash;Set up fresh research readiness assessments for
+                different teams, services, or
+                departments within your organisation. Each project can be tailored to specific groups or research
+                objectives.
             </li>
-          {% else %}
-            <li class="page-item disabled">
-              <span class="page-link">&laquo;&laquo;</span>
-            </li>
-            <li class="page-item disabled">
-              <span class="page-link">&laquo;</span>
-            </li>
-          {% endif %}
-          <!-- Page Numbers -->
-          {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-              <li class="page-item active" aria-current="page">
-                <span class="page-link">{{ num }}</span>
-              </li>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-              </li>
-            {% endif %}
-          {% endfor %}
-          <!-- Next -->
-          {% if page_obj.has_next %}
-            <li class="page-item">
-              <a class="page-link"
-                 href="?page={{ page_obj.next_page_number }}"
-                 aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>
-            <!-- Last Page -->
-            <li class="page-item">
-              <a class="page-link"
-                 href="?page={{ page_obj.paginator.num_pages }}"
-                 aria-label="Last">
-                <span aria-hidden="true">&raquo;&raquo;</span>
-              </a>
-            </li>
-          {% else %}
-            <li class="page-item disabled">
-              <span class="page-link">&raquo;</span>
-            </li>
-            <li class="page-item disabled">
-              <span class="page-link">&raquo;&raquo;</span>
-            </li>
-          {% endif %}
         </ul>
-      </nav>
-      <!-- Show page info -->
-      <p class="text-center text-muted mt-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
-    {% endif %}
-  </div>
+        <p>Select an action below to get started with your most common tasks. If you're new to SORT Online, consider
+            launching your first project to begin assessing your organisation's research readiness journey.</p>
+        <p>
+            <a href="{% url 'members' %}" class="btn btn-primary" role="button"
+               title="Add colleagues to your organisation, assign roles and permissions, and track who has access to different projects and features.">
+                <i class='bx bx-group'></i> Manage members</a>
+            <a href="{% url 'member_invite' %}" class="btn btn-primary" role="button"
+               title="Invite a new user to join this organisation">
+                <i class='bx bxs-user-plus'></i> Invite new member
+            </a>
+            <a href="{% url 'data_sharing_agreement' %}" class="btn btn-primary" role="button"
+               title="View the data sharing agreement between your organisation and the University">
+                <i class="bx bxs-note"></i> Data Sharing Agreement
+            </a>
+        </p>
+        <div>
+
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="w-100 d-flex justify-content-between align-items-center mt-3 mb-6">
+            <h2 class="text-2xl font-bold d-inline-block"><i class='bx bx-folder'></i>&nbsp;Projects</h2>
+
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    {% load search_tags %}
+                    {% search_bar placeholder="Search projects..." %}
+                </div>
+
+                {% if can_create %}
+                    <a href="{% url 'project_create' organisation.id %}" class="btn btn-success"
+                       role="button" aria-pressed="true">
+                        <i class="bx bxs-folder-plus"></i> Create project
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="d-flex flex-column gap-3">
+            {% for project in projects %}
+                <div class="card w-100">
+                    <div class="card-body">
+                        <p class="h5 card-title" title="Project identifier {{ project.pk }}">
+                            <a href="{% url 'project' project_id=project.pk %}">
+                                <i class="bx bxs-folder-open"></i>
+                                {{ project.name }}
+                            </a>
+                        </p>
+                        <p class="text-muted mb-2">{{ project.description|default_if_none:"No description provided." }}</p>
+                        <p class="card-text"><strong>Surveys:</strong> {{ project.survey.count }}</p>
+
+                        <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
+                            <a href="{% url 'project' project.id %}" title="Explore the surveys within this project"
+                               class="btn btn-primary" role="button" aria-pressed="true">
+                                <i class="bx bxs-folder-open"></i>&nbsp;View
+                            </a>
+                            {% if can_edit|get_item:project.id %}
+                                <a href="{% url 'project_edit' project.id %}"
+                                   title="Modify the title and description of this project"
+                                   class="btn btn-primary" role="button" aria-pressed="true">
+                                    <i class="bx bxs-edit"></i>&nbsp;Edit
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'project_delete' project.pk %}"
+                               title="Remove this project and all the surveys within it."
+                               class="btn btn-danger" role="button" aria-pressed="true">
+                                <i class="bx bxs-trash"></i>&nbsp;Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-gray-600">No projects found.</p>
+            {% endfor %}
+        </div>
+        {% comment %} pagination {% endcomment %}
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Project navigation" class="mt-3">
+                <ul class="pagination justify-content-center">
+                    <!-- First Page -->
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1" aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <!-- Previous -->
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.previous_page_number }}"
+                               aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;&laquo;</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                    {% endif %}
+                    <!-- Page Numbers -->
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active" aria-current="page">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    <!-- Next -->
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.next_page_number }}"
+                               aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <!-- Last Page -->
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.paginator.num_pages }}"
+                               aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;&raquo;</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            <!-- Show page info -->
+            <p class="text-center text-muted mt-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+        {% endif %}
+    </div>
 {% endblock %}

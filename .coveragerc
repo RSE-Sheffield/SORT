@@ -1,0 +1,18 @@
+# Coverage report configuration
+# https://coverage.readthedocs.io/en/7.7.1/config.html
+
+[run]
+source = .
+omit =
+    __init__.py
+    */migrations/*
+    SORT/*
+    */admin.py
+    */tests/*
+    home/management/*
+    survey/management/*
+
+[report]
+format = markdown
+skip_empty = true
+sort = Cover

@@ -1,45 +1,114 @@
 {% extends "base_manager.html" %}
 
 {% block content %}
-   <div class="container mx-auto px-4 py-8 mt-4">
-               {% if user.is_authenticated %}
-                   <div class="card custom-card shadow-sm mb-4">
-                       <div class="card-body">
-                            {% if user.first_name %}
-                                {% if user.last_name %}
-                                    <h2 class="card-title">Welcome, {{ user.first_name }} {{ user.last_name }}!</h2>
-                                {% else %}
-                                    <h2 class="card-title">Welcome, {{ user.first_name }}!</h2>
-                                {% endif %}
-                            {% else %}
-                                <h2 class="card-title">Welcome!</h2>
-                                <p class="card-text">Your name has not been set.
-                                Click to <a href="{% url 'profile' %}">update your profile.</a>
+    <div class="container mx-auto px-4 py-8 mt-4">
+        {% if user.is_authenticated %}
+            <div class="card custom-card shadow-sm mb-4">
+                <div class="card-body">
+                    {% if user.first_name %}
+                        <h2 class="card-title">Welcome, {{ user.first_name }}! 👋</h2>
+                    {% else %}
+                        <h2 class="card-title">Welcome! 👋</h2>
+                        <p class="card-text">
+                            Your name has not been set. Click to <a href="{% url 'profile' %}">update your profile.</a>
+                        </p>
+                    {% endif %}
+                    {% if user.organisation_set.first %}
+                        <p class="card-text">You're signed in under <a href="{% url 'myorganisation' %}">
+                            <strong><i class="bx bxs-buildings"></i>&nbsp;{{ user.organisation_set.first.name }}</strong></a>.
+                        </p>
+                        {% if projects.count > 0 %}
+                            <p class="card-text">
+                                You have <a href="{% url 'myorganisation' %}"><i class='bx bx-folder'></i>&nbsp;<strong>{{ user.active_projects }} active project(s)</strong></a>.
                             </p>
-                            {% endif %}
-                            {% if user.organisation_set.first %}
-                                <p class="card-text">Your organisation is {{ user.organisation_set.first.name }}.</p>
-                                <p class="card-text">
-                                    View the <a href="{% url 'organisation_create' %}">My Organisation</a> page to create, view or delete your Projects. Use this page to also create, configure and delete your surveys and manage their invitations.
-                                </p>
-                            {% else %}
-                                <p class="card-text">You are currently not part of an organisation.
-                                    Click to <a href="{% url 'organisation_create' %}">create your first organisation.</a>
-                                </p>
-                            {% endif %}
-                       </div>
-                   </div>
-               {% endif %}
+                        {% else %}
+                            <p class="card-text">You have 0 projects. To get started, please follow these steps:
+                            <ul>
+                                <li>
+                                    Navigate to the <a href="{% url 'organisation_create' %}">Organisation Dashboard</a>
+                                </li>
+                                <li>
+                                    Create a project
+                                </li>
+                                <li>
+                                    Edit the project to create a survey
+                                </li>
+                            </ul>
+                            </p>
+                        {% endif %}
+                        <p class="card-text">
+                            👉 Head to the <a href="{% url 'organisation_create' %}">Organisation Dashboard</a> to
+                            manage your projects, send surveys, and review responses.
+                        </p>
+                    {% else %}
+                        <p class="card-text">You are not part of an organisation.
+                            Click to <a href="{% url 'organisation_create' %}">create your first organisation.</a>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
 
-               <div class="card custom-card shadow-sm mb-4">
-                   <div class="card-body">
-                       <h1 class="card-title">About SORT</h1>
-                       <p class="card-text">
-                           SORT provides a comprehensive self-assessment framework to evaluate and strengthen your organisation's research capabilities in nursing and health practices. It helps assess your research maturity and available support, providing a tailored plan to integrate research into practice for improved patient care.
-                       </p>
-                   </div>
-               </div>
-           </div>
-       </div>
-   </div>
+        <div class="card custom-card shadow-sm mb-4">
+            <div class="card-body">
+                <h1 class="card-title">About SORT Online</h1>
+                <p class="card-text">
+                    The <strong>Self-Assessment of Organisational Readiness for Research Tool (SORT)</strong> is a
+                    validated framework designed to help health and care organisations assess their readiness to engage
+                    in research.
+                    Originally developed through extensive consultation and research with nurses, midwives and allied
+                    healthcare professionals, health care organisations in identifying strengths, gaps, and development
+                    needs in their research culture and infrastructure.
+                </p>
+                <p>
+                    <strong>SORT Online</strong> brings this tool to life in a streamlined, user-friendly digital
+                    platform.
+                </p>
+                <h2>🧠 What does SORT assess?</h2>
+                <p>SORT covers key domains that influence an organisation’s ability to support and deliver research,
+                    including:</p>
+                <ol type="A">
+                    <li><strong>Releasing Potential</strong></li>
+                    <li><strong>Embedding Research</strong></li>
+                    <li><strong>Linkages and Leadership</strong></li>
+                    <li><strong>Inclusive Research Delivery</strong></li>
+                    <li><strong>Digtially Enabled Research</strong></li>
+                </ol>
+                <p>
+                    You can then use the <strong>SORT Maturity Matrix</strong>&mdash;a framework to assess how developed
+                    each area is, from
+                    early-stage awareness to embedded practice&mdash;to understand your current position and plan next
+                    steps.
+                </p>
+                <h2>🚀 What can you do on this platform?</h2>
+                <p>Using SORT Online, you can:</p>
+                <ul>
+                    <li><strong>Launch a new project</strong>&mdash;set up a SORT assessment for your organisation,
+                        team, or service
+                    </li>
+                    <li><strong>Invite colleagues to participate</strong> via secure, anonymised survey links</li>
+                    <li><strong>Monitor response rates</strong> through the real-time dashboard</li>
+                    <li><strong>Access automated analysis</strong> of your results, including heatmaps and traffic light
+                        visuals
+                    </li>
+                    <li><strong>Use the Maturity Matrix</strong> to interpret results and assess organisational progress
+                    </li>
+                    <li><strong>Develop tailored action plans</strong> based on findings and priorities</li>
+                    <li><strong>Download reports</strong> to support strategic planning, internal discussions, and
+                        benchmarking
+                    </li>
+                </ul>
+                <h2>📈 Why use online SORT?</h2>
+                <ul>
+                    <li><strong>Understand</strong> where you are in your organisation’s research journey</li>
+                    <li><strong>Prioritise</strong> areas for improvement</li>
+                    <li>Identify <strong>actionable improvements</strong></li>
+                    <li><strong>Demonstrate</strong> research readiness for funding or collaboration</li>
+                    <li><strong>Engage staff</strong> at all levels in shaping a research-active culture</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
 {% endblock %}

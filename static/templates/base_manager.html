@@ -6,23 +6,21 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <div class="container-fluid">
-                <button 
-                    class="navbar-toggler" 
-                    type="button" 
-                    data-bs-toggle="collapse" 
-                    data-bs-target="#navbarSupportedContent" 
-                    aria-controls="navbarSupportedContent" 
-                    aria-expanded="false" 
-                    aria-label="Toggle navigation">
+                <button
+                        class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarSupportedContent"
+                        aria-controls="navbarSupportedContent"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav me-auto">
+                    <ol class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}"><i class="bx bxs-home"></i> Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}"><i class="bx bxs-user"></i> Profile</a>
+                            <a class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}" href="{% url 'dashboard' %}">
+                                <i class="bx bxs-home"></i>&nbsp;Home</a>
                         </li>
                         <li class="nav-item">
                             {% url 'organisation_create' as organisation_create_url %}
@@ -33,18 +31,40 @@
                                 {% if '/survey' in request.path %}active{% endif %} 
                                 {% if '/completion' in request.path %}active{% endif %}
                                 {% if '/invite' in request.path %}active{% endif %}"
-                                href="{% url 'myorganisation' %}"><i class="bx bxs-buildings"></i> My Organisation</a>
+                               href="{% url 'myorganisation' %}"><i class="bx bxs-buildings"></i> Organisation Dashboard</a>
                         </li>
-                    </ul>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/profile' in request.path %}active{% endif %}"
+                               href="{% url 'profile' %}"><i class="bx bxs-user"></i> Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/help' in request.path %}active{% endif %}"
+                               href="{% url 'help' %}"><i class='bx bxs-help-circle'></i> Help</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="https://docs.google.com/forms/d/e/1FAIpQLSfo1aaPWWqwTEfG7w6OL6TjaOZJw3h8SkOgs87t4lyRdb6Ybg/viewform?usp=dialog"
+                               target="_blank"><i class='bx  bx-message-edit'></i> Feedback
+                                <i class='bx bx-link-external'></i></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="https://docs.google.com/forms/d/e/1FAIpQLSfy6nXvjBiKroZnF92lJjYjMDsldxMnamlObfKDxNDZkIWzvw/viewform?usp=dialog"
+                               target="_blank"><i class='bx bxs-bug'></i> Report issues
+                                <i class='bx bx-link-external'></i></a>
+                        </li>
+                    </ol>
                     <ul class="navbar-nav">
                         {% if user.is_authenticated %}
                             <li class="nav-item">
                                 <form id="logout-form"
-                                    action="{% url 'logout' %}"
-                                    method="POST"
-                                    style="display: inline">
+                                      action="{% url 'logout' %}"
+                                      method="POST"
+                                      style="display: inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="nav-link btn btn-link btn-primary"><i class="bx bxs-user-x"></i> Logout</button>
+                                    <button type="submit" class="nav-link btn btn-link btn-primary"><i
+                                            class="bx bxs-user-x"></i> Logout
+                                    </button>
                                 </form>
                             </li>
                         {% endif %}

@@ -1,15 +1,25 @@
 from django import forms
-from django.core.validators import EmailValidator
 from django.forms import BaseFormSet, formset_factory
 from strenum import StrEnum
 
+from .validators.email_list_validator import EmailListValidator
+
+from .models import Survey, Profession
+
 
 class InvitationForm(forms.Form):
-    email = forms.EmailField(
-        label="Participant Email",
-        max_length=100,
+    email = forms.CharField(
+        label="Participant Emails",
+        help_text="Please enter a list of email addresses",
         required=True,
-        validators=[EmailValidator()],
+        validators=[EmailListValidator()],
+        widget=forms.Textarea(attrs=dict(rows=6)),
+    )
+    message = forms.CharField(
+        label="Message",
+        help_text="(Optional) Additional message for the participants",
+        required=False,
+        widget=forms.Textarea(attrs=dict(rows=3)),
     )
 
 
@@ -67,3 +77,34 @@ def create_dynamic_formset(field_configs: list):
                 )
 
     return formset_factory(BlankDynamicForm, BaseTestFormSet, min_num=1, max_num=1)
+
+
+class SurveyCreateForm(forms.ModelForm):
+    survey_body_path = forms.ChoiceField(
+        label="Target audience",
+        choices=Profession,
+        help_text="Respondent profession",
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+
+    is_shared = forms.BooleanField(
+        required=False,
+        label="Allow research data sharing with the University of Sheffield",
+        help_text=(
+            "When enabled, anonymised survey response data may be shared with researchers at the "
+            "University of Sheffield for studies of organisational research capacity. This requires "
+            "both your consent here and each participant's individual consent when they submit their response. "
+            "Shared data is extracted periodically, anonymised, and stored separately from this application. "
+            "As responses are anonymous by default, individual responses cannot be identified or removed, "
+            "though all data for an organisation, project, or survey can be removed on request."
+        ),
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
+    )
+
+    class Meta:
+        model = Survey
+        fields = ["name", "description", "survey_body_path", "is_shared"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+        }

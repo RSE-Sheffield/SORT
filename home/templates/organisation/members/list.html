@@ -1,0 +1,83 @@
+{% extends "base_manager.html" %}
+{% load project_filters %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'myorganisation' %}">
+                            <i class="bx bxs-buildings"></i> Organisation Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="bx bxs-group"></i> Members
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="container mx-auto px-4 py-8">
+        <h1>{{ organisation.name }}</h1>
+        <p>{{ organisation.description }}</p>
+        <p>
+            Manage who has access to your organisation's <abbr
+                title="The Self-Assessment of Organisational Readiness Tool">SORT</abbr> Online projects and
+            assessments. This page allows you to oversee your team's participation and ensure the right people are
+            involved in your research readiness evaluations.
+        </p>
+    </div>
+    <div class="container mx-auto px-4 py-8" id="organisation-members">
+        <h2>Members</h2>
+        <p>See everyone who currently has access to your organisation, including their roles, join dates, and
+            participation status across active projects. Use the <strong>Remove</strong> button to revoke access for
+            team members who have left your organisation or
+            no longer need to participate in SORT assessments. This ensures your member list stays current and your data
+            remains secure.
+        </p>
+        <div class="mb-3">
+            <a href="{% url 'member_invite' %}" type="button" class="btn btn-primary"
+               title="Invite a new user to join this organisation and manage surveys.">
+                <i class='bx bxs-user-plus'></i> Invite new member
+            </a>
+        </div>
+        <div>
+            <table class="table">
+                <caption hidden>A list of users and user management options.</caption>
+                <thead class="thead">
+                <tr>
+                    <th scope="col">User name</th>
+                    <th scope="col">Email address</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Joined at</th>
+                    <th scope="col">Added by</th>
+                    <th scope="col">Remove</th>
+                </tr>
+                </thead>
+                {% for membership in memberships %}
+                <tr>
+                    <th scope="row">{{ membership.user }}</th>
+                    <td>
+                        <a href="mailto:{{ membership.user.email }}">
+                            {{ membership.user.email }}
+                        </a>
+                    </td>
+                    <td class="font-monospace">{{ membership.role }}</td>
+                    <td>
+                        <time datetime="{{ membership.joined_at.isoformat }}">
+                            {{ membership.joined_at }}
+                        </time>
+                    </td>
+                    <td>{{ membership.added_by }}</td>
+                    <td>
+                        <a href="{% url 'member_delete' membership.pk %}" class="btn btn-danger"
+                           title="Remove this user from the organisation">
+                            <i class='bx bxs-user-minus'></i> Remove
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

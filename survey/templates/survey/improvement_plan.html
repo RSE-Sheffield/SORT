@@ -1,5 +1,7 @@
 {% extends 'base_manager.html' %}
 {% load static %}
+{% load vite_integration %}
+{% block title %}Improvement plan for {{ survey }}{% endblock %}
 {% block content %}
     <div class="container mx-auto px-4 py-8 mt-4">
         <nav aria-label="breadcrumb">
@@ -8,10 +10,11 @@
                     <a href="{% url 'home' %}">Home</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">My Organisation</a>
+                    <i class="bx bxs-buildings"></i> <a href="{% url 'myorganisation' %}">Organisation Dashboard</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
-                    <i class="bx bxs-folder-open"></i> <a href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
+                    <i class="bx bxs-folder-open"></i> <a
+                        href="{% url 'project' survey.project.id %}">Project: {{ survey.project.name }}</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">
                     <i class="bx bxs-chart"></i> <a href="{% url 'survey' survey.id %}"> Survey: {{ survey.name }}</a>
@@ -24,68 +27,58 @@
     </div>
     <div class="container mx-auto px-4 py-8">
         <h1><i class='bx bxs-file-plus'></i> Improvement plan</h1>
-        <p>Use this section to create an improvement plan after collecting survey responses and gathering the evidence.</p>
-
-        {% for section_title in section_titles %}
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h3>{{ section_title }}</h3>
-                </div>
-                <div class="card-body">
-                    <p>
-                        This section demonstrates an overall maturity score of 2 out of 4, placing it at the 'Planned'
-                        level. Opportunities for improvement are identified in question B4, and B1.
-                    </p>
-                    <img src="{% static 'images/example_response_graph.png' %}">
-
-                    <p>
-                        You have gathered the following evidence in support of the survey results:
-
-                    </p>
-                    <ul>
-                        <li>
-                            <a href="">2024_planning_report.docx</a>
-                        </li>
-                        <li>
-                            <a href="">evidence.pdf</a>
-                        </li>
-                    </ul>
-
-                    <h3>Improvement plan</h3>
-                    <p>
-                        In the table below, list a plan of action you intend to take in the upcoming period using
-                        SMART objectives (Specific, Measurable, Achievable, Relevant and Time-bound).
-                    </p>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Current position</th>
-                                <th scope="col">Proposed action</th>
-                                <th scope="col">Measurable outcomes</th>
-                                <th scope="col">Person responsible</th>
-                                <th scope="col">Deadline</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <th scope="row">1</th>
-                                <td>Planned</td>
-                                <td>An action</td>
-                                <td>Evidence document</td>
-                                <td>Twin</td>
-                                <td>12 September 2025</td>
-
-                            </tr>
-
-                        </tbody>
-                    </table>
-                </div>
+        <p>
+            The improvement plan builder helps you to translate your findings into concrete, actionable steps that will
+            drive meaningful change in your healthcare setting.
+        </p>
+        <ul class="nav nav-tabs">
+            {% for section in sections %}
+                <li class="nav-item">
+                    <a class="nav-link {% if section.section_id == evidence_section.section_id %}active{% endif %}"
+                       aria-current="page"
+                       href="{% url "survey_improvement_plan" survey.id section.section_id %}"
+                    >
+                        {{ section.title }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+        <div class="mb-3 pt-3 ps-3 pe-3">
+            <div>
+                <h2>{{ improve_section.title }}</h2>
             </div>
-        {% endfor %}
+            <div>
+                <h5>Survey summary</h5>
+                <div
+                        class="sort-response-section-viewer"
+                        data-json-config-id="configData"
+                        data-json-responses-id="responsesData"
+                        data-section-index="{{ evidence_section.section_id }}"
+                        data-use-bar-chart="true"
+                ></div>
 
-
-
-        </script>
+                <h5>Evidence statement</h5>
+                <div class="sort-richtext-field mb-2"
+                     data-update-url="{% url 'survey_evidence_gathering_update' survey.id evidence_section.section_id %}"
+                     data-init-contents="{{ evidence_section.text }}" data-view-only="true"></div>
+                <h5>Evidence files</h5>
+                <div class="sort-file-browser" data-json-id="filesListData"></div>
+                <h5>Improvement plan</h5>
+                <p>
+                    In the table below, list a plan of action you intend to take in the upcoming period using
+                    <abbr title="Specific, Measurable, Achievable, Relevant and Time-bound">SMART</abbr> objectives. This
+                    approach ensures your plans are realistic, trackable, and more likely to succeed. Each row in the
+                    table should represent one specific action or objective. You can add as many rows as needed to
+                    address your survey findings comprehensively.
+                </p>
+                <div class="sort-smart-table" data-update-url="{{ update_url }}" data-plan="{{ plan|default:'[]' }}"></div>
+            </div>
+        </div>
+        {{ csrf | json_script:"csrf" }}
+        {{ files_list | json_script:"filesListData" }}
+        {{ survey.survey_config | json_script:"configData" }}
+        {{ responses | json_script:"responsesData" }}
+        {% vite_client %}
+        {% vite_asset "src/main.ts" %}
     </div>
 {% endblock %}
