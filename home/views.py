@@ -37,6 +37,7 @@ from survey.services import survey_service
 from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from .forms.manager_login import ManagerLoginForm
 from .forms.manager_signup import ManagerSignupForm
+from .forms.organisation_invite import OrganisationInviteForm
 from .forms.user_profile import UserProfileForm
 from .mixins import OrganisationRequiredMixin
 from .models import Organisation, OrganisationMembership, Project
@@ -462,12 +463,15 @@ class MyOrganisationInviteView(
     """
     Invite a new member to join an organisation via email.
 
+    Supports inviting both new users and existing SORT users.
+
     https://django-invitations.readthedocs.io/en/latest/usage.html
     """
 
     # Based on the template in the django-invitations plugin
     # https://github.com/jazzband/django-invitations/blob/master/invitations/templates/invitations/forms/_invite.html
     template_name = "organisation/members/create.html"
+    form_class = OrganisationInviteForm
 
 
 class MyOrganisationAcceptInviteView(invitations.views.AcceptInvite):
@@ -525,6 +529,7 @@ class HelpView(TemplateView):
     """
     User guide
     """
+
     template_name = "help/index.html"
 
 
@@ -532,6 +537,7 @@ class VideoTutorialView(TemplateView):
     """
     Beginner's intro video.
     """
+
     template_name = "help/video-tutorial.html"
 
 
@@ -543,6 +549,7 @@ class FAQView(TemplateView):
     """
     Frequently asked questions (FAQs)
     """
+
     template_name = "help/faq.html"
 
 
