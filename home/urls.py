@@ -4,7 +4,6 @@ import django.urls
 from django.urls import path, re_path
 
 from . import views
-from . import views_admin
 
 urlpatterns = [
     path("", views.LandingView.as_view(), name="landing"),
@@ -120,8 +119,4 @@ urlpatterns = [
         views.ParticipantInformationView.as_view(),
         name="participant_information",
     ),
-    # Admin portal URLs (superuser only)
-    path("admin-portal/dashboard/", views_admin.admin_dashboard, name="admin_dashboard"),
-    path("admin-portal/export-consented/", views_admin.export_consented_data, name="admin_export_consented_data"),
-    path("admin-portal/delete/<str:model_name>/", views_admin.delete_with_reason_view, name="admin_delete_with_reason"),
 ]

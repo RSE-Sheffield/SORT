@@ -1,4 +1,3 @@
-from .audit import audit_service
 from .base import BasePermissionService
 from .organisation import OrganisationService, organisation_service
 from .project import ProjectService, project_service
@@ -7,7 +6,6 @@ from .project import ProjectService, project_service
 
 
 __all__ = [
-    "audit_service",
     "BasePermissionService",
     "ProjectService",
     "OrganisationService",
