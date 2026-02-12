@@ -5,8 +5,18 @@
 {% block content %}
     <h3 class="text-center mb-4">Login to SORT</h3>
 
+    {% if request.GET.invitation_key %}
+        <div class="alert alert-info" role="alert">
+            <i class="bx bxs-envelope"></i>
+            You've been invited to join an organisation. Please log in to accept the invitation.
+        </div>
+    {% endif %}
+
     <form method="post">
         {% csrf_token %}
+        {% if request.GET.invitation_key %}
+            <input type="hidden" name="invitation_key" value="{{ request.GET.invitation_key }}">
+        {% endif %}
         <div class="mb-3">
             <label for="username" class="form-label">Email</label>
             <input type="email" class="form-control" id="username" name="username" required>

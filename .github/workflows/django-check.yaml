@@ -45,7 +45,12 @@ jobs:
       - name: Run Django system checks
         run: |
           export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
-          python manage.py check
+          python manage.py check --fail-level WARNING
+      # https://docs.djangoproject.com/en/5.1/ref/django-admin/#cmdoption-makemigrations-check
+      - name: Check for missing migrations
+        run: |
+          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
+          python manage.py makemigrations --check --dry-run
       # https://docs.djangoproject.com/en/5.1/topics/testing/
       - name: Run Django test suites
         run: |
