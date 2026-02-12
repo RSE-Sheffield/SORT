@@ -16,9 +16,9 @@ set -e
 # Options
 sort_dir="/opt/sort"
 venv_dir="$sort_dir/venv"
-pip="$venv_dir/bin/pip"
 python_version="python$(cat .python-version | xargs)"
 python="$venv_dir/bin/python"
+pip="$python -m pip"
 env_file="$sort_dir/.env"
 node_version=20
 django_media_root="/srv/www/sort/uploads/"
@@ -29,15 +29,24 @@ sudo locale-gen en_GB
 sudo locale-gen en_GB.UTF-8
 sudo update-locale
 
-# Create Python virtual environment
+# Install OS packages (don't ask for user input)
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+apt-get upgrade -y -qq -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
+apt-get install -y -qq -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" "$python_version" "$python_version-venv" curl
+
+# Create program files directory
 mkdir --parents "$sort_dir"
-apt update -qq
-apt upgrade --yes -qq
-apt install --upgrade --yes -qq "$python_version" "$python_version-venv" curl
-python3 -m venv "$venv_dir"
+
+# Create Python virtual environment
+# If the virtual environment doesn't already exist, make a new one
+if [ ! -f "$venv_dir/pyvenv.cfg" ]; then
+    python3 -m venv "$venv_dir"
+fi
 
 # Install the SORT Django app package
-$pip install --quiet -r requirements.txt
+$pip install --upgrade pip
+$pip install --quiet --upgrade -r requirements.txt
 cp --recursive ./* "$sort_dir/"
 
 # Create gunicorn group if it doesn't exist
