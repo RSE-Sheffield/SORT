@@ -28,7 +28,7 @@ Please use the [Kanban board](https://github.com/orgs/RSE-Sheffield/projects/19)
 
 There are two main environments:
 
-- Development (the `dev` branch and the `sort-web-dev` virtual machine)
+- Development (any non-`main` branch on the `sort-web-dev` virtual machine)
 - Production (the `main` branch and the `sort-web-app` virtual machine)
 
 ### Local development environment
@@ -36,29 +36,38 @@ There are two main environments:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
+python.exe -m pip install --upgrade pip
 pip install --editable .
-pip install -r requirements-dev.txt
+pip install -r requirements.txt -r requirements-dev.txt
 ```
+
+When you check out a new development branch, it's a good idea to ensure your environment is up-to-date by running the commands below:
+
+```bash
+pip install -e .[dev]
+pip install -r requirements.txt -r requirements-dev.txt
+python manage.py migrate
+npm install
+```
+
+This will ensure that the dependencies installed in your development environment match those in the production environment.
 
 ## Change process
 
-Any proposed changes should be proposed in pull requests that would be merged into the `dev` branch.
+Any proposed changes should be proposed in pull requests that would be merged into the `main` branch.
 
 ```mermaid
 graph LR
   subgraph Development environment
-    A(Feature branch)
-    B{Approve?}
-    C[Merge feature branch into dev]
-    D{Approve?}
+    A(Work on feature branch)
+    B{Approve pull request?}
   end
   subgraph Production environment
-    E[Main branch]
+    E[Deploy main branch]
   end
   A --> B
-  B -- Yes --> C
-  C --> D
-  D -- Yes --> E
+  B -- Yes --> E
+  B -- No --> A
 ```
 
 so the commit history would look something like this:
@@ -66,13 +75,11 @@ so the commit history would look something like this:
 ```mermaid
 gitGraph
     commit id: "Initial commit"
-    branch dev
     branch feat/my-feature
+    checkout feat/my-feature
     commit id: "Work on feature branch"
-    checkout dev
-    merge feat/my-feature id: "Merge into dev"
     checkout main
-    merge dev id: "Merge dev into main"
+    merge feat/my-feature id: "Merge feat into main"
 ```
 
 # Code of Conduct
