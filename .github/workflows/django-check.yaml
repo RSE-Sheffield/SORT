@@ -45,7 +45,7 @@ jobs:
       - name: Run Django system checks
         run: |
           export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
-          python manage.py check
+          python manage.py check --fail-level WARNING
       # https://docs.djangoproject.com/en/5.1/topics/testing/
       - name: Run Django test suites
         run: |

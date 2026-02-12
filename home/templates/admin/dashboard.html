@@ -1,0 +1,119 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard - SORT{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; Dashboard
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>SORT Admin Dashboard</h1>
+
+<div class="module" style="margin-bottom: 20px;">
+    <h2>Platform Statistics</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 20px;">
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; text-align: center;">
+            <h3 style="margin: 0; font-size: 2em; color: #417690;">{{ stats.total_users }}</h3>
+            <p style="margin: 5px 0 0 0;">Total Users</p>
+        </div>
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; text-align: center;">
+            <h3 style="margin: 0; font-size: 2em; color: #417690;">{{ stats.total_organisations }}</h3>
+            <p style="margin: 5px 0 0 0;">Organisations</p>
+        </div>
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; text-align: center;">
+            <h3 style="margin: 0; font-size: 2em; color: #417690;">{{ stats.total_projects }}</h3>
+            <p style="margin: 5px 0 0 0;">Projects</p>
+        </div>
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; text-align: center;">
+            <h3 style="margin: 0; font-size: 2em; color: #417690;">{{ stats.total_surveys }}</h3>
+            <p style="margin: 5px 0 0 0;">Surveys</p>
+            <small style="color: #666;">{{ stats.active_surveys }} active</small>
+        </div>
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; text-align: center;">
+            <h3 style="margin: 0; font-size: 2em; color: #417690;">{{ stats.consented_surveys }}</h3>
+            <p style="margin: 5px 0 0 0;">Consented Surveys</p>
+            <small style="color: #666;">is_shared=True</small>
+        </div>
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; text-align: center;">
+            <h3 style="margin: 0; font-size: 2em; color: #417690;">{{ stats.total_responses }}</h3>
+            <p style="margin: 5px 0 0 0;">Total Responses</p>
+            <small style="color: #666;">{{ stats.consented_responses }} consented</small>
+        </div>
+    </div>
+</div>
+
+<div class="module" style="margin-bottom: 20px;">
+    <h2>Export Consented Research Data</h2>
+    <div style="padding: 20px;">
+        <p>Export all survey data where participants have consented to share their responses for research purposes (is_shared=True).</p>
+        <div style="margin-top: 10px;">
+            <a href="{% url 'admin_export_consented_data' %}?format=csv" class="button" style="margin-right: 10px;">Export CSV</a>
+            <a href="{% url 'admin_export_consented_data' %}?format=excel" class="button">Export Excel</a>
+        </div>
+        <p style="margin-top: 10px; color: #666; font-size: 0.9em;">
+            <strong>Available data:</strong> {{ stats.consented_surveys }} surveys with {{ stats.consented_responses }} responses
+        </p>
+    </div>
+</div>
+
+<div class="module" style="margin-bottom: 20px;">
+    <h2>Top Organisations by Survey Activity</h2>
+    <table style="width: 100%;">
+        <thead>
+            <tr>
+                <th>Organisation</th>
+                <th style="text-align: right;">Survey Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for org in top_organisations %}
+            <tr>
+                <td><a href="{% url 'admin:home_organisation_change' org.pk %}">{{ org.name }}</a></td>
+                <td style="text-align: right;">{{ org.survey_count }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2" style="text-align: center; color: #666;">No organisations yet</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="module">
+    <h2>Recent Admin Actions</h2>
+    <table style="width: 100%;">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Admin</th>
+                <th>Action</th>
+                <th>Target</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in recent_audit_logs %}
+            <tr>
+                <td>{{ log.timestamp|date:"Y-m-d H:i" }}</td>
+                <td>{{ log.performed_by }}</td>
+                <td>{{ log.get_action_type_display }}</td>
+                <td>{{ log.target_representation }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align: center; color: #666;">No audit logs yet</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if recent_audit_logs %}
+    <div style="padding: 10px; text-align: right;">
+        <a href="{% url 'admin:home_adminauditlog_changelist' %}">View all audit logs &raquo;</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

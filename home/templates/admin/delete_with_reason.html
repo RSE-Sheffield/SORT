@@ -1,0 +1,91 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Delete {{ model_name|title }}(s) - SORT Admin{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:home_'|add:model_name|add:'_changelist' %}">{{ model_name|title }}s</a>
+    &rsaquo; Delete with audit log
+</div>
+{% endblock %}
+
+{% block content %}
+<div style="background: #fee; border: 2px solid #d00; padding: 20px; margin-bottom: 20px; border-radius: 5px;">
+    <h2 style="color: #d00; margin: 0 0 10px 0;">⚠️ Delete {{ model_name|title }}(s)</h2>
+    <p style="margin: 0;">This action cannot be undone. All related data will also be deleted.</p>
+</div>
+
+<div class="module" style="margin-bottom: 20px;">
+    <h2>Objects to delete</h2>
+    <ul style="padding: 20px;">
+        {% for obj in objects %}
+        <li style="margin-bottom: 5px;"><strong>{{ obj }}</strong> (ID: {{ obj.pk }})</li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% if cascade_info %}
+<div class="module" style="margin-bottom: 20px; background: #fff3cd; border-color: #ffc107;">
+    <h2 style="color: #856404;">Cascade Deletion Impact</h2>
+    <div style="padding: 20px;">
+        {% for obj in objects %}
+            <h4>{{ obj }}</h4>
+            {% if cascade_info %}
+                <ul>
+                    {% for key, impact in cascade_info.items %}
+                        {% if key == obj.pk %}
+                            {% for item_key, item_count in impact.items %}
+                                {% if item_count > 0 %}
+                                <li><strong>{{ item_count }}</strong> {{ item_key }}</li>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endfor %}
+        <p style="margin-top: 15px; color: #856404;">
+            <strong>Warning:</strong> All of the above will be permanently deleted along with the selected {{ model_name }}(s).
+        </p>
+    </div>
+</div>
+{% endif %}
+
+<div class="module">
+    <h2>Audit Log Required</h2>
+    <form method="POST" style="padding: 20px;">
+        {% csrf_token %}
+
+        <div style="margin-bottom: 20px;">
+            <label for="reason" style="display: block; font-weight: bold; margin-bottom: 5px;">
+                Reason for deletion (required):
+            </label>
+            <textarea
+                name="reason"
+                id="reason"
+                required
+                rows="4"
+                style="width: 100%; max-width: 600px; padding: 10px; font-family: inherit;"
+                placeholder="Explain why this deletion is necessary (e.g., 'Spurious test organisation', 'User requested account deletion', 'Terms of service violation')"></textarea>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display: flex; align-items: center;">
+                <input type="checkbox" id="confirm" required style="margin-right: 8px;">
+                <span>I understand this action cannot be undone</span>
+            </label>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="button" style="background: #d00; color: white; border: none; padding: 10px 20px; cursor: pointer;">
+                Confirm Deletion
+            </button>
+            <a href="{% url 'admin:home_'|add:model_name|add:'_changelist' %}" class="button" style="padding: 10px 20px;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

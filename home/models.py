@@ -136,3 +136,53 @@ class Project(models.Model):
     @property
     def surveys(self):
         return self.survey.all()
+
+
+class AdminAuditLog(models.Model):
+    """
+    Audit log for superuser administrative actions.
+    Tracks deletions, exports, and other sensitive operations.
+    """
+
+    class ActionType(models.TextChoices):
+        DELETE_USER = "DELETE_USER", "Delete User"
+        DELETE_ORGANISATION = "DELETE_ORG", "Delete Organisation"
+        DELETE_PROJECT = "DELETE_PROJECT", "Delete Project"
+        DELETE_SURVEY = "DELETE_SURVEY", "Delete Survey"
+        EXPORT_CONSENTED = "EXPORT_CONSENTED", "Export Consented Data"
+        BULK_DELETE = "BULK_DELETE", "Bulk Delete"
+
+    performed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="admin_actions"
+    )
+    action_type = models.CharField(max_length=30, choices=ActionType.choices)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    # Target object details
+    target_model = models.CharField(max_length=50)  # "User", "Organisation", etc.
+    target_id = models.IntegerField(null=True)
+    target_representation = models.CharField(max_length=200)  # str(obj) before deletion
+
+    # Justification
+    reason = models.TextField(help_text="Explanation for why this action was taken")
+
+    # Additional context (JSON)
+    metadata = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Additional action details (e.g., cascade counts, export stats)"
+    )
+
+    class Meta:
+        ordering = ["-timestamp"]
+        indexes = [
+            models.Index(fields=["-timestamp"]),
+            models.Index(fields=["action_type"]),
+            models.Index(fields=["target_model", "target_id"]),
+        ]
+
+    def __str__(self):
+        return f"{self.performed_by} - {self.action_type} - {self.timestamp}"
