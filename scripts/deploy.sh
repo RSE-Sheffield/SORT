@@ -30,6 +30,7 @@ sudo locale-gen en_GB.UTF-8
 sudo update-locale
 
 # Install OS packages (don't ask for user input)
+echo "Installing Ubuntu packages..."
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get upgrade -y -qq -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
@@ -39,6 +40,7 @@ apt-get install -y -qq -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="
 mkdir --parents "$sort_dir"
 
 # Create Python virtual environment
+echo "Installing Python packages..."
 # If the virtual environment doesn't already exist, make a new one
 if [ ! -f "$venv_dir/pyvenv.cfg" ]; then
     python3 -m venv "$venv_dir"
@@ -50,6 +52,7 @@ $pip install --quiet --upgrade -r requirements.txt
 cp --recursive ./* "$sort_dir/"
 
 # Create gunicorn group if it doesn't exist
+echo "Creating system user..."
 if ! getent group gunicorn > /dev/null 2>&1; then
     groupadd --system gunicorn
 fi
@@ -71,6 +74,7 @@ curl -fsSL "https://deb.nodesource.com/setup_$node_version.x" -o nodesource_setu
 sudo -E bash nodesource_setup.sh
 apt-get install -y --allow-downgrades nodejs="$node_version.*"
 node --version
+npm config set fund false
 
 # Upgrade npm to latest stable version
 # https://github.com/RSE-Sheffield/SORT/issues/494
@@ -79,6 +83,7 @@ npm install -g npm@latest
 npm --version
 
 # Install JavaScript package
+echo "Installing front-end packages..."
 # (Use a sub-shell to avoid changing directory.)
 (cd "$sort_dir" && npm ci && npm run build)
 
