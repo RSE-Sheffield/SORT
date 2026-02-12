@@ -18,7 +18,7 @@ sort_dir="/opt/sort"
 venv_dir="$sort_dir/venv"
 python_version="python$(cat .python-version | xargs)"
 python="$venv_dir/bin/python"
-pip="$venv_dir/bin/uv pip"
+pip="$venv_dir/bin/python -m pip"
 env_file="$sort_dir/.env"
 node_version=20
 django_media_root="/srv/www/sort/uploads/"
@@ -47,7 +47,7 @@ if [ ! -f "$venv_dir/pyvenv.cfg" ]; then
 fi
 
 # Install the SORT Django app package
-$python -m pip install --upgrade uv pip
+$python -m pip install --upgrade pip
 $pip install --quiet --upgrade -r requirements.txt
 cp --recursive ./* "$sort_dir/"
 
