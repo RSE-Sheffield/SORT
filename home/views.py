@@ -2,6 +2,7 @@ from typing import Optional
 
 import django.contrib.auth.views
 import django.http
+import django.urls
 import invitations.models
 import invitations.views
 from django.contrib import messages
@@ -118,6 +119,12 @@ class LoginInterfaceView(LoginView):
     def form_invalid(self, form):
         messages.error(self.request, "Invalid email or password.")
         return super().form_invalid(form)
+
+    def get_success_url(self):
+        # Check if user has a pending invitation to accept
+        if 'pending_invitation_key' in self.request.session:
+            return reverse('accept_invitation_after_login')
+        return super().get_success_url()
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -479,16 +486,122 @@ class MyOrganisationAcceptInviteView(invitations.views.AcceptInvite):
     """
 
     def post(self, *args, **kwargs):
-        import django.urls
+        # Get the invitation object before calling super()
+        invitation = invitations.models.Invitation.objects.get(key=self.kwargs['key'])
 
+        # Check if user already exists with this email
+        if User.objects.filter(email=invitation.email).exists():
+            # Don't call super() yet - we'll handle acceptance after login
+            # Store invitation key in session for existing users
+            self.request.session['pending_invitation_key'] = invitation.key
+            messages.info(
+                self.request,
+                f"An account with {invitation.email} already exists. "
+                "Please log in to accept the invitation."
+            )
+            return redirect('login')
+
+        # New users: proceed with normal django-invitations flow
         try:
             super().post(*args, **kwargs)
         # There is no public signup URL
         except django.urls.NoReverseMatch:
             pass
 
-        # Signup requires a key from an invitation
-        return redirect("signup", key=self.object.key)
+        # New users go to signup
+        return redirect("signup", key=invitation.key)
+
+
+class AcceptInvitationAfterLoginView(LoginRequiredMixin, View):
+    """
+    Accept organisation invitation for authenticated existing users.
+
+    When an existing user receives an organisation invitation, they are
+    redirected to login first. After authentication, this view processes
+    the invitation and adds them to the organisation.
+    """
+
+    def get(self, request):
+        invitation_key = request.session.get('pending_invitation_key')
+
+        if not invitation_key:
+            messages.error(request, "No pending invitation found.")
+            return redirect('dashboard')
+
+        try:
+            invitation = invitations.models.Invitation.objects.get(
+                key=invitation_key,
+                accepted=False
+            )
+        except invitations.models.Invitation.DoesNotExist:
+            messages.error(request, "Invalid or expired invitation.")
+            if 'pending_invitation_key' in request.session:
+                del request.session['pending_invitation_key']
+            return redirect('dashboard')
+
+        # Verify invitation email matches logged-in user
+        if invitation.email.lower() != request.user.email.lower():
+            messages.error(
+                request,
+                f"This invitation was sent to {invitation.email}, "
+                f"but you are logged in as {request.user.email}. "
+                "Please log out and log in with the correct account."
+            )
+            return redirect('dashboard')
+
+        # Get inviter's organisation
+        inviter = invitation.inviter
+        organisation = organisation_service.get_user_organisation(inviter)
+
+        if not organisation:
+            messages.error(request, "The inviting organisation no longer exists.")
+            if 'pending_invitation_key' in request.session:
+                del request.session['pending_invitation_key']
+            return redirect('dashboard')
+
+        # Check if user is already a member
+        if OrganisationMembership.objects.filter(
+                user=request.user,
+                organisation=organisation
+        ).exists():
+            messages.info(
+                request,
+                f"You are already a member of {organisation.name}."
+            )
+            invitation.accepted = True
+            invitation.save()
+            if 'pending_invitation_key' in request.session:
+                del request.session['pending_invitation_key']
+            return redirect('myorganisation')
+
+        # Add user to organisation
+        try:
+            organisation_service.add_user_to_organisation(
+                user=inviter,  # Permission check uses inviter
+                user_to_add=request.user,
+                organisation=organisation,
+                role=ROLE_PROJECT_MANAGER
+            )
+
+            # Mark invitation as accepted
+            invitation.accepted = True
+            invitation.save()
+
+            messages.success(
+                request,
+                f"You have been added to {organisation.name}."
+            )
+
+            if 'pending_invitation_key' in request.session:
+                del request.session['pending_invitation_key']
+            return redirect('myorganisation')
+
+        except Exception as e:
+            messages.error(
+                request,
+                f"Error accepting invitation: {str(e)}"
+            )
+            return redirect('dashboard')
 
 
 class OrganisationMembershipDeleteView(

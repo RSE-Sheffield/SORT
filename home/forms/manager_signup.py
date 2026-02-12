@@ -61,6 +61,9 @@ class ManagerSignupForm(UserCreationForm):
         return self.invitation.email
 
     def save(self, commit=True):
+        """
+        Create a new user and add them to the organisation.
+        """
         user = super().save(commit=False)
         user.email = self.email
         user.username = user.email

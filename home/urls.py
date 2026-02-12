@@ -71,6 +71,11 @@ urlpatterns = [
         name="member_invite_accept",
     ),
     path(
+        "invitations/accept-after-login/",
+        views.AcceptInvitationAfterLoginView.as_view(),
+        name="accept_invitation_after_login",
+    ),
+    path(
         "myorganisation/data-sharing-agreement/",
         views.DataSharingAgreementView.as_view(),
         name="data_sharing_agreement",

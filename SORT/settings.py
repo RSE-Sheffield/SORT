@@ -271,6 +271,13 @@ LOGGING = {
         "handlers": ["console"],
         "level": os.getenv("DJANGO_LOG_LEVEL", "WARNING"),
     },
+    'loggers': {
+        'factory': {
+            'level': 'WARNING',  # Suppresses INFO and DEBUG logs
+            'handlers': ['console'],
+            'propagate': False,
+        },
+    },
 }
 
 # Survey content configuration files
@@ -301,6 +308,10 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 INVITATIONS_SIGNUP_REDIRECT = "signup"
 INVITATIONS_CONFIRMATION_URL_NAME = "member_invite_accept"
 INVITATIONS_EMAIL_SUBJECT_PREFIX = "SORT"
+INVITATIONS_INVITATION_EXPIRY = os.getenv("INVITATIONS_INVITATION_EXPIRY", 7)  # days
+"How many days before the invitation expires"
+INVITATIONS_ACCEPT_INVITE_AFTER_SIGNUP = False  # We handle this manually for security
+"If True, invitations will be accepted after users finish signup"
 
 # AllAuth authentication options
 # https://docs.allauth.org/en/latest/account/configuration.html
