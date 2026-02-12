@@ -196,7 +196,19 @@ Components use Bootstrap 5 for styling and Chart.js for visualizations.
 ### Branching Strategy
 
 - **main branch**: Primary branch for all development and production
-- Branch naming: Use semantic prefixes (`feat/`, `fix/`, `docs/`, etc.)
+- **Branch naming**: Must follow [conventional branch naming](https://conventional-branch.github.io/) with these prefixes:
+  - `feat/` - New features
+  - `fix/` - Bug fixes
+  - `docs/` - Documentation changes
+  - `style/` - Code style changes (formatting, whitespace)
+  - `refactor/` - Code refactoring without changing behavior
+  - `perf/` - Performance improvements
+  - `test/` - Test additions or changes
+  - `build/` - Build system or dependency changes
+  - `ci/` - CI/CD configuration changes
+  - `chore/` - Maintenance tasks
+  - `revert/` - Revert previous commits
+- **Enforcement**: GitHub rulesets enforce conventional branch naming for all branches (except `main`, `develop`, `staging`, `production`)
 
 ### Making Changes
 
