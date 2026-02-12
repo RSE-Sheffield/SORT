@@ -61,6 +61,12 @@ make lint  # Python linting with flake8 and black
 
 # Type checking (TypeScript/Svelte)
 npm run lint:check
+
+# Django system checks and migration verification
+make check  # Runs Django checks and verifies no missing migrations
+# Or manually:
+python manage.py check --fail-level WARNING
+python manage.py makemigrations --check --dry-run
 ```
 
 ### Building for Production
@@ -265,6 +271,7 @@ See [docs/README.md](docs/README.md) for a complete documentation index.
 - Survey structure is JSON-driven; modify configs in `data/readiness_descriptions/`
 - File uploads go to `MEDIA_ROOT/survey/{survey_id}/` and `MEDIA_ROOT/survey_evidence/{section_id}/`
 - Test user passwords match their role name in lowercase (from test data fixtures)
+- **Migration checks**: Both CI/CD pipelines and deployment scripts automatically check for missing migrations using `makemigrations --check`. Always run `make check` before committing model changes to ensure migrations are created.
 
 ## Accessibility Compliance
 

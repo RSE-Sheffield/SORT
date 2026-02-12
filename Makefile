@@ -35,6 +35,7 @@ migrate:
 # System checks
 check:
 	$(MANAGE) check --fail-level WARNING
+	$(MANAGE) makemigrations --check --dry-run
 
 # User management
 superuser:
