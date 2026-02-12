@@ -249,3 +249,7 @@ echo "Checking Django system..."
 echo "Applying Django migrations..."
 # shellcheck source=/opt/sort/.env
 (cd "$sort_dir" && set -a && source "$env_file" && set +a && $python manage.py migrate)
+
+# Ensure updated code is loaded
+echo "Restarting web application service..."
+systemctl restart gunicorn.service
