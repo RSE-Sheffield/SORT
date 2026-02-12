@@ -15,9 +15,23 @@ Please use the [Kanban board](https://github.com/orgs/RSE-Sheffield/projects/19)
 1. [Raise an issue](https://github.com/RSE-Sheffield/SORT/issues/new?template=Blank+issue) clearly describing the
    problem or user requirements;
 2. [Create a branch](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-a-branch-for-an-issue)
-   that is associated with that issue. It can be helpful to prefix the branch name to match the type of changes
-   e.g. `feat/123-my-feature` for features or `docs/my-guide` for documentation, etc.
-   See [Semantic branch names](https://damiandabrowski.medium.com/semantic-branch-names-and-commit-messages-3ac38a6fcbb6).
+   that is associated with that issue. Branch names must follow [conventional branch naming](https://conventional-branch.github.io/)
+   with one of these prefixes:
+   - `feat/` - New features
+   - `fix/` - Bug fixes
+   - `docs/` - Documentation changes
+   - `style/` - Code style changes (formatting, whitespace)
+   - `refactor/` - Code refactoring without changing behavior
+   - `perf/` - Performance improvements
+   - `test/` - Test additions or changes
+   - `build/` - Build system or dependency changes
+   - `ci/` - CI/CD configuration changes
+   - `chore/` - Maintenance tasks and other changes
+   - `revert/` - Revert previous commits
+
+   Examples: `feat/123-user-authentication`, `fix/survey-validation`, `docs/deployment-guide`
+
+   Note: GitHub branch protection rules enforce this naming convention for all branches except `main`, `develop`, `staging`, and `production`.
 3. In that branch, make changes that aim to resolve that issue;
 4. Create
    a [draft pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests) (
