@@ -228,7 +228,7 @@ echo "Database connection successful"
 echo "Checking Django system..."
 # https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 # shellcheck source=/opt/sort/.env
-(cd "$sort_dir" && set -a && source "$env_file" && set +a && exec $python manage.py check --deploy)
+(cd "$sort_dir" && set -a && source "$env_file" && set +a && exec $python manage.py check --deploy --fail-level WARNING)
 
 # Migrate database changes
 # https://docs.djangoproject.com/en/5.1/topics/migrations/

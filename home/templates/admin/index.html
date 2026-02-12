@@ -1,0 +1,16 @@
+{% extends "admin/index.html" %}
+{% load i18n static %}
+
+{% block content %}
+{% if user.is_superuser %}
+<div style="background: #f8f9fa; border: 2px solid #417690; padding: 20px; margin-bottom: 20px; border-radius: 5px;">
+    <h2 style="margin-top: 0;">Admin Portal</h2>
+    <p>Access enhanced admin features for managing the SORT platform:</p>
+    <a href="{% url 'admin_dashboard' %}" class="button" style="background: #417690; color: white; padding: 10px 20px; text-decoration: none; border-radius: 3px; display: inline-block;">
+        Go to Admin Dashboard →
+    </a>
+</div>
+{% endif %}
+
+{{ block.super }}
+{% endblock %}

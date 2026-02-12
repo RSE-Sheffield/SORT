@@ -12,6 +12,7 @@ help:
 	@echo "  make runserver        - Start Django development server"
 	@echo "  make migrations       - Create new database migrations"
 	@echo "  make migrate          - Apply database migrations"
+	@echo "  make check            - Run Django system checks (including migration check)"
 	@echo "  make superuser       - Create a superuser account"
 	@echo "  make static          - Collect static files"
 	@echo "  make shell           - Open Django shell"
@@ -30,6 +31,10 @@ migrations:
 
 migrate:
 	$(MANAGE) migrate
+
+# System checks
+check:
+	$(MANAGE) check --fail-level WARNING
 
 # User management
 superuser:
@@ -63,4 +68,4 @@ lint:
 .DEFAULT_GOAL := help
 
 # Mark these targets as always needing to run (not files)
-.PHONY: help runserver migrations migrate superuser static shell test clean requirements lint
+.PHONY: help runserver migrations migrate check superuser static shell test clean requirements lint
