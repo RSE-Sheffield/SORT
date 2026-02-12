@@ -1,6 +1,6 @@
 """Audit logging service for administrative actions"""
 
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 from django.db import models
 from ..models import AdminAuditLog, User
 

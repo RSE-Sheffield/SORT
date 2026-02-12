@@ -50,7 +50,7 @@ class AdminDashboardTestCase(TestCase):
         # Create test data
         org = OrganisationFactory()
         project = ProjectFactory(organisation=org)
-        survey = SurveyFactory(project=project, is_shared=True)
+        SurveyFactory(project=project, is_shared=True)
 
         self.client.force_login(self.superuser)
         response = self.client.get(reverse("admin_dashboard"))
@@ -235,7 +235,7 @@ class DeleteWithReasonTestCase(TestCase):
         """Cascade impact is calculated and displayed"""
         # Create related objects
         project = ProjectFactory(organisation=self.org)
-        survey = SurveyFactory(project=project)
+        SurveyFactory(project=project)
 
         self.client.force_login(self.superuser)
         response = self.client.get(
