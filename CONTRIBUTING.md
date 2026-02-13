@@ -36,7 +36,7 @@ There are two main environments:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python.exe -m pip install --upgrade pip
+python -m pip install --upgrade pip
 pip install -r requirements.txt -r requirements-dev.txt
 ```
 
