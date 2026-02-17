@@ -49,6 +49,58 @@
           "readOnly": true
         },
         {
+          "type": "radio",
+          "label": "What is your current pay band?",
+          "required": true,
+          "sublabels": [],
+          "options": [
+            "Band 2",
+            "Band 3",
+            "Band 4",
+            "Band 5",
+            "Band 6",
+            "Band 7",
+            "Band 8a",
+            "Band 8b",
+            "Band 8c",
+            "Band 8d",
+            "Band 9"
+          ],
+          "disabled": false,
+          "readOnly": true
+        },
+        {
+          "type": "radio",
+          "label": "What is your profession?",
+          "required": true,
+          "sublabels": [],
+          "options": [
+            "Registered Nurse",
+            "Registered Midwife",
+            "Management",
+            "Administration",
+            "Ambulance Service Team",
+            "Pharmacist",
+            "Art Therapist",
+            "Dietitian",
+            "Dramatherapist",
+            "Music therapist",
+            "Occupational therapist",
+            "Operating department practitioner",
+            "Orthoptist",
+            "Osteopath",
+            "Paramedic",
+            "Physiotherapist",
+            "Podiatrist",
+            "Prosthetist or Orthotist",
+            "Radiographer",
+            "Speech and Language Therapist",
+            "Other"
+          ],
+          "disabled": false,
+          "readOnly": true
+        },
+        {
           "description": "",
           "disabled": false,
           "enforceValueConstraints": false,
