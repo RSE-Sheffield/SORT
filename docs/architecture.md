@@ -57,11 +57,11 @@ graph TB
         OrgService[OrganisationService]
         ProjService[ProjectService]
         SurveyService[SurveyService]
-        PermDecorator[@requires_permission<br/>Decorator]
+        PermDecorator["@requires_permission<br/>Decorator"]
 
-        PermDecorator -.enforces.-> OrgService
-        PermDecorator -.enforces.-> ProjService
-        PermDecorator -.enforces.-> SurveyService
+        OrgService -.uses.-> PermDecorator
+        ProjService -.uses.-> PermDecorator
+        SurveyService -.uses.-> PermDecorator
     end
 
     subgraph "Data Layer"
