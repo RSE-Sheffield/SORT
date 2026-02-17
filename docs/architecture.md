@@ -175,7 +175,7 @@ erDiagram
         int id PK
         int survey_id FK
         string section_id IDX
-        string notes
+        string notes_text
     }
 
     SurveyEvidenceFile {
