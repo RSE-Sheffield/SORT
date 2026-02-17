@@ -185,6 +185,13 @@ erDiagram
         file file
         string filename
     }
+
+    SurveyImprovementPlanSection {
+        int id PK
+        int survey_id FK
+        string section_id IDX
+        text content
+    }
 ```
 
 ## Request Flow Architecture
