@@ -25,32 +25,23 @@ graph TB
         Django[Django Templates]
         Svelte[Svelte Components]
         Static[Static Assets]
-
-        Django --> Vite[Vite Dev Server<br/>DEBUG mode]
-        Django --> Manifest[manifest.json<br/>Production]
     end
 
-    subgraph "Application Layer - Django Apps"
-        subgraph "Home App"
-            HomeViews[Views]
-            HomeServices[Services Layer]
-            HomeModels[Models]
+    subgraph "Home App"
+        HomeViews[Views]
+        HomeServices[Services Layer]
+        HomeModels[Models]
+    end
 
-            HomeViews --> HomeServices
-            HomeServices --> HomeModels
-        end
+    subgraph "Survey App"
+        SurveyViews[Views]
+        SurveyServices[Services Layer]
+        SurveyModels[Models]
+    end
 
-        subgraph "Survey App"
-            SurveyViews[Views]
-            SurveyServices[Services Layer]
-            SurveyModels[Models]
-
-            SurveyViews --> SurveyServices
-            SurveyServices --> SurveyModels
-        end
-
-        Auth[django-allauth<br/>Authentication]
-        Invitations[django-invitations<br/>Token System]
+    subgraph "Authentication"
+        Auth[django-allauth]
+        Invitations[django-invitations]
     end
 
     subgraph "Service Layer Components"
@@ -58,10 +49,6 @@ graph TB
         ProjService[ProjectService]
         SurveyService[SurveyService]
         PermDecorator["@requires_permission<br/>Decorator"]
-
-        OrgService -.uses.-> PermDecorator
-        ProjService -.uses.-> PermDecorator
-        SurveyService -.uses.-> PermDecorator
     end
 
     subgraph "Data Layer"
@@ -74,18 +61,24 @@ graph TB
         ViteBuild[Vite Build]
         NPM[npm build]
         Collect[collectstatic]
-
-        NPM --> ViteBuild
-        ViteBuild --> Collect
     end
 
     Browser --> Django
     Browser --> Svelte
     Mobile --> Django
 
+    Django --> Vite[Vite Dev Server<br/>DEBUG mode]
+    Django --> Manifest[manifest.json<br/>Production]
+
     Django --> HomeViews
     Django --> SurveyViews
     Svelte --> SurveyViews
+
+    HomeViews --> HomeServices
+    HomeServices --> HomeModels
+
+    SurveyViews --> SurveyServices
+    SurveyServices --> SurveyModels
 
     HomeViews --> Auth
     SurveyViews --> Invitations
@@ -94,11 +87,17 @@ graph TB
     HomeServices --> ProjService
     SurveyServices --> SurveyService
 
+    OrgService -.uses.-> PermDecorator
+    ProjService -.uses.-> PermDecorator
+    SurveyService -.uses.-> PermDecorator
+
     HomeModels --> DB
     SurveyModels --> DB
     SurveyModels --> Media
     SurveyService --> Config
 
+    NPM --> ViteBuild
+    ViteBuild --> Collect
     Static --> Collect
 ```
 
