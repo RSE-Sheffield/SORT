@@ -64,8 +64,3 @@ jobs:
           echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "- Frontend assets: \`sort-frontend-${VERSION}.tar.gz\`" >> $GITHUB_STEP_SUMMARY
           echo "- Source archive: \`SORT-${VERSION}.tar.gz\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Updated Files" >> $GITHUB_STEP_SUMMARY
-          echo "- \`VERSION\` file updated to ${VERSION}" >> $GITHUB_STEP_SUMMARY
-          echo "- \`package.json\` version updated to ${VERSION}" >> $GITHUB_STEP_SUMMARY
-          echo "- \`CHANGELOG.md\` updated with release notes" >> $GITHUB_STEP_SUMMARY
