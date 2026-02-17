@@ -3,14 +3,11 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version number (e.g., 1.0.0). Leave empty to auto-increment patch version.'
-        required: false
-        type: string
 
 permissions:
   contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
   release:
@@ -20,7 +17,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0  # Full history for release notes
+          fetch-depth: 0  # Full history for semantic-release
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -35,94 +33,39 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
-      - name: Determine version
-        id: version
-        run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            # Manual workflow dispatch with version input
-            VERSION="${{ github.event.inputs.version }}"
-          else
-            # Auto-increment patch version from VERSION file
-            CURRENT_VERSION=$(cat VERSION)
-            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
-            PATCH=$((PATCH + 1))
-            VERSION="$MAJOR.$MINOR.$PATCH"
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
-          echo "Release version: v$VERSION"
-
-      - name: Update VERSION file
-        run: |
-          echo "${{ steps.version.outputs.version }}" > VERSION
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add VERSION
-          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" || echo "No version change"
-          git push || echo "No changes to push"
-
-      - name: Update package.json version
-        run: |
-          npm version ${{ steps.version.outputs.version }} --no-git-tag-version
-          git add package.json package-lock.json
-          git commit -m "chore: update package.json to ${{ steps.version.outputs.version }}" || echo "No package.json change"
-          git push || echo "No changes to push"
-
-      - name: Create release archive
+      - name: Create release artifacts
         run: |
           mkdir -p release-artifacts
+          # Get version from package.json for artifact naming
+          VERSION=$(node -p "require('./package.json').version")
           # Include built frontend assets
-          tar -czf release-artifacts/sort-frontend-${{ steps.version.outputs.version }}.tar.gz static/ui-components/
+          tar -czf release-artifacts/sort-frontend-${VERSION}.tar.gz static/ui-components/
           # Create source archive with built assets
-          git archive --format=tar.gz --prefix=SORT-${{ steps.version.outputs.version }}/ HEAD > release-artifacts/SORT-${{ steps.version.outputs.version }}.tar.gz
+          git archive --format=tar.gz --prefix=SORT-${VERSION}/ HEAD > release-artifacts/SORT-${VERSION}.tar.gz
 
-      - name: Generate release notes
-        id: release_notes
-        run: |
-          # Get the last tag (if any)
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-
-          if [ -z "$LAST_TAG" ]; then
-            # First release - use all commits
-            COMMITS=$(git log --pretty=format:"- %s (%h)" --reverse)
-            echo "## First Release" > release_notes.md
-            echo "" >> release_notes.md
-            echo "Initial release of SORT (Self-Assessment of Organisational Readiness Tool)." >> release_notes.md
-            echo "" >> release_notes.md
-            echo "### Changes" >> release_notes.md
-            echo "$COMMITS" >> release_notes.md
-          else
-            # Get commits since last tag
-            COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" --reverse)
-            echo "## What's Changed" > release_notes.md
-            echo "" >> release_notes.md
-            echo "$COMMITS" >> release_notes.md
-          fi
-
-          echo "" >> release_notes.md
-          echo "---" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/$LAST_TAG...${{ steps.version.outputs.tag }}" >> release_notes.md
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: Release ${{ steps.version.outputs.tag }}
-          body_path: release_notes.md
-          draft: false
-          prerelease: false
-          files: |
-            release-artifacts/*.tar.gz
-          generate_release_notes: false
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+        run: npx semantic-release
 
       - name: Summary
+        if: success()
         run: |
+          VERSION=$(cat VERSION)
           echo "## Release Created Successfully! 🚀" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version**: ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Release URL**: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: v${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release URL**: https://github.com/${{ github.repository }}/releases/tag/v${VERSION}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "- Frontend assets: \`sort-frontend-${{ steps.version.outputs.version }}.tar.gz\`" >> $GITHUB_STEP_SUMMARY
-          echo "- Source archive: \`SORT-${{ steps.version.outputs.version }}.tar.gz\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend assets: \`sort-frontend-${VERSION}.tar.gz\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Source archive: \`SORT-${VERSION}.tar.gz\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Updated Files" >> $GITHUB_STEP_SUMMARY
+          echo "- \`VERSION\` file updated to ${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "- \`package.json\` version updated to ${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "- \`CHANGELOG.md\` updated with release notes" >> $GITHUB_STEP_SUMMARY
