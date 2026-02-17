@@ -214,23 +214,33 @@ Components use Bootstrap 5 for styling and Chart.js for visualizations.
 
 ### Releases
 
-SORT uses **semantic versioning** (MAJOR.MINOR.PATCH) with automatic releases:
+SORT uses **semantic versioning** (MAJOR.MINOR.PATCH) with **fully automated releases** using semantic-release:
 
-- **Automatic releases**: Every merge to `main` triggers a release workflow that auto-increments the patch version
-- **Version tracking**: Version is stored in the `VERSION` file and `package.json`
+- **Release trigger**: Every merge to `main` with `feat:` or `fix:` commits triggers a release
+- **Automated versioning**: Version is automatically determined from commit messages
+- **Version tracking**: VERSION file and package.json are automatically updated by semantic-release
 - **Release artifacts**: Each release includes built frontend assets and source archives
-- **Release notes**: Auto-generated from commit messages between releases
+- **Release notes**: Auto-generated CHANGELOG.md and GitHub release notes
 
-**For patch releases** (bug fixes):
-- Simply merge to main - version auto-increments (e.g., 0.1.0 → 0.1.1)
+**Important**: Use [Conventional Commits](https://www.conventionalcommits.org/) format:
 
-**For minor/major releases** (new features/breaking changes):
 ```bash
-# Bump version before merging to main
-./scripts/bump-version.sh minor  # or 'major'
-git add VERSION package.json package-lock.json
-git commit -m "chore: bump version to $(cat VERSION)"
+# Minor release (new feature)
+git commit -m "feat: Add evidence file upload functionality"
+
+# Patch release (bug fix)
+git commit -m "fix: Correct survey response validation"
+
+# Major release (breaking change)
+git commit -m "feat: Redesign API
+
+BREAKING CHANGE: Survey configuration endpoint now requires authentication"
+
+# No release
+git commit -m "chore: Update dependencies"
 ```
+
+**No manual version bumping needed!** semantic-release handles everything automatically.
 
 See [RELEASING.md](RELEASING.md) for complete release documentation.
 
