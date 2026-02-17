@@ -35,6 +35,8 @@ from survey.models import Survey
 from survey.services import survey_service
 
 from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
+from .forms.add_existing_member import AddExistingMemberForm
+from .forms.invite_member import InviteMemberForm
 from .forms.manager_login import ManagerLoginForm
 from .forms.manager_signup import ManagerSignupForm
 from .forms.user_profile import UserProfileForm
@@ -457,17 +459,112 @@ class OrganisationMembershipListView(
 
 
 class MyOrganisationInviteView(
-    LoginRequiredMixin, OrganisationRequiredMixin, invitations.views.SendInvite
+    LoginRequiredMixin, OrganisationRequiredMixin, TemplateView
 ):
     """
-    Invite a new member to join an organisation via email.
+    Invite a new member to join an organisation via email,
+    or add an existing user to the organisation.
+
+    Handles two forms:
+    1. InviteForm (from django-invitations) - for inviting new users
+    2. AddExistingMemberForm - for adding existing users by email
 
     https://django-invitations.readthedocs.io/en/latest/usage.html
     """
 
-    # Based on the template in the django-invitations plugin
-    # https://github.com/jazzband/django-invitations/blob/master/invitations/templates/invitations/forms/_invite.html
     template_name = "organisation/members/create.html"
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.organisation = organisation_service.get_user_organisation(request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Initialize both forms
+        if "invite_form" not in context:
+            context["invite_form"] = InviteMemberForm()
+
+        if "add_existing_form" not in context:
+            context["add_existing_form"] = AddExistingMemberForm(
+                organisation=self.organisation, user=self.request.user
+            )
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """Handle both invite and add existing user forms"""
+
+        # Determine which form was submitted
+        if "invite_submit" in request.POST:
+            # Handle invite form (new user)
+            invite_form = InviteMemberForm(request.POST)
+            add_existing_form = AddExistingMemberForm(
+                organisation=self.organisation, user=request.user
+            )
+
+            if invite_form.is_valid():
+                email = invite_form.cleaned_data["email"]
+                try:
+                    invite = invite_form.save(email)
+                    invite.inviter = request.user
+                    invite.save()
+                    invite.send_invitation(request)
+
+                    messages.success(
+                        request,
+                        f"{email} has been invited to join the organisation. "
+                        "They will receive an email with instructions.",
+                    )
+                    return redirect("member_invite")
+                except Exception as e:
+                    messages.error(request, f"Failed to send invitation: {str(e)}")
+
+            return self.render_to_response(
+                self.get_context_data(invite_form=invite_form, add_existing_form=add_existing_form)
+            )
+
+        elif "add_existing_submit" in request.POST:
+            # Handle add existing user form
+            invite_form = InviteMemberForm()
+            add_existing_form = AddExistingMemberForm(
+                request.POST, organisation=self.organisation, user=request.user
+            )
+
+            if add_existing_form.is_valid():
+                user_to_add = add_existing_form.get_user()
+                role = ROLE_PROJECT_MANAGER
+
+                # Check if this is a duplicate (idempotent behavior)
+                if hasattr(add_existing_form, "is_duplicate") and add_existing_form.is_duplicate:
+                    messages.info(
+                        request,
+                        f"{user_to_add.email} is already a member of this organisation.",
+                    )
+                else:
+                    # Add user to organisation
+                    try:
+                        organisation_service.add_user_to_organisation(
+                            user=request.user,
+                            user_to_add=user_to_add,
+                            organisation=self.organisation,
+                            role=role,
+                        )
+                        messages.success(
+                            request,
+                            f"{user_to_add.email} has been added to the organisation as a {role}.",
+                        )
+                    except Exception as e:
+                        messages.error(request, f"Failed to add user: {str(e)}")
+
+                return redirect("member_invite")
+
+            return self.render_to_response(
+                self.get_context_data(invite_form=invite_form, add_existing_form=add_existing_form)
+            )
+
+        # If neither submit button was pressed, show both forms
+        return self.get(request, *args, **kwargs)
 
 
 class MyOrganisationAcceptInviteView(invitations.views.AcceptInvite):

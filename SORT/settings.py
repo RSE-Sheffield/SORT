@@ -271,6 +271,16 @@ LOGGING = {
         "handlers": ["console"],
         "level": os.getenv("DJANGO_LOG_LEVEL", "WARNING"),
     },
+    "loggers": {
+        # Reduce FactoryBoy verbosity during testing (issue #521)
+        # FactoryBoy generates verbose DEBUG/INFO logs when creating test fixtures
+        # This configuration suppresses these logs to reduce test output spam
+        "factory": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+    },
 }
 
 # Survey content configuration files

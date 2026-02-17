@@ -37,8 +37,10 @@
                             </p>
                         {% endif %}
                         <p class="card-text">
-                            👉 Head to the <a href="{% url 'organisation_create' %}">Organisation Dashboard</a> to
-                            manage your projects, send surveys, and review responses.
+                            👉 Head to the
+                            <a href="{% url 'organisation_create' %}">
+                                <strong><i class="bx bxs-buildings"></i> Organisation Dashboard</strong></a>
+                            to manage your projects, send surveys, and review responses.
                         </p>
                     {% else %}
                         <p class="card-text">You are not part of an organisation.
