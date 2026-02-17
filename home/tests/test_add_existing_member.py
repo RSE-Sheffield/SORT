@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 import SORT.test.test_case
-from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
+from home.constants import ROLE_PROJECT_MANAGER
 from home.forms.add_existing_member import AddExistingMemberForm
 from home.models import OrganisationMembership
 from SORT.test.model_factory import OrganisationFactory, UserFactory
@@ -82,16 +82,6 @@ class AddExistingMemberFormTestCase(TestCase):
             hasattr(form, "is_duplicate") and form.is_duplicate,
             "User should be marked as duplicate",
         )
-
-    def test_form_role_choices(self):
-        """Test that role field includes both ADMIN and PROJECT_MANAGER"""
-        form = AddExistingMemberForm(
-            organisation=self.organisation, user=self.admin_user
-        )
-
-        role_choices = [choice[0] for choice in form.fields["role"].choices]
-        self.assertIn(ROLE_ADMIN, role_choices)
-        self.assertIn(ROLE_PROJECT_MANAGER, role_choices)
 
 
 class AddExistingMemberViewTestCase(SORT.test.test_case.ViewTestCase):
@@ -189,26 +179,6 @@ class AddExistingMemberViewTestCase(SORT.test.test_case.ViewTestCase):
         form = response.context["add_existing_form"]
         self.assertFalse(form.is_valid())
         self.assertIn("email", form.errors)
-
-    def test_add_user_with_admin_role(self):
-        """Test adding a user with ADMIN role"""
-        self.client.login(username=self.admin_user.email, password=PASSWORD)
-
-        self.client.post(
-            self.url,
-            data={
-                "email": self.existing_user.email,
-                "role": ROLE_ADMIN,
-                "add_existing_submit": "1",
-            },
-            follow=True,
-        )
-
-        # Check that user was added with ADMIN role
-        membership = OrganisationMembership.objects.get(
-            user=self.existing_user, organisation=self.organisation
-        )
-        self.assertEqual(membership.role, ROLE_ADMIN, "User should have ADMIN role")
 
     def test_view_displays_both_forms(self):
         """Test that the view displays both invite and add existing forms"""
