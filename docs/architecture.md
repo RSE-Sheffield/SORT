@@ -174,7 +174,7 @@ erDiagram
     SurveyEvidenceSection {
         int id PK
         int survey_id FK
-        string section_id IDX
+        string section_id
         string notes_text
     }
 
@@ -188,7 +188,7 @@ erDiagram
     SurveyImprovementPlanSection {
         int id PK
         int survey_id FK
-        string section_id IDX
+        string section_id
         string content
     }
 ```
@@ -233,7 +233,7 @@ graph TD
     Auth -->|No| Login[Redirect to Login]
     Auth -->|Yes| Service[Service Method Call]
 
-    Service --> Decorator[@requires_permission]
+    Service --> Decorator["@requires_permission"]
     Decorator --> Check{Permission Check}
 
     Check --> OrgMember{Organisation<br/>Member?}
@@ -266,8 +266,8 @@ graph TB
     end
 
     subgraph "Vite Integration"
-        ViteTag[{% vite_asset %}]
-        ViteClient[{% vite_client %}]
+        ViteTag["vite_asset tag"]
+        ViteClient["vite_client tag"]
 
         Survey --> ViteTag
         Response --> ViteTag
@@ -337,7 +337,7 @@ graph LR
         WebServer --> ProdDB
     end
 
-    Build Process --> Production
+    Collect --> StaticFiles
 ```
 
 ## Testing Architecture
