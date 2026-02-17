@@ -141,7 +141,7 @@ erDiagram
         int id PK
         int organisation_id FK
         string name
-        text description
+        string description
         datetime created_at
     }
 
@@ -175,13 +175,13 @@ erDiagram
         int id PK
         int survey_id FK
         string section_id IDX
-        text notes
+        string notes
     }
 
     SurveyEvidenceFile {
         int id PK
         int evidence_section_id FK
-        file file
+        string file_path
         string filename
     }
 
@@ -189,7 +189,7 @@ erDiagram
         int id PK
         int survey_id FK
         string section_id IDX
-        text content
+        string content
     }
 ```
 
