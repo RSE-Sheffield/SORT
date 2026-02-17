@@ -1,0 +1,178 @@
+{
+  "sections": [
+    {
+      "title": "A. Releasing Potential",
+      "type": "sort",
+      "description": "This includes spotting talent, enthusiasm, and resilience, 'learning by doing', training and research skill use in practice. It also covers understanding the importance of an enabling environment, facilitating and supporting research careers from the start.",
+      "fields": [
+        {
+          "type": "likert",
+          "name": "releasing_potential",
+          "label": "Your point of view on releasing potential:",
+          "description": "Rate the following statements from 0 to 4 (0 Not yet planned; 1 Planned; 2 Early progress; 3 Substantial Progress; 4 Established). Answer 0 if you don't know or the question is irrelevant. There is a comment box at the bottom for detailed responses.",
+          "required": true,
+          "sublabels": [
+            "A1. Our organisation has a system to talent spot and support individuals who are active in-service development/quality improvement (QI) to progress on to research",
+            "A2. Our organisation has research role models and named research leaders",
+            "A3. Our organisation identifies and celebrates success in research related activity",
+            "A4. Our organisation provides research advice sessions where staff can explore ideas for project development",
+            "A5. Our organisation provides help to staff to navigate research funding submissions, ethics and governance systems",
+            "A6. Our organisation has a finance department that can cost research project involvement for external funding applications",
+            "A7. Our organisation has an active research-related mentorship programme",
+            "A8. Our organisation provides mentorship to staff to successfully apply for internships and fellowship opportunities",
+            "A9. Our organisation enables the use of awarded grant funding in the manner intended (for example, protected time and spending decisions)",
+            "A10. Our organisation provides staff with access to research learning opportunities to develop research skills delivered through our R&D department, service development, education, or training departments",
+            "A11. Our organisation provides staff with access to experts who can advise on developing project proposals",
+            "A12. Our organisation has a mission statement that includes an ambition to do research as a core activity",
+            "A13. Our organisation has a strategic document to support research capacity development",
+            "A14. Our organisation has a research capacity delivery plan which aims to maximise the use, delivery, collaboration and leadership in research",
+            "A15. Our organisation has a dedicated database of projects that are staff led or where staff have contributed",
+            "A16. Our organisation monitors research supervision and successful project development and delivery",
+            "A17. Our organisation develops good news stories of research in our internal and external communications",
+            "A18. Our organisation includes research in our induction process",
+            "A19. Our organisation offers pre-registration research placement opportunities",
+            "A20. Our organisation offers continuing professional development in research",
+            "A21. Our organisation provides opportunities to use research skills and experience of leadership at post-masters",
+            "A22. Our organisation provides opportunities to use research skills and experience of leadership at post-doctoral levels."
+          ],
+          "options": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "type": "textarea",
+          "name": "releasing_potential_comments",
+          "label": "A23. If you would like to add any comments with regards to any of the statements in section above (Releasing Potential), please write below.",
+          "required": false,
+          "sublabels": [],
+          "options": []
+        }
+      ]
+    },
+    {
+      "title": "B. Embedding Research",
+      "type": "sort",
+      "description": "This includes research becoming central to care, delivery, professional leadership, career and appraisal processes. It also considers research as routine learning and service improvement, innovation, patient and public engagement (PPI), service user involvement in research and research-related clinical leadership.",
+      "fields": [
+        {
+          "type": "likert",
+          "name": "embedding_research",
+          "label": "Your point of view on embedding research:",
+          "description": "Rate the following statements from 0 to 4 (0 Not yet planned; 1 Planned; 2 Early progress; 3 Substantial Progress; 4 Established). Answer 0 if you don't know or the question is irrelevant. There is a comment box at the bottom for detailed responses.",
+          "required": true,
+          "sublabels": [
+            "B1. Research topics in our organisation are co-developed with service-users, patients, care-givers and the public through PPI groups",
+            "B2. Our organisation offers buddying or other support for research active staff to attend conferences, dissemination events and learning from external sources",
+            "B3. Our organisation has research active staff with academic partnerships and this is supported by managers and leaders",
+            "B4. Research activity and evidence of research-related knowledge is included in our appraisal and revalidation systems",
+            "B5. Research awareness and activities are built into our continuing professional development (CPD) programmes",
+            "B6. Research and evidence-based practice is part of our organisational culture",
+            "B7. Our organisation provides access to resources to help with research including software to analyse data, library services and other on-line facilities",
+            "B8. Our organisation includes research skills training in its core-staff education programmes",
+            "B9. Our organisation celebrates research participation and achievements (prizes, awards or similar).",
+            "B10. Our organisation facilitates opportunities for research presentations, journal clubs and dissemination to share findings with the clinical community",
+            "B11. Our organisation encourages, facilitates and supports staff to publish research and related activities.",
+            "B12. Our organisation has research embedded in regular staff huddles"
+          ],
+          "options": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "type": "textarea",
+          "name": "embedding_research_comments",
+          "label": "B13. If you would like to add any comments with regards to any of the statements in the section above (Embedding Research), please write below.",
+          "required": false,
+          "sublabels": [],
+          "options": []
+        }
+      ]
+    },
+    {
+      "title": "C. Digitally Enabled Research",
+      "type": "sort",
+      "description": "This includes engagement with the use of digital and online technology in learning, development and research. It also covers sharing research expertise and learning across the clinical community.",
+      "fields": [
+        {
+          "type": "likert",
+          "name": "digitally_enabled_research",
+          "label": "Your point of view on digitally enabled research:",
+          "description": "Rate the following statements from 0 to 4 (0 Not yet planned; 1 Planned; 2 Early progress; 3 Substantial Progress; 4 Established). Answer 0 if you don't know or the question is irrelevant. There is a comment box at the bottom for detailed responses.",
+          "required": true,
+          "sublabels": [
+            "C1. Our organisation offers a digital research skills training programme for staff",
+            "C2. Our organisation uses digital systems and equipment to facilitate clinical research activity.",
+            "C3. Our organisation provides equipment/hardware that facilitate research (voice recognition, smart technology, etc.)",
+            "C4. Our organisation provides links to relevant digital health and research networks for staff",
+            "C5. Our organisation provides links to relevant social networking for research community (LinkedIn, Twitter/X, Instagram, etc.)",
+            "C6. Our organisation has established an online digital place for research where research expertise can be shared easily",
+            "C7. Our organisation uses cloud-based video software for interviews and research meetings (Zoom, Teams etc.)",
+            "C8. Our organisation participates in national online digital audit and data surveys (e.g., the National Cardiac Audit Programme; or the national clinical audits and national confidential inquiries)"
+          ],
+          "options": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "type": "textarea",
+          "name": "digitally_enabled_research_comments",
+          "label": "C9. If you would like to add any comments with regards to any of the statements in the section above (Digitally Enabled Research), please write below.",
+          "required": false,
+          "sublabels": [],
+          "options": []
+        }
+      ]
+    },
+    {
+      "title": "D. Research Infrastructure",
+      "type": "sort",
+      "description": "This includes the basic physical and organisational structures and facilities (e.g. buildings, facilities, coordination mechanisms, staffing infrastructure and research career support) needed for the successful conduct of research.",
+      "fields": [
+        {
+          "type": "likert",
+          "name": "research_infrastructure",
+          "label": "Your point of view on research infrastructure:",
+          "description": "Rate the following statements from 0 to 4 (0 Not yet planned; 1 Planned; 2 Early progress; 3 Substantial Progress; 4 Established). Answer 0 if you don't know or the question is irrelevant. There is a comment box at the bottom for detailed responses.",
+          "required": true,
+          "sublabels": [
+            "D1. Our organisation has a secure, dedicated, resourced, work area for research active staff",
+            "D2. Our organisation offers paid research time in job plans where appropriate",
+            "D3. Our organisation has a named senior-level research lead",
+            "D4. Our organisation has a research department with dedicated research-related personnel",
+            "D5. Our organisation has dedicated information support for research (for example, library specialists, research methodologists, statisticians, graphic artists and/or database managers)",
+            "D6. Our organisation monitors and reports on research capacity building and delivery at its management board",
+            "D7. Our organisation uses its research outputs, activity, and related delivery performance indicators to inform the business case for ongoing and future funding",
+            "D8. Our organisation tracks staff promotions related to research successes"
+          ],
+          "options": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "type": "textarea",
+          "name": "research_infrastructure_comments",
+          "label": "D9. If you would like to add any comments with regards to any of the statements in the section above (Research Infrastructure), please write below.",
+          "required": false,
+          "sublabels": [],
+          "options": []
+        }
+      ]
+    }
+  ]
+}

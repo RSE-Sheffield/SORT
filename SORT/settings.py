@@ -281,6 +281,7 @@ SURVEY_TEMPLATES = {
     "NMAHPs": "sort_only_config_nmahps.json",
     "Nurses & Midwives": "sort_only_config_nurses_midwives.json",
     "AHP": "sort_only_config_ahp.json",
+    "Generic": "sort_only_config_generic.json",
 }
 DEMOGRAPHY_TEMPLATES = {
     "Nurses": "demography_only_config_nurses.json",
@@ -288,6 +289,7 @@ DEMOGRAPHY_TEMPLATES = {
     "NMAHPs": "demography_only_config_nmahps.json",
     "Nurses & Midwives": "demography_only_config_nurses_midwives.json",
     "AHP": "demography_only_config_ahp.json",
+    "Generic": "demography_only_config_generic.json",
 }
 CONSENT_TEMPLATE = "consent_only_config.json"
 
