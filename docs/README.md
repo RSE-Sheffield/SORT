@@ -8,17 +8,15 @@ This directory contains detailed technical documentation for developers working 
 
 Follow this recommended reading order:
 
-1. **[../CLAUDE.md](../CLAUDE.md)** - Start here! Project overview, common commands, and development workflow
-2. **[architecture.md](architecture.md)** - Understand the system architecture with visual diagrams
-3. **[data-model.md](data-model.md)** - Learn the database structure and entity relationships
-4. **[testing.md](testing.md)** - Set up your test environment and run tests
+1. **[architecture.md](architecture.md)** - Understand the system architecture with visual diagrams
+2. **[data-model.md](data-model.md)** - Learn the database structure and entity relationships
+3. **[testing.md](testing.md)** - Set up your test environment and run tests
 
 ### 🔧 Ready to Contribute?
 
 Once you've read the above, check out:
 
 - **[../CONTRIBUTING.md](../CONTRIBUTING.md)** - Contribution guidelines and PR process
-- **[../CLAUDE.md#accessibility-compliance](../CLAUDE.md#accessibility-compliance)** - WCAG 2.1 AA accessibility requirements (mandatory)
 - **[../RELEASING.md](../RELEASING.md)** - Semantic versioning and automated release process
 
 ### 🚀 Deploying to Production?
