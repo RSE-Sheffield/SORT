@@ -5,7 +5,6 @@ Form for adding existing users to an organisation
 import django.forms as forms
 from django.core.exceptions import ValidationError
 
-from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from home.models import OrganisationMembership, User
 
 

@@ -11,7 +11,7 @@ from django.urls import reverse
 import SORT.test.test_case
 from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from home.forms.add_existing_member import AddExistingMemberForm
-from home.models import Organisation, OrganisationMembership
+from home.models import OrganisationMembership
 from SORT.test.model_factory import OrganisationFactory, UserFactory
 from SORT.test.model_factory.user.constants import PASSWORD
 
@@ -194,7 +194,7 @@ class AddExistingMemberViewTestCase(SORT.test.test_case.ViewTestCase):
         """Test adding a user with ADMIN role"""
         self.client.login(username=self.admin_user.email, password=PASSWORD)
 
-        response = self.client.post(
+        self.client.post(
             self.url,
             data={
                 "email": self.existing_user.email,
@@ -231,7 +231,7 @@ class AddExistingMemberViewTestCase(SORT.test.test_case.ViewTestCase):
 
         self.client.login(username=project_manager.email, password=PASSWORD)
 
-        response = self.client.post(
+        self.client.post(
             self.url,
             data={
                 "email": self.existing_user.email,

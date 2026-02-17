@@ -494,7 +494,6 @@ class MyOrganisationInviteView(
 
     def post(self, request, *args, **kwargs):
         """Handle both invite and add existing user forms"""
-        from invitations.models import Invitation
 
         # Determine which form was submitted
         if "invite_submit" in request.POST:
