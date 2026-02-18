@@ -77,11 +77,14 @@
           "options": [
             "Registered Nurse",
             "Registered Midwife",
-            "Management",
-            "Administration",
-            "Ambulance Service Team",
+            "Administrator",
+            "Manager",
+            "Ambulance Service",
             "Pharmacist",
+            "Public Health Professional",
+            "Healthcare Scientist",
             "Art Therapist",
+            "Estates and Facilities",
             "Dietitian",
             "Dramatherapist",
             "Music therapist",
@@ -108,9 +111,11 @@
           "maxNumChar": 500,
           "maxNumValue": 100,
           "minNumValue": 0,
-          "options": [],
+          "options": [
+          ],
           "required": true,
-          "sublabels": [],
+          "sublabels": [
+          ],
           "textType": "PLAIN_TEXT",
           "type": "text",
           "readOnly": true
