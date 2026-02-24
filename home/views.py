@@ -39,6 +39,7 @@ from .forms.add_existing_member import AddExistingMemberForm
 from .forms.invite_member import InviteMemberForm
 from .forms.manager_login import ManagerLoginForm
 from .forms.manager_signup import ManagerSignupForm
+from .forms.organisation_invite import OrganisationInviteForm
 from .forms.user_profile import UserProfileForm
 from .mixins import OrganisationRequiredMixin
 from .models import Organisation, OrganisationMembership, Project
@@ -125,6 +126,69 @@ class LoginInterfaceView(LoginView):
         if request.user.is_authenticated:
             return redirect("dashboard")
         return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        """Handle successful login and process any pending invitation."""
+        response = super().form_valid(form)
+
+        # Check if there's an invitation key in the request
+        invitation_key = self.request.GET.get("invitation_key") or self.request.POST.get(
+            "invitation_key"
+        )
+
+        if invitation_key:
+            try:
+                invitation = invitations.models.Invitation.objects.get(key=invitation_key)
+
+                # Verify the invitation is for this user's email
+                if invitation.email.lower() == self.request.user.email.lower():
+                    # Check if invitation is still valid and not already accepted
+                    if not invitation.accepted and not invitation.key_expired():
+                        # Get the inviter's organisation
+                        inviter_organisation = organisation_service.get_user_organisation(
+                            invitation.inviter
+                        )
+
+                        # Check if user is not already a member
+                        existing_membership = OrganisationMembership.objects.filter(
+                            user=self.request.user, organisation=inviter_organisation
+                        ).first()
+
+                        if not existing_membership:
+                            # Add user to the organisation
+                            organisation_service.add_user_to_organisation(
+                                user=invitation.inviter,
+                                user_to_add=self.request.user,
+                                organisation=inviter_organisation,
+                                role=ROLE_PROJECT_MANAGER,
+                            )
+
+                            # Mark invitation as accepted
+                            invitation.accepted = True
+                            invitation.save()
+
+                            messages.success(
+                                self.request,
+                                f"You have been added to {inviter_organisation.name}.",
+                            )
+                        else:
+                            messages.info(
+                                self.request,
+                                f"You are already a member of {inviter_organisation.name}.",
+                            )
+                    elif invitation.accepted:
+                        messages.info(self.request, "This invitation has already been accepted.")
+                    else:
+                        messages.error(self.request, "This invitation has expired.")
+                else:
+                    messages.error(
+                        self.request,
+                        "This invitation is for a different email address.",
+                    )
+            except invitations.models.Invitation.DoesNotExist:
+                messages.error(self.request, "Invalid invitation.")
+
+        return response
 
 
 class HomeView(LoginRequiredMixin, View):
@@ -469,10 +533,13 @@ class MyOrganisationInviteView(
     1. InviteForm (from django-invitations) - for inviting new users
     2. AddExistingMemberForm - for adding existing users by email
 
+    Supports inviting both new users and existing SORT users.
+
     https://django-invitations.readthedocs.io/en/latest/usage.html
     """
 
     template_name = "organisation/members/create.html"
+    form_class = OrganisationInviteForm
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
@@ -573,6 +640,8 @@ class MyOrganisationAcceptInviteView(invitations.views.AcceptInvite):
 
     This inherits from the view in the django-invitations app, but
     also passes the key to the form to improve security.
+
+    Routes existing users to login and new users to signup.
     """
 
     def post(self, *args, **kwargs):
@@ -584,8 +653,16 @@ class MyOrganisationAcceptInviteView(invitations.views.AcceptInvite):
         except django.urls.NoReverseMatch:
             pass
 
-        # Signup requires a key from an invitation
-        return redirect("signup", key=self.object.key)
+        # Check if a user with this email already exists
+        invitation = self.object
+        existing_user = User.objects.filter(email__iexact=invitation.email).first()
+
+        if existing_user:
+            # User already exists - send them to login with the invitation key
+            return redirect(f"{reverse('login')}?invitation_key={invitation.key}")
+        else:
+            # New user - send them to signup with the invitation key
+            return redirect("signup", key=invitation.key)
 
 
 class OrganisationMembershipDeleteView(
@@ -622,6 +699,7 @@ class HelpView(TemplateView):
     """
     User guide
     """
+
     template_name = "help/index.html"
 
 
@@ -629,6 +707,7 @@ class VideoTutorialView(TemplateView):
     """
     Beginner's intro video.
     """
+
     template_name = "help/video-tutorial.html"
 
 
@@ -640,6 +719,7 @@ class FAQView(TemplateView):
     """
     Frequently asked questions (FAQs)
     """
+
     template_name = "help/faq.html"
 
 
