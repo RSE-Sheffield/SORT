@@ -12,6 +12,8 @@
                         <th>Name</th>
                         <th>Members</th>
                         <th>Projects</th>
+                        <th>Surveys</th>
+                        <th>Responses</th>
                         <th>Created</th>
                     </tr>
                 </thead>
@@ -19,12 +21,14 @@
                     {% for org in organisations %}
                     <tr>
                         <td><a href="{% url 'admin_organisation_detail' org.pk %}">{{ org.name }}</a></td>
-                        <td>{{ org.members.count }}</td>
-                        <td>{{ org.project_set.count }}</td>
+                        <td>{{ org.members_count }}</td>
+                        <td>{{ org.project_count }}</td>
+                        <td>{{ org.survey_count }}</td>
+                        <td>{{ org.response_count }}</td>
                         <td class="text-muted">{{ org.created_at|date:"d M Y" }}</td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="4" class="text-muted">No organisations</td></tr>
+                    <tr><td colspan="6" class="text-muted">No organisations</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

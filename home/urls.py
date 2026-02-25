@@ -153,6 +153,7 @@ urlpatterns = [
         name="admin_project_detail",
     ),
     path("console/users/", views.ConsoleUserListView.as_view(), name="admin_users"),
+    path("console/users/<int:pk>/", views.ConsoleUserDetailView.as_view(), name="admin_user_detail"),
     path(
         "console/surveys/", views.ConsoleSurveyListView.as_view(), name="admin_surveys"
     ),

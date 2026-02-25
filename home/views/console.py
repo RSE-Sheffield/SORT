@@ -5,6 +5,7 @@ This interface provides a dashboard overview of the app status. It's different f
 """
 
 from django.contrib import messages
+from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import TemplateView, View
 
@@ -40,7 +41,12 @@ class ConsoleOrganisationListView(StaffRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["organisations"] = Organisation.objects.order_by("name")
+        context["organisations"] = Organisation.objects.annotate(
+            members_count=Count("organisationmembership", distinct=True),
+            project_count=Count("projects", distinct=True),
+            survey_count=Count("projects__survey", distinct=True),
+            response_count=Count("projects__survey__survey_response", distinct=True),
+        ).order_by("name")
         return context
 
 
@@ -67,6 +73,26 @@ class ConsoleUserListView(StaffRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["users"] = User.objects.filter(is_active=True).order_by("last_name", "first_name")
+        return context
+
+
+class ConsoleUserDetailView(StaffRequiredMixin, TemplateView):
+    template_name = "console/user_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = get_object_or_404(User, pk=self.kwargs["pk"])
+        context["viewed_user"] = user
+        context["memberships"] = (
+            OrganisationMembership.objects.filter(user=user)
+            .select_related("organisation", "added_by")
+            .order_by("organisation__name")
+        )
+        context["projects_created"] = (
+            Project.objects.filter(created_by=user)
+            .select_related("organisation")
+            .order_by("organisation__name", "name")
+        )
         return context
 
 

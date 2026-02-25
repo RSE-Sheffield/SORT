@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 import SORT.test.test_case
-from SORT.test.model_factory import OrganisationFactory, ProjectFactory, SurveyFactory, UserFactory
+from SORT.test.model_factory import OrganisationFactory, OrganisationMembershipFactory, ProjectFactory, SurveyFactory, UserFactory
 from SORT.test.model_factory.user.constants import PASSWORD
 
 
@@ -161,3 +161,57 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         self.login()
         response = self.client.get(f"/console/surveys/{survey.pk}/")
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_user_detail_accessible_to_staff(self):
+        """Staff users can access the user detail view."""
+        user = UserFactory()
+        self.login_staff()
+        response = self.client.get(f"/console/users/{user.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_user_detail_redirects_anonymous(self):
+        """Anonymous users are redirected away from the user detail view."""
+        user = UserFactory()
+        response = self.client.get(f"/console/users/{user.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_user_detail_forbidden_for_regular_users(self):
+        """Regular users cannot access the user detail view."""
+        user = UserFactory()
+        self.login()
+        response = self.client.get(f"/console/users/{user.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_remove_member_get_accessible_to_staff(self):
+        """Staff users can access the remove member confirmation page."""
+        org = OrganisationFactory()
+        membership = OrganisationMembershipFactory(organisation=org)
+        self.login_staff()
+        response = self.client.get(f"/console/organisations/{org.pk}/members/{membership.pk}/remove/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_remove_member_get_redirects_anonymous(self):
+        """Anonymous users are redirected away from the remove member page."""
+        org = OrganisationFactory()
+        membership = OrganisationMembershipFactory(organisation=org)
+        response = self.client.get(f"/console/organisations/{org.pk}/members/{membership.pk}/remove/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_remove_member_get_forbidden_for_regular_users(self):
+        """Regular users cannot access the remove member confirmation page."""
+        org = OrganisationFactory()
+        membership = OrganisationMembershipFactory(organisation=org)
+        self.login()
+        response = self.client.get(f"/console/organisations/{org.pk}/members/{membership.pk}/remove/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_remove_member_post_removes_membership(self):
+        """Staff users can POST to remove a member from an organisation."""
+        org = OrganisationFactory()
+        membership = OrganisationMembershipFactory(organisation=org)
+        membership_pk = membership.pk
+        self.login_staff()
+        response = self.client.post(f"/console/organisations/{org.pk}/members/{membership_pk}/remove/")
+        self.assertRedirects(response, f"/console/organisations/{org.pk}/")
+        from home.models import OrganisationMembership
+        self.assertFalse(OrganisationMembership.objects.filter(pk=membership_pk).exists())
