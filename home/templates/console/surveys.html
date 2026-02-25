@@ -1,0 +1,81 @@
+{% extends "base_console.html" %}
+{% block title %}| Admin — Surveys{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0">
+            Surveys
+            {% if selected_project %}
+            <span class="text-muted fs-5 fw-normal">— {{ selected_project.name }}</span>
+            {% elif selected_organisation %}
+            <span class="text-muted fs-5 fw-normal">— {{ selected_organisation.name }}</span>
+            {% endif %}
+        </h1>
+        {% if selected_organisation or selected_project %}
+        <a href="{% url 'admin_surveys' %}" class="btn btn-sm btn-outline-secondary">Clear filters</a>
+        {% endif %}
+    </div>
+
+    <div class="mb-3">
+        <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
+            <label for="organisation-filter" class="form-label mb-0 text-nowrap">Organisation:</label>
+            <select id="organisation-filter" name="organisation" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                <option value="">All organisations</option>
+                {% for org in organisations %}
+                <option value="{{ org.pk }}" {% if selected_organisation.pk == org.pk %}selected{% endif %}>{{ org.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="project-filter" class="form-label mb-0 text-nowrap">Project:</label>
+            <select id="project-filter" name="project" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                <option value="">All projects</option>
+                {% for project in projects %}
+                <option value="{{ project.pk }}" {% if selected_project.pk == project.pk %}selected{% endif %}>
+                    {% if not selected_organisation %}{{ project.organisation.name }} — {% endif %}{{ project.name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <noscript><button type="submit" class="btn btn-sm btn-secondary">Apply</button></noscript>
+        </form>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Survey</th>
+                        <th>Project</th>
+                        <th>Organisation</th>
+                        <th>Responses</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for survey in surveys %}
+                    <tr>
+                        <td><a href="{% url 'admin_survey_detail' survey.pk %}">{{ survey.name }}</a></td>
+                        <td>
+                            <a href="{% url 'admin_surveys' %}?project={{ survey.project.pk }}">
+                                {{ survey.project.name }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'admin_surveys' %}?organisation={{ survey.project.organisation.pk }}">
+                                {{ survey.project.organisation.name }}
+                            </a>
+                        </td>
+                        <td>{{ survey.survey_response.count }}</td>
+                        <td class="text-muted">{{ survey.created_at|date:"d M Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-muted">No surveys{% if selected_project %} for this project{% elif selected_organisation %} for this organisation{% endif %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

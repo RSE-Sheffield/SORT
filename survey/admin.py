@@ -19,15 +19,34 @@ class InvitationAdmin(admin.ModelAdmin):
 
 @admin.register(Survey)
 class SurveyAdmin(admin.ModelAdmin):
-    list_display = ("pk", "name", "created_at", "project", "project__organisation", "responses_count")
-    search_fields = ("name", "description",)
+    list_display = (
+        "pk",
+        "name",
+        "created_at",
+        "project",
+        "project__organisation",
+        "responses_count",
+    )
+    search_fields = (
+        "name",
+        "description",
+    )
     ordering = ("created_at",)
-    list_filter = ("project", "project__organisation",)
+    list_filter = (
+        "project",
+        "project__organisation",
+    )
 
 
 @admin.register(SurveyResponse)
 class SurveyResponseAdmin(admin.ModelAdmin):
-    list_display = ("pk", "survey", "created_at", "survey__project", "survey__project__organisation",)
+    list_display = (
+        "pk",
+        "survey",
+        "created_at",
+        "survey__project",
+        "survey__project__organisation",
+    )
     ordering = ("created_at",)
     date_hierarchy = "created_at"
     list_filter = ("survey__project", "survey__project__organisation", "created_at")

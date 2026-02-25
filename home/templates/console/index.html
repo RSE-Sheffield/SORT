@@ -1,0 +1,132 @@
+{% extends "base_console.html" %}
+{% block title %}| Admin{% endblock %}
+
+{% block content %}
+    <div class="container py-4">
+
+        <h1 class="h3 mb-1">Overview</h1>
+        <p class="text-muted mb-4">Current state of the SORT Online platform</p>
+
+        {# --- Summary counts --- #}
+        <div class="row g-3 mb-5">
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{% url 'admin_organisations' %}" class="text-decoration-none">
+                    <div class="card text-center h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="fs-2 fw-bold text-primary"><i
+                                    class="bx bxs-buildings"></i> {{ stats.organisations }}</div>
+                            <div class="text-muted small">Organisations</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{% url 'admin_users' %}" class="text-decoration-none">
+                    <div class="card text-center h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="fs-2 fw-bold text-primary"><i class="bx bxs-group"></i> {{ stats.users }}</div>
+                            <div class="text-muted small">Active users</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card text-center h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="fs-2 fw-bold text-primary"><i class="bx bxs-folder-open"></i> {{ stats.projects }}
+                        </div>
+                        <div class="text-muted small">Projects</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{% url 'admin_surveys' %}" class="text-decoration-none">
+                    <div class="card text-center h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="fs-2 fw-bold text-primary"><i class="bx bxs-file"></i> {{ stats.surveys }}
+                            </div>
+                            <div class="text-muted small">Surveys</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card text-center h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="fs-2 fw-bold text-primary"><i class="bx bxs-square"></i> {{ stats.responses }}</div>
+                        <div class="text-muted small">Responses</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# --- Recent activity --- #}
+        <div class="row g-4">
+            <h3>Recent Activity</h3>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <h2 class="h6 mb-0"><i class="bx bxs-buildings text-primary me-1"></i> Recent organisations</h2>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for org in recent_organisations %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <a href="{% url 'admin_organisation_detail' org.pk %}">{{ org.name }}</a>
+                                <small class="text-muted">{{ org.created_at|date:"d M Y" }}</small>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">No organisations yet</li>
+                        {% endfor %}
+                    </ul>
+                    <div class="card-footer bg-white border-top-0">
+                        <a href="{% url 'admin_organisations' %}" class="small">View all &rarr;</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <h2 class="h6 mb-0"><i class="bx bxs-group text-primary me-1"></i> Recent users</h2>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for user in recent_users %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ user.first_name }} {{ user.last_name }}</span>
+                                <small class="text-muted">{{ user.date_joined|date:"d M Y" }}</small>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">No users yet</li>
+                        {% endfor %}
+                    </ul>
+                    <div class="card-footer bg-white border-top-0">
+                        <a href="{% url 'admin_users' %}" class="small">View all &rarr;</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <h2 class="h6 mb-0"><i class="bx bxs-file-doc text-primary me-1"></i> Recent surveys</h2>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for survey in recent_surveys %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <a href="{% url 'admin_survey_detail' survey.pk %}" class="text-truncate me-2" style="max-width: 160px;"
+                                   title="{{ survey.name }}">{{ survey.name }}</a>
+                                <small class="text-muted">{{ survey.created_at|date:"d M Y" }}</small>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">No surveys yet</li>
+                        {% endfor %}
+                    </ul>
+                    <div class="card-footer bg-white border-top-0">
+                        <a href="{% url 'admin_surveys' %}" class="small">View all &rarr;</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+{% block navitems %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+        <span class="navbar-brand fw-semibold text-white">
+            <i class="bx bxs-dashboard"></i> Console
+        </span>
+            <button class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#adminNav"
+                    aria-controls="adminNav"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="adminNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/admin-portal/' %}active{% endif %}"
+                           href="{% url 'admin_dashboard' %}">
+                            <i class="bx bxs-home"></i> Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/admin-portal/organisations' in request.path %}active{% endif %}"
+                           href="{% url 'admin_organisations' %}">
+                            <i class="bx bxs-buildings"></i> Organisations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/admin-portal/projects' in request.path %}active{% endif %}"
+                           href="{% url 'admin_projects' %}">
+                            <i class="bx bxs-folder"></i> Projects
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/admin-portal/users' in request.path %}active{% endif %}"
+                           href="{% url 'admin_users' %}">
+                            <i class="bx bxs-group"></i> Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/admin-portal/surveys' in request.path %}active{% endif %}"
+                           href="{% url 'admin_surveys' %}">
+                            <i class="bx bxs-file-doc"></i> Surveys
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+{% endblock %}
+{% block content %}<!-- Content here -->{% endblock %}
