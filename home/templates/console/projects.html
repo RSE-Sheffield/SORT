@@ -38,6 +38,7 @@
                         <th>Name</th>
                         <th>Organisation</th>
                         <th>Surveys</th>
+                        <th>Responses</th>
                         <th>Created</th>
                     </tr>
                 </thead>
@@ -52,11 +53,12 @@
                                 {{ project.organisation.name }}
                             </a>
                         </td>
-                        <td>{{ project.survey.count }}</td>
+                        <td>{{ project.survey_count }}</td>
+                        <td>{{ project.response_count }}</td>
                         <td class="text-muted">{{ project.created_at|date:"d M Y" }}</td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="4" class="text-muted">No projects{% if selected_organisation %} for this organisation{% endif %}</td></tr>
+                    <tr><td colspan="5" class="text-muted">No projects{% if selected_organisation %} for this organisation{% endif %}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

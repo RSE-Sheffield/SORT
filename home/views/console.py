@@ -102,7 +102,14 @@ class ConsoleProjectListView(StaffRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         org_id = self.request.GET.get("organisation")
-        projects = Project.objects.select_related("organisation").order_by("organisation__name", "name")
+        projects = (
+            Project.objects.select_related("organisation")
+            .annotate(
+                survey_count=Count("survey", distinct=True),
+                response_count=Count("survey__survey_response", distinct=True),
+            )
+            .order_by("organisation__name", "name")
+        )
         if org_id:
             projects = projects.filter(organisation_id=org_id)
             try:
