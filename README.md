@@ -65,11 +65,7 @@ python manage.py createsuperuser
 6. Create a `.env` file in the project root directory and add the following environment variables (which should be used in development only)
 
 ```bash
-DJANGO_SECRET_KEY=your_secret_key
-DJANGO_DEBUG=True
-DJANGO_ALLOWED_HOSTS=127.0.0.1 localhost
-DJANGO_EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
-DJANGO_LOG_LEVEL=DEBUG
+cp .env.example .env
 ```
 
 ---

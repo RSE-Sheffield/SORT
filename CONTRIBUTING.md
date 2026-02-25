@@ -36,15 +36,13 @@ There are two main environments:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python.exe -m pip install --upgrade pip
-pip install --editable .
+python -m pip install --upgrade pip
 pip install -r requirements.txt -r requirements-dev.txt
 ```
 
 When you check out a new development branch, it's a good idea to ensure your environment is up-to-date by running the commands below:
 
 ```bash
-pip install -e .[dev]
 pip install -r requirements.txt -r requirements-dev.txt
 python manage.py migrate
 npm install

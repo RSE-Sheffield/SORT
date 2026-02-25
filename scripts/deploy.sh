@@ -207,31 +207,23 @@ if [ "$user_is_new" = true ] || ! grep -q "^DJANGO_DATABASE_PASSWORD=" "$env_fil
     echo "Database password written to $env_file"
 fi
 
-echo "Database credentials saved to $env_file"
-echo "Database: $db_name"
-echo "User: $db_user"
-echo "Schema: $db_schema"
-
-# Test database connection
-echo "Testing database connection..."
-if ! PGPASSWORD="$db_password" psql -h 127.0.0.1 -U "$db_user" -d "$db_name" -c "SELECT 1;" >/dev/null 2>&1; then
-    echo "ERROR: Database connection test failed"
-    echo "Please check:"
-    echo "  1. PostgreSQL is running: systemctl status postgresql"
-    echo "  2. Database credentials in $env_file"
-    echo "  3. PostgreSQL authentication settings in /etc/postgresql/*/main/pg_hba.conf"
-    exit 1
-fi
-echo "Database connection successful"
-
 # Run deployment checks
 echo "Checking Django system..."
 # https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 # shellcheck source=/opt/sort/.env
-(cd "$sort_dir" && set -a && source "$env_file" && set +a && exec $python manage.py check --deploy --fail-level WARNING)
+(cd "$sort_dir" && set -a && source "$env_file" && set +a && $python manage.py check --deploy --fail-level WARNING)
+
+# Check for missing migrations
+# https://docs.djangoproject.com/en/5.1/ref/django-admin/#cmdoption-makemigrations-check
+echo "Checking for missing migrations..."
+# shellcheck source=/opt/sort/.env
+(cd "$sort_dir" && set -a && source "$env_file" && set +a && $python manage.py makemigrations --check --dry-run)
 
 # Migrate database changes
 # https://docs.djangoproject.com/en/5.1/topics/migrations/
 echo "Applying Django migrations..."
 # shellcheck source=/opt/sort/.env
 (cd "$sort_dir" && set -a && source "$env_file" && set +a && $python manage.py migrate)
+
+echo "Restarting web application service..."
+systemctl restart gunicorn.service
