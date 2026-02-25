@@ -119,4 +119,9 @@ urlpatterns = [
         views.ParticipantInformationView.as_view(),
         name="participant_information",
     ),
+    # Management console (staff only)
+    path("console/", views.ConsoleView.as_view(), name="admin_dashboard"),
+    path("console/organisations/", views.ConsoleOrganisationListView.as_view(), name="admin_organisations"),
+    path("console/users/", views.ConsoleUserListView.as_view(), name="admin_users"),
+    path("console/surveys/", views.ConsoleSurveyListView.as_view(), name="admin_surveys"),
 ]

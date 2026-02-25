@@ -1,0 +1,36 @@
+{% extends "base_console.html" %}
+{% block title %}| Admin — Surveys{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="h3 mb-4">Surveys</h1>
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Survey</th>
+                        <th>Project</th>
+                        <th>Organisation</th>
+                        <th>Responses</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for survey in surveys %}
+                    <tr>
+                        <td>{{ survey.name }}</td>
+                        <td>{{ survey.project.name }}</td>
+                        <td>{{ survey.project.organisation.name }}</td>
+                        <td>{{ survey.survey_response.count }}</td>
+                        <td class="text-muted">{{ survey.created_at|date:"d M Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-muted">No surveys</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

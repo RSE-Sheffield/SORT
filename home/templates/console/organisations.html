@@ -1,0 +1,34 @@
+{% extends "base_console.html" %}
+{% block title %}| Admin — Organisations{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="h3 mb-4">Organisations</h1>
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Members</th>
+                        <th>Projects</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for org in organisations %}
+                    <tr>
+                        <td>{{ org.name }}</td>
+                        <td>{{ org.members.count }}</td>
+                        <td>{{ org.project_set.count }}</td>
+                        <td class="text-muted">{{ org.created_at|date:"d M Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-muted">No organisations</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
