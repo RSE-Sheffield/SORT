@@ -199,6 +199,8 @@ class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
 
     def post(self, request, org_pk, membership_pk):
         org, membership = self._get_objects(org_pk, membership_pk)
+        user_display = str(membership.user)
+        org_name = org.name
         membership.delete()
-        messages.success(request, f"{membership.user} removed from {org.name}.")
+        messages.success(request, f"{user_display} removed from {org_name}.")
         return redirect("admin_organisation_detail", pk=org_pk)
