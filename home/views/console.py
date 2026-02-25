@@ -6,8 +6,9 @@ This interface provides a dashboard overview of the app status. It's different f
 
 from django.contrib import messages
 from django.db.models import Count
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import TemplateView, View
+from django.views.generic.base import TemplateResponseMixin
 
 from home.mixins import StaffRequiredMixin
 from home.models import Organisation, OrganisationMembership, Project, User
@@ -184,7 +185,7 @@ class ConsoleSurveyListView(StaffRequiredMixin, TemplateView):
         return context
 
 
-class ConsoleRemoveMemberView(StaffRequiredMixin, View):
+class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
     template_name = "console/remove_member_confirm.html"
 
     def _get_objects(self, org_pk, membership_pk):
@@ -201,6 +202,3 @@ class ConsoleRemoveMemberView(StaffRequiredMixin, View):
         membership.delete()
         messages.success(request, f"{membership.user} removed from {org.name}.")
         return redirect("admin_organisation_detail", pk=org_pk)
-
-    def render_to_response(self, context):
-        return render(self.request, self.template_name, context)
