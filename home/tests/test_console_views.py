@@ -1,7 +1,8 @@
 from http import HTTPStatus
 
 import SORT.test.test_case
-from SORT.test.model_factory import OrganisationFactory, OrganisationMembershipFactory, ProjectFactory, SurveyFactory, UserFactory
+from SORT.test.model_factory import OrganisationFactory, OrganisationMembershipFactory, ProjectFactory, SurveyFactory, \
+    UserFactory
 from SORT.test.model_factory.user.constants import PASSWORD
 
 
