@@ -18,7 +18,7 @@
                 <tbody>
                     {% for org in organisations %}
                     <tr>
-                        <td>{{ org.name }}</td>
+                        <td><a href="{% url 'admin_organisation_detail' org.pk %}">{{ org.name }}</a></td>
                         <td>{{ org.members.count }}</td>
                         <td>{{ org.project_set.count }}</td>
                         <td class="text-muted">{{ org.created_at|date:"d M Y" }}</td>

@@ -1,0 +1,142 @@
+{% extends "base_console.html" %}
+{% block title %}| Admin — {{ organisation.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_organisations' %}">Organisations</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ organisation.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex align-items-start justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-1">{{ organisation.name }}</h1>
+            {% if organisation.description %}
+                <p class="text-muted mb-0">{{ organisation.description }}</p>
+            {% endif %}
+        </div>
+        <div class="d-flex gap-2">
+            {# Management actions — not yet implemented #}
+            <button class="btn btn-outline-secondary btn-sm" disabled>
+                <i class="bx bx-edit"></i> Edit
+            </button>
+            <button class="btn btn-outline-danger btn-sm" disabled>
+                <i class="bx bx-trash"></i> Delete
+            </button>
+        </div>
+    </div>
+
+    {# Stats row #}
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-2 fw-bold">{{ memberships|length }}</div>
+                <div class="text-muted small">Members</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-2 fw-bold">{{ projects|length }}</div>
+                <div class="text-muted small">Projects</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-2 fw-bold">{{ survey_count }}</div>
+                <div class="text-muted small">Surveys</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        {# Members table #}
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                    <h2 class="h6 mb-0">Members</h2>
+                    <button class="btn btn-outline-primary btn-sm" disabled>
+                        <i class="bx bx-user-plus"></i> Invite member
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Joined</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for membership in memberships %}
+                            <tr>
+                                <td>{{ membership.user }}</td>
+                                <td class="text-muted">{{ membership.user.email }}</td>
+                                <td>
+                                    <span class="badge {% if membership.role == 'ADMIN' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                        {{ membership.get_role_display }}
+                                    </span>
+                                </td>
+                                <td class="text-muted">{{ membership.joined_at|date:"d M Y" }}</td>
+                                <td class="text-end">
+                                    <button class="btn btn-link btn-sm text-danger p-0" disabled title="Remove member">
+                                        <i class="bx bx-x-circle"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-muted">No members</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {# Projects list #}
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                    <h2 class="h6 mb-0">Projects</h2>
+                    <a href="{% url 'admin_projects' %}?organisation={{ organisation.pk }}" class="btn btn-outline-secondary btn-sm">
+                        View all
+                    </a>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for project in projects %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="{% url 'admin_project_detail' project.pk %}">{{ project.name }}</a>
+                        <span class="text-muted small">{{ project.survey.count }} survey{{ project.survey.count|pluralize }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-muted">No projects</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            {# Danger zone #}
+            <div class="card border-danger mt-4">
+                <div class="card-header text-danger bg-white">
+                    <h2 class="h6 mb-0">Danger zone</h2>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-2">These actions are irreversible. Proceed with care.</p>
+                    <button class="btn btn-outline-danger btn-sm w-100 mb-2" disabled>
+                        <i class="bx bx-user-x"></i> Remove all members
+                    </button>
+                    <button class="btn btn-danger btn-sm w-100" disabled>
+                        <i class="bx bx-trash"></i> Delete organisation
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

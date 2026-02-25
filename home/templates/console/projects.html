@@ -1,0 +1,96 @@
+{% extends "base_console.html" %}
+{% block title %}| Admin — Projects{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0">
+            Projects
+            {% if selected_organisation %}
+            <span class="text-muted fs-5 fw-normal">— {{ selected_organisation.name }}</span>
+            {% endif %}
+        </h1>
+        {% if selected_organisation %}
+        <a href="{% url 'admin_projects' %}" class="btn btn-sm btn-outline-secondary">Clear filter</a>
+        {% endif %}
+    </div>
+
+    <div class="mb-3">
+        <form method="get" class="d-flex gap-2 align-items-center">
+            <label for="organisation-filter" class="form-label mb-0 text-nowrap">Filter by organisation:</label>
+            <select id="organisation-filter" name="organisation" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                <option value="">All organisations</option>
+                {% for org in organisations %}
+                <option value="{{ org.pk }}" {% if selected_organisation.pk == org.pk %}selected{% endif %}>{{ org.name }}</option>
+                {% endfor %}
+            </select>
+            {% if not selected_organisation %}
+            <noscript><button type="submit" class="btn btn-sm btn-secondary">Apply</button></noscript>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Organisation</th>
+                        <th>Surveys</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'admin_project_detail' project.pk %}">{{ project.name }}</a>
+                        </td>
+                        <td>
+                            <a href="{% url 'admin_projects' %}?organisation={{ project.organisation.pk }}">
+                                {{ project.organisation.name }}
+                            </a>
+                        </td>
+                        <td>{{ project.survey.count }}</td>
+                        <td class="text-muted">{{ project.created_at|date:"d M Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-muted">No projects{% if selected_organisation %} for this organisation{% endif %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if memberships %}
+    <h2 class="h5 mt-5 mb-3">Members</h2>
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for membership in memberships %}
+                    <tr>
+                        <td>{{ membership.user.get_full_name }}</td>
+                        <td>{{ membership.user.email }}</td>
+                        <td>{{ membership.get_role_display }}</td>
+                        <td class="text-muted">{{ membership.joined_at|date:"d M Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-muted">No members</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

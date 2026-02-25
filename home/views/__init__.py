@@ -30,9 +30,13 @@ from .organisation import (
 )
 from .console import (
     ConsoleUserListView,
+    ConsoleSurveyDetailView,
     ConsoleSurveyListView,
     ConsoleView,
+    ConsoleOrganisationDetailView,
     ConsoleOrganisationListView,
+    ConsoleProjectDetailView,
+    ConsoleProjectListView,
 )
 from .project import (
     ProjectCreateView,
@@ -72,7 +76,11 @@ __all__ = [
     "ProjectEditView",
     "ProjectView",
     "ConsoleUserListView",
+    "ConsoleSurveyDetailView",
     "ConsoleSurveyListView",
     "ConsoleView",
+    "ConsoleOrganisationDetailView",
     "ConsoleOrganisationListView",
+    "ConsoleProjectDetailView",
+    "ConsoleProjectListView",
 ]

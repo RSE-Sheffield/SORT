@@ -122,6 +122,10 @@ urlpatterns = [
     # Management console (staff only)
     path("console/", views.ConsoleView.as_view(), name="admin_dashboard"),
     path("console/organisations/", views.ConsoleOrganisationListView.as_view(), name="admin_organisations"),
+    path("console/organisations/<int:pk>/", views.ConsoleOrganisationDetailView.as_view(), name="admin_organisation_detail"),
+    path("console/projects/", views.ConsoleProjectListView.as_view(), name="admin_projects"),
+    path("console/projects/<int:pk>/", views.ConsoleProjectDetailView.as_view(), name="admin_project_detail"),
     path("console/users/", views.ConsoleUserListView.as_view(), name="admin_users"),
     path("console/surveys/", views.ConsoleSurveyListView.as_view(), name="admin_surveys"),
+    path("console/surveys/<int:pk>/", views.ConsoleSurveyDetailView.as_view(), name="admin_survey_detail"),
 ]
