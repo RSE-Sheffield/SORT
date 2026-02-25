@@ -85,9 +85,9 @@
                                 </td>
                                 <td class="text-muted">{{ membership.joined_at|date:"d M Y" }}</td>
                                 <td class="text-end">
-                                    <button class="btn btn-link btn-sm text-danger p-0" disabled title="Remove member">
+                                    <a href="{% url 'admin_remove_member' org_pk=organisation.pk membership_pk=membership.pk %}" class="btn btn-link btn-sm text-danger p-0" title="Remove member">
                                         <i class="bx bx-x-circle"></i>
-                                    </button>
+                                    </a>
                                 </td>
                             </tr>
                             {% empty %}
@@ -127,9 +127,6 @@
                 </div>
                 <div class="card-body">
                     <p class="small text-muted mb-2">These actions are irreversible. Proceed with care.</p>
-                    <button class="btn btn-outline-danger btn-sm w-100 mb-2" disabled>
-                        <i class="bx bx-user-x"></i> Remove all members
-                    </button>
                     <button class="btn btn-danger btn-sm w-100" disabled>
                         <i class="bx bx-trash"></i> Delete organisation
                     </button>

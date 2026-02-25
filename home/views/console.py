@@ -4,8 +4,9 @@ Staff management console.
 This interface provides a dashboard overview of the app status. It's different from the /admin/ dashboard.
 """
 
-from django.shortcuts import get_object_or_404
-from django.views.generic import TemplateView
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.generic import TemplateView, View
 
 from home.mixins import StaffRequiredMixin
 from home.models import Organisation, OrganisationMembership, Project, User
@@ -148,3 +149,25 @@ class ConsoleSurveyListView(StaffRequiredMixin, TemplateView):
             projects = projects.filter(organisation_id=org_id)
         context["projects"] = projects
         return context
+
+
+class ConsoleRemoveMemberView(StaffRequiredMixin, View):
+    template_name = "console/remove_member_confirm.html"
+
+    def _get_objects(self, org_pk, membership_pk):
+        org = get_object_or_404(Organisation, pk=org_pk)
+        membership = get_object_or_404(OrganisationMembership, pk=membership_pk, organisation=org)
+        return org, membership
+
+    def get(self, request, org_pk, membership_pk):
+        org, membership = self._get_objects(org_pk, membership_pk)
+        return self.render_to_response({"organisation": org, "membership": membership})
+
+    def post(self, request, org_pk, membership_pk):
+        org, membership = self._get_objects(org_pk, membership_pk)
+        membership.delete()
+        messages.success(request, f"{membership.user} removed from {org.name}.")
+        return redirect("admin_organisation_detail", pk=org_pk)
+
+    def render_to_response(self, context):
+        return render(self.request, self.template_name, context)

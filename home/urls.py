@@ -138,6 +138,11 @@ urlpatterns = [
         name="admin_organisation_detail",
     ),
     path(
+        "console/organisations/<int:org_pk>/members/<int:membership_pk>/remove/",
+        views.ConsoleRemoveMemberView.as_view(),
+        name="admin_remove_member",
+    ),
+    path(
         "console/projects/",
         views.ConsoleProjectListView.as_view(),
         name="admin_projects",
