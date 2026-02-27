@@ -92,7 +92,7 @@
     <span class="input-group-text">
         "Other"
     </span>
-     <input class="form-control" type="text" value="" readonly={true}/>
+     <input class="form-control" type="text" value="" readonly={true} disabled={true} placeholder="Custom text can be added by participants."/>
     {#if readonly}
     <button class="btn btn-outline-secondary" aria-label="Delete option" title="Delete option"><i class='bx bx-x' ></i></button>
     {:else}
