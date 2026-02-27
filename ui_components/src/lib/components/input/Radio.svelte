@@ -14,11 +14,12 @@
 
   const componentId = getUniqueIDArray(config.options.length);
   const otherOptionComponentId = getUniqueID();
-  const defaultOtherValue = value && config.options.indexOf(value) < 0 ? value : "Custom option";
+  const defaultOtherValue = value && config.options.indexOf(value) < 0 ? value : "";
 
   let isValid = $state(false);
   let isInvalid = $state(false);
   let otherValue = $state(defaultOtherValue);
+  let otherRadio: HTMLInputElement|null= $state(null);
 
 
   $effect(() =>{
@@ -33,7 +34,12 @@
   }
 
   export function validate() {
-    if (config.required && !value) {
+    if (config.hasOtherOption && otherRadio && otherRadio.checked && !value){
+      // Ensure there's always a value in the other option if it's selected
+      setIsValid(false);
+      return false;
+    }
+    else if (config.required && !value) {
       setIsValid(false);
       return false;
     }
@@ -85,6 +91,7 @@
                        value={otherValue}
                        id={otherOptionComponentId}
                        bind:group={value}
+                       bind:this={otherRadio}
                        disabled={viewerMode}
 
                 />

@@ -3,12 +3,18 @@
     import {type FieldConfig, type SurveyConfig, type SurveyResponseBatch, TextType} from "../interfaces.ts";
     import {onMount} from "svelte";
 
+    type Range = {
+      min: number;
+      max: number;
+    }
+
     type FilterItem = {
         fieldConfig: FieldConfig;
         sectionIndex: number;
         fieldIndex: number;
         valueMin?: number;
         valueMax?: number;
+        options?: string[];
     }
 
     interface Props {
@@ -20,7 +26,7 @@
 
     let {config, responses, onFilterChange, onClearFiltersCallback}: Props = $props();
     let filterItems: FilterItem[] = $state([]);
-    let filterValues = $state([]);
+    let filterValues: (string|number|Range|null)[] = $state([]);
     let filteredResponses = $state(responses);
     let initialFilterValues: Array<null | {min: number, max: number}> = [];
 
@@ -38,13 +44,19 @@
                         case "checkbox":
                         case "select":
                         case "radio":
-                            filterItems.push({
-                                fieldConfig: fieldConfig,
-                                sectionIndex: si,
-                                fieldIndex: fi,
-                            });
-                            filterValues.push(null);
-                            initialFilterValues.push(null);
+                            {
+                              const filterOptions = fieldConfig.hasOtherOption ?
+                                  getAllOptionsFromField(fieldConfig, responses, si, fi) :
+                                  fieldConfig.options;
+                                filterItems.push({
+                                    fieldConfig: fieldConfig,
+                                    sectionIndex: si,
+                                    fieldIndex: fi,
+                                    options: filterOptions,
+                                });
+                                filterValues.push(null);
+                                initialFilterValues.push(null);
+                            }
                             break;
                         case "text":
                             if (fieldConfig.textType === TextType.decimals ||
@@ -63,7 +75,7 @@
                                     valueMax: max,
                                     valueMin: min,
                                 });
-                                const initialRange = {min: min, max: max};
+                                const initialRange: Range = {min: min, max: max};
                                 filterValues.push({...initialRange});
                                 initialFilterValues.push({...initialRange});
                             }
@@ -115,7 +127,7 @@
             const filterItem = filterItems[filterIndex];
             const filterValue = filterValues[filterIndex];
 
-            if (filterItem.fieldConfig.type === "text") {
+            if (filterItem.fieldConfig.type === "text" && filterValue instanceof Range) {
                 // Check if range filter differs from full range
                 if (filterValue.min !== filterItem.valueMin || filterValue.max !== filterItem.valueMax) {
                     activeFilters.push({
@@ -150,6 +162,15 @@
         }
         // Trigger filter change with reset values
         handleFilterChange();
+    }
+
+    function getAllOptionsFromField(fieldConfig: FieldConfig, responses: SurveyResponseBatch, sectionIndex: number, fieldIndex: number){
+      const allOptions = new Set<string>(fieldConfig.options);
+      responses.map(response => {
+        const responseValue = response[sectionIndex][fieldIndex];
+        allOptions.add(responseValue);
+      })
+      return [...allOptions];
     }
 
 </script>
@@ -187,7 +208,7 @@
                 <strong>{fItem.fieldConfig.label}</strong>
                 <select class="form-select" bind:value={filterValues[fItemIndex]} onchange={handleFilterChange}>
                     <option value={null}>All</option>
-                    {#each fItem.fieldConfig.options as option}
+                    {#each fItem.options as option}
                         <option value={option}>{option}</option>
                     {/each}
                 </select>
