@@ -1,5 +1,14 @@
 <script lang="ts">
-    let {options = $bindable(), type = "", readonly=false} = $props();
+  import type {FieldType} from "../../interfaces.ts";
+
+  interface Props {
+    options: string[];
+    type: FieldType|null;
+    readonly : boolean;
+    hasOtherOption?: boolean;
+
+  }
+    let {options = $bindable(), type = null, readonly=false, hasOtherOption = $bindable()}: Props = $props();
 
     function addOption(){
         options.push("Option " + (options.length + 1));
@@ -8,6 +17,12 @@
     function deleteOption(index){
         options.splice(index, 1);
     }
+
+    function setHasOtherOption(hasOption: boolean){
+      hasOtherOption = hasOption;
+    }
+
+
 
     /**
      * Handle pasting text into an option text input.
@@ -60,10 +75,38 @@
     {/if}
 </div>
 {/each}
+{#if type === "radio" && hasOtherOption}
+<div class="input-group mb-1">
+    <!-- Icon (based on question type) -->
+     <span class="input-group-text">
+         {#if type === "radio"}
+            <i class='bx bx-radio-circle-marked' ></i>
+         {:else if type === "checkbox"}
+             <i class='bx bx-check-square' ></i>
+         {:else if type === "select"}
+             <i class='bx bx-menu' ></i>
+         {:else if type === "likert"}
+             <i class='bx bxs-grid'></i>
+         {/if}
+     </span>
+    <span class="input-group-text">
+        "Other"
+    </span>
+     <input class="form-control" type="text" value="" readonly={true} disabled={true} placeholder="Custom text can be added by participants."/>
+    {#if readonly}
+    <button class="btn btn-outline-secondary" aria-label="Delete option" title="Delete option"><i class='bx bx-x' ></i></button>
+    {:else}
+    <button class="btn btn-outline-danger" onclick={()=>{setHasOtherOption(false)}} aria-label="Delete option" title="Delete option"><i class='bx bx-x' ></i></button>
+    {/if}
+</div>
+{/if}
 <div>
     {#if readonly}
     <button class="btn btn-secondary btn-sm"><i class="bx bx-plus"></i> Add option</button>
     {:else}
     <button class="btn btn-primary btn-sm" onclick={addOption}><i class="bx bx-plus"></i> Add option</button>
+        {#if type === "radio" && !hasOtherOption}
+            or <button class="btn btn-primary btn-sm" onclick={()=>{setHasOtherOption(true)}}><i class="bx bx-plus"></i> Add "Other" option</button>
+        {/if}
     {/if}
 </div>
