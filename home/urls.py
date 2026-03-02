@@ -8,7 +8,9 @@ from . import views
 urlpatterns = [
     path("", views.LandingView.as_view(), name="landing"),
     path("dashboard/", views.HomeView.as_view(), name="dashboard"),
-    path("home/", views.HomeView.as_view(), name="home"),  # Backwards compatibility alias
+    path(
+        "home/", views.HomeView.as_view(), name="home"
+    ),  # Backwards compatibility alias
     path("login/", views.LoginInterfaceView.as_view(), name="login"),
     path("logout/", views.LogoutInterfaceView.as_view(), name="logout"),
     re_path(
@@ -111,12 +113,53 @@ urlpatterns = [
         views.TroubleshootingView.as_view(),
         name="troubleshooting",
     ),
-    path("help/faq/", views.FAQView.as_view(), name="faq", ),
+    path(
+        "help/faq/",
+        views.FAQView.as_view(),
+        name="faq",
+    ),
     path("eula/", views.LicenseAgreementView.as_view(), name="eula"),
     path("privacy/", views.PrivacyPolicyView.as_view(), name="privacy"),
     path(
         "participant-information/",
         views.ParticipantInformationView.as_view(),
         name="participant_information",
+    ),
+    # Management console (staff only)
+    path("console/", views.ConsoleView.as_view(), name="admin_dashboard"),
+    path(
+        "console/organisations/",
+        views.ConsoleOrganisationListView.as_view(),
+        name="admin_organisations",
+    ),
+    path(
+        "console/organisations/<int:pk>/",
+        views.ConsoleOrganisationDetailView.as_view(),
+        name="admin_organisation_detail",
+    ),
+    path(
+        "console/organisations/<int:org_pk>/members/<int:membership_pk>/remove/",
+        views.ConsoleRemoveMemberView.as_view(),
+        name="admin_remove_member",
+    ),
+    path(
+        "console/projects/",
+        views.ConsoleProjectListView.as_view(),
+        name="admin_projects",
+    ),
+    path(
+        "console/projects/<int:pk>/",
+        views.ConsoleProjectDetailView.as_view(),
+        name="admin_project_detail",
+    ),
+    path("console/users/", views.ConsoleUserListView.as_view(), name="admin_users"),
+    path("console/users/<int:pk>/", views.ConsoleUserDetailView.as_view(), name="admin_user_detail"),
+    path(
+        "console/surveys/", views.ConsoleSurveyListView.as_view(), name="admin_surveys"
+    ),
+    path(
+        "console/surveys/<int:pk>/",
+        views.ConsoleSurveyDetailView.as_view(),
+        name="admin_survey_detail",
     ),
 ]
