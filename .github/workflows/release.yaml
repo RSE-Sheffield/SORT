@@ -36,17 +36,12 @@ jobs:
       - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
         run: npx semantic-release
 
       - name: Create release artifacts
         run: |
           mkdir -p release-artifacts
-          # Read version written by semantic-release
-          VERSION=$(cat VERSION)
+          VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
           # Include built frontend assets
           tar -czf release-artifacts/sort-frontend-${VERSION}.tar.gz static/ui-components/
           # Create source archive with built assets
@@ -55,8 +50,8 @@ jobs:
       - name: Summary
         if: success()
         run: |
-          VERSION=$(cat VERSION)
-          echo "## Release Created Successfully! 🚀" >> $GITHUB_STEP_SUMMARY
+          VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
+          echo "## Release Created Successfully!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Version**: v${VERSION}" >> $GITHUB_STEP_SUMMARY
           echo "- **Release URL**: https://github.com/${{ github.repository }}/releases/tag/v${VERSION}" >> $GITHUB_STEP_SUMMARY
