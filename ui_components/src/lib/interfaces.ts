@@ -18,8 +18,10 @@ export interface FileDescription {
 
 export type {FileDescription as FileDescriptionType}
 
+export type FieldType = "text" | "textarea" | "checkbox" | "radio" | "select" | "likert";
+
 export type FieldConfig = {
-    type: "text" | "textarea" | "checkbox" | "radio" | "select" | "likert";
+    type: FieldType;
     label: string;
     description: string;
     required: boolean;
@@ -33,6 +35,27 @@ export type FieldConfig = {
     textType?: TextType;
     readOnly?: boolean;
     disabled?: boolean;
+    hasOtherOption?: boolean; // Freetext option only for Radio components
+}
+
+export function getDefaultFieldConfig(): FieldConfig {
+    return {
+        type: "text",
+        label: "New Question",
+        description: "",
+        required: true,
+        sublabels: [], // Subquestions for likert
+        options: [], // Options for Checkbox, Radio, Select and Likert
+        // Text and Textarea options
+        enforceValueConstraints: false,
+        maxNumChar: 500,
+        minNumValue: 0,
+        maxNumValue: 100,
+        textType: TextType.plain,
+        readOnly: false,
+        disabled: false,
+        hasOtherOption: false,
+    };
 }
 
 export type SectionConfig = {
@@ -42,8 +65,30 @@ export type SectionConfig = {
     fields: FieldConfig[];
 }
 
+export const SectionTypes = [
+    {label: "Consent", value: "consent"},
+    {label: "SORT", value: "sort"},
+    {label: "Demographic", value: "demographic"}
+];
+
+export function getDefaultSectionConfig() {
+    return {
+        title: "New section",
+        description: "Section description",
+        type: "consent",
+        fields: []
+    } as SectionConfig;
+}
+
 export type SurveyConfig = {
     sections: SectionConfig[];
+}
+
+export function getDefaultSurveyConfig(){
+    return {
+        sections: [],
+    } as SurveyConfig;
+
 }
 
 
@@ -80,4 +125,8 @@ export type SectionStats = {
 export type SurveyStats = {
     sections: SectionStats[];
 }
+
+
+
+
 

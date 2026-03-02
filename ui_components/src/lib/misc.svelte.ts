@@ -221,21 +221,35 @@ function fieldStatForLikert(fieldConfig: FieldConfig, si: number, fi: number, re
 
 function histogramFromConfigAndValues(fieldConfig: FieldConfig, values: string[]) {
     const valuesCountMap = new Map<string, number>();
+    // Histogram from options in the configuration
     fieldConfig.options.map((value: string) => {
         valuesCountMap.set(value, 0);
     });
+
+    // Add histogram entry for custom "other" options
+    if(fieldConfig.hasOtherOption){
+        values.map(val => {
+            if(!valuesCountMap.has(val)){
+                valuesCountMap.set(val, 0);
+            }
+        });
+    }
+
+    // Increment histogram count by going through all the values
     for (let i = 0; i < values.length; i++) {
         valuesCountMap.set(values[i], (valuesCountMap.get(values[i]) ?? 0) + 1);
     }
+    // Convert to correct structure
     const valuesHistogram: ValueCount[] = [];
-    fieldConfig.options.map((value) => {
-        valuesHistogram.push({option: value, count: (valuesCountMap.get(value) ?? 0)})
-    })
+    for(const [option, count] of valuesCountMap){
+        valuesHistogram.push({option: option, count: count});
+    }
     return valuesHistogram
 }
 
 function genNumericFieldStats(fieldConfig: FieldConfig, values: string[], fieldStats: FieldStats) {
-    if (fieldOptionsAreNumeric(fieldConfig)) {
+    const fieldIsNumeric = values.every(val => isOptionNumeric(val));
+    if (fieldIsNumeric) {
         const valuesNum = values.map(Number);
         fieldStats.areValuesNumeric = true;
         fieldStats.mean = _.mean(valuesNum);
@@ -244,11 +258,8 @@ function genNumericFieldStats(fieldConfig: FieldConfig, values: string[], fieldS
     }
 }
 
-
-function fieldOptionsAreNumeric(fieldConfig: FieldConfig) {
-    return fieldConfig.options.every((value) => {
-        return !isNaN(Number(value)) && !isNaN(parseFloat(value));
-    });
+function isOptionNumeric(option: string){
+    return !isNaN(Number(option)) && !isNaN(parseFloat(option));
 }
 
 export function getHighestHistogramValue(histogram: ValueCount[]) {

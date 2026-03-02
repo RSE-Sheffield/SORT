@@ -1,28 +1,11 @@
 <script lang="ts" module>
-    import {type FieldConfig, TextType} from "../../interfaces.ts";
+  import {type FieldConfig, TextType, getDefaultFieldConfig} from "../../interfaces.ts";
 
 
-    export type MoveRequestHandler = (srcSectionIndex: number,
+  export type MoveRequestHandler = (srcSectionIndex: number,
                                       srcFieldIndex: number,
                                       destSectionIndex: number,
                                       destFieldIndex: number) => void
-
-    export function getDefaultFieldConfig(): FieldConfig {
-        return {
-            type: "text",
-            label: "New Question",
-            description: "",
-            required: true,
-            sublabels: [], // Subquestions for likert
-            options: [], // Options for Checkbox, Radio, Select and Likert
-            // Text and Textarea options
-            enforceValueConstraints: false,
-            maxNumChar: 500,
-            minNumValue: 0,
-            maxNumValue: 100,
-            textType: TextType.plain,
-        };
-    }
 
     let isDragging = $state(false);
 </script>
@@ -96,7 +79,7 @@
     }: Props = $props();
   
     // Some fields cannot be modified
-    const readonly = config.readOnly;
+    const readonly = config.readOnly ? config.readOnly : false;
 
     //Create a field config object or insert missing keys
     if (config === null || config === undefined) {
@@ -291,7 +274,7 @@
             {#if componentTypeWithOptions.has(config.type)}
                 <div class="mb-3">
                     <div class="form-label">Options</div>
-                    <OptionsList bind:options={config.options} type={config.type} readonly={readonly}/>
+                    <OptionsList bind:options={config.options} type={config.type} readonly={readonly} bind:hasOtherOption={config.hasOtherOption}/>
                 </div>
             {/if}
 
