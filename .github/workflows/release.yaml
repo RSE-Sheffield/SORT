@@ -33,16 +33,6 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
-      - name: Create release artifacts
-        run: |
-          mkdir -p release-artifacts
-          # Get version from package.json for artifact naming
-          VERSION=$(node -p "require('./package.json').version")
-          # Include built frontend assets
-          tar -czf release-artifacts/sort-frontend-${VERSION}.tar.gz static/ui-components/
-          # Create source archive with built assets
-          git archive --format=tar.gz --prefix=SORT-${VERSION}/ HEAD > release-artifacts/SORT-${VERSION}.tar.gz
-
       - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -51,6 +41,16 @@ jobs:
           GIT_COMMITTER_NAME: github-actions[bot]
           GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
         run: npx semantic-release
+
+      - name: Create release artifacts
+        run: |
+          mkdir -p release-artifacts
+          # Read version written by semantic-release
+          VERSION=$(cat VERSION)
+          # Include built frontend assets
+          tar -czf release-artifacts/sort-frontend-${VERSION}.tar.gz static/ui-components/
+          # Create source archive with built assets
+          git archive --format=tar.gz --prefix=SORT-${VERSION}/ HEAD > release-artifacts/SORT-${VERSION}.tar.gz
 
       - name: Summary
         if: success()
