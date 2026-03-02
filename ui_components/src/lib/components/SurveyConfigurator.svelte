@@ -80,7 +80,7 @@
   }
 </script>
 
-{#each config.sections as section, index (index)}
+{#each config.sections as _section, index (index)}
   <SectionComponent
     bind:config={config.sections[index]}
     {editable}
