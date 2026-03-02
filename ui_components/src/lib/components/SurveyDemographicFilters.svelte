@@ -205,10 +205,9 @@
     fieldIndex: number,
   ) {
     const allOptions = new Set<string>(fieldConfig.options);
-    responses.map((response) => {
-      const responseValue = response[sectionIndex][fieldIndex];
-      allOptions.add(responseValue);
-    });
+    for (const response of responses) {
+      allOptions.add(response[sectionIndex][fieldIndex]);
+    }
     return [...allOptions];
   }
 </script>
