@@ -26,10 +26,11 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: npm audit fix
+      - name: NPM audit
         id: audit-fix
         run: |
-          npm audit fix
+          # Only scan production dependencies (exclude development or CI ones)
+          npm audit fix --only=prod
 
           # Check if there are any changes
           if [[ -n $(git status --porcelain) ]]; then

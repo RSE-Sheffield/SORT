@@ -1,4 +1,5 @@
 [![Run Django checks](https://github.com/RSE-Sheffield/SORT/actions/workflows/django-check.yaml/badge.svg)](https://github.com/RSE-Sheffield/SORT/actions/workflows/django-check.yaml)
+
 # SORT
 ### Self-Assessment of Organisational Readiness Tool
 
@@ -12,8 +13,6 @@ integrate research into nursing practice, ultimately contributing to improved pa
 
 Follow these steps to set up and run the app locally:
 
----
-
 Prerequisites, ensure the following are already installed on your system:
 
 - Python (the version is defined [.python-version](./.python-version))
@@ -26,16 +25,11 @@ Prerequisites, ensure the following are already installed on your system:
 git clone <repository-url>
 ```
 
----
-
 2. Create and activate a virtual environment
 ```bash
 python -m venv .venv
 source .venv/Scripts/activate
-
 ```
-
----
 
 3. Install dependencies
 ```bash
@@ -45,22 +39,16 @@ pip install -r requirements.txt
 npm install
 ```
 
----
-
 4. Configure the database
 
 ```bash
 python manage.py migrate
 ```
 
----
-
 5. Create a superuser
 ```bash
 python manage.py createsuperuser
 ```
-
----
 
 6. Create a `.env` file in the project root directory and add the following environment variables (which should be used in development only)
 
@@ -68,9 +56,8 @@ python manage.py createsuperuser
 cp .env.example .env
 ```
 
----
-
 7. Finally, start the development server
+
 ```bash
 python manage.py runserver
 ```
@@ -82,13 +69,9 @@ npm run dev
 
 The app will be available at http://127.0.0.1:8000.
 
----
-
 9. Import test data by following the instructions as [`data/README.md`](./data/README.md).
 
 # Deployment
-
-
 
 Please read [`docs/deployment.md`](docs/deployment.md).
 

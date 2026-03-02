@@ -33,30 +33,25 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
       - name: Create release artifacts
         run: |
           mkdir -p release-artifacts
-          # Get version from package.json for artifact naming
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
           # Include built frontend assets
           tar -czf release-artifacts/sort-frontend-${VERSION}.tar.gz static/ui-components/
           # Create source archive with built assets
           git archive --format=tar.gz --prefix=SORT-${VERSION}/ HEAD > release-artifacts/SORT-${VERSION}.tar.gz
 
-      - name: Run semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
-        run: npx semantic-release
-
       - name: Summary
         if: success()
         run: |
-          VERSION=$(cat VERSION)
-          echo "## Release Created Successfully! 🚀" >> $GITHUB_STEP_SUMMARY
+          VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
+          echo "## Release Created Successfully!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Version**: v${VERSION}" >> $GITHUB_STEP_SUMMARY
           echo "- **Release URL**: https://github.com/${{ github.repository }}/releases/tag/v${VERSION}" >> $GITHUB_STEP_SUMMARY
