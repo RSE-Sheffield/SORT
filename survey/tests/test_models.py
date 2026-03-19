@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 
 from django.conf import settings
 from django.db import IntegrityError
