@@ -6,6 +6,22 @@
       "description": "Please fill in your demographic information",
       "fields": [
         {
+          "type": "radio",
+          "label": "What type of organisation do you work for?",
+          "required": true,
+          "sublabels": [],
+          "options": [
+            "NHS Trust / Foundation Trust",
+            "NHS England / ICB / ICS",
+            "Local authority",
+            "Voluntary, Community, Faith, or Social Enterprise (VCFSE)",
+            "Primary care (GP practice, PCN, or similar)",
+            "Other"
+          ],
+          "disabled": false,
+          "readOnly": true
+        },
+        {
           "type": "text",
           "label": "What is your age?",
           "required": true,
