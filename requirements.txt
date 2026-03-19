@@ -5,7 +5,7 @@ django-qr-code==4.1.0
 django-crispy-forms==2.4
 crispy-bootstrap5==2025.4
 django-invitations==2.1.0
-django-allauth==65.13.0
+django-allauth==65.14.1
 psycopg[binary]==3.2.*
 python-dotenv==1.0.1
 gunicorn==23.*
