@@ -8,6 +8,7 @@
         {
           "type": "radio",
           "label": "What type of organisation do you work for?",
+          "description": "",
           "required": true,
           "sublabels": [],
           "options": [
