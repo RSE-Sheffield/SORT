@@ -11,5 +11,5 @@ python-dotenv==1.0.1
 gunicorn==23.*
 strenum==0.4.15
 xlsxwriter==3.2.5
-sqlparse==0.5.1
+sqlparse==0.5.4
 tzdata==2024.1
