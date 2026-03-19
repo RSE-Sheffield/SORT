@@ -33,6 +33,14 @@ class Profession(models.TextChoices):
     WIDMIVES = "Midwives", "Midwives"
     NURSES_MIDWIVES = "Nurses & Midwives", "Nurses and Midwives"
     AHP = "AHP", "Allied Health Professionals (AHP)"
+    SOCIAL_PRESCRIBERS = "Social Prescribers", "Social Prescribers"
+    HEALTH_COACHES = "Health Coaches", "Health Coaches"
+    PHYSICIAN_ASSOCIATES = "Physician Associates", "Physician Associates"
+    MENTAL_HEALTH_PRACTITIONERS = (
+        "Mental Health Practitioners",
+        "Mental Health Practitioners",
+    )
+    PRACTICE_MANAGERS = "Practice Managers", "Practice Managers"
     GENERIC = "Generic", "Generic (Other Professional Groups)"
 
 
