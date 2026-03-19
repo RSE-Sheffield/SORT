@@ -1,3 +1,7 @@
+import json
+from pathlib import Path
+
+from django.conf import settings
 from django.db import IntegrityError
 from django.test import TestCase
 
@@ -64,3 +68,53 @@ class TestSurveyEvidenceSection(TestCase):
         # Verify fields are accessible
         self.assertIsNotNone(survey.fields)
         self.assertTrue(survey.fields)
+
+
+class TestSurveyConfigSublabels(TestCase):
+    """
+    Regression tests for sublabel wording in survey config JSON files.
+    Guards against double spaces and incorrect phrasing in E3/E4 sublabels.
+    """
+
+    def _get_all_sublabels(self, config: dict) -> list[str]:
+        sublabels = []
+        for section in config.get("sections", []):
+            for field in section.get("fields", []):
+                sublabels.extend(field.get("sublabels", []))
+        return sublabels
+
+    def _load_config(self, filename: str) -> dict:
+        path = settings.SURVEY_TEMPLATE_DIR / filename
+        with path.open() as f:
+            return json.load(f)
+
+    def test_no_double_spaces_in_e3_e4_sublabels(self):
+        """E3 and E4 sublabels must not contain double spaces."""
+        for filename in settings.SURVEY_TEMPLATES.values():
+            config = self._load_config(filename)
+            sublabels = self._get_all_sublabels(config)
+            for label_prefix in ("E3.", "E4."):
+                text = next((s for s in sublabels if s.startswith(label_prefix)), None)
+                if text is None:
+                    continue
+                self.assertNotIn(
+                    "  ",
+                    text,
+                    msg=f"Double space found in {label_prefix} sublabel in {filename!r}: {text!r}",
+                )
+
+    def test_e3_e4_sublabel_phrasing(self):
+        """E3 and E4 sublabels must use 'on the use of … to support' phrasing."""
+        for filename in settings.SURVEY_TEMPLATES.values():
+            config = self._load_config(filename)
+            sublabels = self._get_all_sublabels(config)
+            e3 = next((s for s in sublabels if s.startswith("E3.")), None)
+            e4 = next((s for s in sublabels if s.startswith("E4.")), None)
+            for label, text in [("E3", e3), ("E4", e4)]:
+                if text is None:
+                    continue
+                self.assertIn(
+                    "on the use of digital technology to support",
+                    text,
+                    msg=f"{label} sublabel in {filename!r} has unexpected phrasing: {text!r}",
+                )
