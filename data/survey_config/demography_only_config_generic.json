@@ -145,7 +145,7 @@
           "maxNumValue": 100,
           "minNumValue": 0,
           "options": [],
-          "required": true,
+          "required": false,
           "sublabels": [],
           "textType": "INTEGER_TEXT",
           "type": "text",
