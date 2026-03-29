@@ -126,11 +126,14 @@
           "required": true,
           "sublabels": [],
           "options": [
-            "No qualification",
+            "No formal qualification",
+            "NVQ / National Vocational Qualification",
+            "BTEC / Level 3 technical qualification",
+            "Apprenticeship qualification",
             "Diploma",
             "Degree",
             "Masters",
-            "PhD/Doctorate",
+            "PhD / Doctorate",
             "Other"
           ],
           "disabled": false,
