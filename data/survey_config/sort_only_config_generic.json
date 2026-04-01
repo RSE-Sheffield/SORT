@@ -17,11 +17,11 @@
             "A3. Our organisation identifies and celebrates success in the research related activity",
             "A4. Our organisation provides research advice sessions to explore ideas for project development",
             "A5. Our organisation provides help to navigate research funding submissions, ethics and governance systems",
-            "A6. Our organisation has a finance department that can cost research project involvement for external funding applications",
+            "A6. Our organisation has a department or function that can cost research project involvement for external funding applications",
             "A7. Our organisation has an active research-related mentorship programme",
             "A8. Our organisation provides mentorship to apply for internships and fellowship opportunities",
             "A9. Our organisation enables the use of awarded grant funding in the manner intended (for example, protected time and spending decisions)",
-            "A10. Our organisation provides access to research learning opportunities to develop research skills delivered through our R&D department, service development, education, or training departments",
+            "A10. Our organisation provides access to research learning opportunities to develop research skills delivered through our research, service development, education, or training functions",
             "A11. Our organisation provides access to experts who can advise on developing project proposals",
             "A12. Our organisation has a mission statement that includes an ambition to do research as a core activity",
             "A13. Our organisation has a strategic document to support research capacity development for practitioners",
@@ -30,10 +30,10 @@
             "A16. Our organisation monitors research supervision and successful project development and delivery",
             "A17. Our organisation develops good news stories of research in our internal and external communications",
             "A18. Our organisation includes research in our induction process",
-            "A19. Our organisation offers pre-registration research placement opportunities",
+            "A19. Our organisation offers research placement opportunities for students and trainees",
             "A20. Our organisation offers continuing professional development in research",
-            "A21. Our organisation provides opportunities to use research skills and experience of leadership at post-masters",
-            "A22. Our organisation provides opportunities to use research skills and experience of leadership at post-doctoral levels."
+            "A21. Our organisation provides opportunities to use research skills and experience of leadership at post-masters or equivalent advanced level",
+            "A22. Our organisation provides opportunities to use research skills and experience of leadership at post-doctoral or equivalent research leadership levels."
           ],
           "options": [
             "0",
@@ -56,7 +56,7 @@
     {
       "title": "B. Embedding Research",
       "type": "sort",
-      "description": "This includes reducing barriers to research related activities by providing time and resources. It covers making research legitimate in the organisation, recognising the impact of research and staff contribution to research.",
+      "description": "This includes reducing barriers to research related activities by providing time and resources. It covers making research legitimate in the organisation, recognising the impact of research and staff contribution to research. References to Public and Patient Involvement and Engagement (PPIE) include equivalent service user or co-production involvement.",
       "fields": [
         {
           "type": "likert",
@@ -66,10 +66,10 @@
           "required": true,
           "sublabels": [
             "B1. Our organisation provides protected time to support research related activities",
-            "B2. Our organisation provides resources (for example, time and/or funds) to support Public and Patient Involvement and Engagement to identify and develop research",
+            "B2. Our organisation provides resources (for example, time and/or funds) to support Public and Patient Involvement and Engagement (or equivalent service user / co-production involvement) to identify and develop research",
             "B3. Our organisation develops impact stories from projects where colleagues support, participate or lead research",
-            "B4. Our organisation collects case studies of where Public and Patient Involvement and Engagement has made a difference to research",
-            "B5. Our organisation actively communicates to the workforce, clinical managers and executive team about how the involvement of colleagues in research has made a difference to services and people"
+            "B4. Our organisation collects case studies of where Public and Patient Involvement and Engagement (or equivalent service user / co-production involvement) has made a difference to research",
+            "B5. Our organisation actively communicates to the workforce, managers and executive team about how the involvement of colleagues in research has made a difference to services and people"
           ],
           "options": [
             "0",
@@ -136,10 +136,10 @@
           "description": "Rate the following statements from 0 to 4 (0 Not yet planned; 1 Planned; 2 Early progress; 3 Substantial Progress; 4 Established). Answer 0 if you don't know or the question is irrelevant. There is a comment box at the bottom for detailed responses.",
           "required": true,
           "sublabels": [
-            "D1. Our organisation has skills to support Public and Patient Involvement and Engagement",
-            "D2. Our organisation use their expertise to deliver research, including portfolio (commercial and non-commercial) research",
+            "D1. Our organisation has skills to support Public and Patient Involvement and Engagement (or equivalent service user / co-production involvement)",
+            "D2. Our organisation use their expertise to deliver research, including formal research programmes (commercial, non-commercial, or service-based)",
             "D3. Our organisation who deliver research have their contribution recognised in research outputs (for example, through acknowledgement, co-authorship)",
-            "D4. Our organisation who work at an advanced, specialist, and consultant levels of practice act as principal investigators (PIs) for portfolio research"
+            "D4. Our organisation who work at an advanced, specialist, and leadership levels of practice act as principal or lead investigators for formal research"
           ],
           "options": [
             "0",
