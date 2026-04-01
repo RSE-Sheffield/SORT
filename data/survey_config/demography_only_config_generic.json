@@ -6,6 +6,23 @@
       "description": "Please fill in your demographic information",
       "fields": [
         {
+          "type": "radio",
+          "label": "What type of organisation do you work for?",
+          "description": "",
+          "required": true,
+          "sublabels": [],
+          "options": [
+            "NHS Trust / Foundation Trust",
+            "NHS England / ICB / ICS",
+            "Local authority",
+            "Voluntary, Community, Faith, or Social Enterprise (VCFSE)",
+            "Primary care (GP practice, PCN, or similar)",
+            "Other"
+          ],
+          "disabled": false,
+          "readOnly": true
+        },
+        {
           "type": "text",
           "label": "What is your age?",
           "required": true,
@@ -64,7 +81,8 @@
             "Band 8b",
             "Band 8c",
             "Band 8d",
-            "Band 9"
+            "Band 9",
+            "Not applicable / other pay scale"
           ],
           "disabled": false,
           "readOnly": true
@@ -100,12 +118,15 @@
             "Psychologist",
             "Radiographer",
             "Speech and Language Therapist",
-            "Social Worker",
             "Social Care / Support Worker",
             "Community, Faith & Third Sector",
             "Corporate Facilities & Support",
             "Commissioning / Strategy / Policy Professional",
             "Advocacy / Advice Worker",
+            "Children's Services Worker",
+            "Housing / Homelessness Worker",
+            "Youth Worker",
+            "Community Development Worker",
             "Other"
           ],
           "disabled": false,
@@ -134,11 +155,14 @@
           "required": true,
           "sublabels": [],
           "options": [
-            "No qualification",
+            "No formal qualification",
+            "NVQ / National Vocational Qualification",
+            "BTEC / Level 3 technical qualification",
+            "Apprenticeship qualification",
             "Diploma",
             "Degree",
             "Masters",
-            "PhD/Doctorate",
+            "PhD / Doctorate",
             "Other"
           ],
           "disabled": false,
@@ -153,7 +177,7 @@
           "maxNumValue": 100,
           "minNumValue": 0,
           "options": [],
-          "required": true,
+          "required": false,
           "sublabels": [],
           "textType": "INTEGER_TEXT",
           "type": "text",
