@@ -40,17 +40,10 @@
                 {% endif %}
             </div>
         {% endfor %}
-
-        <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="is_manager" name="is_manager" required>
-            <label class="form-check-label" for="is_manager">
-                I confirm I am signing up to SORT as an account manager.
-            </label>
-        </div>
-
         <button type="submit" class="btn btn-primary w-100">Register</button>
     </form>
     <div class="text-center mt-2 small-text" style="font-size: 0.7rem;">
         <a href="{% url 'login' %}">Already have an account? Login here</a>
     </div>
 {% endblock %}
+
