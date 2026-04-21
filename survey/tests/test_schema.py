@@ -258,7 +258,7 @@ class TestSurveyResponseValidate(TestCase):
             {"fields": [{"type": "checkbox", "options": ["A", "B"]}]}
         ])
         with self.assertRaises(ValidationError):
-            self._response(survey, [[ ["Z"] ]]).validate()
+            self._response(survey, [[["Z"]]]).validate()
 
     # --- validate() vs clean() and inactive survey ---
 

@@ -2,24 +2,9 @@
 # This Makefile contains common Django management commands for easier development
 
 # Variables
-PYTHON = python
+PYTHON = .venv/bin/python
 MANAGE = $(PYTHON) manage.py
 PROJECT_NAME = SORT
-
-# Help command to list all available commands
-help:
-	@echo "Available commands:"
-	@echo "  make runserver        - Start Django development server"
-	@echo "  make migrations       - Create new database migrations"
-	@echo "  make migrate          - Apply database migrations"
-	@echo "  make check            - Run Django system checks (including migration check)"
-	@echo "  make superuser       - Create a superuser account"
-	@echo "  make static          - Collect static files"
-	@echo "  make shell           - Open Django shell"
-	@echo "  make test            - Run tests"
-	@echo "  make clean           - Remove Python compiled files"
-	@echo "  make requirements    - Install Python dependencies"
-	@echo "  make lint            - Run code linting on project files"
 
 # Development server
 runserver:
@@ -63,7 +48,9 @@ requirements:
 
 # Code quality - only check project source files
 lint:
-	flake8 $(PROJECT_NAME) --exclude=migrations,settings.py
+	flake8
+
+format:
 	black $(PROJECT_NAME) --exclude="migrations|settings.py"
 
 # Default target when just running 'make'
