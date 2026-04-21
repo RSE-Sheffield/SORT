@@ -13,6 +13,7 @@ from contextlib import contextmanager
 import xlsxwriter
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.http import HttpRequest
 from django.urls import reverse
@@ -183,6 +184,35 @@ class Survey(models.Model):
         # The consent_config and demography_config fields are redundant because their values are merged into the
         # survey_config field
         return tuple(self.survey_config["sections"])
+
+    @property
+    def response_schema(self) -> dict:
+        """
+        Generate a JSON Schema that validates the structure of response answers.
+        """
+        from survey.schema import field_schema
+
+        section_schemas = []
+        for section in self.sections:
+            fields = section.get("fields", [])
+            field_schemas = [field_schema(f) for f in fields]
+            section_schemas.append(
+                {
+                    "type": "array",
+                    "prefixItems": field_schemas,
+                    "items": False,
+                    "minItems": len(fields),
+                    "maxItems": len(fields),
+                }
+            )
+
+        return {
+            "type": "array",
+            "prefixItems": section_schemas,
+            "items": False,
+            "minItems": len(section_schemas),
+            "maxItems": len(section_schemas),
+        }
 
     @classmethod
     def _generate_random_field_value(cls, field_config):
@@ -474,6 +504,14 @@ class SurveyResponse(models.Model):
         # Paused survey
         if not self.survey.is_active:
             raise ValueError("Cannot submit response to an inactive survey")
+
+        # Validate response structure against survey config
+        import jsonschema
+
+        try:
+            jsonschema.validate(self.answers, self.survey.response_schema)
+        except jsonschema.ValidationError as exc:
+            raise ValidationError(exc.message) from exc
 
     @property
     def answers_values(self) -> Generator[str, None, None]:
