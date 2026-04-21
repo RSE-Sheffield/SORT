@@ -274,7 +274,8 @@ class Survey(models.Model):
         """
         Enter a new survey submission.
         """
-        survey_response = SurveyResponse.objects.create(survey=self, answers=answers)
+        survey_response = SurveyResponse(survey=self, answers=answers)
+        survey_response.full_clean()
         survey_response.save()
         return survey_response
 
