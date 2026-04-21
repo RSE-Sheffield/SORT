@@ -1,0 +1,475 @@
+{% extends "base_manager.html" %}
+{% block title %}User Guide{% endblock %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bx bxs-help-circle"></i> Help
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <h1><i class="bx bxs-book-content"></i> SORT Online User Guide</h1>
+        <p class="lead">
+            Welcome to the SORT Online User Guide. This comprehensive guide will help you navigate the
+            Self-Assessment of Organisational Readiness Tool and make the most of its features.
+        </p>
+
+        <!-- Quick Links -->
+        <div class="row mb-5">
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bx bx-rocket fs-1 text-primary"></i>
+                        <h3 class="card-title mt-2">Getting Started</h3>
+                        <p class="card-text">New to SORT Online? Start here to learn the basics.</p>
+                        <a href="#getting-started" class="btn btn-primary">
+                            <i class="bx bx-right-arrow-alt"></i> Get Started
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bx bx-video fs-1 text-primary"></i>
+                        <h3 class="card-title mt-2">Video Tutorial</h3>
+                        <p class="card-text">Watch an introductory video overview of SORT Online.</p>
+                        <a href="{% url 'video_tutorial' %}" class="btn btn-primary">
+                            <i class="bx bx-play-circle"></i> Watch Video
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bx bx-wrench fs-1 text-primary"></i>
+                        <h3 class="card-title mt-2">Troubleshooting</h3>
+                        <p class="card-text">Solutions for common issues including NHS network problems.</p>
+                        <a href="{% url 'troubleshooting' %}" class="btn btn-primary">
+                            <i class="bx bx-wrench"></i> View Guide
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="bx bx-question-mark fs-1 text-primary"></i>
+                        <h3 class="card-title mt-2">FAQs</h3>
+                        <p class="card-text">Find answers to frequently asked questions about SORT Online.</p>
+                        <a href="{% url 'faq' %}" class="btn btn-primary">
+                            <i class="bx bx-question-mark"></i> View FAQs
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="card mb-5">
+            <div class="card-header">
+                <h2><i class="bx bx-list-ul"></i> Table of Contents</h2>
+            </div>
+            <div class="card-body">
+                <ol class="list-group list-group-numbered list-group-flush">
+                    <li class="list-group-item"><a href="#getting-started">Getting Started</a></li>
+                    <li class="list-group-item"><a href="#understanding-roles">Understanding Roles</a></li>
+                    <li class="list-group-item"><a href="#organisation-management">Organisation Management</a></li>
+                    <li class="list-group-item"><a href="#project-management">Project Management</a></li>
+                    <li class="list-group-item"><a href="#survey-workflow">Survey Workflow (6 Steps)</a></li>
+                    <li class="list-group-item"><a href="#maturity-scale">Understanding the Maturity Scale</a></li>
+                    <li class="list-group-item"><a href="#troubleshooting">Troubleshooting</a></li>
+                    <li class="list-group-item"><a href="#support">Support &amp; Contact</a></li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Section 1: Getting Started -->
+        <div class="card mb-5" id="getting-started">
+            <div class="card-header">
+                <h2><i class="bx bx-rocket"></i> 1. Getting Started</h2>
+            </div>
+            <div class="card-body">
+                <p>
+                    SORT Online helps healthcare organisations evaluate and strengthen their research capabilities
+                    within nursing, midwifery, and allied health professions.
+                </p>
+
+                <h3>First Steps After Login</h3>
+                <ol>
+                    <li><strong>Join or Create an Organisation</strong> &mdash; You must belong to an organisation to use SORT Online.
+                        If you received an invitation, accept it to join an existing organisation. Otherwise, create a new one.</li>
+                    <li><strong>Access the Organisation Dashboard</strong> &mdash; Click <em>Organisation Dashboard</em> in the navigation
+                        menu to view your organisation's projects and surveys.</li>
+                    <li><strong>Create a Project</strong> &mdash; Projects group related surveys together. Create a project for each
+                        department, team, or research initiative.</li>
+                    <li><strong>Launch a Survey</strong> &mdash; Within a project, create surveys to collect responses from participants.</li>
+                </ol>
+
+                <div class="alert alert-info">
+                    <i class="bx bx-info-circle"></i>
+                    <strong>Tip:</strong> Use the breadcrumb navigation at the top of each page to move between
+                    organisations, projects, and surveys.
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Understanding Roles -->
+        <div class="card mb-5" id="understanding-roles">
+            <div class="card-header">
+                <h2><i class="bx bx-user-check"></i> 2. Understanding Roles</h2>
+            </div>
+            <div class="card-body">
+                <p>
+                    SORT Online uses role-based access control to manage permissions within organisations.
+                    There are two main roles:
+                </p>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Role</th>
+                                <th scope="col">Permissions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Administrator</strong></td>
+                                <td>
+                                    <ul class="mb-0">
+                                        <li>Full control over the organisation</li>
+                                        <li>Invite and manage all members</li>
+                                        <li>Create, edit, and delete all projects</li>
+                                        <li>Create, configure, and manage all surveys</li>
+                                        <li>View all responses and generate reports</li>
+                                        <li>Assign roles to other members</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Project Manager</strong></td>
+                                <td>
+                                    <ul class="mb-0">
+                                        <li>Manage projects assigned to them</li>
+                                        <li>Create and configure surveys within their projects</li>
+                                        <li>Invite participants to their surveys</li>
+                                        <li>View responses and generate reports for their projects</li>
+                                        <li>Cannot manage organisation members or other projects</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-warning">
+                    <i class="bx bx-shield"></i>
+                    <strong>Note:</strong> Only Administrators can invite new members and assign roles.
+                    If you need additional access, contact your organisation's Administrator.
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Organisation Management -->
+        <div class="card mb-5" id="organisation-management">
+            <div class="card-header">
+                <h2><i class="bx bxs-buildings"></i> 3. Organisation Management</h2>
+            </div>
+            <div class="card-body">
+                <p>
+                    The Organisation Dashboard is your central hub for managing projects and team members.
+                </p>
+
+                <h3>Managing Members</h3>
+                <p>Administrators can manage organisation membership:</p>
+                <ul>
+                    <li><strong>Invite Members</strong> &mdash; Send email invitations to colleagues. They will receive a link to
+                        join your organisation.</li>
+                    <li><strong>Assign Roles</strong> &mdash; Set each member as either Administrator or Project Manager.</li>
+                    <li><strong>Remove Members</strong> &mdash; Remove members who no longer need access.</li>
+                </ul>
+
+                <h3>Organisation Settings</h3>
+                <p>From the Organisation Dashboard, you can:</p>
+                <ul>
+                    <li>Update your organisation's name and description</li>
+                    <li>View all projects within the organisation</li>
+                    <li>Search for specific projects using the search bar</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 4: Project Management -->
+        <div class="card mb-5" id="project-management">
+            <div class="card-header">
+                <h2><i class="bx bxs-folder-open"></i> 4. Project Management</h2>
+            </div>
+            <div class="card-body">
+                <p>
+                    Projects help you organise related surveys together. For example, you might create separate
+                    projects for different departments, research initiatives, or time periods.
+                </p>
+
+                <h3>Creating a Project</h3>
+                <ol>
+                    <li>Navigate to the Organisation Dashboard</li>
+                    <li>Click the <strong>Create project</strong> button</li>
+                    <li>Enter a project name and optional description</li>
+                    <li>Click <strong>Save</strong> to create the project</li>
+                </ol>
+
+                <h3>Managing Projects</h3>
+                <p>From the project page, you can:</p>
+                <ul>
+                    <li><strong>View Surveys</strong> &mdash; See all surveys within the project</li>
+                    <li><strong>Create Surveys</strong> &mdash; Launch new assessments</li>
+                    <li><strong>Edit Project</strong> &mdash; Update the project name and description</li>
+                    <li><strong>Delete Project</strong> &mdash; Remove the project and all its surveys (use with caution)</li>
+                </ul>
+
+                <div class="alert alert-danger">
+                    <i class="bx bx-error"></i>
+                    <strong>Warning:</strong> Deleting a project will permanently remove all surveys and
+                    responses within it. This action cannot be undone.
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: Survey Workflow -->
+        <div class="card mb-5" id="survey-workflow">
+            <div class="card-header">
+                <h2><i class="bx bxs-chart"></i> 5. Survey Workflow (6 Steps)</h2>
+            </div>
+            <div class="card-body">
+                <p>
+                    Each survey follows a six-step workflow from configuration to final report generation.
+                </p>
+
+                <!-- Step 1 -->
+                <div class="border-start border-primary border-4 ps-3 mb-4">
+                    <h3><span class="badge bg-primary">Step 1</span> Configure Your Survey</h3>
+                    <p>
+                        Before distributing your survey, configure its settings. The survey combines three sections:
+                    </p>
+                    <ul>
+                        <li><strong>Consent Section</strong> &mdash; Participant information and consent statements</li>
+                        <li><strong>SORT Questions</strong> &mdash; Profession-specific assessment questions (select Nurses, Midwives, or NMAHPs)</li>
+                        <li><strong>Demographics Section</strong> &mdash; Optional demographic questions to gather participant information</li>
+                    </ul>
+                    <p>
+                        Click <strong>Configure the survey</strong> to customise which demographic questions to include.
+                    </p>
+                    <div class="alert alert-warning">
+                        <i class="bx bx-lock"></i>
+                        <strong>Important:</strong> Once a survey receives its first response, the configuration
+                        is locked and cannot be changed. Consider duplicating the survey if you need to modify
+                        questions after responses have been collected.
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="border-start border-primary border-4 ps-3 mb-4">
+                    <h3><span class="badge bg-primary">Step 2</span> Invite Your Participants</h3>
+                    <p>
+                        Distribute the survey to participants using one of these methods:
+                    </p>
+                    <ul>
+                        <li><strong>Direct Link</strong> &mdash; Copy the invitation link and share it via email, messaging apps, or your intranet</li>
+                        <li><strong>QR Code</strong> &mdash; Download the QR code image to include in printed materials or presentations</li>
+                        <li><strong>Email Invitations</strong> &mdash; Use the built-in email system to send invitations directly from SORT Online</li>
+                    </ul>
+                    <p>
+                        Participants do not need a SORT Online account to complete the survey. The link provides
+                        anonymous access to the survey form.
+                    </p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="border-start border-primary border-4 ps-3 mb-4">
+                    <h3><span class="badge bg-primary">Step 3</span> Survey Responses</h3>
+                    <p>
+                        Monitor and manage collected responses:
+                    </p>
+                    <ul>
+                        <li><strong>View Responses</strong> &mdash; See a summary of all collected responses</li>
+                        <li><strong>Export Data</strong> &mdash; Download responses as CSV or Excel files for analysis</li>
+                        <li><strong>Activate/Deactivate</strong> &mdash; Control whether the survey accepts new responses</li>
+                    </ul>
+                    <p>
+                        Deactivating a survey prevents new submissions while preserving existing data. You can
+                        reactivate it later to continue collecting responses.
+                    </p>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="border-start border-primary border-4 ps-3 mb-4">
+                    <h3><span class="badge bg-primary">Step 4</span> Gather Evidence</h3>
+                    <p>
+                        After collecting responses, document evidence that supports your assessment findings.
+                        For each survey section, you can:
+                    </p>
+                    <ul>
+                        <li>Write evidence statements describing relevant documentation, policies, or practices</li>
+                        <li>Upload supporting files (documents, images, presentations)</li>
+                        <li>Link evidence to specific survey sections</li>
+                    </ul>
+                    <p>
+                        Evidence gathering helps contextualise survey results and provides documentation for
+                        improvement planning.
+                    </p>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="border-start border-primary border-4 ps-3 mb-4">
+                    <h3><span class="badge bg-primary">Step 5</span> Make an Improvement Plan</h3>
+                    <p>
+                        Create actionable improvement plans based on your assessment results. For each survey section:
+                    </p>
+                    <ul>
+                        <li>Identify areas for improvement</li>
+                        <li>Set SMART objectives (Specific, Measurable, Achievable, Relevant, Time-bound)</li>
+                        <li>Document planned actions and timelines</li>
+                        <li>Assign responsibilities where applicable</li>
+                    </ul>
+                    <p>
+                        Improvement plans help translate assessment findings into concrete actions for developing
+                        your organisation's research capabilities.
+                    </p>
+                </div>
+
+                <!-- Step 6 -->
+                <div class="border-start border-primary border-4 ps-3 mb-4">
+                    <h3><span class="badge bg-primary">Step 6</span> Generate Report</h3>
+                    <p>
+                        Create a comprehensive report that combines:
+                    </p>
+                    <ul>
+                        <li>Survey response summaries and visualisations</li>
+                        <li>Evidence gathered for each section</li>
+                        <li>Improvement plans with objectives and actions</li>
+                    </ul>
+                    <p>
+                        The generated report is printable and can be shared with stakeholders, used in
+                        governance meetings, or included in funding applications.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 6: Maturity Scale -->
+        <div class="card mb-5" id="maturity-scale">
+            <div class="card-header">
+                <h2><i class="bx bx-bar-chart-alt-2"></i> 6. Understanding the Maturity Scale</h2>
+            </div>
+            <div class="card-body">
+                <p>
+                    The SORT assessment uses a 0-4 maturity rating scale to measure organisational research
+                    readiness across different dimensions.
+                </p>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" style="width: 80px;">Level</th>
+                                <th scope="col" style="width: 180px;">Label</th>
+                                <th scope="col">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center"><span class="badge bg-secondary fs-6">0</span></td>
+                                <td><strong>Not yet planned</strong></td>
+                                <td>No activity or consideration in this area. The organisation has not yet begun to address this aspect of research readiness.</td>
+                            </tr>
+                            <tr>
+                                <td class="text-center"><span class="badge bg-danger fs-6">1</span></td>
+                                <td><strong>Planned</strong></td>
+                                <td>Activities are being considered or planned but not yet implemented. Early discussions or proposals may be in progress.</td>
+                            </tr>
+                            <tr>
+                                <td class="text-center"><span class="badge bg-warning text-dark fs-6">2</span></td>
+                                <td><strong>Early progress</strong></td>
+                                <td>Initial implementation has begun. Some activities are in place but not yet widespread or fully developed.</td>
+                            </tr>
+                            <tr>
+                                <td class="text-center"><span class="badge bg-info fs-6">3</span></td>
+                                <td><strong>Substantial progress</strong></td>
+                                <td>Significant implementation across the organisation. Activities are well-established in most areas but may still be developing.</td>
+                            </tr>
+                            <tr>
+                                <td class="text-center"><span class="badge bg-success fs-6">4</span></td>
+                                <td><strong>Established</strong></td>
+                                <td>Fully embedded practice across the organisation. Activities are routine, sustainable, and integrated into normal operations.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="bx bx-bulb"></i>
+                    <strong>Interpretation:</strong> Higher scores indicate greater research readiness in that area.
+                    Use the improvement planning feature to identify actions that will help your organisation
+                    progress to higher maturity levels.
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 7: Troubleshooting -->
+        <div class="card mb-5" id="troubleshooting">
+            <div class="card-header">
+                <h2><i class="bx bx-wrench"></i> 7. Troubleshooting</h2>
+            </div>
+            <div class="card-body">
+                <p>
+                    Experiencing issues with SORT Online? Visit our <a href="{% url 'troubleshooting' %}">Troubleshooting Guide</a>
+                    for common problems and solutions, including NHS network and firewall issues.
+                </p>
+            </div>
+        </div>
+
+        <!-- Section 8: Support & Contact -->
+        <div class="card mb-5" id="support">
+            <div class="card-header">
+                <h2><i class="bx bx-support"></i> 8. Support &amp; Contact</h2>
+            </div>
+            <div class="card-body">
+                <p>
+                    If you need additional help or have questions about using SORT Online, we're here to assist.
+                </p>
+
+                <h3>Contact Us</h3>
+                <address>
+                    <strong>SORT Online Support Team</strong><br>
+                    <i class="bx bx-envelope"></i>&nbsp;<a href="mailto:sort-online-support-group@sheffield.ac.uk">sort-online-support-group@sheffield.ac.uk</a>
+                </address>
+
+                <h3>Feedback</h3>
+                <p>
+                    We value your feedback to help improve SORT Online. Use the links in the navigation menu to:
+                </p>
+                <ul>
+                    <li><strong>Provide Feedback</strong> &mdash; Share suggestions for new features or improvements</li>
+                    <li><strong>Report Issues</strong> &mdash; Let us know about bugs or technical problems</li>
+                </ul>
+
+                <h3>Research Team</h3>
+                <p>
+                    For more information about the research team, please read the <a href="https://www.sort-online.org/about">about page</a> on the SORT website.
+                </p>
+            </div>
+        </div>
+
+        <p class="text-center">
+            <a href="#" class="btn btn-outline-secondary">
+                <i class="bx bx-up-arrow-alt"></i> Back to top
+            </a>
+        </p>
+    </div>
+{% endblock %}

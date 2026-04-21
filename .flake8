@@ -6,5 +6,6 @@ exclude =
     migrations,
     settings.py,
     venv,
-    env
+    env,
+    node_modules
 max-line-length = 120

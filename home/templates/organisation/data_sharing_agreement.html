@@ -1,0 +1,463 @@
+{% extends "base_manager.html" %}
+{% load static %}
+{% block title %}Data Sharing Agreement - SORT{% endblock %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-4">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'myorganisation' %}">
+                                <i class="bx bxs-buildings"></i> Organisation Dashboard
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            <i class="bx bxs-note"></i> Data Sharing Agreement
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <h1 class="mb-4">Data Sharing Agreement</h1>
+                <p class="h5 mb-4">SORT Online Platform</p>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <p class="mb-2"><strong>Between</strong></p>
+                        <p class="mb-2"><strong>{{ organisation.name }}</strong></p>
+                        <p class="mb-2 text-muted">("<strong>Provider Organisation</strong>")</p>
+                        <p class="mb-2"><strong>and</strong></p>
+                        <p class="mb-2"><strong>THE UNIVERSITY OF SHEFFIELD</strong></p>
+                        <p class="mb-0 small text-muted">A charitable body registered in England under registration number RC000667, incorporated under Royal Charter and having its main administrative offices at Firth Court, Western Bank, Sheffield S10 2TN ("<strong>Recipient Institution</strong>")</p>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <section class="mb-5">
+                    <h2>1. Background and Purpose</h2>
+
+                    <p><strong>1.1</strong> The Provider Organisation wishes to use the SORT Online platform ("<strong>the Platform</strong>") to conduct self-assessment of organisational research readiness using the Self-Assessment of Organisational Readiness Tool (SORT).</p>
+
+                    <p><strong>1.2</strong> The Platform is hosted and maintained by the Recipient Institution and enables organisations to:</p>
+                    <ul>
+                        <li>Collect survey responses from healthcare professionals about research readiness</li>
+                        <li>Generate organisational reports and improvement plans</li>
+                        <li>Contribute anonymised data to longitudinal research on research capacity development</li>
+                    </ul>
+
+                    <p><strong>1.3</strong> This Agreement governs the sharing of data collected via the Platform between the Provider Organisation and the Recipient Institution for the dual purposes of:</p>
+                    <ul>
+                        <li><strong>Organisational use:</strong> enabling the Provider Organisation to assess and improve its research capacity</li>
+                        <li><strong>Research use:</strong> contributing to the Recipient Institution's research on research capacity development in healthcare organisations</li>
+                    </ul>
+
+                    <p><strong>1.4</strong> The research is conducted under ethics approval and aims to build a national evidence base on research capacity in nursing, midwifery, and allied health professions over a 10-year period.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>2. Definitions</h2>
+
+                    <p><strong>2.1</strong> In this Agreement:</p>
+
+                    <dl class="row">
+                        <dt class="col-sm-3"><strong>"Survey Data"</strong></dt>
+                        <dd class="col-sm-9">means aggregated, anonymised responses to SORT questionnaires completed by healthcare professionals within the Provider Organisation, including:
+                            <ul>
+                                <li>Maturity ratings (0-4 scale) for each SORT statement</li>
+                                <li>Professional role and qualification level (categorical data)</li>
+                                <li>Free-text comments (with identifiable information removed)</li>
+                                <li>Evidence documentation (with identifiable information removed)</li>
+                            </ul>
+                        </dd>
+
+                        <dt class="col-sm-3"><strong>"Organisational Data"</strong></dt>
+                        <dd class="col-sm-9">means non-personal information about the Provider Organisation including:
+                            <ul>
+                                <li>Organisation name, type, and location (country/region only)</li>
+                                <li>Organisation size category</li>
+                                <li>Date of assessment</li>
+                            </ul>
+                        </dd>
+
+                        <dt class="col-sm-3"><strong>"Personal Data"</strong></dt>
+                        <dd class="col-sm-9">has the meaning given in UK GDPR and for the avoidance of doubt, the Parties acknowledge that properly anonymised Survey Data is not Personal Data</dd>
+
+                        <dt class="col-sm-3"><strong>"Research Purposes"</strong></dt>
+                        <dd class="col-sm-9">means academic research into research capacity development, including analysis, publication of findings, and contribution to evidence-based policy development</dd>
+
+                        <dt class="col-sm-3"><strong>"Organisational Purposes"</strong></dt>
+                        <dd class="col-sm-9">means the Provider Organisation's internal use of Survey Data for self-assessment, improvement planning, and monitoring progress</dd>
+                    </dl>
+                </section>
+
+                <section class="mb-5">
+                    <h2>3. Data Sharing Arrangements</h2>
+
+                    <h3 class="h5 mt-3"><strong>3.1 Data provided to the Recipient Institution</strong></h3>
+
+                    <p>The Provider Organisation agrees that Survey Data and Organisational Data collected via the Platform will be shared with the Recipient Institution for Research Purposes, subject to the following conditions:</p>
+
+                    <ol type="a">
+                        <li>All Survey Data shared for Research Purposes must be properly anonymised such that individual respondents cannot be identified</li>
+                        <li>The Provider Organisation will ensure appropriate consent is obtained from survey participants before their anonymised responses are used for Research Purposes</li>
+                        <li>The Provider Organisation may opt to exclude specific datasets from Research Purposes by notification to the Recipient Institution</li>
+                    </ol>
+
+                    <h3 class="h5 mt-3"><strong>3.2 Data retained by the Provider Organisation</strong></h3>
+
+                    <p>The Provider Organisation retains full access to its own Survey Data and Organisational Data for Organisational Purposes, including the right to:</p>
+
+                    <ol type="a">
+                        <li>View, download, and analyse all data from its own assessments</li>
+                        <li>Generate reports and improvement plans</li>
+                        <li>Share results within its own organisation as it sees fit</li>
+                        <li>Repeat assessments over time to measure progress</li>
+                    </ol>
+
+                    <h3 class="h5 mt-3"><strong>3.3 Technical arrangements</strong></h3>
+
+                    <p>The Recipient Institution will:</p>
+
+                    <ol type="a">
+                        <li>Host the Platform on secure servers meeting NHS Digital security standards</li>
+                        <li>Implement appropriate technical and organisational measures to protect data</li>
+                        <li>Ensure the Platform complies with UK GDPR and NHS information governance requirements</li>
+                        <li>Provide secure SSL/TLS encrypted connections for all data transmission</li>
+                        <li>Maintain regular backups of Platform data</li>
+                        <li>Provide the Provider Organisation with secure authenticated access to its own data</li>
+                    </ol>
+                </section>
+
+                <section class="mb-5">
+                    <h2>4. Recipient Institution's Obligations</h2>
+
+                    <p><strong>4.1</strong> The Recipient Institution undertakes to:</p>
+
+                    <ol type="a">
+                        <li>Use Survey Data and Organisational Data solely for Research Purposes and Platform operation</li>
+                        <li>Keep all data secure by implementing technical and organisational measures appropriate to the sensitivity of the data, including:
+                            <ul>
+                                <li>Encrypted storage and transmission</li>
+                                <li>Access controls limiting data access to authorised research team members</li>
+                                <li>Regular security reviews and updates</li>
+                                <li>Secure disposal procedures</li>
+                            </ul>
+                        </li>
+                        <li>Not attempt to re-identify anonymised Survey Data</li>
+                        <li>Not share individual organisation's identifiable data with third parties without the express written consent of the Provider Organisation, except:
+                            <ul>
+                                <li>In anonymised/aggregated form for research publications</li>
+                                <li>As required by law or regulatory authority</li>
+                                <li>With other authorised University of Sheffield researchers working on the SORT research programme</li>
+                            </ul>
+                        </li>
+                        <li>Notify the Provider Organisation promptly of any data breach or security incident affecting its data</li>
+                        <li>Provide the Provider Organisation with ongoing access to its own data via the Platform</li>
+                        <li>Retain Survey Data for the duration of the research programme (up to 10 years from initial collection) or until the Provider Organisation requests deletion, whichever is sooner</li>
+                        <li>Delete or return data upon written request from the Provider Organisation, except where:
+                            <ul>
+                                <li>The data has already been incorporated into published research findings</li>
+                                <li>Retention is required by law or research governance requirements</li>
+                                <li>The data has been irreversibly anonymised such that it can no longer be linked to the Provider Organisation</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </section>
+
+                <section class="mb-5">
+                    <h2>5. Provider Organisation's Obligations</h2>
+
+                    <p><strong>5.1</strong> The Provider Organisation undertakes to:</p>
+
+                    <ol type="a">
+                        <li>Obtain appropriate organisational approval to participate in SORT assessments and share data via the Platform</li>
+                        <li>Ensure that survey participants are properly informed about:
+                            <ul>
+                                <li>The dual purpose of data collection (organisational improvement and research)</li>
+                                <li>The anonymisation of responses for research use</li>
+                                <li>Their rights regarding data protection</li>
+                                <li>How to contact the research team or data protection officer with concerns</li>
+                            </ul>
+                        </li>
+                        <li>Obtain explicit consent from participants for their anonymised responses to be used for Research Purposes</li>
+                        <li>Not include any sensitive personal data (special category data under UK GDPR) in survey responses, evidence documentation, or free-text comments</li>
+                        <li>Review free-text comments and evidence documentation before submission to remove any identifiable information about individuals</li>
+                        <li>Maintain appropriate information governance procedures within its own organisation</li>
+                        <li>Use the Platform in accordance with its terms of use and technical guidance</li>
+                        <li>Notify the Recipient Institution of any concerns about data security or participant consent</li>
+                    </ol>
+                </section>
+
+                <section class="mb-5">
+                    <h2>6. Data Protection and Legal Compliance</h2>
+
+                    <h3 class="h5 mt-3"><strong>6.1 Data Controller status</strong></h3>
+
+                    <p>The Parties acknowledge that:</p>
+
+                    <ol type="a">
+                        <li>For Organisational Purposes: The Provider Organisation is the Data Controller for Survey Data relating to its own organisation</li>
+                        <li>For Research Purposes: The Recipient Institution is the Data Controller for properly anonymised Survey Data used in research</li>
+                        <li>The Recipient Institution acts as Data Processor in providing the Platform infrastructure</li>
+                    </ol>
+
+                    <h3 class="h5 mt-3"><strong>6.2 Lawful basis for processing</strong></h3>
+
+                    <p>The lawful basis for processing under UK GDPR is:</p>
+
+                    <ol type="a">
+                        <li>For the Provider Organisation: Legitimate interests (organisational improvement and research capacity development)</li>
+                        <li>For the Recipient Institution: Public task (research in the public interest) and legitimate interests (advancing knowledge in healthcare research capacity)</li>
+                    </ol>
+
+                    <h3 class="h5 mt-3"><strong>6.3 Compliance obligations</strong></h3>
+
+                    <p>Both Parties shall:</p>
+
+                    <ol type="a">
+                        <li>Comply with UK GDPR, Data Protection Act 2018, and all applicable data protection legislation</li>
+                        <li>Maintain appropriate records of processing activities</li>
+                        <li>Respond appropriately to any data subject access requests relating to data they control</li>
+                        <li>Report any data breaches to the appropriate authorities as required by law</li>
+                        <li>Cooperate with each other to meet their respective data protection obligations</li>
+                    </ol>
+                </section>
+
+                <section class="mb-5">
+                    <h2>7. Intellectual Property and Publication</h2>
+
+                    <p><strong>7.1</strong> The Provider Organisation retains ownership of its own Survey Data and Organisational Data.</p>
+
+                    <p><strong>7.2</strong> The Recipient Institution may analyse and publish research findings based on aggregated, anonymised data from multiple organisations, provided that:</p>
+
+                    <ol type="a">
+                        <li>Individual organisations cannot be identified in publications unless express permission has been granted</li>
+                        <li>The Provider Organisation is acknowledged as a contributing organisation (unless it requests anonymity)</li>
+                        <li>The Recipient Institution acts in accordance with standard academic research ethics and practices</li>
+                    </ol>
+
+                    <p><strong>7.3</strong> The Provider Organisation may publish or present its own results and is encouraged to acknowledge the SORT research programme and the Recipient Institution's role in developing and maintaining the Platform.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>8. Liability and Warranties</h2>
+
+                    <p><strong>8.1</strong> The Recipient Institution provides the Platform and research services under this Agreement in the context of academic research and organisational development. The Platform is provided on an "as is" basis.</p>
+
+                    <p><strong>8.2</strong> The Recipient Institution does not warrant that:</p>
+
+                    <ol type="a">
+                        <li>The Platform will be available without interruption or error-free</li>
+                        <li>Survey Data will lead to specific improvements in research capacity</li>
+                        <li>Results will be directly comparable between different organisations</li>
+                    </ol>
+
+                    <p><strong>8.3</strong> The Recipient Institution shall not be liable for:</p>
+
+                    <ol type="a">
+                        <li>Any decisions made by the Provider Organisation based on Survey Data or reports</li>
+                        <li>Indirect or consequential losses arising from use of the Platform</li>
+                        <li>Losses arising from factors outside its reasonable control</li>
+                    </ol>
+
+                    <p><strong>8.4</strong> Nothing in this Agreement excludes or limits liability for:</p>
+
+                    <ol type="a">
+                        <li>Death or personal injury caused by negligence</li>
+                        <li>Fraud or fraudulent misrepresentation</li>
+                        <li>Any other liability that cannot be excluded by law</li>
+                    </ol>
+
+                    <p><strong>8.5</strong> The Provider Organisation assumes responsibility for ensuring appropriate use of the Platform within its organisation and for the accuracy of data it submits.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>9. Duration and Termination</h2>
+
+                    <p><strong>9.1</strong> This Agreement commences when the Provider Organisation first accesses the Platform and continues until terminated by either Party.</p>
+
+                    <p><strong>9.2</strong> Either Party may terminate this Agreement by giving 30 days' written notice to the other.</p>
+
+                    <p><strong>9.3</strong> The Provider Organisation may request immediate deletion of its identifiable data at any time, subject to legal and research governance requirements.</p>
+
+                    <p><strong>9.4</strong> Upon termination:</p>
+
+                    <ol type="a">
+                        <li>The Provider Organisation's access to the Platform will be suspended</li>
+                        <li>The Recipient Institution will either delete or fully anonymise the Provider Organisation's data as requested (subject to clauses 4.1(h) and 9.5)</li>
+                        <li>Both Parties will continue to observe confidentiality obligations</li>
+                    </ol>
+
+                    <p><strong>9.5</strong> The following provisions survive termination: clauses 4.1(h), 6, 7, 8, 9.4, 9.5, 11, and 12.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>10. Costs</h2>
+
+                    <p><strong>10.1</strong> Access to and use of the Platform is provided at no cost to the Provider Organisation.</p>
+
+                    <p><strong>10.2</strong> Each Party bears its own costs in complying with this Agreement.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>11. General Provisions</h2>
+
+                    <h3 class="h5 mt-3"><strong>11.1 Confidentiality</strong></h3>
+
+                    <p>Both Parties shall keep confidential any information disclosed by the other Party that is marked as confidential or that ought reasonably to be considered confidential.</p>
+
+                    <h3 class="h5 mt-3"><strong>11.2 Data subject rights</strong></h3>
+
+                    <p>The Parties will cooperate to enable data subjects (survey participants) to exercise their rights under UK GDPR, including rights to access, correction, erasure, and objection to processing.</p>
+
+                    <h3 class="h5 mt-3"><strong>11.3 Assignment</strong></h3>
+
+                    <p>Neither Party may assign or transfer its rights or obligations under this Agreement without the prior written consent of the other Party.</p>
+
+                    <h3 class="h5 mt-3"><strong>11.4 Variation</strong></h3>
+
+                    <p>This Agreement may only be varied by written agreement signed by authorised representatives of both Parties. The Recipient Institution may update technical and security measures without requiring formal variation provided such updates maintain or enhance data protection.</p>
+
+                    <h3 class="h5 mt-3"><strong>11.5 Notices</strong></h3>
+
+                    <p>Notices under this Agreement shall be sent to:</p>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <p class="mb-2"><strong>For the Recipient Institution:</strong></p>
+                            <p class="mb-2">Director of Research Services</p>
+                            <p class="mb-2">University of Sheffield</p>
+                            <p class="mb-2">New Spring House</p>
+                            <p class="mb-2">231 Glossop Road</p>
+                            <p class="mb-2">Sheffield S10 2GW</p>
+                            <p class="mb-0">Email: <a href="mailto:sort-online-support-group@sheffield.ac.uk">sort-online-support-group@sheffield.ac.uk</a></p>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <p class="mb-2"><strong>For the Provider Organisation:</strong></p>
+                            <p class="mb-0 text-muted">{{ organisation }}</p>
+                            <p>{{ organisation.address }}</p>
+                        </div>
+                    </div>
+
+                    <h3 class="h5 mt-3"><strong>11.6 Entire Agreement</strong></h3>
+
+                    <p>This Agreement (together with the Platform Terms of Use and Privacy Notice) constitutes the entire agreement between the Parties regarding data sharing for the SORT Online platform.</p>
+
+                    <h3 class="h5 mt-3"><strong>11.7 Governing Law</strong></h3>
+
+                    <p>This Agreement is governed by the laws of England and Wales, and the Parties submit to the exclusive jurisdiction of the courts of England and Wales.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>12. Acceptance</h2>
+
+                    <p><strong>12.1</strong> By proceeding to use the SORT Online Platform, the authorised representative of the Provider Organisation confirms that they:</p>
+
+                    <ol type="a">
+                        <li>Have authority to enter into this Agreement on behalf of the Provider Organisation</li>
+                        <li>Have read and understood this Agreement</li>
+                        <li>Agree to be bound by its terms</li>
+                    </ol>
+
+                    <p><strong>12.2</strong> The Provider Organisation acknowledges that:</p>
+
+                    <ol type="a">
+                        <li>Survey participants will be separately informed about data collection and use</li>
+                        <li>Participation in surveys is voluntary for individual healthcare professionals</li>
+                        <li>The Provider Organisation is responsible for ensuring appropriate governance approvals are in place within its own organisation</li>
+                    </ol>
+                </section>
+
+                <hr class="my-4">
+
+                <section class="mb-5">
+                    <h2>Schedule 1: Data Fields Collected</h2>
+
+                    <p>The following data fields may be collected via the SORT Online Platform:</p>
+
+                    <h3 class="h6 mt-3"><strong>Survey Response Data (per participant)</strong></h3>
+                    <ul>
+                        <li>Maturity rating (0-4) for each of 44 SORT statements</li>
+                        <li>Professional role category (e.g., nurse, midwife, allied health professional)</li>
+                        <li>Qualification level/banding</li>
+                        <li>Free-text comments on each SORT domain (anonymised)</li>
+                        <li>Date of completion</li>
+                    </ul>
+
+                    <h3 class="h6 mt-3"><strong>Organisational Context Data</strong></h3>
+                    <ul>
+                        <li>Organisation name</li>
+                        <li>Organisation type (e.g., NHS Trust, Foundation Trust, Primary Care)</li>
+                        <li>Geographic region (country/region level only)</li>
+                        <li>Organisation size category</li>
+                        <li>Date of assessment</li>
+                    </ul>
+
+                    <h3 class="h6 mt-3"><strong>Evidence and Planning Data</strong></h3>
+                    <ul>
+                        <li>Evidence documentation (with identifiers removed)</li>
+                        <li>Improvement plans</li>
+                        <li>Follow-up assessment data (for longitudinal tracking)</li>
+                    </ul>
+
+                    <h3 class="h6 mt-3"><strong>Data NOT Collected</strong></h3>
+                    <ul>
+                        <li>Individual names or NHS numbers</li>
+                        <li>Precise geographic location beyond region</li>
+                        <li>Clinical or patient data</li>
+                        <li>Special category personal data (ethnicity, health data, etc.) unless anonymised and for research purposes only</li>
+                    </ul>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Schedule 2: Information Security Measures</h2>
+
+                    <p>The Recipient Institution implements the following security measures:</p>
+
+                    <h3 class="h6 mt-3"><strong>Technical Measures</strong></h3>
+                    <ul>
+                        <li>SSL/TLS encryption for all data transmission</li>
+                        <li>Encrypted data storage</li>
+                        <li>Secure authentication and access controls</li>
+                        <li>Regular security patching and updates</li>
+                        <li>Firewall protection</li>
+                        <li>Intrusion detection systems</li>
+                        <li>Regular backups with encrypted storage</li>
+                    </ul>
+
+                    <h3 class="h6 mt-3"><strong>Organisational Measures</strong></h3>
+                    <ul>
+                        <li>Access limited to authorised research team members</li>
+                        <li>Staff training on data protection and information security</li>
+                        <li>Regular security audits and risk assessments</li>
+                        <li>Incident response procedures</li>
+                        <li>Data retention and disposal policies</li>
+                        <li>Research governance oversight</li>
+                    </ul>
+
+                    <h3 class="h6 mt-3"><strong>Compliance</strong></h3>
+                    <ul>
+                        <li>NHS Digital Data Security and Protection Toolkit compliance</li>
+                        <li>UK GDPR and Data Protection Act 2018 compliance</li>
+                        <li>University of Sheffield Information Security policies</li>
+                        <li>Research ethics approval and monitoring</li>
+                    </ul>
+                </section>
+
+                <hr class="my-4">
+
+                <p class="text-muted small mb-4">
+                    This Data Sharing Agreement is provided in accordance with the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018.
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

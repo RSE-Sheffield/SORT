@@ -1,0 +1,61 @@
+name: Create Release
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Build and create release
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # Full history for semantic-release
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+      - name: Create release artifacts
+        run: |
+          mkdir -p release-artifacts
+          VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
+          # Include built frontend assets
+          tar -czf release-artifacts/sort-frontend-${VERSION}.tar.gz static/ui-components/
+          # Create source archive with built assets
+          git archive --format=tar.gz --prefix=SORT-${VERSION}/ HEAD > release-artifacts/SORT-${VERSION}.tar.gz
+
+      - name: Summary
+        if: success()
+        run: |
+          VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
+          echo "## Release Created Successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: v${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release URL**: https://github.com/${{ github.repository }}/releases/tag/v${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend assets: \`sort-frontend-${VERSION}.tar.gz\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Source archive: \`SORT-${VERSION}.tar.gz\`" >> $GITHUB_STEP_SUMMARY

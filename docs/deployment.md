@@ -37,12 +37,28 @@ The relevant files are:
 
 # Deployment process
 
-This app can be deployed to a web server using the script [`deploy.sh`](../deploy.sh) and configured as described in the section below.
+This app can be deployed to a web server using the script [`scripts/deploy.sh`](../scripts/deploy.sh) and configured as described in the section below.
 
-1. Configure the `.env` file as described below.
-2. Run the deployment script: `sudo bash -x deploy.sh`
-3. Configure the database
-4. Run database migrations
+1. Run the deployment script: `sudo bash -x scripts/deploy.sh`
+
+The deployment script will automatically:
+- Install all dependencies (Python, Node.js, PostgreSQL, nginx, Gunicorn)
+- Create and configure the PostgreSQL database with proper encoding and schema
+- Create a database user with secure credentials
+- Generate the `.env` configuration file with database credentials
+- Build frontend assets
+- Run database migrations
+- Start all necessary services
+
+**Note**: If you need to customize database credentials, you can set environment variables before running the script:
+```bash
+export DJANGO_DATABASE_NAME=sort
+export DJANGO_DATABASE_USER=sort
+export DJANGO_DATABASE_PASSWORD=your_secure_password
+sudo -E bash -x scripts/deploy.sh
+```
+
+Otherwise, the script will automatically generate secure credentials and save them to `/opt/sort/.env`.
 
 We can run commands and Bash scripts as the superuser (`root`) using the [`sudo` command](https://manpages.ubuntu.com/manpages/noble/en/man8/sudo.8.html).
 
@@ -101,9 +117,9 @@ Environment="DJANGO_SECRET_KEY=********"
 Environment="DEBUG=off"
 ```
 
-
-
 # Database installation
+
+**Note**: The deployment script (`scripts/deploy.sh`) automatically configures the PostgreSQL database. The manual steps below are only needed if you want to customize the database setup or troubleshoot issues.
 
 The database may be administered using command-line tools and SQL statements that are run as the `postgres` user. For more details, please refer to the [PostgreSQL documentation](https://www.postgresql.org/docs/16/index.html) and [this guide](https://dev.to/matthewhegarty/postgresql-better-security-for-django-applications-3c7m).
 
@@ -129,7 +145,7 @@ We can list databases using `psql --list`.
 
 The SORT app needs credentials to access the database. We'll create a database user that the application will use to read and write data.
 
-Create a user:
+[Create a user](https://www.postgresql.org/docs/16/app-createuser.html):
 
 ```bash
 createuser sort
@@ -210,7 +226,7 @@ $ sudo $psql
 sort=>
 ```
 
-Once you're in the `psql` shell, you can exit using the `\q` command.
+Once you're in the `psql` shell, you can exit using the `\q` command.
 
 ## Manage tables
 

@@ -106,3 +106,14 @@ h1, h2, h3, h4, h5, h6 {
 .form-check-label{
     font-size: 0.75rem;
 }
+
+.btn-outline-primary {
+    color: #440099 !important;
+    border-color: #440099 !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: #440099 !important;
+    border-color: #440099 !important;
+    color: white !important;
+}

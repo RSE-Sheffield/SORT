@@ -9,10 +9,11 @@
         LinearScale,
         BarElement,
         Legend,
-        PointElement,
         Tooltip,
+        Title,
 
     } from 'chart.js'
+    import ChartDataLabels from 'chartjs-plugin-datalabels';
 
     Chart.register(
         Colors,
@@ -21,11 +22,12 @@
         CategoryScale,
         LinearScale,
         Legend,
-        PointElement,
         Tooltip,
+        Title,
+        ChartDataLabels,
     );
     import type {FieldConfig, FieldStats} from "../../interfaces.ts";
-    import {getColourForMeanValue, getHistogramMean} from "../../misc.svelte.js";
+    import {getColourForMeanValue, getHistogramMean, getSortMaturityLabel} from "../../misc.svelte.js";
 
     type IndexMean = {
         index: number;
@@ -35,11 +37,14 @@
     interface LikertHistogramProps {
         fieldConfig: FieldConfig;
         fieldStats: FieldStats;
+        maxHistogramCount?: number;
+        sectionTitle?: string;
     }
 
-    let {fieldConfig, fieldStats}: LikertHistogramProps = $props();
+    let {fieldConfig, fieldStats, maxHistogramCount = 0, sectionTitle = 'Default title'}: LikertHistogramProps = $props();
     let barChartContainer: HTMLCanvasElement = $state()
-    let chartHeight = $derived(fieldConfig.sublabels.length * 5);
+    const barThickness = 30;  // Must match the barThickness in dataset
+    let chartHeightPx = $derived((fieldConfig.sublabels.length * (barThickness + 10)) + 150); // Calculate in pixels
     let chart: Chart | null = $state(null);
     let sortByMean = $state(false);
     let sortAscending = $state(true);
@@ -63,14 +68,14 @@
     function generateStats() {
 
         let labels = [];
-        let datasets = []
+        let barDatasets = []
 
         // Sorted labels
         indexMean.map(im => {
             labels.push(fieldConfig.sublabels[im.index]);
         });
 
-        // Sorted data
+        // Sorted data for stacked bars
         fieldConfig.options.map((value, optionIndex) => {
             const values: number[] = [];
             for (let i = 0; i < indexMean.length; i++) {
@@ -79,14 +84,16 @@
             }
             const colour = getColourForMeanValue(Number(value));
 
-            datasets.push({
-                label: value,
+            barDatasets.push({
+                label: getSortMaturityLabel(Number(value)),
                 data: values,
                 borderWidth: 1,
                 backgroundColor: colour,
+                barThickness: barThickness,  // Fixed pixel height for bars
             })
         })
-        return {labels, datasets};
+
+        return {labels, datasets: barDatasets};
     }
 
     $effect(() => {
@@ -111,18 +118,61 @@
             options: {
                 scales: {
                     x: {
-                        position: "top"
+                        position: "top",
+                        beginAtZero: true,
+                        min: 0,
+                        stacked: true,
+                        ...(maxHistogramCount > 0 && { max: maxHistogramCount }),
+                        title: {
+                            display: true,
+                            text: 'Number of responses'
+                        }
                     },
                     y: {
                         beginAtZero: true,
+                        stacked: true,
                         ticks: {
-                            callback: (value) => {
-                                const maxCutoff = 80;
+                            autoSkip: false,
+                            callback: function(value) {
                                 const labelValue: string = fieldConfig.sublabels[indexMean[value].index];
-                                if (labelValue.length > maxCutoff)
-                                    return labelValue.substring(0, maxCutoff) + "...";
-                                else
+                                const maxCharsPerLine = 40;
+                                const maxLines = 2;
+
+                                // Split long labels into multiple lines with truncation
+                                if (labelValue.length <= maxCharsPerLine) {
                                     return labelValue;
+                                }
+
+                                const words = labelValue.split(' ');
+                                const lines: string[] = [];
+                                let currentLine = '';
+
+                                for (const word of words) {
+                                    if (lines.length >= maxLines) break;
+
+                                    const testLine = currentLine + (currentLine ? ' ' : '') + word;
+                                    if (testLine.length <= maxCharsPerLine) {
+                                        currentLine = testLine;
+                                    } else {
+                                        if (currentLine) {
+                                            lines.push(currentLine);
+                                            currentLine = word;
+                                        } else {
+                                            // Word is too long, truncate it
+                                            lines.push(word.substring(0, maxCharsPerLine - 3) + '...');
+                                            currentLine = '';
+                                        }
+                                    }
+                                }
+
+                                if (currentLine && lines.length < maxLines) {
+                                    lines.push(currentLine);
+                                } else if (lines.length >= maxLines && currentLine) {
+                                    // Truncate last line if we have more content
+                                    lines[maxLines - 1] = lines[maxLines - 1].substring(0, maxCharsPerLine - 3) + '...';
+                                }
+
+                                return lines;
                             }
                         }
                     }
@@ -130,6 +180,61 @@
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: sectionTitle.length > 0,
+                        text: sectionTitle,
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: {
+                            top: 10,
+                            bottom: 10
+                        }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        title: {
+                            display: true,
+                            text: 'Score'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                // Show count and percentage
+                                const scoreLabel = context.dataset.label;
+                                const count = context.parsed.x;
+
+                                // Calculate total responses for this row
+                                const dataIndex = context.dataIndex;
+                                let total = 0;
+                                context.chart.data.datasets.forEach(dataset => {
+                                    total += dataset.data[dataIndex] || 0;
+                                });
+
+                                const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                                return `${scoreLabel}: ${count} responses (${percentage}%)`;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: {
+                            weight: 'bold',
+                            size: 11
+                        },
+                        formatter: (value, context) => {
+                            // Show the count, hide if zero
+                            if (value === 0) return '';
+                            return value;
+                        },
+                        anchor: 'center',
+                        align: 'center',
+                    }
+                }
             }
         });
 
@@ -168,7 +273,7 @@
     </button>
 
 </div>
-<div style="height: {chartHeight}em;">
+<div style="height: {chartHeightPx}px;">
     <canvas bind:this={barChartContainer}></canvas>
 </div>
 

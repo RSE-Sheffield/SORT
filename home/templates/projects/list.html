@@ -14,7 +14,9 @@
       {% for project in projects %}
         <div class="card w-100">
           <div class="card-body">
-            <h2 class="card-title" title="Project identifier {{ project.pk }}">{{ project.name }}</h2>
+            <h2 class="card-title" title="Project identifier {{ project.pk }}">
+                <a href="{% url 'project' project_id=project.pk %}">{{ project.name }}</a>
+            </h2>
             <div class="card-text">
               <div class="flex flex-wrap gap-2 mb-3">
                 {% for org in project_orgs|get_item:project.id %}<span class="badge text-bg-primary">{{ org.name }}</span>{% endfor %}
@@ -24,7 +26,7 @@
             <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
               {% if can_edit|get_item:project.id %}
                 <a href="{% url 'projects' %}">
-                  <button type="button" class="btn btn-light">Edit</button>
+                  <button type="button" class="btn btn-secondary">Edit</button>
                 </a>
               {% endif %}
               <a href="{% url 'project' project.id %}">

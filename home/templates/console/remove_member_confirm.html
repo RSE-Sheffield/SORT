@@ -1,0 +1,37 @@
+{% extends "base_console.html" %}
+{% block title %}| Admin — Remove member{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_organisations' %}">Organisations</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_organisation_detail' organisation.pk %}">{{ organisation.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Remove member</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger shadow-sm">
+                <div class="card-header bg-white text-danger">
+                    <h1 class="h5 mb-0">Remove member</h1>
+                </div>
+                <div class="card-body">
+                    <p>Are you sure you want to remove <strong>{{ membership.user }}</strong> from <strong>{{ organisation.name }}</strong>?</p>
+                    <p class="text-muted small mb-0">This will revoke their access to all projects in this organisation.</p>
+                </div>
+                <div class="card-footer bg-white d-flex gap-2 justify-content-end">
+                    <a href="{% url 'admin_organisation_detail' organisation.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Remove member</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

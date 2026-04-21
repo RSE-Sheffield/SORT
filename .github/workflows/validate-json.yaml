@@ -1,7 +1,13 @@
 name: Validate JSON files
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
+    paths:
+      - '**/*.json'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - '**/*.json'
 permissions:
   contents: read
 jobs:
@@ -13,7 +19,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5.5.0
         with:
-          python-version: "3.12"
+          python-version-file: .python-version
           cache: "pip"
       - name: Install dependencies
         run: pip install check-jsonschema==0.*

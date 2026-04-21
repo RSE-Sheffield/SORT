@@ -1,18 +1,18 @@
 {% extends "base_manager.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-    <div class="container mx-auto px-4 py-8 mt-4">
+    <div class="container mx-auto py-8 mt-4">
         <div class="d-flex justify-content-between align-items-center">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
                         <a href="{% url 'myorganisation' %}">
-                        <i class="bx bxs-buildings"></i> My Organisation
-                            </a>
+                            <i class="bx bxs-buildings"></i> Organisation Dashboard
+                        </a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">
                         <a href="{% url 'members' %}">
-                        <i class="bx bxs-group"></i> Members
+                            <i class="bx bxs-group"></i> Members
                         </a>
                     </li>
                 </ol>
@@ -20,32 +20,52 @@
         </div>
     </div>
     <div class="container">
-        <h1>{{ organisation.name }}</h1>
-        <p>{{ organisation.description }}</p>
-    </div>
-    <div class="container">
-        <h1>Invite new member</h1>
-        <div class="card">
-            <div class="card-body">
-                {% if success_message %}
-                    <!-- New user invited -->
-                    <div class="alert alert-success" role="alert">
-                        <i class="bx bxs-envelope"></i> {{ success_message }}
-                    </div>
-                    <div>
-                        <a href="{% url 'member_invite' %}" type="button" class="btn btn-primary">
-                            <i class='bx bxs-user-plus'></i> Invite another person
-                        </a>
-                    </div>
-                {% else %}
-                    <!-- Invite organisation member form -->
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form | crispy }}
+        <h1><i class='bx bxs-user-plus'></i> Add members to organisation</h1>
+        <p>
+            Add colleagues to your organisation either by inviting new users or adding existing users.
+        </p>
 
-                        <button class="btn btn-primary"><i class="bx bxs-user-plus"></i>&nbsp;Invite</button>
-                    </form>
-                {% endif %}
+        <div class="row">
+            <!-- Add existing user form -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class='bx bxs-user-check'></i> Add existing user</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            Add a user who <strong>already has an account</strong> to your organisation.
+                        </p>
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ add_existing_form | crispy }}
+                            <button type="submit" name="add_existing_submit" class="btn btn-primary">
+                                <i class="bx bxs-user-check"></i>&nbsp;Add user
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invite new user form -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class='bx bxs-envelope'></i> Invite new user</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            Send an email invitation to someone who <strong>doesn't have an account yet</strong>.
+                        </p>
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ invite_form | crispy }}
+                            <button type="submit" name="invite_submit" class="btn btn-success">
+                                <i class="bx bxs-envelope"></i>&nbsp;Send invitation
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

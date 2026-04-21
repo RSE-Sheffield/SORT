@@ -3,9 +3,7 @@
 {% block content %}
     <div class="error-message">
         <h2>Survey Access Error</h2>
-        {% if error == "This survey link has expired." %}
-            <p>The link you are using to access the survey has expired. Please contact your survey administrator for a new link.</p>
-        {% elif error == "This survey link has already been used." %}
+        {% if error == "This survey link has already been used." %}
             <p>This survey link has already been used. If you believe this is an error, please contact your survey administrator.</p>
         {% else %}
             <p>There was an error processing your request. Please check the link and try again.</p>

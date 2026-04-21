@@ -32,8 +32,12 @@ def cast_to_boolean(obj: Any) -> bool:
     return obj[0] in {"1", "y", "t", "o"}
 
 
+# Load environment variables and secrets
+# https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Credentials
+CREDENTIALS_DIRECTORY = Path(os.getenv("CREDENTIALS_DIRECTORY", "."))
+DJANGO_ENV_PATH = Path(os.getenv("DJANGO_ENV_PATH", CREDENTIALS_DIRECTORY.joinpath(".env")))
 # Load environment variables from .env file
-load_dotenv(dotenv_path=os.getenv("DJANGO_ENV_PATH", ".env"))
+load_dotenv(DJANGO_ENV_PATH)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -115,16 +119,24 @@ WSGI_APPLICATION = os.getenv("DJANGO_WSGI_APPLICATION", "SORT.wsgi.application")
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-DATABASES = {
-    # Set the database settings using environment variables, or default to a local SQLite database file.
-    "default": {
-        "ENGINE": os.getenv("DJANGO_DATABASE_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.getenv("DJANGO_DATABASE_NAME", BASE_DIR / "db.sqlite3"),
-        "USER": os.getenv("DJANGO_DATABASE_USER"),
-        "PASSWORD": os.getenv("DJANGO_DATABASE_PASSWORD"),
-        "HOST": os.getenv("DJANGO_DATABASE_HOST"),
-        "PORT": os.getenv("DJANGO_DATABASE_PORT"),
+db_engine = os.getenv("DJANGO_DATABASE_ENGINE", "django.db.backends.sqlite3")
+db_config = {
+    "ENGINE": db_engine,
+    "NAME": os.getenv("DJANGO_DATABASE_NAME", BASE_DIR / "db.sqlite3"),
+    "USER": os.getenv("DJANGO_DATABASE_USER"),
+    "PASSWORD": os.getenv("DJANGO_DATABASE_PASSWORD"),
+    "HOST": os.getenv("DJANGO_DATABASE_HOST"),
+    "PORT": os.getenv("DJANGO_DATABASE_PORT"),
+}
+
+# Add PostgreSQL-specific options only when using PostgreSQL
+if "postgresql" in db_engine:
+    db_config["OPTIONS"] = {
+        'client_encoding': os.getenv("DJANGO_DATABASE_CLIENT_ENCODING", "UTF8"),
     }
+
+DATABASES = {
+    "default": db_config
 }
 
 # Password validation
@@ -169,7 +181,9 @@ STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", BASE_DIR / "staticfiles")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_REDIRECT_URL = "/"
+# Authentication settings
+# https://docs.djangoproject.com/en/6.0/ref/settings/#auth
+LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/"
 
 # FA: End session when the browser is closed
@@ -213,11 +227,12 @@ INTERNAL_IPS = [
 AUTH_USER_MODEL = "home.User"  # FA: replace username with email as unique identifiers
 
 # Vite integration
-VITE_BASE_URL = "http://localhost:5173"  # Url of vite dev server
-VITE_STATIC_DIR = (
-    "ui-components"  # Path to vite-generated asset directory in the static folder
-)
-VITE_MANIFEST_FILE_PATH = os.path.join(VITE_STATIC_DIR, "manifest.json")
+if DEBUG:
+    VITE_BASE_URL = "http://localhost:5173"
+    "URL of Vite local development server"
+VITE_STATIC_DIR = "ui-components"
+"Path to vite-generated asset directory in the static folder"
+VITE_MANIFEST_FILE_PATH = Path(os.path.join(VITE_STATIC_DIR, "manifest.json"))
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
@@ -256,14 +271,37 @@ LOGGING = {
         "handlers": ["console"],
         "level": os.getenv("DJANGO_LOG_LEVEL", "WARNING"),
     },
+    "loggers": {
+        # Reduce FactoryBoy verbosity during testing (issue #521)
+        # FactoryBoy generates verbose DEBUG/INFO logs when creating test fixtures
+        # This configuration suppresses these logs to reduce test output spam
+        "factory": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+    },
 }
 
+# Survey content configuration files
 SURVEY_TEMPLATE_DIR = BASE_DIR / "data/survey_config"
 SURVEY_TEMPLATES = {
     "Nurses": "sort_only_config_nurses.json",
     "Midwives": "sort_only_config_midwives.json",
     "NMAHPs": "sort_only_config_nmahps.json",
+    "Nurses & Midwives": "sort_only_config_nurses_midwives.json",
+    "AHP": "sort_only_config_ahp.json",
+    "Generic": "sort_only_config_generic.json",
 }
+DEMOGRAPHY_TEMPLATES = {
+    "Nurses": "demography_only_config_nurses.json",
+    "Midwives": "demography_only_config_midwives.json",
+    "NMAHPs": "demography_only_config_nmahps.json",
+    "Nurses & Midwives": "demography_only_config_nurses_midwives.json",
+    "AHP": "demography_only_config_ahp.json",
+    "Generic": "demography_only_config_generic.json",
+}
+CONSENT_TEMPLATE = "consent_only_config.json"
 
 # Crispy enables Bootstrap styling on Django forms
 # https://django-crispy-forms.readthedocs.io/en/latest/install.html
@@ -281,4 +319,4 @@ INVITATIONS_EMAIL_SUBJECT_PREFIX = "SORT"
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_EMAIL_VERIFICATION="mandatory"
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"

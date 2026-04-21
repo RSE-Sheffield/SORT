@@ -1,0 +1,40 @@
+{% extends "login_base.html" %}
+
+{% block title %}SORT - Self-Assessment of Organisational Readiness Tool{% endblock %}
+
+{% block content %}
+    <div class="text-center mb-4">
+        <h2 class="mb-3">Welcome to SORT Online</h2>
+        <p class="text-muted" style="font-size: 0.9rem; line-height: 1.6;">
+            The <a href="https://www.sort-online.org/">Self-Assessment of Organisational Readiness Tool</a>
+            helps healthcare organizations evaluate and strengthen their research capabilities within
+            nursing, midwifery, and allied health professions.
+        </p>
+    </div>
+
+    <!-- Authentication -->
+    <div class="d-grid gap-3">
+        <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+            <i class="bx bxs-lock-alt"></i> Login to Your Account
+        </a>
+        <a href="{% url 'account_signup' %}" class="btn btn-outline-primary btn-lg">
+            <i class="bx bxs-user-plus"></i> Create New Account
+        </a>
+    </div>
+
+    <div class="text-center mt-3" style="font-size: 0.85rem;">
+        <p class="text-muted mb-0">
+            Already have an invitation code? Use it during signup to join an existing organisation.
+        </p>
+    </div>
+
+    <div class="text-center mt-4 pt-3 border-top" style="font-size: 0.8rem;">
+        <p class="text-muted mb-2">More Information</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{% url 'help' %}" class="small"><i class="bx bxs-help-circle"></i> Help & Support</a>
+            <a href="{% url 'participant_information' %}" class="small"><i class="bx bxs-info-circle"></i> Participant
+                Information</a>
+            <a href="{% url 'privacy' %}" class="small"><i class="bx bxs-lock"></i> Privacy Notice</a>
+        </div>
+    </div>
+{% endblock %}

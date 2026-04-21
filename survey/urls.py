@@ -40,7 +40,14 @@ urlpatterns = [
         name="survey_add_file",
     ),
     path(
-        "survey/<int:pk>/export", views.SurveyExportView.as_view(), name="survey_export"
+        "survey/<int:pk>/export/csv",
+        views.SurveyExportCsvView.as_view(),
+        name="survey_export",
+    ),
+    path(
+        "survey/<int:pk>/export/excel",
+        views.SurveyExportExcelView.as_view(),
+        name="survey_export_excel",
     ),
     path(
         "survey/<int:pk>/response_data",

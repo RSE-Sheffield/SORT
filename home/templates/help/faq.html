@@ -1,0 +1,60 @@
+{% extends "base_manager.html" %}
+{% block title %}Frequently Asked Questions{% endblock %}
+{% block content %}
+    <div class="container py-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'help' %}">Help</a></li>
+                <li class="breadcrumb-item active" aria-current="page">FAQs</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="mb-4">Frequently Asked Questions</h1>
+                <p class="lead text-muted mb-4">
+                    Find answers to common questions about SORT Online.
+                </p>
+                <p>
+                    Our <a href="https://www.sort-online.org/faqs" target="_blank"><strong>frequently asked questions (FAQs)</strong></a> section on the SORT website provides answers to the most common queries about SORT Online.
+                </p>
+                <p>
+                    <a href="https://www.sort-online.org/faqs" type="button" class="btn btn-primary" target="_blank">
+                        <i class="bx bx-question-mark"></i> Read frequently asked questions (FAQs)
+                    </a>
+                </p>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="card mt-4 mt-lg-0">
+                    <div class="card-header">
+                        <i class="bx bx-link"></i> Quick Links
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <a href="{% url 'help' %}">
+                                <i class="bx bx-play-circle"></i> Video Tutorial
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{% url 'troubleshooting' %}">
+                                <i class="bx bx-wrench"></i> Troubleshooting Guide
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{% url 'privacy' %}">
+                                <i class="bx bx-lock-alt"></i> Privacy Policy
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{% url 'participant_information' %}">
+                                <i class="bx bx-info-circle"></i> Participant Information
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

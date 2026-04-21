@@ -1,9 +1,21 @@
 name: Run Django tests
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
+    paths:
+      - SORT/**
+      - home/**
+      - survey/**
+      - requirements*.txt
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
+    paths:
+      - SORT/**
+      - home/**
+      - survey/**
+      - requirements*.txt
+permissions:
+  contents: read
 jobs:
   django-test:
     name: Run Django automated checks and tests
@@ -15,16 +27,16 @@ jobs:
         uses: actions/setup-python@v5.3.0
         with:
           # This should match the version used in production
-          python-version: "3.12"
+          python-version-file: .python-version
           cache: "pip"
       - name: Install dependencies
         run: pip install --requirement requirements.txt --requirement requirements-dev.txt
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          # This should match the version used in production
-          node-version: 'v20.x'
+          node-version-file: package.json
           cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
       - name: Install JavaScript package
         run: |
           npm ci
@@ -33,7 +45,12 @@ jobs:
       - name: Run Django system checks
         run: |
           export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
-          python manage.py check
+          python manage.py check --fail-level WARNING
+      # https://docs.djangoproject.com/en/5.1/ref/django-admin/#cmdoption-makemigrations-check
+      - name: Check for missing migrations
+        run: |
+          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
+          python manage.py makemigrations --check --dry-run
       # https://docs.djangoproject.com/en/5.1/topics/testing/
       - name: Run Django test suites
         run: |
