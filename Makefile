@@ -50,7 +50,8 @@ shell:
 	$(MANAGE) shell
 
 test:
-	$(MANAGE) test
+	$(MANAGE) test --parallel=auto --failfast
+	npm test
 
 clean:
 	find . -type f -name "*.pyc" -delete
