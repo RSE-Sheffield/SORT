@@ -16,6 +16,7 @@ def field_schema(field_config: dict) -> dict:
     elif field_type in ("text", "textarea"):
         return _text_schema(field_config)
     else:
+        # Empty schema: any value is valid (no constraints imposed)
         return {}
 
 

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Generator, ContextManager
 from contextlib import contextmanager
 
+import jsonschema
 import xlsxwriter
 
 from django.conf import settings
@@ -20,6 +21,7 @@ from django.urls import reverse
 import django.core.validators
 
 from home.models import Project
+from survey.schema import field_schema
 
 logger = logging.getLogger(__name__)
 
@@ -190,7 +192,6 @@ class Survey(models.Model):
         """
         Generate a JSON Schema that validates the structure of response answers.
         """
-        from survey.schema import field_schema
 
         section_schemas = []
         for section in self.sections:
@@ -418,6 +419,18 @@ class Survey(models.Model):
             + demography_config["sections"]
         }
 
+    def validate(self, answers: list) -> None:
+        """
+        Validate a response answers list against this survey's JSON Schema.
+
+        Raises jsonschema.ValidationError if the answers do not match.
+        """
+
+        try:
+            jsonschema.validate(answers, self.response_schema)
+        except jsonschema.ValidationError as exc:
+            raise ValidationError(exc.message) from exc
+
 
 class SurveyEvidenceSection(models.Model):
     """
@@ -506,12 +519,7 @@ class SurveyResponse(models.Model):
             raise ValueError("Cannot submit response to an inactive survey")
 
         # Validate response structure against survey config
-        import jsonschema
-
-        try:
-            jsonschema.validate(self.answers, self.survey.response_schema)
-        except jsonschema.ValidationError as exc:
-            raise ValidationError(exc.message) from exc
+        self.survey.validate(self.answers)
 
     @property
     def answers_values(self) -> Generator[str, None, None]:
