@@ -48,20 +48,24 @@ class TestResponseSchema(TestCase):
 
     def test_invalid_likert_value(self):
         answers = self.survey._generate_mock_response()
-        # Find a likert field (first SORT section, first field is likert)
-        sort_section_index = 1  # After consent
-        answers[sort_section_index][0] = copy.deepcopy(
-            answers[sort_section_index][0]
+        # Find the first section whose first field is a likert
+        likert_section_index = next(
+            i for i, section in enumerate(self.survey.sections)
+            if section.get("fields") and section["fields"][0]["type"] == "likert"
         )
-        answers[sort_section_index][0][0] = "99"  # Invalid value
+        answers[likert_section_index][0] = copy.deepcopy(answers[likert_section_index][0])
+        answers[likert_section_index][0][0] = "99"  # Invalid value
         response = SurveyResponse(survey=self.survey, answers=answers)
         with self.assertRaises(ValidationError):
             response.clean()
 
     def test_wrong_likert_sublabel_count(self):
         answers = self.survey._generate_mock_response()
-        sort_section_index = 1
-        answers[sort_section_index][0] = ["0"]  # Only 1 instead of 22
+        likert_section_index = next(
+            i for i, section in enumerate(self.survey.sections)
+            if section.get("fields") and section["fields"][0]["type"] == "likert"
+        )
+        answers[likert_section_index][0] = ["0"]  # Only 1 instead of expected count
         response = SurveyResponse(survey=self.survey, answers=answers)
         with self.assertRaises(ValidationError):
             response.clean()

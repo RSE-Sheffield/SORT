@@ -193,7 +193,7 @@ class Survey(models.Model):
         Generate a JSON Schema that validates the structure of response answers.
         """
 
-        section_schemas = []
+        section_schemas = list()
         for section in self.sections:
             fields = section.get("fields", [])
             field_schemas = [field_schema(f) for f in fields]
@@ -419,18 +419,6 @@ class Survey(models.Model):
             + demography_config["sections"]
         }
 
-    def validate(self, answers: list) -> None:
-        """
-        Validate a response answers list against this survey's JSON Schema.
-
-        Raises jsonschema.ValidationError if the answers do not match.
-        """
-
-        try:
-            jsonschema.validate(answers, self.response_schema)
-        except jsonschema.ValidationError as exc:
-            raise ValidationError(exc.message) from exc
-
 
 class SurveyEvidenceSection(models.Model):
     """
@@ -511,15 +499,27 @@ class SurveyResponse(models.Model):
     def get_absolute_url(self, token):
         return reverse("survey", kwargs={"pk": self.survey.pk})
 
+    def validate(self) -> None:
+        """
+        Validate response answers against this survey's JSON Schema.
+
+        Raises django.core.exceptions.ValidationError if the answers do not match.
+        """
+
+        try:
+            jsonschema.validate(self.answers, self.survey.response_schema)
+        except jsonschema.ValidationError as exc:
+            raise ValidationError(exc.message) from exc
+
     def clean(self):
         super().clean()
 
         # Paused survey
         if not self.survey.is_active:
-            raise ValueError("Cannot submit response to an inactive survey")
+            raise ValidationError("Cannot submit response to an inactive survey")
 
         # Validate response structure against survey config
-        self.survey.validate(self.answers)
+        self.validate()
 
     @property
     def answers_values(self) -> Generator[str, None, None]:
