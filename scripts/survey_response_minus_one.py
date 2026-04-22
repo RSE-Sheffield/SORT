@@ -57,7 +57,7 @@ def main():
     parser.add_argument(
         "--min-pk",
         type=int,
-        help="Only process SurveyResponse rows with pk greater than this value.",
+        help="Only process SurveyResponse rows with pk greater than or equal to this value.",
     )
     parser.add_argument(
         "--commit",
@@ -69,7 +69,7 @@ def main():
     survey = Survey.objects.get(pk=args.survey_pk)
     qs = survey.survey_response.all()
     if args.min_pk is not None:
-        qs = qs.filter(pk__gt=args.min_pk)
+        qs = qs.filter(pk__gte=args.min_pk)
     responses = list(qs)
 
     total_shifted = 0
