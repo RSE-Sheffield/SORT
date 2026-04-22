@@ -55,6 +55,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("survey_pk", type=int)
     parser.add_argument(
+        "--min-pk",
+        type=int,
+        help="Only process SurveyResponse rows with pk greater than this value.",
+    )
+    parser.add_argument(
         "--commit",
         action="store_true",
         help="Persist changes. Without this flag the script runs read-only.",
@@ -62,7 +67,10 @@ def main():
     args = parser.parse_args()
 
     survey = Survey.objects.get(pk=args.survey_pk)
-    responses = list(survey.survey_response.all())
+    qs = survey.survey_response.all()
+    if args.min_pk is not None:
+        qs = qs.filter(pk__gt=args.min_pk)
+    responses = list(qs)
 
     total_shifted = 0
     modified = 0
