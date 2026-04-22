@@ -25,28 +25,28 @@ LIKERT_VALUES = {"1", "2", "3", "4", "5"}
 
 
 def shift_answers(answers):
-    """Return (new_answers, values_shifted, zeros_seen)."""
-    new = []
+    """Return (new_answers, values_shifted). Raises ValueError if a '0' is seen."""
+    new = list()
     shifted = 0
-    zeros = 0
     for section in answers:
-        new_section = []
+        new_section = list()
         for field in section:
             if isinstance(field, list):
-                new_field = []
+                new_field = list()
                 for v in field:
                     if v in LIKERT_VALUES:
                         new_field.append(str(int(v) - 1))
                         shifted += 1
                     else:
-                        if v == "0":
-                            zeros += 1
-                        new_field.append(v)
+                        raise ValueError(
+                            f"unexpected '{v}' value in list-typed field - "
+                            "survey may have been converted previously"
+                        )
                 new_section.append(new_field)
             else:
                 new_section.append(field)
         new.append(new_section)
-    return new, shifted, zeros
+    return new, shifted
 
 
 def main():
@@ -63,25 +63,19 @@ def main():
     responses = list(survey.survey_response.all())
 
     total_shifted = 0
-    total_zeros = 0
     modified = 0
 
     with transaction.atomic():
         for r in responses:
-            new_answers, shifted, zeros = shift_answers(r.answers)
-            total_zeros += zeros
+            try:
+                new_answers, shifted = shift_answers(r.answers)
+            except ValueError as e:
+                raise ValueError(f"response pk={r.pk}: {e}") from e
             if shifted:
                 r.answers = new_answers
                 r.save(update_fields=["answers"])
                 total_shifted += shifted
                 modified += 1
-
-        if total_zeros:
-            print(
-                f"WARNING: found {total_zeros} '0' values already present "
-                f"in list-typed fields - survey may have been converted previously.",
-                file=sys.stderr,
-            )
 
         if not args.commit:
             transaction.set_rollback(True)
