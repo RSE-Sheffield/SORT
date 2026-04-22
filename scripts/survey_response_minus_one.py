@@ -37,11 +37,13 @@ def shift_answers(answers):
                     if v in LIKERT_VALUES:
                         new_field.append(str(int(v) - 1))
                         shifted += 1
-                    else:
+                    elif v == "0":
                         raise ValueError(
                             f"unexpected '{v}' value in list-typed field - "
                             "survey may have been converted previously"
                         )
+                    else:
+                        new_field.append(v)
                 new_section.append(new_field)
             else:
                 new_section.append(field)
