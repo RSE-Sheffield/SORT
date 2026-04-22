@@ -5,6 +5,7 @@ This interface provides a dashboard overview of the app status. It's different f
 """
 
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import TemplateView, View
@@ -12,6 +13,7 @@ from django.views.generic.base import TemplateResponseMixin
 
 from home.mixins import StaffRequiredMixin
 from home.models import Organisation, OrganisationMembership, Project, User
+from home.services import user_service
 from survey.models import Survey, SurveyResponse
 
 
@@ -73,7 +75,17 @@ class ConsoleUserListView(StaffRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["users"] = User.objects.filter(is_active=True).order_by("last_name", "first_name")
+        status = self.request.GET.get("status", "active")
+        qs = User.objects.order_by("last_name", "first_name")
+        if status == "deleted":
+            qs = qs.filter(is_active=False)
+        elif status == "all":
+            pass
+        else:
+            status = "active"
+            qs = qs.filter(is_active=True)
+        context["users"] = qs
+        context["status_filter"] = status
         return context
 
 
@@ -183,6 +195,30 @@ class ConsoleSurveyListView(StaffRequiredMixin, TemplateView):
             projects = projects.filter(organisation_id=org_id)
         context["projects"] = projects
         return context
+
+
+class ConsoleDeleteUserView(StaffRequiredMixin, TemplateResponseMixin, View):
+    template_name = "console/delete_user_confirm.html"
+
+    def _get_user(self, pk):
+        return get_object_or_404(User, pk=pk, is_active=True)
+
+    def _check_safe(self, request, target_user):
+        if target_user == request.user or target_user.is_staff or target_user.is_superuser:
+            raise PermissionDenied
+
+    def get(self, request, pk):
+        target_user = self._get_user(pk)
+        self._check_safe(request, target_user)
+        return self.render_to_response({"viewed_user": target_user})
+
+    def post(self, request, pk):
+        target_user = self._get_user(pk)
+        self._check_safe(request, target_user)
+        display_name = str(target_user)
+        user_service.anonymise(target_user)
+        messages.success(request, f"{display_name} has been anonymised and removed.")
+        return redirect("admin_users")
 
 
 class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
