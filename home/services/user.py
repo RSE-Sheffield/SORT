@@ -4,7 +4,7 @@ from ..models import OrganisationMembership, User
 
 
 class UserService:
-    def anonymise_user(self, user: User) -> None:
+    def anonymise(self, user: User) -> None:
         user.first_name = ""
         user.last_name = ""
         user.email = f"deleted-{uuid.uuid4().hex}@deleted.invalid"

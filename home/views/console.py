@@ -75,7 +75,17 @@ class ConsoleUserListView(StaffRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["users"] = User.objects.filter(is_active=True).order_by("last_name", "first_name")
+        status = self.request.GET.get("status", "active")
+        qs = User.objects.order_by("last_name", "first_name")
+        if status == "deleted":
+            qs = qs.filter(is_active=False)
+        elif status == "all":
+            pass
+        else:
+            status = "active"
+            qs = qs.filter(is_active=True)
+        context["users"] = qs
+        context["status_filter"] = status
         return context
 
 
@@ -206,7 +216,7 @@ class ConsoleDeleteUserView(StaffRequiredMixin, TemplateResponseMixin, View):
         target_user = self._get_user(pk)
         self._check_safe(request, target_user)
         display_name = str(target_user)
-        user_service.anonymise_user(target_user)
+        user_service.anonymise(target_user)
         messages.success(request, f"{display_name} has been anonymised and removed.")
         return redirect("admin_users")
 

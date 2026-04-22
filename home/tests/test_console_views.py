@@ -69,6 +69,41 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         response = self.client.get("/console/users/")
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
 
+    def test_console_users_default_shows_only_active(self):
+        """Default view excludes deleted (inactive) users."""
+        active_user = UserFactory()
+        deleted_user = UserFactory(is_active=False, first_name="", last_name="", email="deleted-abc@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/")
+        self.assertIn(active_user, response.context["users"])
+        self.assertNotIn(deleted_user, response.context["users"])
+
+    def test_console_users_deleted_filter_shows_only_inactive(self):
+        """?status=deleted shows only deleted (inactive) users."""
+        active_user = UserFactory()
+        deleted_user = UserFactory(is_active=False, first_name="", last_name="", email="deleted-abc@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/?status=deleted")
+        self.assertNotIn(active_user, response.context["users"])
+        self.assertIn(deleted_user, response.context["users"])
+
+    def test_console_users_all_filter_shows_both(self):
+        """?status=all shows both active and deleted users."""
+        active_user = UserFactory()
+        deleted_user = UserFactory(is_active=False, first_name="", last_name="", email="deleted-xyz@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/?status=all")
+        self.assertIn(active_user, response.context["users"])
+        self.assertIn(deleted_user, response.context["users"])
+
+    def test_console_users_deleted_renders_placeholder_name(self):
+        """Deleted user with blank name renders without error."""
+        UserFactory(is_active=False, first_name="", last_name="", email="deleted-abc@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/?status=deleted")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(response, "deleted user")
+
     def test_console_surveys_accessible_to_staff(self):
         """Staff users can access the surveys list."""
         self.login_staff()

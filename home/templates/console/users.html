@@ -4,6 +4,16 @@
 {% block content %}
     <div class="container py-4">
         <h1 class="h3 mb-4">Users</h1>
+
+        <div class="mb-3">
+            <div class="d-flex gap-2 align-items-center">
+                <span class="text-muted text-nowrap">Status:</span>
+                <a href="?status=active" class="btn btn-sm {% if status_filter == 'active' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Active</a>
+                <a href="?status=deleted" class="btn btn-sm {% if status_filter == 'deleted' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Deleted</a>
+                <a href="?status=all" class="btn btn-sm {% if status_filter == 'all' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">All</a>
+            </div>
+        </div>
+
         <div class="card border-0 shadow-sm">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
@@ -17,11 +27,22 @@
                     </thead>
                     <tbody>
                     {% for user in users %}
-                        <tr>
-                            <td><a href="{% url 'admin_user_detail' user.pk %}">{{ user.first_name }} {{ user.last_name }}</a></td>
+                        <tr{% if not user.is_active %} class="text-muted"{% endif %}>
+                            <td>
+                                <a href="{% url 'admin_user_detail' user.pk %}">
+                                    {% if user.first_name or user.last_name %}
+                                        {{ user.first_name }} {{ user.last_name }}
+                                    {% else %}
+                                        <em>(deleted user)</em>
+                                    {% endif %}
+                                </a>
+                                {% if not user.is_active %}
+                                    <span class="badge bg-secondary ms-1">Deleted</span>
+                                {% endif %}
+                            </td>
                             <td>{{ user.email }}</td>
                             <td>{{ user.organisationmembership_set.count }}</td>
-                            <td class="text-muted">{{ user.date_joined|date:"d M Y" }}</td>
+                            <td>{{ user.date_joined|date:"d M Y" }}</td>
                         </tr>
                     {% empty %}
                         <tr>
