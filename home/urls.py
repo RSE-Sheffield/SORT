@@ -162,4 +162,9 @@ urlpatterns = [
         views.ConsoleSurveyDetailView.as_view(),
         name="admin_survey_detail",
     ),
+    path(
+        "console/data-protection/",
+        views.ConsoleDataProtectionLogView.as_view(),
+        name="admin_data_protection_log",
+    ),
 ]
