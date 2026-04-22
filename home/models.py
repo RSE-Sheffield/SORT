@@ -3,6 +3,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.urls import reverse
 
@@ -136,3 +137,58 @@ class Project(models.Model):
     @property
     def surveys(self):
         return self.survey.all()
+
+
+class DataProtectionEvent(models.Model):
+    """
+    Append-only record of data protection actions taken on a user's data,
+    kept for UK GDPR Article 5(2) accountability. Entries survive erasure of
+    the subject user, so subject identity is stored as a stable string plus
+    the original id — never as a FK to User.
+    """
+
+    class EventType(models.TextChoices):
+        ERASURE = "erasure", "Erasure request actioned"
+        EXPORT = "export", "Subject access export generated"
+        RESTRICTION = "restriction", "Account restricted / suspended"
+        UNRESTRICTION = "unrestriction", "Account restriction lifted"
+        CONSENT_WITHDRAWAL = "consent_withdrawal", "Consent withdrawn"
+
+    event_type = models.CharField(max_length=32, choices=EventType.choices)
+    subject_user_id = models.IntegerField(null=True, blank=True)
+    subject_identifier = models.CharField(max_length=254)
+    actioned_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="dp_events_actioned",
+    )
+    requested_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="dp_events_requested",
+    )
+    requested_at = models.DateTimeField(null=True, blank=True)
+    actioned_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ("-actioned_at",)
+        indexes = [
+            models.Index(fields=["event_type", "-actioned_at"]),
+            models.Index(fields=["subject_user_id"]),
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            raise PermissionDenied("DataProtectionEvent is append-only")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise PermissionDenied("DataProtectionEvent is append-only")
+
+    def __str__(self):
+        return f"{self.get_event_type_display()} — {self.subject_identifier} @ {self.actioned_at:%Y-%m-%d %H:%M}"

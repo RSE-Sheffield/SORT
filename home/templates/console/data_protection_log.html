@@ -1,0 +1,92 @@
+{% extends "base_console.html" %}
+{% block title %}| Admin — Data protection log{% endblock %}
+
+{% block content %}
+    <div class="container py-4">
+        <h1 class="h3 mb-1">Data protection log</h1>
+        <p class="text-muted mb-4">
+            Audit trail of erasure, export, restriction and consent-withdrawal
+            actions. Entries are append-only for UK GDPR accountability.
+        </p>
+
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-auto">
+                <label for="event_type" class="form-label small mb-0">Event type</label>
+                <select name="event_type" id="event_type" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    {% for value, label in event_types %}
+                        <option value="{{ value }}" {% if selected_event_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <label for="subject_user" class="form-label small mb-0">Subject user ID</label>
+                <input type="number" name="subject_user" id="subject_user"
+                       class="form-control form-control-sm"
+                       value="{{ selected_subject_user|default_if_none:'' }}">
+            </div>
+            <div class="col-auto align-self-end">
+                <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                <a href="{% url 'admin_data_protection_log' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
+            </div>
+        </form>
+
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>When</th>
+                        <th>Event</th>
+                        <th>Subject</th>
+                        <th>Actioned by</th>
+                        <th>Requested by</th>
+                        <th>Notes</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for event in events %}
+                        <tr>
+                            <td class="text-muted small">{{ event.actioned_at|date:"d M Y H:i" }}</td>
+                            <td>{{ event.get_event_type_display }}</td>
+                            <td>
+                                {{ event.subject_identifier }}
+                                {% if event.subject_user_id %}
+                                    <span class="text-muted small">(#{{ event.subject_user_id }})</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ event.actioned_by|default:"—" }}</td>
+                            <td>{{ event.requested_by|default:"—" }}</td>
+                            <td class="text-muted small">{{ event.notes }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-muted">No events recorded</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Data protection log pages" class="mt-3">
+                <ul class="pagination pagination-sm">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_event_type %}&event_type={{ selected_event_type }}{% endif %}{% if selected_subject_user %}&subject_user={{ selected_subject_user }}{% endif %}">Previous</a>
+                        </li>
+                    {% endif %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+                    </li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_event_type %}&event_type={{ selected_event_type }}{% endif %}{% if selected_subject_user %}&subject_user={{ selected_subject_user }}{% endif %}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+{% endblock %}

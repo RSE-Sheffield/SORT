@@ -29,6 +29,7 @@ from .organisation import (
     OrganisationMembershipListView,
 )
 from .console import (
+    ConsoleDataProtectionLogView,
     ConsoleUserListView,
     ConsoleSurveyDetailView,
     ConsoleSurveyListView,
@@ -87,4 +88,5 @@ __all__ = [
     "ConsoleProjectListView",
     "ConsoleRemoveMemberView",
     "ConsoleUserDetailView",
+    "ConsoleDataProtectionLogView",
 ]
