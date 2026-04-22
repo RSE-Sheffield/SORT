@@ -8,7 +8,7 @@ from django.core.exceptions import PermissionDenied
 import SORT.test.test_case
 from home.constants import ROLE_ADMIN, ROLES
 from home.models import Organisation, OrganisationMembership
-from home.services import OrganisationService
+from home.services import organisation_service
 from SORT.test.model_factory import OrganisationFactory, UserFactory
 
 User = get_user_model()
@@ -18,7 +18,7 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
 
     def setUp(self):
         super().setUp()
-        self.service = OrganisationService()
+        self.service = organisation_service
         self.organisation = OrganisationFactory()
         self.manager: User = self.organisation.members.first()
         self.manager.first_name = "Manager"
