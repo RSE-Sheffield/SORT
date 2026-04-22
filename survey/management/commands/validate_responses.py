@@ -20,6 +20,6 @@ class Command(BaseCommand):
                     self.stderr.write(
                         f"Survey {survey.pk} / Response {response.pk}: {exc.message}"
                     )
-        self.stdout.write(f"Validated {total} responses — {errors} error(s)")
+        self.stdout.write(f"Validated {total} responses - {errors} error(s)")
         if errors:
             exit(1)
