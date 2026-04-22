@@ -53,6 +53,12 @@
                                target="_blank"><i class='bx bxs-bug'></i> Report issues
                                 <i class='bx bx-link-external'></i></a>
                         </li>
+                        {% if user.is_staff %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/console' in request.path %}active{% endif %}"
+                               href="{% url 'admin_dashboard' %}"><i class='bx bxs-dashboard'></i> Console</a>
+                        </li>
+                        {% endif %}
                     </ol>
                     <ul class="navbar-nav">
                         {% if user.is_authenticated %}
