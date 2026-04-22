@@ -3,8 +3,9 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
-from django.core.exceptions import PermissionDenied
 from django.db import models
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.urls import reverse
 
 from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
@@ -184,11 +185,16 @@ class DataProtectionEvent(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk is not None:
-            raise PermissionDenied("DataProtectionEvent is append-only")
+            raise ValueError("DataProtectionEvent is append-only and cannot be modified")
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        raise PermissionDenied("DataProtectionEvent is append-only")
+        raise ValueError("DataProtectionEvent is append-only and cannot be deleted")
 
     def __str__(self):
         return f"{self.get_event_type_display()} — {self.subject_identifier} @ {self.actioned_at:%Y-%m-%d %H:%M}"
+
+
+@receiver(pre_delete, sender=DataProtectionEvent)
+def _prevent_dp_event_delete(sender, instance, **kwargs):
+    raise ValueError("DataProtectionEvent is append-only and cannot be deleted")

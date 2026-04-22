@@ -239,10 +239,14 @@ class ConsoleDataProtectionLogView(StaffRequiredMixin, TemplateView):
         page_number = self.request.GET.get("page") or 1
         page = paginator.get_page(page_number)
 
+        filter_params = self.request.GET.copy()
+        filter_params.pop("page", None)
+
         context["events"] = page
         context["page_obj"] = page
         context["paginator"] = paginator
         context["event_types"] = DataProtectionEvent.EventType.choices
         context["selected_event_type"] = event_type
         context["selected_subject_user"] = subject_user_id
+        context["filter_qs"] = filter_params.urlencode()
         return context

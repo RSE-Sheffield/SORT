@@ -1,7 +1,5 @@
 from http import HTTPStatus
 
-from django.core.exceptions import PermissionDenied
-
 import SORT.test.test_case
 from SORT.test.model_factory import (
     OrganisationFactory,
@@ -26,12 +24,12 @@ class DataProtectionEventModelTests(SORT.test.test_case.ViewTestCase):
     def test_save_on_existing_instance_raises(self):
         event = self._make_event()
         event.notes = "mutated"
-        with self.assertRaises(PermissionDenied):
+        with self.assertRaises(ValueError):
             event.save()
 
     def test_delete_raises(self):
         event = self._make_event()
-        with self.assertRaises(PermissionDenied):
+        with self.assertRaises(ValueError):
             event.delete()
         self.assertTrue(
             DataProtectionEvent.objects.filter(pk=event.pk).exists(),
@@ -69,6 +67,7 @@ class DataProtectionServiceTests(SORT.test.test_case.ViewTestCase):
         self.assertEqual(event.subject_identifier, "deleted-user-99999")
 
     def test_list_events_denies_non_staff(self):
+        from django.core.exceptions import PermissionDenied
         with self.assertRaises(PermissionDenied):
             data_protection_service.list_events(self.user)
 

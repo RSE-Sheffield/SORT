@@ -74,7 +74,7 @@
                 <ul class="pagination pagination-sm">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_event_type %}&event_type={{ selected_event_type }}{% endif %}{% if selected_subject_user %}&subject_user={{ selected_subject_user }}{% endif %}">Previous</a>
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if filter_qs %}&{{ filter_qs }}{% endif %}">Previous</a>
                         </li>
                     {% endif %}
                     <li class="page-item disabled">
@@ -82,7 +82,7 @@
                     </li>
                     {% if page_obj.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_event_type %}&event_type={{ selected_event_type }}{% endif %}{% if selected_subject_user %}&subject_user={{ selected_subject_user }}{% endif %}">Next</a>
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if filter_qs %}&{{ filter_qs }}{% endif %}">Next</a>
                         </li>
                     {% endif %}
                 </ul>
