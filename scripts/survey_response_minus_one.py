@@ -60,6 +60,11 @@ def main():
         help="Only process SurveyResponse rows with pk greater than or equal to this value.",
     )
     parser.add_argument(
+        "--max-pk",
+        type=int,
+        help="Only process SurveyResponse rows with pk less than or equal to this value.",
+    )
+    parser.add_argument(
         "--commit",
         action="store_true",
         help="Persist changes. Without this flag the script runs read-only.",
@@ -70,6 +75,8 @@ def main():
     qs = survey.survey_response.all()
     if args.min_pk is not None:
         qs = qs.filter(pk__gte=args.min_pk)
+    if args.max_pk is not None:
+        qs = qs.filter(pk__lte=args.max_pk)
     responses = list(qs)
 
     total_shifted = 0
