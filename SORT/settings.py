@@ -280,6 +280,12 @@ LOGGING = {
             "level": "WARNING",
             "propagate": False,
         },
+        # Suppress 4xx WARNING tracebacks in test output (e.g. expected 403s from permission tests)
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
     },
 }
 

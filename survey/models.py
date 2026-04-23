@@ -10,15 +10,18 @@ from pathlib import Path
 from typing import Generator, ContextManager
 from contextlib import contextmanager
 
+import jsonschema
 import xlsxwriter
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.http import HttpRequest
 from django.urls import reverse
 import django.core.validators
 
 from home.models import Project
+from survey.schema import field_schema
 
 logger = logging.getLogger(__name__)
 
@@ -184,6 +187,34 @@ class Survey(models.Model):
         # survey_config field
         return tuple(self.survey_config["sections"])
 
+    @property
+    def response_schema(self) -> dict:
+        """
+        Generate a JSON Schema that validates the structure of response answers.
+        """
+
+        section_schemas = list()
+        for section in self.sections:
+            fields = section.get("fields", [])
+            field_schemas = [field_schema(f) for f in fields]
+            section_schemas.append(
+                {
+                    "type": "array",
+                    "prefixItems": field_schemas,
+                    "items": False,
+                    "minItems": len(fields),
+                    "maxItems": len(fields),
+                }
+            )
+
+        return {
+            "type": "array",
+            "prefixItems": section_schemas,
+            "items": False,
+            "minItems": len(section_schemas),
+            "maxItems": len(section_schemas),
+        }
+
     @classmethod
     def _generate_random_field_value(cls, field_config):
         field_type = field_config["type"]
@@ -243,7 +274,8 @@ class Survey(models.Model):
         """
         Enter a new survey submission.
         """
-        survey_response = SurveyResponse.objects.create(survey=self, answers=answers)
+        survey_response = SurveyResponse(survey=self, answers=answers)
+        survey_response.full_clean()
         survey_response.save()
         return survey_response
 
@@ -468,12 +500,27 @@ class SurveyResponse(models.Model):
     def get_absolute_url(self, token):
         return reverse("survey", kwargs={"pk": self.survey.pk})
 
+    def validate(self) -> None:
+        """
+        Validate response answers against this survey's JSON Schema.
+
+        Raises django.core.exceptions.ValidationError if the answers do not match.
+        """
+
+        try:
+            jsonschema.validate(self.answers, self.survey.response_schema)
+        except jsonschema.ValidationError as exc:
+            raise ValidationError(exc.message) from exc
+
     def clean(self):
         super().clean()
 
         # Paused survey
         if not self.survey.is_active:
-            raise ValueError("Cannot submit response to an inactive survey")
+            raise ValidationError("Cannot submit response to an inactive survey")
+
+        # Validate response structure against survey config
+        self.validate()
 
     @property
     def answers_values(self) -> Generator[str, None, None]:
