@@ -1,0 +1,53 @@
+{% extends "base_console.html" %}
+{% block title %}| Admin — Suspend account{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_users' %}">Users</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_user_detail' viewed_user.pk %}">{{ viewed_user }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Suspend account</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger shadow-sm">
+                <div class="card-header bg-white text-danger">
+                    <h1 class="h5 mb-0">Suspend account</h1>
+                </div>
+                <div class="card-body">
+                    <p>Are you sure you want to suspend <strong>{{ viewed_user }}</strong>?</p>
+                    <p class="text-muted small">
+                        While suspended, this user cannot log in or submit data. Their personal data
+                        and survey responses are <strong>retained, not deleted</strong>, and you can
+                        lift the suspension at any time.
+                    </p>
+                    <div class="mt-3">
+                        <label for="confirm-input" class="form-label small">
+                            To confirm, type <strong>{{ viewed_user.email }}</strong> below:
+                        </label>
+                        <input type="text" id="confirm-input" class="form-control form-control-sm" autocomplete="off">
+                    </div>
+                </div>
+                <div class="card-footer bg-white d-flex gap-2 justify-content-end">
+                    <a href="{% url 'admin_user_detail' viewed_user.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" id="confirm-submit" class="btn btn-danger" disabled>Suspend account</button>
+                    </form>
+                </div>
+                <script>
+                document.getElementById('confirm-input').addEventListener('input', function () {
+                    document.getElementById('confirm-submit').disabled =
+                        this.value !== '{{ viewed_user.email }}';
+                });
+                </script>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

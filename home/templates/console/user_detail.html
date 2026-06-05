@@ -24,7 +24,15 @@
                 <span class="badge bg-danger">Superuser</span>
             {% endif %}
             {% if not viewed_user.is_active %}
-                <span class="badge bg-secondary">Inactive</span>
+                <span class="badge bg-secondary">Suspended</span>
+            {% endif %}
+            {% if not viewed_user.is_active %}
+                <form method="post" action="{% url 'admin_unsuspend_user' viewed_user.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-success btn-sm">Lift suspension</button>
+                </form>
+            {% elif viewed_user != request.user and not viewed_user.is_superuser %}
+                <a href="{% url 'admin_suspend_user' viewed_user.pk %}" class="btn btn-outline-danger btn-sm">Suspend account</a>
             {% endif %}
         </div>
     </div>

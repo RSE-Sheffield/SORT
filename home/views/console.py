@@ -5,6 +5,7 @@ This interface provides a dashboard overview of the app status. It's different f
 """
 
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import TemplateView, View
@@ -73,7 +74,7 @@ class ConsoleUserListView(StaffRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["users"] = User.objects.filter(is_active=True).order_by("last_name", "first_name")
+        context["users"] = User.objects.all().order_by("last_name", "first_name")
         return context
 
 
@@ -204,3 +205,43 @@ class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
         membership.delete()
         messages.success(request, f"{user_display} removed from {org_name}.")
         return redirect("admin_organisation_detail", pk=org_pk)
+
+
+class ConsoleSuspendUserView(StaffRequiredMixin, TemplateResponseMixin, View):
+    """
+    Suspend a user account (UK GDPR Article 18, Right to Restriction).
+
+    Sets ``is_active = False`` so the user can no longer log in. No data is
+    deleted and the action is reversible via :class:`ConsoleUnsuspendUserView`.
+    """
+
+    template_name = "console/suspend_user_confirm.html"
+
+    def _get_suspendable_user(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        # Guard against locking out yourself or a superuser.
+        if user == request.user or user.is_superuser:
+            raise PermissionDenied("This account cannot be suspended.")
+        return user
+
+    def get(self, request, pk):
+        user = self._get_suspendable_user(request, pk)
+        return self.render_to_response({"viewed_user": user})
+
+    def post(self, request, pk):
+        user = self._get_suspendable_user(request, pk)
+        user.is_active = False
+        user.save(update_fields=["is_active"])
+        messages.success(request, f"{user} has been suspended.")
+        return redirect("admin_user_detail", pk=pk)
+
+
+class ConsoleUnsuspendUserView(StaffRequiredMixin, View):
+    """Lift the suspension on a user account, restoring login access."""
+
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+        messages.success(request, f"The suspension on {user} has been lifted.")
+        return redirect("admin_user_detail", pk=pk)
