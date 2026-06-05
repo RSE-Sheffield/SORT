@@ -69,6 +69,41 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         response = self.client.get("/console/users/")
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
 
+    def test_console_users_default_shows_only_active(self):
+        """Default view excludes deleted (inactive) users."""
+        active_user = UserFactory()
+        deleted_user = UserFactory(is_active=False, first_name="", last_name="", email="deleted-abc@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/")
+        self.assertIn(active_user, response.context["users"])
+        self.assertNotIn(deleted_user, response.context["users"])
+
+    def test_console_users_deleted_filter_shows_only_inactive(self):
+        """?status=deleted shows only deleted (inactive) users."""
+        active_user = UserFactory()
+        deleted_user = UserFactory(is_active=False, first_name="", last_name="", email="deleted-abc@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/?status=deleted")
+        self.assertNotIn(active_user, response.context["users"])
+        self.assertIn(deleted_user, response.context["users"])
+
+    def test_console_users_all_filter_shows_both(self):
+        """?status=all shows both active and deleted users."""
+        active_user = UserFactory()
+        deleted_user = UserFactory(is_active=False, first_name="", last_name="", email="deleted-xyz@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/?status=all")
+        self.assertIn(active_user, response.context["users"])
+        self.assertIn(deleted_user, response.context["users"])
+
+    def test_console_users_deleted_renders_placeholder_name(self):
+        """Deleted user with blank name renders without error."""
+        UserFactory(is_active=False, first_name="", last_name="", email="deleted-abc@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/?status=deleted")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(response, "deleted user")
+
     def test_console_surveys_accessible_to_staff(self):
         """Staff users can access the surveys list."""
         self.login_staff()
@@ -216,3 +251,54 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         self.assertRedirects(response, f"/console/organisations/{org.pk}/")
         from home.models import OrganisationMembership
         self.assertFalse(OrganisationMembership.objects.filter(pk=membership_pk).exists())
+
+    def test_delete_user_get_shows_confirmation(self):
+        """Staff users see the delete confirmation page for a regular user."""
+        target = UserFactory()
+        self.login_staff()
+        response = self.client.get(f"/console/users/{target.pk}/delete/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_delete_user_post_anonymises_user(self):
+        """POST anonymises PII, deactivates the account, and removes memberships."""
+        from home.models import OrganisationMembership
+        target = UserFactory()
+        org = OrganisationFactory()
+        OrganisationMembershipFactory(user=target, organisation=org)
+        original_pk = target.pk
+        self.login_staff()
+        response = self.client.post(f"/console/users/{target.pk}/delete/")
+        self.assertRedirects(response, "/console/users/")
+        target.refresh_from_db()
+        self.assertFalse(target.is_active)
+        self.assertEqual(target.first_name, "")
+        self.assertEqual(target.last_name, "")
+        self.assertTrue(target.email.startswith("deleted-"))
+        self.assertFalse(target.has_usable_password())
+        self.assertFalse(OrganisationMembership.objects.filter(user_id=original_pk).exists())
+
+    def test_delete_user_cannot_delete_self(self):
+        """Staff users cannot delete their own account."""
+        self.login_staff()
+        response = self.client.post(f"/console/users/{self.staff_user.pk}/delete/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_delete_user_cannot_delete_staff(self):
+        """Staff users cannot delete other staff accounts."""
+        other_staff = UserFactory(is_staff=True)
+        self.login_staff()
+        response = self.client.post(f"/console/users/{other_staff.pk}/delete/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_delete_user_forbidden_for_regular_users(self):
+        """Regular users cannot access the delete user view."""
+        target = UserFactory()
+        self.login()
+        response = self.client.get(f"/console/users/{target.pk}/delete/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_delete_user_redirects_anonymous(self):
+        """Anonymous users are redirected away from the delete user view."""
+        target = UserFactory()
+        response = self.client.get(f"/console/users/{target.pk}/delete/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
