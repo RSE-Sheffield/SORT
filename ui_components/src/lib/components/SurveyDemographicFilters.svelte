@@ -49,7 +49,7 @@
           // Hide deactivated fields
           if (fieldConfig.disabled) {
             console.log(`Concealing disabled field "${fieldConfig.label}"`);
-            break;
+            continue;
           }
           switch (fieldConfig.type) {
             case "checkbox":
