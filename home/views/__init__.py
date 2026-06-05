@@ -38,6 +38,8 @@ from .console import (
     ConsoleProjectDetailView,
     ConsoleProjectListView,
     ConsoleRemoveMemberView,
+    ConsoleSuspendUserView,
+    ConsoleUnsuspendUserView,
     ConsoleUserDetailView,
 )
 from .project import (
@@ -86,5 +88,7 @@ __all__ = [
     "ConsoleProjectDetailView",
     "ConsoleProjectListView",
     "ConsoleRemoveMemberView",
+    "ConsoleSuspendUserView",
+    "ConsoleUnsuspendUserView",
     "ConsoleUserDetailView",
 ]

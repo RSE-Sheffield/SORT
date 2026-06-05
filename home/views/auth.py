@@ -83,7 +83,20 @@ class LoginInterfaceView(LoginView):
     success_url = reverse_lazy("dashboard")
 
     def form_invalid(self, form):
-        messages.error(self.request, "Invalid email or password.")
+        # A suspended account (is_active=False) is rejected by ModelBackend before
+        # AuthenticationForm.confirm_login_allowed runs, so it lands here with the
+        # generic error. Surface a clearer message — but only when the password
+        # actually matches, so we don't reveal which emails exist.
+        email = form.cleaned_data.get("username") or form.data.get("username")
+        password = form.cleaned_data.get("password") or form.data.get("password")
+        user = User.objects.filter(email=email).first()
+        if user and password and not user.is_active and user.check_password(password):
+            messages.error(
+                self.request,
+                "Your account has been suspended. Please contact your administrator.",
+            )
+        else:
+            messages.error(self.request, "Invalid email or password.")
         return super().form_invalid(form)
 
     def dispatch(self, request, *args, **kwargs):
