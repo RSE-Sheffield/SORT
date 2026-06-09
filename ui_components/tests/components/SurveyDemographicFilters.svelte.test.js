@@ -1,23 +1,23 @@
-import { test, expect } from "vitest";
+import { test, expect, vi } from "vitest";
 import "@testing-library/jest-dom";
-import { render, screen } from "@testing-library/svelte";
+import { render, screen, fireEvent } from "@testing-library/svelte";
 import SurveyDemographicFilters from "../../src/lib/components/SurveyDemographicFilters.svelte";
+
+const radioField = (label, options, disabled = false) => ({
+  type: "radio",
+  label,
+  description: "",
+  required: false,
+  sublabels: [],
+  options,
+  disabled,
+  hasOtherOption: false,
+});
 
 // Regression test for the bug where a disabled demographic field caused every
 // field after it to be dropped from the filters (the loop used `break` instead
 // of `continue`). See GitHub issue #598.
 test("SurveyDemographicFilters renders enabled fields after a disabled one", () => {
-  const radioField = (label, options, disabled = false) => ({
-    type: "radio",
-    label,
-    description: "",
-    required: false,
-    sublabels: [],
-    options,
-    disabled,
-    hasOtherOption: false,
-  });
-
   const config = {
     sections: [
       {
@@ -45,4 +45,84 @@ test("SurveyDemographicFilters renders enabled fields after a disabled one", () 
 
   // The disabled field must NOT render.
   expect(screen.queryByText("What is your current pay band?")).not.toBeInTheDocument();
+});
+
+// Issue #605: allow selecting multiple categories at once (e.g. several
+// hospital sites within a Trust).
+const siteConfig = {
+  sections: [
+    {
+      title: "Demographics",
+      type: "demographic",
+      description: "",
+      fields: [
+        radioField("What is your hospital site?", [
+          "Royal Hallamshire",
+          "Northern General",
+          "Weston Park",
+        ]),
+      ],
+    },
+  ],
+};
+
+const siteResponses = [
+  [["Royal Hallamshire"]],
+  [["Northern General"]],
+  [["Weston Park"]],
+];
+
+test("renders a checkbox per option instead of a single select", () => {
+  render(SurveyDemographicFilters, {
+    props: { config: siteConfig, responses: siteResponses },
+  });
+
+  expect(screen.getByLabelText("Royal Hallamshire")).toBeInTheDocument();
+  expect(screen.getByLabelText("Northern General")).toBeInTheDocument();
+  expect(screen.getByLabelText("Weston Park")).toBeInTheDocument();
+  // No single-select dropdown.
+  expect(document.querySelector("select")).toBeNull();
+});
+
+test("ticking multiple options keeps responses matching either value", async () => {
+  const onFilterChange = vi.fn();
+  render(SurveyDemographicFilters, {
+    props: { config: siteConfig, responses: siteResponses, onFilterChange },
+  });
+
+  await fireEvent.click(screen.getByLabelText("Royal Hallamshire"));
+  await fireEvent.click(screen.getByLabelText("Northern General"));
+
+  const [filtered, activeFilters] =
+    onFilterChange.mock.calls[onFilterChange.mock.calls.length - 1];
+
+  // Union of the two selected sites — Weston Park excluded.
+  expect(filtered).toEqual([
+    [["Royal Hallamshire"]],
+    [["Northern General"]],
+  ]);
+  expect(activeFilters).toEqual([
+    {
+      label: "What is your hospital site?",
+      value: "Royal Hallamshire, Northern General",
+    },
+  ]);
+});
+
+test("with nothing ticked, all responses pass through", async () => {
+  const onFilterChange = vi.fn();
+  render(SurveyDemographicFilters, {
+    props: { config: siteConfig, responses: siteResponses, onFilterChange },
+  });
+
+  // Tick then untick — back to the empty "All" default.
+  const box = screen.getByLabelText("Royal Hallamshire");
+  await fireEvent.click(box);
+  await fireEvent.click(box);
+
+  const [filtered, activeFilters] =
+    onFilterChange.mock.calls[onFilterChange.mock.calls.length - 1];
+
+  expect(filtered).toEqual(siteResponses);
+  expect(activeFilters).toEqual([]);
 });
