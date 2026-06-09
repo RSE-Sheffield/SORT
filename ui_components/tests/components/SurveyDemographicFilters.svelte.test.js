@@ -1,7 +1,9 @@
 import { test, expect, vi } from "vitest";
 import "@testing-library/jest-dom";
 import { render, screen, fireEvent } from "@testing-library/svelte";
+import { tick } from "svelte";
 import SurveyDemographicFilters from "../../src/lib/components/SurveyDemographicFilters.svelte";
+import { TextType } from "../../src/lib/interfaces.ts";
 
 const radioField = (label, options, disabled = false) => ({
   type: "radio",
@@ -125,4 +127,95 @@ test("with nothing ticked, all responses pass through", async () => {
 
   expect(filtered).toEqual(siteResponses);
   expect(activeFilters).toEqual([]);
+});
+
+test("clearing filters resets a categorical selection back to All", async () => {
+  const onFilterChange = vi.fn();
+  let clearFilters;
+  const onClearFiltersCallback = (cb) => {
+    clearFilters = cb;
+  };
+  render(SurveyDemographicFilters, {
+    props: {
+      config: siteConfig,
+      responses: siteResponses,
+      onFilterChange,
+      onClearFiltersCallback,
+    },
+  });
+
+  await fireEvent.click(screen.getByLabelText("Royal Hallamshire"));
+
+  // Selection narrowed the set down to the one matching site.
+  let [filtered, activeFilters] =
+    onFilterChange.mock.calls[onFilterChange.mock.calls.length - 1];
+  expect(filtered).toEqual([[["Royal Hallamshire"]]]);
+  expect(activeFilters).toHaveLength(1);
+
+  // Clearing restores all responses and removes the active filter.
+  clearFilters();
+  await tick();
+  [filtered, activeFilters] =
+    onFilterChange.mock.calls[onFilterChange.mock.calls.length - 1];
+  expect(filtered).toEqual(siteResponses);
+  expect(activeFilters).toEqual([]);
+  // The checkbox is unticked again.
+  expect(screen.getByLabelText("Royal Hallamshire").checked).toBe(false);
+});
+
+// A report can mix numeric (range) and categorical (checkbox) filters; they
+// must both render and apply together.
+test("mixes a numeric range filter with a categorical checkbox filter", async () => {
+  const config = {
+    sections: [
+      {
+        title: "Demographics",
+        type: "demographic",
+        description: "",
+        fields: [
+          {
+            type: "text",
+            label: "What is your age?",
+            description: "",
+            required: false,
+            sublabels: [],
+            options: [],
+            textType: TextType.integer,
+            disabled: false,
+            hasOtherOption: false,
+          },
+          radioField("What is your hospital site?", [
+            "Royal Hallamshire",
+            "Northern General",
+          ]),
+        ],
+      },
+    ],
+  };
+  // responses[responseIndex][sectionIndex][fieldIndex]
+  const responses = [
+    [["30", "Royal Hallamshire"]],
+    [["45", "Northern General"]],
+  ];
+
+  const onFilterChange = vi.fn();
+  render(SurveyDemographicFilters, {
+    props: { config, responses, onFilterChange },
+  });
+
+  // Both filter kinds render: a range slider and the option checkboxes.
+  expect(document.querySelector('input[type="range"]')).not.toBeNull();
+  expect(screen.getByLabelText("Royal Hallamshire")).toBeInTheDocument();
+  expect(screen.getByLabelText("Northern General")).toBeInTheDocument();
+
+  // Selecting a category narrows the set; the (untouched, full-range) numeric
+  // filter leaves the matching response in place.
+  await fireEvent.click(screen.getByLabelText("Royal Hallamshire"));
+
+  const [filtered, activeFilters] =
+    onFilterChange.mock.calls[onFilterChange.mock.calls.length - 1];
+  expect(filtered).toEqual([[["30", "Royal Hallamshire"]]]);
+  expect(activeFilters).toEqual([
+    { label: "What is your hospital site?", value: "Royal Hallamshire" },
+  ]);
 });

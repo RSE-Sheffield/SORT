@@ -107,7 +107,10 @@
   });
 
   function handleFilterChange() {
-    filteredResponses = [];
+    // Build the filtered set in a plain local array and assign once. Pushing
+    // prop-owned response objects directly into the reactive `filteredResponses`
+    // proxy trips Svelte's dev-mode ownership check.
+    const filtered: SurveyResponseBatch = [];
     const activeFilters: Array<{ label: string; value: string }> = [];
 
     for (let ri = 0; ri < responses.length; ri++) {
@@ -143,9 +146,10 @@
         }
       }
       if (addToFilteredSet) {
-        filteredResponses.push(responses[ri]);
+        filtered.push(responses[ri]);
       }
     }
+    filteredResponses = filtered;
 
     // Build list of active filters for display
     for (let filterIndex = 0; filterIndex < filterItems.length; filterIndex++) {
@@ -187,8 +191,6 @@
       } else if (typeof initial === "object" && initial !== null) {
         // Range filter - deep copy
         filterValues[i] = { ...initial };
-      } else {
-        filterValues[i] = initial;
       }
     }
     // Trigger filter change with reset values
@@ -273,22 +275,25 @@
         </div>
       </div>
     {:else}
+      <!-- Categorical branch: filterValues[fItemIndex] is always a string[] here
+           (the text branch above covers the Range variant), so narrow it. -->
+      {@const selected = (filterValues[fItemIndex] ?? []) as string[]}
       <fieldset class="mb-3">
         <legend class="form-label h6"
           ><strong>{fItem.fieldConfig.label}</strong></legend
         >
-        {#each fItem.options as option}
+        {#each fItem.options ?? [] as option, optIndex (option)}
           <div class="form-check">
             <input
               class="form-check-input"
               type="checkbox"
-              id="filter-{fItemIndex}-{option}"
+              id="filter-{fItemIndex}-{optIndex}"
               value={option}
-              checked={filterValues[fItemIndex].includes(option)}
+              checked={selected.includes(option)}
               onchange={(e) =>
                 toggleOption(fItemIndex, option, e.currentTarget.checked)}
             />
-            <label class="form-check-label" for="filter-{fItemIndex}-{option}"
+            <label class="form-check-label" for="filter-{fItemIndex}-{optIndex}"
               >{option}</label
             >
           </div>
