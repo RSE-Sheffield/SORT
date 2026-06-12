@@ -7,7 +7,13 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    TemplateView,
+)
 
 from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from ..forms.add_existing_member import AddExistingMemberForm
@@ -106,6 +112,9 @@ class OrganisationMembershipListView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["organisation"] = self.organisation
+        context["can_manage_members"] = organisation_service.can_manage_members(
+            self.request.user, self.organisation
+        )
         return context
 
 
@@ -128,6 +137,25 @@ class MyOrganisationInviteView(
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
         self.organisation = organisation_service.get_user_organisation(request.user)
+
+    def dispatch(self, request, *args, **kwargs):
+        # Only organisation administrators may invite or add members. Without
+        # this guard a project manager could send an invitation that later
+        # fails with a 500 error when the invited user tries to register, as
+        # adding them to the organisation requires admin permissions.
+        if (
+            request.user.is_authenticated
+            and self.organisation
+            and not organisation_service.can_manage_members(
+                request.user, self.organisation
+            )
+        ):
+            messages.error(
+                request,
+                "Only organisation administrators can invite or add members.",
+            )
+            return redirect("members")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -172,7 +200,9 @@ class MyOrganisationInviteView(
                     messages.error(request, f"Failed to send invitation: {str(e)}")
 
             return self.render_to_response(
-                self.get_context_data(invite_form=invite_form, add_existing_form=add_existing_form)
+                self.get_context_data(
+                    invite_form=invite_form, add_existing_form=add_existing_form
+                )
             )
 
         elif "add_existing_submit" in request.POST:
@@ -187,7 +217,10 @@ class MyOrganisationInviteView(
                 role = ROLE_PROJECT_MANAGER
 
                 # Check if this is a duplicate (idempotent behavior)
-                if hasattr(add_existing_form, "is_duplicate") and add_existing_form.is_duplicate:
+                if (
+                    hasattr(add_existing_form, "is_duplicate")
+                    and add_existing_form.is_duplicate
+                ):
                     messages.info(
                         request,
                         f"{user_to_add.email} is already a member of this organisation.",
@@ -211,7 +244,9 @@ class MyOrganisationInviteView(
                 return redirect("member_invite")
 
             return self.render_to_response(
-                self.get_context_data(invite_form=invite_form, add_existing_form=add_existing_form)
+                self.get_context_data(
+                    invite_form=invite_form, add_existing_form=add_existing_form
+                )
             )
 
         # If neither submit button was pressed, show both forms
@@ -251,6 +286,22 @@ class OrganisationMembershipDeleteView(
     context_object_name = "organisation_membership"
     success_url = reverse_lazy("members")
     success_message = "The user was removed from the organisation."
+
+    def dispatch(self, request, *args, **kwargs):
+        # Removing members is an admin-only action; block non-admins here so the
+        # service-layer permission check can't surface as a 500 error.
+        organisation = organisation_service.get_user_organisation(request.user)
+        if (
+            request.user.is_authenticated
+            and organisation
+            and not organisation_service.can_manage_members(request.user, organisation)
+        ):
+            messages.error(
+                request,
+                "Only organisation administrators can remove members.",
+            )
+            return redirect("members")
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         """

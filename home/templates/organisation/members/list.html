@@ -35,12 +35,14 @@
             no longer need to participate in SORT assessments. This ensures your member list stays current and your data
             remains secure.
         </p>
+        {% if can_manage_members %}
         <div class="mb-3">
             <a href="{% url 'member_invite' %}" type="button" class="btn btn-primary"
                title="Invite a new user to join this organisation and manage surveys.">
                 <i class='bx bxs-user-plus'></i> Invite new member
             </a>
         </div>
+        {% endif %}
         <div>
             <table class="table">
                 <caption hidden>A list of users and user management options.</caption>
@@ -51,7 +53,9 @@
                     <th scope="col">Role</th>
                     <th scope="col">Joined at</th>
                     <th scope="col">Added by</th>
+                    {% if can_manage_members %}
                     <th scope="col">Remove</th>
+                    {% endif %}
                 </tr>
                 </thead>
                 {% for membership in memberships %}
@@ -69,12 +73,14 @@
                         </time>
                     </td>
                     <td>{{ membership.added_by }}</td>
+                    {% if can_manage_members %}
                     <td>
                         <a href="{% url 'member_delete' membership.pk %}" class="btn btn-danger"
                            title="Remove this user from the organisation">
                             <i class='bx bxs-user-minus'></i> Remove
                         </a>
                     </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </table>
