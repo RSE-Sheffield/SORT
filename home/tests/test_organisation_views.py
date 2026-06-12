@@ -73,6 +73,8 @@ class OrganisationViewTestCase(ViewTestCase):
 
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(response, self.organisation.name)
+        # The description is multi-line and must render as a <textarea>
+        self.assertContains(response, "<textarea")
 
     def test_organisation_edit_post(self):
         """
@@ -115,8 +117,8 @@ class OrganisationViewTestCase(ViewTestCase):
             data=dict(name="Hacked name", description="Should not be saved"),
         )
 
-        # The project manager is redirected away without saving any changes
-        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        # The project manager is redirected to the dashboard without saving
+        self.assertRedirects(response, django.urls.reverse("myorganisation"))
         self.organisation.refresh_from_db()
         self.assertEqual(self.organisation.name, original_name)
 
