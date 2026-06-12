@@ -17,7 +17,7 @@ Prerequisites, ensure the following are already installed on your system:
 
 - Python (the version is defined [.python-version](./.python-version))
 - pip
-- Nodejs (20.x)
+- Nodejs (22.x)
 ---
 
 1. Clone the project repository to your local machine

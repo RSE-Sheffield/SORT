@@ -20,7 +20,7 @@ pip="$venv_dir/bin/pip"
 python_version="python$(cat .python-version | xargs)"
 python="$venv_dir/bin/python"
 env_file="$sort_dir/.env"
-node_version=20
+node_version=22
 django_media_root="/srv/www/sort/uploads/"
 
 # Install British UTF-8 locale so we can use this with PostgreSQL.
