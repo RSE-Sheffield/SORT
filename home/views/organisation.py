@@ -6,13 +6,14 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import redirect
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView,
     DeleteView,
     DetailView,
     ListView,
     TemplateView,
+    UpdateView,
 )
 
 from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
@@ -95,6 +96,54 @@ class OrganisationCreateView(LoginRequiredMixin, CreateView):
                 self.request, "You don't have permission to create organisations."
             )
             return redirect("dashboard")
+
+
+class OrganisationEditView(LoginRequiredMixin, OrganisationRequiredMixin, UpdateView):
+    """
+    Edit the current user's organisation (rename and modify the description).
+
+    Only organisation administrators (and superusers) may edit; the permission
+    is enforced both here (to redirect non-admins with a friendly message) and in
+    ``organisation_service.update_organisation`` via ``@requires_permission``.
+    """
+
+    model = Organisation
+    fields = ["name", "description"]
+    template_name = "organisation/edit.html"
+    context_object_name = "organisation"
+
+    def dispatch(self, request, *args, **kwargs):
+        # Resolve the user's organisation and check edit permission up front so
+        # that non-admins are redirected cleanly rather than shown the form.
+        if request.user.is_authenticated:
+            organisation = organisation_service.get_user_organisation(request.user)
+            if organisation and not organisation_service.can_edit(
+                request.user, organisation
+            ):
+                messages.error(
+                    request, "You don't have permission to edit this organisation."
+                )
+                return redirect("myorganisation")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return organisation_service.get_user_organisation(self.request.user)
+
+    def get_success_url(self):
+        return reverse("myorganisation")
+
+    def form_valid(self, form):
+        try:
+            organisation_service.update_organisation(
+                user=self.request.user,
+                organisation=self.object,
+                data=form.cleaned_data,
+            )
+            messages.success(self.request, f"Saved changes to {self.object}.")
+            return redirect(self.get_success_url())
+        except PermissionDenied:
+            messages.error(self.request, "Permission denied")
+            return redirect("myorganisation")
 
 
 class OrganisationMembershipListView(

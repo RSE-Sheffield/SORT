@@ -35,6 +35,11 @@
         <p>Select an action below to get started with your most common tasks. If you're new to SORT Online, consider
             launching your first project to begin assessing your organisation's research readiness journey.</p>
         <p>
+            {% if is_admin %}
+                <a href="{% url 'organisation_edit' %}" class="btn btn-primary" role="button"
+                   title="Rename this organisation or update its description">
+                    <i class='bx bxs-edit'></i> Edit organisation</a>
+            {% endif %}
             <a href="{% url 'members' %}" class="btn btn-primary" role="button"
                title="Add colleagues to your organisation, assign roles and permissions, and track who has access to different projects and features.">
                 <i class='bx bx-group'></i> Manage members</a>
