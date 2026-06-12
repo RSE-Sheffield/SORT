@@ -20,21 +20,37 @@
     <div class="container mx-auto px-4 py-8">
         <h1>{{ organisation.name }}</h1>
         <p>{{ organisation.description }}</p>
+        {% if can_manage_members %}
         <p>
             Manage who has access to your organisation's <abbr
                 title="The Self-Assessment of Organisational Readiness Tool">SORT</abbr> Online projects and
             assessments. This page allows you to oversee your team's participation and ensure the right people are
             involved in your research readiness evaluations.
         </p>
+        {% else %}
+        <p>
+            View who has access to your organisation's <abbr
+                title="The Self-Assessment of Organisational Readiness Tool">SORT</abbr> Online projects and
+            assessments. Only organisation administrators can invite new members or remove existing ones. If you
+            need to add or remove someone, please contact an administrator or ask to have your role upgraded to
+            Admin.
+        </p>
+        {% endif %}
     </div>
     <div class="container mx-auto px-4 py-8" id="organisation-members">
         <h2>Members</h2>
+        {% if can_manage_members %}
         <p>See everyone who currently has access to your organisation, including their roles, join dates, and
             participation status across active projects. Use the <strong>Remove</strong> button to revoke access for
             team members who have left your organisation or
             no longer need to participate in SORT assessments. This ensures your member list stays current and your data
             remains secure.
         </p>
+        {% else %}
+        <p>See everyone who currently has access to your organisation, including their roles, join dates, and
+            participation status across active projects.
+        </p>
+        {% endif %}
         {% if can_manage_members %}
         <div class="mb-3">
             <a href="{% url 'member_invite' %}" type="button" class="btn btn-primary"
