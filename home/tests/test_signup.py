@@ -15,7 +15,7 @@ from invitations.models import Invitation
 from home.constants import ROLE_PROJECT_MANAGER
 from home.models import OrganisationMembership
 from home.services import organisation_service
-from SORT.test.model_factory import UserFactory
+from SORT.test.model_factory import SuperUserFactory, UserFactory
 from SORT.test.model_factory.user.constants import PASSWORD
 from SORT.test.test_case.view import ViewTestCase
 
@@ -120,3 +120,35 @@ class SignupViewTestCase(ViewTestCase):
                 organisation=self.organisation,
                 role=ROLE_PROJECT_MANAGER,
             )
+
+    def test_invite_page_accessible_to_superuser(self):
+        """
+        A superuser who is a member but not an org admin can still open the
+        invite page: can_manage_members honours the superuser bypass, matching
+        the service-layer permission that backs the action.
+        """
+        superuser = SuperUserFactory()
+        organisation_service.add_user_to_organisation(
+            user=self.admin,
+            user_to_add=superuser,
+            organisation=self.organisation,
+            role=ROLE_PROJECT_MANAGER,
+        )
+        self.client.login(username=superuser.email, password=PASSWORD)
+        response = self.client.get(django.urls.reverse("member_invite"))
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_member_delete_forbidden_for_project_manager(self):
+        """A project manager is redirected away from the member-remove page."""
+        membership = OrganisationMembership.objects.get(
+            user=self.project_manager, organisation=self.organisation
+        )
+        self.client.login(username=self.project_manager.email, password=PASSWORD)
+        response = self.client.get(
+            django.urls.reverse("member_delete", kwargs={"pk": membership.pk})
+        )
+        self.assertRedirects(
+            response,
+            django.urls.reverse("members"),
+            fetch_redirect_response=False,
+        )
