@@ -7,12 +7,18 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    TemplateView,
+)
 
 from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from ..forms.add_existing_member import AddExistingMemberForm
 from ..forms.invite_member import InviteMemberForm
-from ..mixins import OrganisationRequiredMixin
+from ..mixins import MemberManagementRequiredMixin, OrganisationRequiredMixin
 from ..models import Organisation, OrganisationMembership
 from ..services import organisation_service, project_service
 
@@ -56,6 +62,9 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
                     for project in projects
                 },
                 "can_create": project_service.can_create(user, self.organisation),
+                "can_manage_members": organisation_service.can_manage_members(
+                    user, self.organisation
+                ),
                 "is_admin": user_role == ROLE_ADMIN,
                 "is_project_manager": user_role == ROLE_PROJECT_MANAGER,
                 "current_search": self.request.GET.get("q", ""),
@@ -106,11 +115,17 @@ class OrganisationMembershipListView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["organisation"] = self.organisation
+        context["can_manage_members"] = organisation_service.can_manage_members(
+            self.request.user, self.organisation
+        )
         return context
 
 
 class MyOrganisationInviteView(
-    LoginRequiredMixin, OrganisationRequiredMixin, TemplateView
+    LoginRequiredMixin,
+    MemberManagementRequiredMixin,
+    OrganisationRequiredMixin,
+    TemplateView,
 ):
     """
     Invite a new member to join an organisation via email,
@@ -124,6 +139,9 @@ class MyOrganisationInviteView(
     """
 
     template_name = "organisation/members/create.html"
+    member_management_error_message = (
+        "Only organisation administrators can invite or add members."
+    )
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
@@ -172,7 +190,9 @@ class MyOrganisationInviteView(
                     messages.error(request, f"Failed to send invitation: {str(e)}")
 
             return self.render_to_response(
-                self.get_context_data(invite_form=invite_form, add_existing_form=add_existing_form)
+                self.get_context_data(
+                    invite_form=invite_form, add_existing_form=add_existing_form
+                )
             )
 
         elif "add_existing_submit" in request.POST:
@@ -187,7 +207,10 @@ class MyOrganisationInviteView(
                 role = ROLE_PROJECT_MANAGER
 
                 # Check if this is a duplicate (idempotent behavior)
-                if hasattr(add_existing_form, "is_duplicate") and add_existing_form.is_duplicate:
+                if (
+                    hasattr(add_existing_form, "is_duplicate")
+                    and add_existing_form.is_duplicate
+                ):
                     messages.info(
                         request,
                         f"{user_to_add.email} is already a member of this organisation.",
@@ -211,7 +234,9 @@ class MyOrganisationInviteView(
                 return redirect("member_invite")
 
             return self.render_to_response(
-                self.get_context_data(invite_form=invite_form, add_existing_form=add_existing_form)
+                self.get_context_data(
+                    invite_form=invite_form, add_existing_form=add_existing_form
+                )
             )
 
         # If neither submit button was pressed, show both forms
@@ -240,7 +265,11 @@ class MyOrganisationAcceptInviteView(invitations.views.AcceptInvite):
 
 
 class OrganisationMembershipDeleteView(
-    LoginRequiredMixin, OrganisationRequiredMixin, SuccessMessageMixin, DeleteView
+    LoginRequiredMixin,
+    MemberManagementRequiredMixin,
+    OrganisationRequiredMixin,
+    SuccessMessageMixin,
+    DeleteView,
 ):
     """
     Remove a user from an organisation.
@@ -251,6 +280,14 @@ class OrganisationMembershipDeleteView(
     context_object_name = "organisation_membership"
     success_url = reverse_lazy("members")
     success_message = "The user was removed from the organisation."
+    member_management_error_message = (
+        "Only organisation administrators can remove members."
+    )
+
+    def get_member_management_organisation(self, request):
+        # Check permission against the organisation of the membership being
+        # removed, matching the organisation used in form_valid().
+        return self.get_object().organisation
 
     def form_valid(self, form):
         """
