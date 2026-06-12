@@ -38,10 +38,12 @@
             <a href="{% url 'members' %}" class="btn btn-primary" role="button"
                title="Add colleagues to your organisation, assign roles and permissions, and track who has access to different projects and features.">
                 <i class='bx bx-group'></i> Manage members</a>
+            {% if can_manage_members %}
             <a href="{% url 'member_invite' %}" class="btn btn-primary" role="button"
                title="Invite a new user to join this organisation">
                 <i class='bx bxs-user-plus'></i> Invite new member
             </a>
+            {% endif %}
             <a href="{% url 'data_sharing_agreement' %}" class="btn btn-primary" role="button"
                title="View the data sharing agreement between your organisation and the University">
                 <i class="bx bxs-note"></i> Data Sharing Agreement
