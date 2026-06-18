@@ -20,15 +20,27 @@
                 </div>
                 <div class="card-body">
                     <p>Are you sure you want to remove <strong>{{ membership.user }}</strong> from <strong>{{ organisation.name }}</strong>?</p>
-                    <p class="text-muted small mb-0">This will revoke their access to all projects in this organisation.</p>
+                    <p class="text-muted small">This will revoke their access to all projects in this organisation.</p>
+                    <div class="mt-3">
+                        <label for="confirm-input" class="form-label small">
+                            To confirm, type <strong>{{ membership.user.email }}</strong> below:
+                        </label>
+                        <input type="text" id="confirm-input" class="form-control form-control-sm" autocomplete="off">
+                    </div>
                 </div>
                 <div class="card-footer bg-white d-flex gap-2 justify-content-end">
                     <a href="{% url 'admin_organisation_detail' organisation.pk %}" class="btn btn-outline-secondary">Cancel</a>
                     <form method="post">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Remove member</button>
+                        <button type="submit" id="confirm-submit" class="btn btn-danger" disabled>Remove member</button>
                     </form>
                 </div>
+                <script>
+                document.getElementById('confirm-input').addEventListener('input', function () {
+                    document.getElementById('confirm-submit').disabled =
+                        this.value !== '{{ membership.user.email }}';
+                });
+                </script>
             </div>
         </div>
     </div>
