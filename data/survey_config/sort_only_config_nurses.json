@@ -101,10 +101,10 @@
           "description": "Rate the following statements from 0 to 4 (0 Not yet planned; 1 Planned; 2 Early progress; 3 Substantial Progress; 4 Established). Answer 0 if you don't know or the question is irrelevant. There is a comment box at the bottom for detailed responses.",
           "required": true,
           "sublabels": [
-            "C1. Our organisation take part in research leadership and advisory activities outside our organisation (for example, sitting on ethics committees; funding committees; editorial boards and reviewing papers)",
-            "C2. Our organisation take part in research leadership and advisory activities outside organisations",
-            "C3. Our organisation work with professional bodies and national and regional policy structures to influence the research agenda",
-            "C4. Our organisation are members of forums outside our organisation which support research activity"
+            "C1. Our organisation takes part in research leadership and advisory activities externally (for example, sitting on ethics committees, funding committees, editorial boards, and reviewing papers)",
+            "C2. Our organisation takes part in research leadership and advisory activities outside organisations",
+            "C3. Our organisation works with professional bodies and national and regional policy structures to influence the research agenda",
+            "C4. Our organisation is a member of external forums which support research activity"
           ],
           "options": [
             "0",
