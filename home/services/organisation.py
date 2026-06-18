@@ -50,6 +50,8 @@ class OrganisationService(BasePermissionService):
         return role == ROLE_ADMIN
 
     def can_manage_members(self, user: User, organisation: Organisation) -> bool:
+        if user.is_superuser:
+            return True
         role = self.get_user_role(user, organisation)
         return role == ROLE_ADMIN
 
