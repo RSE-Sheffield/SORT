@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.3
       - name: Setup Python
-        uses: actions/setup-python@v5.5.0
+        uses: actions/setup-python@v6.2.0
         with:
           python-version-file: .python-version
           cache: "pip"
@@ -36,4 +36,4 @@ jobs:
           done
       - name: Validate JSON file contents using schemas
         run: |
-          check-jsonschema --schemafile .\data\schemas\survey_config.schema.json .\data\survey_config\*.json
+          check-jsonschema --schemafile ./data/schemas/survey_config.schema.json ./data/survey_config/*.json
