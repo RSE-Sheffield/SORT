@@ -1,11 +1,7 @@
-from .data_protection import DataProtectionService
-from .organisation import OrganisationService
-from .project import ProjectService
-
-# Create instances for use in views
-data_protection_service = DataProtectionService()
-organisation_service = OrganisationService()
-project_service = ProjectService()
+# Re-export the module-level singletons for use in views
+from .data_protection import data_protection_service
+from .organisation import organisation_service
+from .project import project_service
 
 __all__ = [
     "data_protection_service",

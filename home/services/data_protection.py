@@ -6,13 +6,30 @@ consent withdrawal) for UK GDPR Article 5(2) accountability. The log is
 append-only; see `DataProtectionEvent.save`/`delete`.
 """
 
+import hashlib
 from datetime import datetime
 from typing import Optional
 
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.db.models.query import QuerySet
 
 from ..models import DataProtectionEvent, User
+
+
+def pseudonymise_identifier(value: str) -> str:
+    """One-way, stable pseudonym for a subject's email.
+
+    The append-only log must not hold plaintext personal data (an erased
+    subject's email would otherwise survive forever), yet it must still
+    correlate multiple events for the same person. A salted SHA-256 digest
+    satisfies both. Salted with ``SECRET_KEY`` so the mapping is consistent
+    within a deployment; rotating the key simply re-namespaces future hashes.
+    """
+    digest = hashlib.sha256(
+        f"sort-dp:{settings.SECRET_KEY}:{value.strip().lower()}".encode()
+    ).hexdigest()
+    return f"sha256:{digest[:32]}"
 
 
 class DataProtectionService:
@@ -36,7 +53,9 @@ class DataProtectionService:
     ) -> DataProtectionEvent:
         subject_email = getattr(subject_user, "email", None)
         subject_identifier = (
-            subject_email if subject_email else f"deleted-user-{subject_user.pk}"
+            pseudonymise_identifier(subject_email)
+            if subject_email
+            else f"deleted-user-{subject_user.pk}"
         )
         return DataProtectionEvent.objects.create(
             event_type=event_type,
@@ -67,7 +86,7 @@ class DataProtectionService:
         )
         if event_type:
             qs = qs.filter(event_type=event_type)
-        if subject_user_id:
+        if subject_user_id is not None:
             qs = qs.filter(subject_user_id=subject_user_id)
         if date_from:
             qs = qs.filter(actioned_at__gte=date_from)

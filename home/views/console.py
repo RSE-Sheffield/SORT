@@ -212,7 +212,7 @@ class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
         removed_user = membership.user
         membership.delete()
         data_protection_service.record_event(
-            event_type=DataProtectionEvent.EventType.RESTRICTION,
+            event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
             subject_user=removed_user,
             actioned_by=request.user,
             notes=f"Removed from organisation '{org_name}'",
@@ -227,12 +227,16 @@ class ConsoleDataProtectionLogView(StaffRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         event_type = self.request.GET.get("event_type") or None
-        subject_user_id = self.request.GET.get("subject_user") or None
+        raw_subject = self.request.GET.get("subject_user") or None
+        try:
+            subject_user_id = int(raw_subject) if raw_subject else None
+        except (TypeError, ValueError):
+            subject_user_id = None
 
         events = data_protection_service.list_events(
             self.request.user,
             event_type=event_type,
-            subject_user_id=int(subject_user_id) if subject_user_id else None,
+            subject_user_id=subject_user_id,
         )
 
         paginator = Paginator(events, 25)
@@ -247,6 +251,6 @@ class ConsoleDataProtectionLogView(StaffRequiredMixin, TemplateView):
         context["paginator"] = paginator
         context["event_types"] = DataProtectionEvent.EventType.choices
         context["selected_event_type"] = event_type
-        context["selected_subject_user"] = subject_user_id
+        context["selected_subject_user"] = raw_subject
         context["filter_qs"] = filter_params.urlencode()
         return context

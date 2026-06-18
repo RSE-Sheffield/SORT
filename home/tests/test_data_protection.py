@@ -10,6 +10,7 @@ from SORT.test.model_factory.user.constants import PASSWORD
 
 from home.models import DataProtectionEvent
 from home.services import data_protection_service
+from home.services.data_protection import pseudonymise_identifier
 
 
 class DataProtectionEventModelTests(SORT.test.test_case.ViewTestCase):
@@ -50,9 +51,23 @@ class DataProtectionServiceTests(SORT.test.test_case.ViewTestCase):
             notes="exported",
         )
         self.assertEqual(event.subject_user_id, self.user.pk)
-        self.assertEqual(event.subject_identifier, self.user.email)
+        # Identifier is a pseudonym, never the plaintext email.
+        self.assertEqual(
+            event.subject_identifier, pseudonymise_identifier(self.user.email)
+        )
+        self.assertNotEqual(event.subject_identifier, self.user.email)
         self.assertEqual(event.actioned_by, self.staff_user)
         self.assertEqual(event.event_type, "export")
+
+    def test_pseudonymise_is_stable_and_distinct(self):
+        self.assertEqual(
+            pseudonymise_identifier("Alice@Example.com"),
+            pseudonymise_identifier("alice@example.com"),
+        )
+        self.assertNotEqual(
+            pseudonymise_identifier("alice@example.com"),
+            pseudonymise_identifier("bob@example.com"),
+        )
 
     def test_subject_identifier_falls_back_for_emailless_user(self):
         class _Ghost:
@@ -118,8 +133,18 @@ class DataProtectionLogViewTests(SORT.test.test_case.ViewTestCase):
         self._login_staff()
         response = self.client.get("/console/data-protection/")
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertContains(response, self.user.email)
+        # The plaintext email must not leak into the log view.
+        self.assertNotContains(response, self.user.email)
+        # The subject is identified by their (retained) user id and the notes.
+        self.assertContains(response, f"#{self.user.pk}")
         self.assertContains(response, "test-entry-visible")
+
+    def test_invalid_subject_user_param_does_not_500(self):
+        self._login_staff()
+        response = self.client.get(
+            "/console/data-protection/", {"subject_user": "abc"}
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
 
 class RemoveMemberRecordsEventTests(SORT.test.test_case.ViewTestCase):
@@ -131,7 +156,7 @@ class RemoveMemberRecordsEventTests(SORT.test.test_case.ViewTestCase):
             organisation=self.org, user=self.user
         )
 
-    def test_remove_member_records_restriction_event(self):
+    def test_remove_member_records_membership_removed_event(self):
         self.assertTrue(
             self.client.login(
                 username=self.staff_user.email, password=PASSWORD
@@ -142,7 +167,7 @@ class RemoveMemberRecordsEventTests(SORT.test.test_case.ViewTestCase):
         )
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         events = DataProtectionEvent.objects.filter(
-            event_type=DataProtectionEvent.EventType.RESTRICTION,
+            event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
             subject_user_id=self.user.pk,
         )
         self.assertEqual(events.count(), 1)

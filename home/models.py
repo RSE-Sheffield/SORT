@@ -146,6 +146,10 @@ class DataProtectionEvent(models.Model):
     kept for UK GDPR Article 5(2) accountability. Entries survive erasure of
     the subject user, so subject identity is stored as a stable string plus
     the original id — never as a FK to User.
+
+    ``subject_identifier`` holds a one-way pseudonym (see
+    ``data_protection.pseudonymise_identifier``), not plaintext personal data,
+    so the immutable log does not itself retain an erased subject's email.
     """
 
     class EventType(models.TextChoices):
@@ -154,6 +158,7 @@ class DataProtectionEvent(models.Model):
         RESTRICTION = "restriction", "Account restricted / suspended"
         UNRESTRICTION = "unrestriction", "Account restriction lifted"
         CONSENT_WITHDRAWAL = "consent_withdrawal", "Consent withdrawn"
+        MEMBERSHIP_REMOVED = "membership_removed", "Removed from organisation"
 
     event_type = models.CharField(max_length=32, choices=EventType.choices)
     subject_user_id = models.IntegerField(null=True, blank=True)

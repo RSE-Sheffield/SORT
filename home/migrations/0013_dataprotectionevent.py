@@ -33,6 +33,7 @@ class Migration(migrations.Migration):
                             ("restriction", "Account restricted / suspended"),
                             ("unrestriction", "Account restriction lifted"),
                             ("consent_withdrawal", "Consent withdrawn"),
+                            ("membership_removed", "Removed from organisation"),
                         ],
                         max_length=32,
                     ),
