@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "engines": {
-    "node": ">=20 <21"
+    "node": ">=22 <23"
   },
   "scripts": {
     "dev": "vite",
@@ -34,7 +34,7 @@
     "globals": "^16.0.0",
     "jsdom": "^26.1.0",
     "sass-embedded": "^1.89.0",
-    "semantic-release": "^24.2.9",
+    "semantic-release": "^25.0.5",
     "svelte": "^5.15.0",
     "svelte-check": "^4.1.1",
     "typescript": "~5.6.2",
@@ -46,7 +46,7 @@
     "axios": "^1.13.5",
     "chart.js": "^4.4.8",
     "chartjs-plugin-datalabels": "^2.2.0",
-    "dompurify": "^3.2.6",
+    "dompurify": "^3.4.11",
     "lodash-es": "^4.17.21",
     "pell": "^1.0.6"
   }

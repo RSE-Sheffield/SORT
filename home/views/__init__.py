@@ -25,6 +25,7 @@ from .organisation import (
     MyOrganisationInviteView,
     MyOrganisationView,
     OrganisationCreateView,
+    OrganisationEditView,
     OrganisationMembershipDeleteView,
     OrganisationMembershipListView,
 )
@@ -72,6 +73,7 @@ __all__ = [
     "MyOrganisationInviteView",
     "MyOrganisationView",
     "OrganisationCreateView",
+    "OrganisationEditView",
     "OrganisationMembershipDeleteView",
     "OrganisationMembershipListView",
     "ProjectCreateView",
