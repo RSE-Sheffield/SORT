@@ -256,6 +256,10 @@ SESSION_COOKIE_SECURE = cast_to_boolean(
 )
 CSRF_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_CSRF_COOKIE_SECURE", not DEBUG))
 
+# Custom view rendered when CSRF verification fails (issue #623).
+# Renders a friendly retry page and logs the failure (see SORT/views.py).
+CSRF_FAILURE_VIEW = "SORT.views.csrf_failure"
+
 # Logging
 # https://docs.djangoproject.com/en/5.1/topics/logging/
 LOGGING = {
