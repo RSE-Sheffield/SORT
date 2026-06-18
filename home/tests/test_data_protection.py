@@ -8,8 +8,9 @@ from SORT.test.model_factory import (
 )
 from SORT.test.model_factory.user.constants import PASSWORD
 
-from home.models import DataProtectionEvent
-from home.services import data_protection_service
+from home.constants import ROLE_ADMIN
+from home.models import DataProtectionEvent, OrganisationMembership
+from home.services import data_protection_service, organisation_service
 from home.services.data_protection import pseudonymise_identifier
 
 
@@ -174,3 +175,54 @@ class RemoveMemberRecordsEventTests(SORT.test.test_case.ViewTestCase):
         event = events.get()
         self.assertEqual(event.actioned_by, self.staff_user)
         self.assertIn(self.org.name, event.notes)
+
+
+class OrganisationServiceRemovalRecordsEventTests(
+    SORT.test.test_case.ViewTestCase
+):
+    """The user-facing removal path (service + OrganisationMembershipDeleteView)
+    must also write an audit event, not just the staff console path."""
+
+    def setUp(self):
+        super().setUp()
+        self.org = OrganisationFactory()
+        # The org factory creates one ADMIN membership; that user is the actioner.
+        self.admin = self.org.members.first()
+        # A separate member to remove.
+        self.member = UserFactory()
+        OrganisationMembership.objects.create(
+            user=self.member, organisation=self.org, role=ROLE_ADMIN
+        )
+
+    def test_service_remove_records_membership_removed_event(self):
+        organisation_service.remove_user_from_organisation(
+            user=self.admin,
+            organisation=self.org,
+            removed_user=self.member,
+        )
+        events = DataProtectionEvent.objects.filter(
+            event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
+            subject_user_id=self.member.pk,
+        )
+        self.assertEqual(events.count(), 1)
+        event = events.get()
+        self.assertEqual(event.actioned_by, self.admin)
+        self.assertIn(self.org.name, event.notes)
+
+    def test_member_delete_view_records_event(self):
+        self.assertTrue(
+            self.client.login(username=self.admin.email, password=PASSWORD)
+        )
+        membership = OrganisationMembership.objects.get(
+            user=self.member, organisation=self.org
+        )
+        response = self.client.post(
+            f"/myorganisation/members/delete/{membership.pk}/"
+        )
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        events = DataProtectionEvent.objects.filter(
+            event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
+            subject_user_id=self.member.pk,
+        )
+        self.assertEqual(events.count(), 1)
+        self.assertEqual(events.get().actioned_by, self.admin)

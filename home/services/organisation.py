@@ -8,8 +8,15 @@ from django.db.models import Count
 from django.db.models.query import QuerySet
 
 from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
-from ..models import Organisation, OrganisationMembership, Project, User
+from ..models import (
+    DataProtectionEvent,
+    Organisation,
+    OrganisationMembership,
+    Project,
+    User,
+)
 from .base import BasePermissionService, requires_permission
+from .data_protection import data_protection_service
 
 
 class OrganisationService(BasePermissionService):
@@ -143,6 +150,15 @@ class OrganisationService(BasePermissionService):
         OrganisationMembership.objects.get(
             user=removed_user, organisation=organisation
         ).delete()
+
+        # UK GDPR Art. 5(2) accountability: log the removal here in the
+        # service so every removal path is audited and none can be missed.
+        data_protection_service.record_event(
+            event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
+            subject_user=removed_user,
+            actioned_by=user,
+            notes=f"Removed from organisation '{organisation.name}'",
+        )
 
     def get_organisation_projects(
         self, organisation: Organisation, user: User = None, with_metrics: bool = True
