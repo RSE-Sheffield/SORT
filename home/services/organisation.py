@@ -4,6 +4,7 @@ Organisation service with integrated permissions
 
 from typing import Dict, Optional, Set
 
+from django.db import transaction
 from django.db.models import Count
 from django.db.models.query import QuerySet
 
@@ -147,18 +148,19 @@ class OrganisationService(BasePermissionService):
                 f"User '{user}' does not have permission to remove users from organisation '{organisation}'"
             )
 
-        OrganisationMembership.objects.get(
-            user=removed_user, organisation=organisation
-        ).delete()
-
-        # UK GDPR Art. 5(2) accountability: log the removal here in the
-        # service so every removal path is audited and none can be missed.
-        data_protection_service.record_event(
-            event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
-            subject_user=removed_user,
-            actioned_by=user,
-            notes=f"Removed from organisation '{organisation.name}'",
-        )
+        # UK GDPR Art. 5(2) accountability: the removal and its audit record
+        # are a single atomic unit so a failed audit write rolls back the
+        # deletion — a removal can never persist unaudited.
+        with transaction.atomic():
+            OrganisationMembership.objects.get(
+                user=removed_user, organisation=organisation
+            ).delete()
+            data_protection_service.record_event(
+                event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
+                subject_user=removed_user,
+                actioned_by=user,
+                notes=f"Removed from organisation '{organisation.name}'",
+            )
 
     def get_organisation_projects(
         self, organisation: Organisation, user: User = None, with_metrics: bool = True
