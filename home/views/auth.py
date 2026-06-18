@@ -14,6 +14,7 @@ from django.contrib.auth.views import (
     PasswordResetView,
 )
 from django.core.exceptions import PermissionDenied
+from django.db import IntegrityError
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView
@@ -68,7 +69,19 @@ class SignupView(CreateView):
         return initial
 
     def form_valid(self, form):
-        user = form.save()
+        try:
+            user = form.save()
+        except (PermissionDenied, IntegrityError):
+            # The invitation could not be completed (e.g. the inviter is no
+            # longer an organisation administrator). The user account is rolled
+            # back inside the form's save(), so show a friendly message rather
+            # than returning a 500 error.
+            messages.error(
+                self.request,
+                "We couldn't complete your registration. Please ask an "
+                "administrator of your organisation to re-send your invitation.",
+            )
+            return self.form_invalid(form)
         login(self.request, user, backend="django.contrib.auth.backends.ModelBackend")
         return redirect(reverse_lazy("dashboard"))
 
