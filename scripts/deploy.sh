@@ -23,6 +23,16 @@ env_file="$sort_dir/.env"
 node_version=22
 django_media_root="/srv/www/sort/uploads/"
 
+finish() {
+    local exit_code=$?
+    if [ "$exit_code" -eq 0 ]; then
+        echo "Deployment completed successfully."
+    else
+        echo "Deployment aborted (exit code: $exit_code)."
+    fi
+}
+trap finish EXIT
+
 # Install British UTF-8 locale so we can use this with PostgreSQL.
 # This is important to avoid the limitations of the LATIN1 character set.
 sudo locale-gen en_GB
