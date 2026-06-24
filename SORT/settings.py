@@ -206,7 +206,7 @@ EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("DJANGO_EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_TLS", False))
 EMAIL_USE_SSL = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_SSL", True))
-EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", 3))
+EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", 30))
 EMAIL_SSL_KEYFILE = os.getenv("DJANGO_EMAIL_SSL_KEYFILE")
 EMAIL_SSL_CERTFILE = os.getenv("DJANGO_EMAIL_SSL_CERTFILE")
 EMAIL_SUBJECT_PREFIX = os.getenv("DJANGO_EMAIL_SUBJECT_PREFIX", "[SORT] ")
@@ -320,6 +320,7 @@ INVITATIONS_EMAIL_SUBJECT_PREFIX = "SORT"
 
 # AllAuth authentication options
 # https://docs.allauth.org/en/latest/account/configuration.html
+ACCOUNT_ADAPTER = "home.adapter.AccountAdapter"
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
