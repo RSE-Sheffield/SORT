@@ -234,11 +234,7 @@ VITE_STATIC_DIR = "ui-components"
 "Path to vite-generated asset directory in the static folder"
 VITE_MANIFEST_FILE_PATH = Path(os.path.join(VITE_STATIC_DIR, "manifest.json"))
 
-# SAMEORIGIN (not DENY) is required for the file browser feature; silence the
-# resulting deployment check warning so that `manage.py check --deploy` does
-# not abort before running migrations.
 X_FRAME_OPTIONS = "SAMEORIGIN"
-SILENCED_SYSTEM_CHECKS = ["security.W001", "security.W019"]
 
 # File uploading
 MEDIA_ROOT = os.getenv("DJANGO_MEDIA_ROOT", BASE_DIR / "uploads")
@@ -324,7 +320,6 @@ INVITATIONS_EMAIL_SUBJECT_PREFIX = "SORT"
 
 # AllAuth authentication options
 # https://docs.allauth.org/en/latest/account/configuration.html
-ACCOUNT_ADAPTER = "home.adapter.AccountAdapter"
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
