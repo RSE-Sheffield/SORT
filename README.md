@@ -1,4 +1,5 @@
 [![Run Django checks](https://github.com/RSE-Sheffield/SORT/actions/workflows/django-check.yaml/badge.svg)](https://github.com/RSE-Sheffield/SORT/actions/workflows/django-check.yaml)
+[![Validate JSON files](https://github.com/RSE-Sheffield/SORT/actions/workflows/validate-json.yaml/badge.svg)](https://github.com/RSE-Sheffield/SORT/actions/workflows/validate-json.yaml)
 
 # SORT
 ### Self-Assessment of Organisational Readiness Tool
