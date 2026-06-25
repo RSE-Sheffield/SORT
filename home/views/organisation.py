@@ -1,3 +1,5 @@
+import logging
+
 import django.http
 import invitations.views
 from django.contrib import messages
@@ -22,6 +24,8 @@ from ..forms.invite_member import InviteMemberForm
 from ..mixins import MemberManagementRequiredMixin, OrganisationRequiredMixin
 from ..models import Organisation, OrganisationMembership
 from ..services import organisation_service, project_service
+
+logger = logging.getLogger(__name__)
 
 
 class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView):
@@ -223,12 +227,16 @@ class MyOrganisationInviteView(
 
             if invite_form.is_valid():
                 email = invite_form.cleaned_data["email"]
+                invite = None
                 try:
                     invite = invite_form.save(email)
                     invite.inviter = request.user
                     invite.save()
-                    invite.send_invitation(request)
-
+                    try:
+                        invite.send_invitation(request)
+                    except Exception:
+                        invite.delete()
+                        raise
                     messages.success(
                         request,
                         f"{email} has been invited to join the organisation. "
@@ -236,6 +244,7 @@ class MyOrganisationInviteView(
                     )
                     return redirect("member_invite")
                 except Exception as e:
+                    logger.exception("Failed to send invitation to %s", email)
                     messages.error(request, f"Failed to send invitation: {str(e)}")
 
             return self.render_to_response(
