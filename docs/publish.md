@@ -38,7 +38,6 @@ These steps must be completed by a project maintainer before the automated archi
    - **Authors**: match the authors in `CITATION.cff`
    - **Description**: copy the abstract from `CITATION.cff`
    - **Keywords**: healthcare, surveys, nursing
-   - **License**: MIT
    - **Categories**: choose an appropriate research category (e.g. *Medical Informatics*)
 5. **Save** the item (do not publish yet — files will be uploaded automatically).
 6. Note the **article ID** from the URL:
