@@ -25,10 +25,12 @@ from .organisation import (
     MyOrganisationInviteView,
     MyOrganisationView,
     OrganisationCreateView,
+    OrganisationEditView,
     OrganisationMembershipDeleteView,
     OrganisationMembershipListView,
 )
 from .console import (
+    ConsoleDataProtectionLogView,
     ConsoleUserListView,
     ConsoleSurveyDetailView,
     ConsoleSurveyListView,
@@ -72,6 +74,7 @@ __all__ = [
     "MyOrganisationInviteView",
     "MyOrganisationView",
     "OrganisationCreateView",
+    "OrganisationEditView",
     "OrganisationMembershipDeleteView",
     "OrganisationMembershipListView",
     "ProjectCreateView",
@@ -89,4 +92,5 @@ __all__ = [
     "ConsoleProjectListView",
     "ConsoleRemoveMemberView",
     "ConsoleUserDetailView",
+    "ConsoleDataProtectionLogView",
 ]

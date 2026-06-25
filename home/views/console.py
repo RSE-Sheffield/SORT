@@ -6,14 +6,21 @@ This interface provides a dashboard overview of the app status. It's different f
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import TemplateView, View
 from django.views.generic.base import TemplateResponseMixin
 
 from home.mixins import StaffRequiredMixin
-from home.models import Organisation, OrganisationMembership, Project, User
-from home.services import user_service
+from home.models import (
+    DataProtectionEvent,
+    Organisation,
+    OrganisationMembership,
+    Project,
+    User,
+)
+from home.services import data_protection_service, user_service
 from survey.models import Survey, SurveyResponse
 
 
@@ -237,6 +244,48 @@ class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
         org, membership = self._get_objects(org_pk, membership_pk)
         user_display = str(membership.user)
         org_name = org.name
+        removed_user = membership.user
         membership.delete()
+        data_protection_service.record_event(
+            event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
+            subject_user=removed_user,
+            actioned_by=request.user,
+            notes=f"Removed from organisation '{org_name}'",
+        )
         messages.success(request, f"{user_display} removed from {org_name}.")
         return redirect("admin_organisation_detail", pk=org_pk)
+
+
+class ConsoleDataProtectionLogView(StaffRequiredMixin, TemplateView):
+    template_name = "console/data_protection_log.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        event_type = self.request.GET.get("event_type") or None
+        raw_subject = self.request.GET.get("subject_user") or None
+        try:
+            subject_user_id = int(raw_subject) if raw_subject else None
+        except (TypeError, ValueError):
+            subject_user_id = None
+
+        events = data_protection_service.list_events(
+            self.request.user,
+            event_type=event_type,
+            subject_user_id=subject_user_id,
+        )
+
+        paginator = Paginator(events, 25)
+        page_number = self.request.GET.get("page") or 1
+        page = paginator.get_page(page_number)
+
+        filter_params = self.request.GET.copy()
+        filter_params.pop("page", None)
+
+        context["events"] = page
+        context["page_obj"] = page
+        context["paginator"] = paginator
+        context["event_types"] = DataProtectionEvent.EventType.choices
+        context["selected_event_type"] = event_type
+        context["selected_subject_user"] = raw_subject
+        context["filter_qs"] = filter_params.urlencode()
+        return context
