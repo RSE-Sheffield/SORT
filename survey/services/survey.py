@@ -9,8 +9,8 @@ from django.shortcuts import get_object_or_404
 
 from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from home.models import Project, User
-from home.services import BasePermissionService, project_service
-from home.services.base import requires_permission
+from home.services import project_service
+from home.services.base import BasePermissionService, requires_permission
 from survey.models import (
     Invitation,
     Survey,

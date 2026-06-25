@@ -500,14 +500,44 @@ class SurveyResponseView(View):
             context = dict()
 
             if is_post:
-                # Only process if it's a post request
+                if "value" not in request.POST:
+                    logger.error(
+                        "Survey submission missing 'value' field: token=%s survey_id=%s",
+                        token, survey.pk,
+                    )
+                    return render(
+                        request,
+                        "survey/survey_response_submission_error.html",
+                        status=400,
+                    )
 
-                # TODO: Server side value validation to make sure
-                if "value" in request.POST:
-                    responseValues = json.loads(request.POST.get("value", None))
+                try:
+                    responseValues = json.loads(request.POST["value"])
+                except json.JSONDecodeError:
+                    logger.error(
+                        "Survey submission contained invalid JSON: token=%s survey_id=%s",
+                        token, survey.pk,
+                    )
+                    return render(
+                        request,
+                        "survey/survey_response_submission_error.html",
+                        status=400,
+                    )
+
+                try:
                     survey_service.accept_response(survey, responseValues)
-                    context["value"] = responseValues
-                    return redirect("completion_page")
+                except Exception:
+                    logger.exception(
+                        "Failed to save survey response: token=%s survey_id=%s",
+                        token, survey.pk,
+                    )
+                    return render(
+                        request,
+                        "survey/survey_response_submission_error.html",
+                        status=500,
+                    )
+
+                return redirect("completion_page")
 
             context["survey"] = survey
             context["csrf"] = str(csrf(self.request)["csrf_token"])
