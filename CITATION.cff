@@ -48,4 +48,7 @@ keywords:
   - healthcare
   - surveys
   - nursing
-license: MIT
+identifiers:
+  - type: doi
+    value: 10.15131/shef.data.32788914
+    description: The concept DOI for all versions of SORT
