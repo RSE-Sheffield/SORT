@@ -1,3 +1,4 @@
+[![DOI](https://img.shields.io/badge/DOI-10.15131%2Fshef.data.32788914-blue)](https://doi.org/10.15131/shef.data.32788914)
 [![Run Django checks](https://github.com/RSE-Sheffield/SORT/actions/workflows/django-check.yaml/badge.svg)](https://github.com/RSE-Sheffield/SORT/actions/workflows/django-check.yaml)
 [![Validate JSON files](https://github.com/RSE-Sheffield/SORT/actions/workflows/validate-json.yaml/badge.svg)](https://github.com/RSE-Sheffield/SORT/actions/workflows/validate-json.yaml)
 
