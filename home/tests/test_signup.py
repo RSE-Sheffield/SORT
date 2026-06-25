@@ -7,9 +7,12 @@ organisation administrator.
 """
 
 from http import HTTPStatus
+from smtplib import SMTPException
+from unittest.mock import patch
 
 import django.urls
 from django.contrib.auth import get_user_model
+from django.contrib.messages import get_messages
 from invitations.models import Invitation
 
 from home.constants import ROLE_PROJECT_MANAGER
@@ -152,3 +155,49 @@ class SignupViewTestCase(ViewTestCase):
             django.urls.reverse("members"),
             fetch_redirect_response=False,
         )
+
+
+class InviteMemberSendFailureTestCase(ViewTestCase):
+    """Regression tests for #613: orphaned Invitation when email send fails."""
+
+    def setUp(self):
+        super().setUp()
+        self.admin = UserFactory(email="admin0@sort.com")
+        self.organisation = organisation_service.create_organisation(
+            user=self.admin, name="Test Org"
+        )
+        self.client.login(username=self.admin.email, password=PASSWORD)
+        self.url = django.urls.reverse("member_invite")
+
+    def _post_invite(self, email):
+        return self.client.post(
+            self.url,
+            data={"email": email, "invite_submit": "1"},
+            follow=True,
+        )
+
+    def test_failed_send_deletes_invitation(self):
+        """Orphaned Invitation record is removed when send_invitation raises."""
+        with patch(
+            "invitations.models.Invitation.send_invitation",
+            side_effect=SMTPException("cannot connect"),
+        ):
+            self._post_invite("newmember@sort.com")
+
+        self.assertFalse(
+            Invitation.objects.filter(email="newmember@sort.com").exists()
+        )
+
+    def test_retry_after_failed_send_is_accepted(self):
+        """Admin can re-submit the invite form after a prior send failure."""
+        with patch(
+            "invitations.models.Invitation.send_invitation",
+            side_effect=SMTPException("cannot connect"),
+        ):
+            self._post_invite("newmember@sort.com")
+
+        with patch("invitations.models.Invitation.send_invitation"):
+            response = self._post_invite("newmember@sort.com")
+
+        msgs = [str(m) for m in get_messages(response.wsgi_request)]
+        self.assertTrue(any("has been invited" in m for m in msgs))
