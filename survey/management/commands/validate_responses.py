@@ -17,9 +17,10 @@ class Command(BaseCommand):
                     response.validate()
                 except ValidationError as exc:
                     errors += 1
-                    self.stderr.write(
-                        f"Survey {survey.pk} / Response {response.pk}: {exc.message}"
-                    )
+                    for message in exc.messages:
+                        self.stderr.write(
+                            f"Survey {survey.pk} / Response {response.pk}: {message}"
+                        )
         self.stdout.write(f"Validated {total} responses - {errors} error(s)")
         if errors:
             exit(1)
