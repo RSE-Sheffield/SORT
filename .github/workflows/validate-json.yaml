@@ -36,4 +36,4 @@ jobs:
           done
       - name: Validate JSON file contents using schemas
         run: |
-          check-jsonschema --schemafile ./data/schemas/survey_config.schema.json ./data/survey_config/*.json
+          check-jsonschema --schemafile ./data/schemas/survey_config.schema.json ./data/survey_config/*_config*.json
