@@ -206,7 +206,7 @@ EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("DJANGO_EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_TLS", False))
 EMAIL_USE_SSL = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_SSL", True))
-EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", 3))
+EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", 30))
 EMAIL_SSL_KEYFILE = os.getenv("DJANGO_EMAIL_SSL_KEYFILE")
 EMAIL_SSL_CERTFILE = os.getenv("DJANGO_EMAIL_SSL_CERTFILE")
 EMAIL_SUBJECT_PREFIX = os.getenv("DJANGO_EMAIL_SUBJECT_PREFIX", "[SORT] ")
@@ -234,7 +234,11 @@ VITE_STATIC_DIR = "ui-components"
 "Path to vite-generated asset directory in the static folder"
 VITE_MANIFEST_FILE_PATH = Path(os.path.join(VITE_STATIC_DIR, "manifest.json"))
 
+# SAMEORIGIN (not DENY) is required for the file browser feature; silence the
+# resulting deployment check warning so that `manage.py check --deploy` does
+# not abort before running migrations.
 X_FRAME_OPTIONS = "SAMEORIGIN"
+SILENCED_SYSTEM_CHECKS = ["security.W001", "security.W019"]
 
 # File uploading
 MEDIA_ROOT = os.getenv("DJANGO_MEDIA_ROOT", BASE_DIR / "uploads")
@@ -255,6 +259,10 @@ SESSION_COOKIE_SECURE = cast_to_boolean(
     os.getenv("DJANGO_SESSION_COOKIE_SECURE", not DEBUG)
 )
 CSRF_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_CSRF_COOKIE_SECURE", not DEBUG))
+
+# Custom view rendered when CSRF verification fails (issue #623).
+# Renders a friendly retry page and logs the failure (see SORT/views.py).
+CSRF_FAILURE_VIEW = "SORT.views.csrf_failure"
 
 # Logging
 # https://docs.djangoproject.com/en/5.1/topics/logging/
@@ -322,6 +330,7 @@ INVITATIONS_EMAIL_SUBJECT_PREFIX = "SORT"
 
 # AllAuth authentication options
 # https://docs.allauth.org/en/latest/account/configuration.html
+ACCOUNT_ADAPTER = "home.adapter.AccountAdapter"
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None

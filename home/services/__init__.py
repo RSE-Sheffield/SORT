@@ -1,14 +1,10 @@
-from .base import BasePermissionService
-from .organisation import OrganisationService, organisation_service
-from .project import ProjectService, project_service
-
-# Create instances for use in views
-
+# Re-export the module-level singletons for use in views
+from .data_protection import data_protection_service
+from .organisation import organisation_service
+from .project import project_service
 
 __all__ = [
-    "BasePermissionService",
-    "ProjectService",
-    "OrganisationService",
+    "data_protection_service",
     "project_service",
     "organisation_service",
 ]
