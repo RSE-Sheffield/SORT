@@ -6,6 +6,7 @@ import random
 import itertools
 import secrets
 import tempfile
+from functools import cached_property
 from pathlib import Path
 from typing import Generator, ContextManager
 from contextlib import contextmanager
@@ -187,7 +188,7 @@ class Survey(models.Model):
         # survey_config field
         return tuple(self.survey_config["sections"])
 
-    @property
+    @cached_property
     def response_schema(self) -> dict:
         """
         Generate a JSON Schema that validates the structure of response answers.
