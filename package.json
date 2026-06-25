@@ -42,11 +42,14 @@
     "vite": "^6.0.5",
     "vitest": "^3.2.4"
   },
+  "overrides": {
+    "undici": ">=6.27.0"
+  },
   "dependencies": {
     "axios": "^1.13.5",
     "chart.js": "^4.4.8",
     "chartjs-plugin-datalabels": "^2.2.0",
-    "dompurify": "^3.2.6",
+    "dompurify": "^3.4.11",
     "lodash-es": "^4.17.21",
     "pell": "^1.0.6"
   }
