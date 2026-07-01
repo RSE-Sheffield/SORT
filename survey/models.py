@@ -511,7 +511,7 @@ class SurveyResponse(models.Model):
         try:
             jsonschema.validate(self.answers, self.survey.response_schema)
         except jsonschema.ValidationError as exc:
-            raise ValidationError(exc.message) from exc
+            raise ValidationError(f"{exc.json_path}: {exc.message}") from exc
 
     def clean(self):
         super().clean()
