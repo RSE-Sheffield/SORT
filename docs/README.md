@@ -24,7 +24,8 @@ Once you've read the above, check out:
 Required reading for deployment:
 
 1. **[deployment.md](deployment.md)** - Server configuration, systemd setup, and production settings
-2. **[troubleshooting.md](troubleshooting.md)** - Common issues and recovery procedures
+2. **[operations.md](operations.md)** - Day-to-day server management: service control, logs, management commands
+3. **[troubleshooting.md](troubleshooting.md)** - Common issues and recovery procedures
 
 ## Complete Documentation Index
 
@@ -34,6 +35,7 @@ Required reading for deployment:
 | [data-model.md](data-model.md) | Database schema, entity relationships, JSONField structures, and model properties | Working with models, writing migrations, querying data |
 | [testing.md](testing.md) | Frontend/backend testing frameworks, factory patterns, and writing tests | Writing new tests, debugging test failures, CI/CD setup |
 | [deployment.md](deployment.md) | Production deployment, server architecture, systemd configuration, and environment setup | Initial deployment, infrastructure changes, server maintenance |
+| [operations.md](operations.md) | Day-2 server management: systemctl start/stop/restart/reload, log viewing, and Django management commands | Restarting services after a deploy, running exports/maintenance commands, routine server administration |
 | [troubleshooting.md](troubleshooting.md) | Debugging techniques, log analysis, common issues, and recovery procedures | Investigating bugs, production incidents, error diagnosis |
 | [data-management.md](data-management.md) | Data export commands, CSV generation, and database management utilities | Exporting survey data, generating reports, data migrations |
 | [invitations.md](invitations.md) | Token-based invitation system, email workflows, and invitation management | Implementing invitation features, debugging invite issues |
@@ -101,8 +103,11 @@ make check             # Django system checks + migration verification
 3. [data-management.md](data-management.md) - Loading initial data
 
 **Ongoing operations:**
-- **Monitoring logs**: See [troubleshooting.md](troubleshooting.md#log-analysis)
-- **Exporting data**: Use commands in [data-management.md](data-management.md)
+- **Restarting/reloading services**: See [operations.md](operations.md#controlling-services)
+- **Viewing logs**: See [operations.md](operations.md#viewing-logs) (quick reference) or [troubleshooting.md](troubleshooting.md#finding-logs) (full guide)
+- **Running management commands**: See [operations.md](operations.md#running-management-commands)
+- **Deploying a code update**: See [operations.md](operations.md#deploying-an-update-to-running-code)
+- **Exporting data**: Use commands in [operations.md](operations.md#running-management-commands) and [data-management.md](data-management.md)
 - **Managing invitations**: Follow workflows in [invitations.md](invitations.md)
 - **Troubleshooting issues**: Start with [troubleshooting.md](troubleshooting.md)
 
@@ -208,7 +213,7 @@ SORT/
 4. Open a GitHub issue if it's a bug or feature request
 
 ### Production Issues
-1. Check logs (see [troubleshooting.md](troubleshooting.md#log-analysis))
+1. Check logs (see [operations.md](operations.md#viewing-logs) or [troubleshooting.md](troubleshooting.md#finding-logs))
 2. Review [deployment.md](deployment.md) for configuration issues
 3. Follow incident response procedures in [troubleshooting.md](troubleshooting.md#recovery-procedures)
 4. Escalate to infrastructure team if needed
