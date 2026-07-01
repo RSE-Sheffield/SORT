@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from unittest.mock import patch
 
 import SORT.test.test_case
 from SORT.test.model_factory import (
@@ -12,6 +13,7 @@ from home.constants import ROLE_ADMIN
 from home.models import DataProtectionEvent, OrganisationMembership
 from home.services import data_protection_service, organisation_service
 from home.services.data_protection import pseudonymise_identifier
+from home.services.organisation import remove_membership_and_record_event
 
 
 class DataProtectionEventModelTests(SORT.test.test_case.ViewTestCase):
@@ -226,3 +228,42 @@ class OrganisationServiceRemovalRecordsEventTests(
         )
         self.assertEqual(events.count(), 1)
         self.assertEqual(events.get().actioned_by, self.admin)
+
+
+class RemoveMembershipAndRecordEventAtomicityTests(SORT.test.test_case.ViewTestCase):
+    """Both removal paths delegate to remove_membership_and_record_event;
+    these invariants only need proving once, at the shared helper."""
+
+    def setUp(self):
+        super().setUp()
+        self.org = OrganisationFactory()
+        self.admin = self.org.members.first()
+        self.member = UserFactory()
+        self.membership = OrganisationMembership.objects.create(
+            user=self.member, organisation=self.org, role=ROLE_ADMIN
+        )
+
+    def test_audit_failure_rolls_back_membership_delete(self):
+        qs = OrganisationMembership.objects.filter(pk=self.membership.pk)
+        with patch(
+            "home.services.organisation.data_protection_service.record_event",
+            side_effect=RuntimeError("boom"),
+        ):
+            with self.assertRaises(RuntimeError):
+                remove_membership_and_record_event(
+                    qs, actioned_by=self.admin, notes="test"
+                )
+        self.assertTrue(
+            OrganisationMembership.objects.filter(pk=self.membership.pk).exists()
+        )
+
+    def test_second_removal_of_same_membership_does_not_duplicate_event(self):
+        qs = OrganisationMembership.objects.filter(pk=self.membership.pk)
+        remove_membership_and_record_event(qs, actioned_by=self.admin, notes="test")
+        with self.assertRaises(OrganisationMembership.DoesNotExist):
+            remove_membership_and_record_event(qs, actioned_by=self.admin, notes="test")
+        events = DataProtectionEvent.objects.filter(
+            event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
+            subject_user_id=self.member.pk,
+        )
+        self.assertEqual(events.count(), 1)

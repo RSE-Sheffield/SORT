@@ -20,6 +20,37 @@ from .base import BasePermissionService, requires_permission
 from .data_protection import data_protection_service
 
 
+def remove_membership_and_record_event(
+    membership_qs: QuerySet[OrganisationMembership],
+    *,
+    actioned_by: User,
+    notes: str,
+) -> None:
+    """
+    Delete the membership matched by membership_qs and record its
+    MEMBERSHIP_REMOVED audit event as one atomic, lock-serialized unit.
+
+    UK GDPR Art. 5(2) accountability: the removal and its audit record are a
+    single atomic unit so a failed audit write rolls back the deletion — a
+    removal can never persist unaudited.
+
+    membership_qs must resolve to at most one row. select_for_update()
+    serializes concurrent removals of the same membership: only the first
+    caller succeeds, later callers raise OrganisationMembership.DoesNotExist
+    instead of recording a duplicate event.
+    """
+    with transaction.atomic():
+        membership = membership_qs.select_for_update().get()
+        subject_user = membership.user
+        membership.delete()
+        data_protection_service.record_event(
+            event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
+            subject_user=subject_user,
+            actioned_by=actioned_by,
+            notes=notes,
+        )
+
+
 class OrganisationService(BasePermissionService):
     """Service for managing organisations with integrated permissions"""
 
@@ -148,19 +179,13 @@ class OrganisationService(BasePermissionService):
                 f"User '{user}' does not have permission to remove users from organisation '{organisation}'"
             )
 
-        # UK GDPR Art. 5(2) accountability: the removal and its audit record
-        # are a single atomic unit so a failed audit write rolls back the
-        # deletion — a removal can never persist unaudited.
-        with transaction.atomic():
-            OrganisationMembership.objects.get(
+        remove_membership_and_record_event(
+            OrganisationMembership.objects.filter(
                 user=removed_user, organisation=organisation
-            ).delete()
-            data_protection_service.record_event(
-                event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
-                subject_user=removed_user,
-                actioned_by=user,
-                notes=f"Removed from organisation '{organisation.name}'",
-            )
+            ),
+            actioned_by=user,
+            notes=f"Removed from organisation '{organisation.name}'",
+        )
 
     def get_organisation_projects(
         self, organisation: Organisation, user: User = None, with_metrics: bool = True
