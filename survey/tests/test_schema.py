@@ -478,6 +478,65 @@ class TestSurveyResponseValidate(TestCase):
             # error class; .validate() must convert it.
             jsonschema.validate(response.answers, survey.response_schema)
 
+    # --- multiple errors and friendly labels ---
+
+    def test_validate_reports_every_failing_field(self):
+        survey = self._make_survey([
+            {
+                "fields": [
+                    {"type": "radio", "options": ["Yes", "No"]},
+                    {"type": "radio", "options": ["Yes", "No"]},
+                ]
+            }
+        ])
+        response = self._response(survey, [["Maybe", "Nope"]])
+        with self.assertRaises(ValidationError) as context:
+            response.validate()
+        self.assertEqual(len(context.exception.messages), 2)
+
+    def test_validate_error_message_includes_section_and_field_label(self):
+        survey = self._make_survey([
+            {
+                "title": "Consent",
+                "fields": [{"type": "radio", "label": "Do you agree?", "options": ["Yes", "No"]}],
+            }
+        ])
+        response = self._response(survey, [["Maybe"]])
+        with self.assertRaises(ValidationError) as context:
+            response.validate()
+        message = context.exception.messages[0]
+        self.assertIn("Consent", message)
+        self.assertIn("Do you agree?", message)
+
+    def test_validate_error_message_includes_likert_sublabel(self):
+        survey = self._make_survey([
+            {
+                "title": "Ratings",
+                "fields": [
+                    {
+                        "type": "likert",
+                        "label": "Rate these",
+                        "sublabels": ["First statement", "Second statement"],
+                        "options": ["0", "1"],
+                    }
+                ],
+            }
+        ])
+        response = self._response(survey, [[["0", "invalid"]]])
+        with self.assertRaises(ValidationError) as context:
+            response.validate()
+        message = context.exception.messages[0]
+        self.assertIn("Second statement", message)
+
+    def test_validate_error_falls_back_when_title_and_label_missing(self):
+        survey = self._make_survey([
+            {"fields": [{"type": "radio", "options": ["Yes", "No"]}]}
+        ])
+        response = self._response(survey, [["Maybe"]])
+        with self.assertRaises(ValidationError) as context:
+            response.validate()  # Should not raise KeyError
+        self.assertEqual(len(context.exception.messages), 1)
+
     # --- validate() vs clean() and inactive survey ---
 
     def test_validate_does_not_check_inactive_survey(self):
