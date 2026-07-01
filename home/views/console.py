@@ -20,6 +20,7 @@ from home.models import (
     User,
 )
 from home.services import data_protection_service
+from home.services.organisation import remove_membership_and_record_event
 from survey.models import Survey, SurveyResponse
 
 
@@ -209,14 +210,16 @@ class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
         org, membership = self._get_objects(org_pk, membership_pk)
         user_display = str(membership.user)
         org_name = org.name
-        removed_user = membership.user
-        membership.delete()
-        data_protection_service.record_event(
-            event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
-            subject_user=removed_user,
-            actioned_by=request.user,
-            notes=f"Removed from organisation '{org_name}'",
-        )
+        try:
+            remove_membership_and_record_event(
+                OrganisationMembership.objects.filter(
+                    pk=membership_pk, organisation=org
+                ),
+                actioned_by=request.user,
+                notes=f"Removed from organisation '{org_name}'",
+            )
+        except OrganisationMembership.DoesNotExist:
+            pass  # already removed by a concurrent request; end state is correct
         messages.success(request, f"{user_display} removed from {org_name}.")
         return redirect("admin_organisation_detail", pk=org_pk)
 
