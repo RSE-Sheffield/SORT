@@ -23,6 +23,16 @@ env_file="$sort_dir/.env"
 node_version=22
 django_media_root="/srv/www/sort/uploads/"
 
+finish() {
+    local exit_code=$?
+    if [ "$exit_code" -eq 0 ]; then
+        echo "Deployment completed successfully."
+    else
+        echo "Deployment aborted (exit code: $exit_code)."
+    fi
+}
+trap finish EXIT
+
 # Install British UTF-8 locale so we can use this with PostgreSQL.
 # This is important to avoid the limitations of the LATIN1 character set.
 sudo locale-gen en_GB
@@ -210,20 +220,17 @@ fi
 # Run deployment checks
 echo "Checking Django system..."
 # https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-# shellcheck source=/opt/sort/.env
-(cd "$sort_dir" && set -a && source "$env_file" && set +a && $python manage.py check --deploy --fail-level WARNING)
+(cd "$sort_dir" && $python manage.py check --deploy --fail-level WARNING)
 
 # Check for missing migrations
 # https://docs.djangoproject.com/en/5.1/ref/django-admin/#cmdoption-makemigrations-check
 echo "Checking for missing migrations..."
-# shellcheck source=/opt/sort/.env
-(cd "$sort_dir" && set -a && source "$env_file" && set +a && $python manage.py makemigrations --check --dry-run)
+(cd "$sort_dir" && $python manage.py makemigrations --check --dry-run)
 
 # Migrate database changes
 # https://docs.djangoproject.com/en/5.1/topics/migrations/
 echo "Applying Django migrations..."
-# shellcheck source=/opt/sort/.env
-(cd "$sort_dir" && set -a && source "$env_file" && set +a && $python manage.py migrate)
+(cd "$sort_dir" && $python manage.py migrate)
 
 echo "Restarting web application service..."
 systemctl restart gunicorn.service
