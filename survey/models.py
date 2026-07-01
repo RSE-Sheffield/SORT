@@ -188,6 +188,30 @@ class Survey(models.Model):
         # survey_config field
         return tuple(self.survey_config["sections"])
 
+    def describe_error_path(self, path) -> str:
+        """
+        Turn a response_schema validation error path (section index, field index,
+        and for likert fields a sublabel index) into a human-readable location,
+        using this survey's section titles and field labels.
+        """
+        path = list(path)
+        if not path:
+            return "Response"
+
+        section = self.sections[path[0]]
+        description = f"Section {path[0] + 1} '{section.get('title', path[0] + 1)}'"
+        if len(path) == 1:
+            return description
+
+        field = section["fields"][path[1]]
+        description += f", field '{field.get('label', path[1] + 1)}'"
+
+        sublabels = field.get("sublabels", [])
+        if len(path) > 2 and field.get("type") == "likert" and path[2] < len(sublabels):
+            description += f" ('{sublabels[path[2]]}')"
+
+        return description
+
     @cached_property
     def response_schema(self) -> dict:
         """
@@ -505,13 +529,22 @@ class SurveyResponse(models.Model):
         """
         Validate response answers against this survey's JSON Schema.
 
-        Raises django.core.exceptions.ValidationError if the answers do not match.
+        Raises django.core.exceptions.ValidationError, with one message per
+        failing field, if the answers do not match.
         """
-
-        try:
-            jsonschema.validate(self.answers, self.survey.response_schema)
-        except jsonschema.ValidationError as exc:
-            raise ValidationError(f"{exc.json_path}: {exc.message}") from exc
+        schema = self.survey.response_schema
+        validator_cls = jsonschema.validators.validator_for(schema)
+        errors = sorted(
+            validator_cls(schema).iter_errors(self.answers),
+            key=lambda exc: list(exc.absolute_path),
+        )
+        if errors:
+            raise ValidationError(
+                [
+                    f"{self.survey.describe_error_path(exc.absolute_path)}: {exc.message}"
+                    for exc in errors
+                ]
+            )
 
     def clean(self):
         super().clean()
