@@ -8,7 +8,7 @@ This guide covers the end-to-end flow for releasing SORT and archiving it to [OR
 Merge to main
      │
      ▼
-release.yaml (semantic-release)
+release.yaml (semantic-release, authenticated with RELEASE_TOKEN)
   • bumps version
   • builds frontend
   • creates GitHub Release with artifacts
@@ -21,6 +21,17 @@ release-to-orda.yml (triggered by GitHub Release)
      ▼
 ORDA mints / updates DOI
 ```
+
+---
+
+## One-time setup: release token
+
+`release-to-orda.yml` listens for the `release: published` event. GitHub does not deliver that event to other workflows when the release was created using the default `secrets.GITHUB_TOKEN` — this is an intentional anti-recursion safeguard, not a bug. Since `release.yaml` creates the release via `npx semantic-release`, it must authenticate with a different token or `release-to-orda.yml` will simply never run (silently — the pipeline looks fine, no DOI ever gets minted).
+
+1. Create a fine-grained personal access token (or use a dedicated bot/service account) scoped to the `RSE-Sheffield/SORT` repository with **Contents: Read and write** permission.
+2. Add it to the repository as secret **`RELEASE_TOKEN`** (**Settings → Secrets and variables → Actions**).
+
+This is required for the release pipeline to trigger `release-to-orda.yml` at all, independent of the ORDA-specific setup below.
 
 ---
 

@@ -35,7 +35,10 @@ jobs:
 
       - name: Run semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # A PAT is required, not secrets.GITHUB_TOKEN: GitHub does not cascade
+          # the release: published event to other workflows (e.g. release-to-orda.yml)
+          # when the release was created by the default token. See docs/publish.md.
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: npx semantic-release
 
       - name: Create release artifacts
