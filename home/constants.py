@@ -33,3 +33,6 @@ PERMISSION_CHOICES = [
     (PERMISSION_VIEW, "View Only"),
     (PERMISSION_EDIT, "View and Edit"),
 ]
+
+# Email domain used to mark accounts anonymised for GDPR erasure (see UserService.anonymise)
+DELETED_EMAIL_DOMAIN = "deleted.invalid"

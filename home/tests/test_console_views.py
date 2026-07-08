@@ -104,6 +104,15 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(response, "deleted user")
 
+    def test_console_users_blank_name_not_shown_as_deleted(self):
+        """A non-deleted user with a blank name is not mislabelled '(deleted user)' (regression test for #661)."""
+        UserFactory(first_name="", last_name="")
+        self.login_staff()
+        response = self.client.get("/console/users/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertNotContains(response, "deleted user")
+        self.assertContains(response, "no name set")
+
     def test_console_surveys_accessible_to_staff(self):
         """Staff users can access the surveys list."""
         self.login_staff()
