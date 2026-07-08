@@ -42,7 +42,7 @@
                 <script>
                 document.getElementById('confirm-input').addEventListener('input', function () {
                     document.getElementById('confirm-submit').disabled =
-                        this.value !== '{{ viewed_user.email }}';
+                        this.value !== '{{ viewed_user.email|escapejs }}';
                 });
                 </script>
             </div>
