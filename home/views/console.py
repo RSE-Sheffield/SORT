@@ -89,6 +89,8 @@ class ConsoleUserListView(StaffRequiredMixin, TemplateView):
         deleted_filter = {"email__endswith": f"@{DELETED_ACCOUNT_EMAIL_DOMAIN}"}
         if status == "deleted":
             qs = qs.filter(**deleted_filter)
+        elif status == "suspended":
+            qs = qs.filter(is_active=False).exclude(**deleted_filter)
         elif status == "all":
             pass
         else:

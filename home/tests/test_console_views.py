@@ -87,6 +87,17 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         self.assertNotIn(active_user, response.context["users"])
         self.assertIn(deleted_user, response.context["users"])
 
+    def test_console_users_suspended_filter_shows_only_suspended(self):
+        """?status=suspended shows only suspended (inactive, non-deleted) users."""
+        active_user = UserFactory()
+        suspended_user = UserFactory(is_active=False)
+        deleted_user = UserFactory(is_active=False, first_name="", last_name="", email="deleted-sus@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/?status=suspended")
+        self.assertNotIn(active_user, response.context["users"])
+        self.assertIn(suspended_user, response.context["users"])
+        self.assertNotIn(deleted_user, response.context["users"])
+
     def test_console_users_all_filter_shows_both(self):
         """?status=all shows both active and deleted users."""
         active_user = UserFactory()

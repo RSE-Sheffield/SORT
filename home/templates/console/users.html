@@ -9,6 +9,7 @@
             <div class="d-flex gap-2 align-items-center">
                 <span class="text-muted text-nowrap">Status:</span>
                 <a href="?status=active" class="btn btn-sm {% if status_filter == 'active' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Active</a>
+                <a href="?status=suspended" class="btn btn-sm {% if status_filter == 'suspended' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Suspended</a>
                 <a href="?status=deleted" class="btn btn-sm {% if status_filter == 'deleted' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Deleted</a>
                 <a href="?status=all" class="btn btn-sm {% if status_filter == 'all' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">All</a>
             </div>
