@@ -34,4 +34,6 @@ Go to **Actions → Create Release → Run workflow**. Useful for re-running a f
 
 **No release created** — check that at least one commit since the last tag uses a release-triggering type (`feat:`, `fix:`, etc.).
 
-**semantic-release fails** — check the Actions log for build errors or `GITHUB_TOKEN` permission issues.
+**semantic-release fails** — check the Actions log for build errors or `RELEASE_TOKEN` permission issues.
+
+**Release created but nothing archived to ORDA** — `release.yaml` authenticates with `secrets.RELEASE_TOKEN` (a PAT), not `secrets.GITHUB_TOKEN`, specifically because GitHub won't cascade the `release: published` event to other workflows (like `release-to-orda.yml`) when the release was created by the default token. If `RELEASE_TOKEN` is missing or expired, releases still get created but `release-to-orda.yml` silently never runs. See [docs/publish.md](docs/publish.md#one-time-setup-release-token).

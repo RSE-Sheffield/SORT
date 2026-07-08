@@ -7,8 +7,9 @@ crispy-bootstrap5==2025.4
 django-invitations==2.1.0
 django-allauth==65.14.1
 psycopg[binary]==3.2.*
-python-dotenv==1.0.1
+python-dotenv==1.2.2
 gunicorn==23.*
+jsonschema==4.*
 strenum==0.4.15
 xlsxwriter==3.2.5
 sqlparse==0.5.4

@@ -291,20 +291,6 @@ python="$venv_dir/bin/python"
 django_admin="$python $sort_dir/manage.py"
 
 cd "$sort_dir"
-# Check the Django management tool works
-sudo $django_admin version
-```
-
-View available commands
-
-```bash
-sudo $django_admin help
-```
-
-Migrate the database
-
-```bash
-sudo $django_admin migrate
 ```
 
 Create a super-user
@@ -313,56 +299,15 @@ Create a super-user
 sudo $django_admin createsuperuser
 ```
 
-Load data
+Load initial seed data
 
 ```bash
 sudo $python manage.py loaddata data/*.json
 ```
 
-# Monitoring
+For the full management command reference, see [operations.md](operations.md#running-management-commands).
 
-## View service status
+# Managing the running service
 
-```bash
-sudo systemctl status gunicorn
-sudo systemctl status nginx
-sudo systemctl status postgresql
-```
-
-# View logs
-
-View [nginx logs](https://docs.nginx.com/nginx/admin-guide/monitoring/logging/)
-
-```bash
-sudo tail --follow /var/log/nginx/access.log
-sudo tail --follow /var/log/nginx/error.log
-```
-
-View [Gunicorn logs](https://docs.gunicorn.org/en/stable/settings.html#logging)
-
-```bash
- sudo journalctl -u gunicorn.service --follow
-```
-
-nginx service logs
-
-```bash
-sudo journalctl -u nginx.service
-```
-
-# Control
-
-The services are controlled using [`systemd`](https://systemd.io/), which is the service management system on Ubuntu 24. To launch services:
-
-```bash
-sudo systemctl start gunicorn
-sudo systemctl start nginx
-```
-
-To stop services:
-
-```bash
-sudo systemctl stop gunicorn
-sudo systemctl stop nginx
-```
+For restarting/reloading services, checking status, and viewing logs day-to-day, see [operations.md](operations.md).
 

@@ -489,11 +489,7 @@ settings.DATABASES['default']['NAME']
 
 ### Restart All Services
 
-```bash
-sudo systemctl restart postgresql
-sudo systemctl restart gunicorn
-sudo systemctl restart nginx
-```
+See [operations.md](operations.md#controlling-services) for restart vs. reload guidance and the commands for each service.
 
 ### Reset a User's Password
 
@@ -504,10 +500,7 @@ sudo /opt/sort/venv/bin/python manage.py changepassword user@example.com
 
 ### Clear Orphaned Upload Files
 
-```bash
-cd /opt/sort
-sudo /opt/sort/venv/bin/python manage.py clear_orphaned_files
-```
+See the `clear_orphaned_files` command in [operations.md](operations.md#running-management-commands).
 
 ### Rebuild Frontend Assets
 

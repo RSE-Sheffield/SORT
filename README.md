@@ -1,4 +1,6 @@
+[![DOI](https://img.shields.io/badge/DOI-10.15131%2Fshef.data.32788914-blue)](https://doi.org/10.15131/shef.data.32788914)
 [![Run Django checks](https://github.com/RSE-Sheffield/SORT/actions/workflows/django-check.yaml/badge.svg)](https://github.com/RSE-Sheffield/SORT/actions/workflows/django-check.yaml)
+[![Validate JSON files](https://github.com/RSE-Sheffield/SORT/actions/workflows/validate-json.yaml/badge.svg)](https://github.com/RSE-Sheffield/SORT/actions/workflows/validate-json.yaml)
 
 # SORT
 ### Self-Assessment of Organisational Readiness Tool
@@ -17,7 +19,7 @@ Prerequisites, ensure the following are already installed on your system:
 
 - Python (the version is defined [.python-version](./.python-version))
 - pip
-- Nodejs (20.x)
+- Nodejs (22.x)
 ---
 
 1. Clone the project repository to your local machine

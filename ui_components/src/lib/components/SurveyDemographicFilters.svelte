@@ -37,9 +37,11 @@
   let { config, responses, onFilterChange, onClearFiltersCallback }: Props =
     $props();
   let filterItems: FilterItem[] = $state([]);
-  let filterValues: (string | number | Range | null)[] = $state([]);
+  // Categorical filters hold an array of selected options (empty = "All").
+  // Numeric (text) filters hold a {min, max} Range.
+  let filterValues: (string[] | Range | null)[] = $state([]);
   let filteredResponses = $state(responses);
-  let initialFilterValues: Array<null | { min: number; max: number }> = [];
+  let initialFilterValues: Array<null | Range | string[]> = [];
 
   onMount(() => {
     for (let si = 0; si < config.sections.length; si++) {
@@ -65,8 +67,8 @@
                   fieldIndex: fi,
                   options: filterOptions,
                 });
-                filterValues.push(null);
-                initialFilterValues.push(null);
+                filterValues.push([]);
+                initialFilterValues.push([]);
               }
               break;
             case "text":
@@ -105,7 +107,10 @@
   });
 
   function handleFilterChange() {
-    filteredResponses = [];
+    // Build the filtered set in a plain local array and assign once. Pushing
+    // prop-owned response objects directly into the reactive `filteredResponses`
+    // proxy trips Svelte's dev-mode ownership check.
+    const filtered: SurveyResponseBatch = [];
     const activeFilters: Array<{ label: string; value: string }> = [];
 
     for (let ri = 0; ri < responses.length; ri++) {
@@ -126,10 +131,14 @@
             break;
           }
         } else {
+          // Categorical filter: keep the response if its value is one of the
+          // selected options. An empty selection means "All" (no filtering).
           if (
-            filterValue !== null &&
-            responses[ri][filterItem.sectionIndex][filterItem.fieldIndex] !==
-              filterValue
+            Array.isArray(filterValue) &&
+            filterValue.length > 0 &&
+            !filterValue.includes(
+              responses[ri][filterItem.sectionIndex][filterItem.fieldIndex],
+            )
           ) {
             addToFilteredSet = false;
             break;
@@ -137,9 +146,10 @@
         }
       }
       if (addToFilteredSet) {
-        filteredResponses.push(responses[ri]);
+        filtered.push(responses[ri]);
       }
     }
+    filteredResponses = filtered;
 
     // Build list of active filters for display
     for (let filterIndex = 0; filterIndex < filterItems.length; filterIndex++) {
@@ -158,11 +168,11 @@
           });
         }
       } else {
-        // Check if categorical filter is set
-        if (filterValue !== null) {
+        // Check if categorical filter has any selected options
+        if (Array.isArray(filterValue) && filterValue.length > 0) {
           activeFilters.push({
             label: filterItem.fieldConfig.label,
-            value: filterValue,
+            value: filterValue.join(", "),
           });
         }
       }
@@ -174,18 +184,26 @@
   function clearFilters() {
     // Reset all filter values to their initial state
     for (let i = 0; i < filterValues.length; i++) {
-      if (
-        typeof initialFilterValues[i] === "object" &&
-        initialFilterValues[i] !== null
-      ) {
+      const initial = initialFilterValues[i];
+      if (Array.isArray(initial)) {
+        // Categorical filter - fresh empty array copy
+        filterValues[i] = [...initial];
+      } else if (typeof initial === "object" && initial !== null) {
         // Range filter - deep copy
-        filterValues[i] = { ...initialFilterValues[i] };
-      } else {
-        // Categorical filter
-        filterValues[i] = initialFilterValues[i];
+        filterValues[i] = { ...initial };
       }
     }
     // Trigger filter change with reset values
+    handleFilterChange();
+  }
+
+  function toggleOption(index: number, option: string, checked: boolean) {
+    const current = filterValues[index];
+    const selected = Array.isArray(current) ? current : [];
+    // Reassign (don't mutate in place) so Svelte runes reactivity fires.
+    filterValues[index] = checked
+      ? [...selected, option]
+      : selected.filter((o) => o !== option);
     handleFilterChange();
   }
 
@@ -257,19 +275,30 @@
         </div>
       </div>
     {:else}
-      <label class="form-label">
-        <strong>{fItem.fieldConfig.label}</strong>
-        <select
-          class="form-select"
-          bind:value={filterValues[fItemIndex]}
-          onchange={handleFilterChange}
+      <!-- Categorical branch: filterValues[fItemIndex] is always a string[] here
+           (the text branch above covers the Range variant), so narrow it. -->
+      {@const selected = (filterValues[fItemIndex] ?? []) as string[]}
+      <fieldset class="mb-3">
+        <legend class="form-label h6"
+          ><strong>{fItem.fieldConfig.label}</strong></legend
         >
-          <option value={null}>All</option>
-          {#each fItem.options as option}
-            <option value={option}>{option}</option>
-          {/each}
-        </select>
-      </label>
+        {#each fItem.options ?? [] as option, optIndex (option)}
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="filter-{fItemIndex}-{optIndex}"
+              value={option}
+              checked={selected.includes(option)}
+              onchange={(e) =>
+                toggleOption(fItemIndex, option, e.currentTarget.checked)}
+            />
+            <label class="form-check-label" for="filter-{fItemIndex}-{optIndex}"
+              >{option}</label
+            >
+          </div>
+        {/each}
+      </fieldset>
     {/if}
   {/each}
 

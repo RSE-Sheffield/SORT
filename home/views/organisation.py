@@ -1,3 +1,5 @@
+import logging
+
 import django.http
 import invitations.views
 from django.contrib import messages
@@ -6,15 +8,24 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import redirect
-from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView
+from django.urls import reverse, reverse_lazy
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
 
 from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from ..forms.add_existing_member import AddExistingMemberForm
 from ..forms.invite_member import InviteMemberForm
-from ..mixins import OrganisationRequiredMixin
+from ..mixins import MemberManagementRequiredMixin, OrganisationRequiredMixin
 from ..models import Organisation, OrganisationMembership
 from ..services import organisation_service, project_service
+
+logger = logging.getLogger(__name__)
 
 
 class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView):
@@ -56,6 +67,9 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
                     for project in projects
                 },
                 "can_create": project_service.can_create(user, self.organisation),
+                "can_manage_members": organisation_service.can_manage_members(
+                    user, self.organisation
+                ),
                 "is_admin": user_role == ROLE_ADMIN,
                 "is_project_manager": user_role == ROLE_PROJECT_MANAGER,
                 "current_search": self.request.GET.get("q", ""),
@@ -88,6 +102,54 @@ class OrganisationCreateView(LoginRequiredMixin, CreateView):
             return redirect("dashboard")
 
 
+class OrganisationEditView(LoginRequiredMixin, OrganisationRequiredMixin, UpdateView):
+    """
+    Edit the current user's organisation (rename and modify the description).
+
+    Only organisation administrators (and superusers) may edit; the permission
+    is enforced both here (to redirect non-admins with a friendly message) and in
+    ``organisation_service.update_organisation`` via ``@requires_permission``.
+    """
+
+    model = Organisation
+    fields = ["name", "description"]
+    template_name = "organisation/edit.html"
+    context_object_name = "organisation"
+
+    def dispatch(self, request, *args, **kwargs):
+        # Resolve the user's organisation and check edit permission up front so
+        # that non-admins are redirected cleanly rather than shown the form.
+        if request.user.is_authenticated:
+            organisation = organisation_service.get_user_organisation(request.user)
+            if organisation and not organisation_service.can_edit(
+                request.user, organisation
+            ):
+                messages.error(
+                    request, "You don't have permission to edit this organisation."
+                )
+                return redirect("myorganisation")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return organisation_service.get_user_organisation(self.request.user)
+
+    def get_success_url(self):
+        return reverse("myorganisation")
+
+    def form_valid(self, form):
+        try:
+            organisation_service.update_organisation(
+                user=self.request.user,
+                organisation=self.object,
+                data=form.cleaned_data,
+            )
+            messages.success(self.request, f"Saved changes to {self.object}.")
+            return redirect(self.get_success_url())
+        except PermissionDenied:
+            messages.error(self.request, "Permission denied")
+            return redirect("myorganisation")
+
+
 class OrganisationMembershipListView(
     LoginRequiredMixin, OrganisationRequiredMixin, ListView
 ):
@@ -106,11 +168,17 @@ class OrganisationMembershipListView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["organisation"] = self.organisation
+        context["can_manage_members"] = organisation_service.can_manage_members(
+            self.request.user, self.organisation
+        )
         return context
 
 
 class MyOrganisationInviteView(
-    LoginRequiredMixin, OrganisationRequiredMixin, TemplateView
+    LoginRequiredMixin,
+    MemberManagementRequiredMixin,
+    OrganisationRequiredMixin,
+    TemplateView,
 ):
     """
     Invite a new member to join an organisation via email,
@@ -124,6 +192,9 @@ class MyOrganisationInviteView(
     """
 
     template_name = "organisation/members/create.html"
+    member_management_error_message = (
+        "Only organisation administrators can invite or add members."
+    )
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
@@ -156,12 +227,16 @@ class MyOrganisationInviteView(
 
             if invite_form.is_valid():
                 email = invite_form.cleaned_data["email"]
+                invite = None
                 try:
                     invite = invite_form.save(email)
                     invite.inviter = request.user
                     invite.save()
-                    invite.send_invitation(request)
-
+                    try:
+                        invite.send_invitation(request)
+                    except Exception:
+                        invite.delete()
+                        raise
                     messages.success(
                         request,
                         f"{email} has been invited to join the organisation. "
@@ -169,10 +244,13 @@ class MyOrganisationInviteView(
                     )
                     return redirect("member_invite")
                 except Exception as e:
+                    logger.exception("Failed to send invitation to %s", email)
                     messages.error(request, f"Failed to send invitation: {str(e)}")
 
             return self.render_to_response(
-                self.get_context_data(invite_form=invite_form, add_existing_form=add_existing_form)
+                self.get_context_data(
+                    invite_form=invite_form, add_existing_form=add_existing_form
+                )
             )
 
         elif "add_existing_submit" in request.POST:
@@ -187,7 +265,10 @@ class MyOrganisationInviteView(
                 role = ROLE_PROJECT_MANAGER
 
                 # Check if this is a duplicate (idempotent behavior)
-                if hasattr(add_existing_form, "is_duplicate") and add_existing_form.is_duplicate:
+                if (
+                    hasattr(add_existing_form, "is_duplicate")
+                    and add_existing_form.is_duplicate
+                ):
                     messages.info(
                         request,
                         f"{user_to_add.email} is already a member of this organisation.",
@@ -211,7 +292,9 @@ class MyOrganisationInviteView(
                 return redirect("member_invite")
 
             return self.render_to_response(
-                self.get_context_data(invite_form=invite_form, add_existing_form=add_existing_form)
+                self.get_context_data(
+                    invite_form=invite_form, add_existing_form=add_existing_form
+                )
             )
 
         # If neither submit button was pressed, show both forms
@@ -240,7 +323,11 @@ class MyOrganisationAcceptInviteView(invitations.views.AcceptInvite):
 
 
 class OrganisationMembershipDeleteView(
-    LoginRequiredMixin, OrganisationRequiredMixin, SuccessMessageMixin, DeleteView
+    LoginRequiredMixin,
+    MemberManagementRequiredMixin,
+    OrganisationRequiredMixin,
+    SuccessMessageMixin,
+    DeleteView,
 ):
     """
     Remove a user from an organisation.
@@ -251,6 +338,14 @@ class OrganisationMembershipDeleteView(
     context_object_name = "organisation_membership"
     success_url = reverse_lazy("members")
     success_message = "The user was removed from the organisation."
+    member_management_error_message = (
+        "Only organisation administrators can remove members."
+    )
+
+    def get_member_management_organisation(self, request):
+        # Check permission against the organisation of the membership being
+        # removed, matching the organisation used in form_valid().
+        return self.get_object().organisation
 
     def form_valid(self, form):
         """

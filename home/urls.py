@@ -53,6 +53,11 @@ urlpatterns = [
     ),
     path("myorganisation/", views.MyOrganisationView.as_view(), name="myorganisation"),
     path(
+        "myorganisation/edit/",
+        views.OrganisationEditView.as_view(),
+        name="organisation_edit",
+    ),
+    path(
         "myorganisation/members/",
         views.OrganisationMembershipListView.as_view(),
         name="members",
@@ -154,6 +159,7 @@ urlpatterns = [
     ),
     path("console/users/", views.ConsoleUserListView.as_view(), name="admin_users"),
     path("console/users/<int:pk>/", views.ConsoleUserDetailView.as_view(), name="admin_user_detail"),
+    path("console/users/<int:pk>/delete/", views.ConsoleDeleteUserView.as_view(), name="admin_delete_user"),
     path(
         "console/users/<int:pk>/suspend/",
         views.ConsoleSuspendUserView.as_view(),
@@ -171,5 +177,10 @@ urlpatterns = [
         "console/surveys/<int:pk>/",
         views.ConsoleSurveyDetailView.as_view(),
         name="admin_survey_detail",
+    ),
+    path(
+        "console/data-protection/",
+        views.ConsoleDataProtectionLogView.as_view(),
+        name="admin_data_protection_log",
     ),
 ]

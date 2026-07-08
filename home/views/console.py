@@ -6,13 +6,23 @@ This interface provides a dashboard overview of the app status. It's different f
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import TemplateView, View
 from django.views.generic.base import TemplateResponseMixin
 
+from home.constants import DELETED_ACCOUNT_EMAIL_DOMAIN
 from home.mixins import StaffRequiredMixin
-from home.models import Organisation, OrganisationMembership, Project, User
+from home.models import (
+    DataProtectionEvent,
+    Organisation,
+    OrganisationMembership,
+    Project,
+    User,
+)
+from home.services import data_protection_service, user_service
+from home.services.organisation import remove_membership_and_record_event
 from survey.models import Survey, SurveyResponse
 
 
@@ -74,7 +84,18 @@ class ConsoleUserListView(StaffRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["users"] = User.objects.all().order_by("last_name", "first_name")
+        status = self.request.GET.get("status", "active")
+        qs = User.objects.order_by("last_name", "first_name")
+        deleted_filter = {"email__endswith": f"@{DELETED_ACCOUNT_EMAIL_DOMAIN}"}
+        if status == "deleted":
+            qs = qs.filter(**deleted_filter)
+        elif status == "all":
+            pass
+        else:
+            status = "active"
+            qs = qs.exclude(**deleted_filter)
+        context["users"] = qs
+        context["status_filter"] = status
         return context
 
 
@@ -186,6 +207,30 @@ class ConsoleSurveyListView(StaffRequiredMixin, TemplateView):
         return context
 
 
+class ConsoleDeleteUserView(StaffRequiredMixin, TemplateResponseMixin, View):
+    template_name = "console/delete_user_confirm.html"
+
+    def _get_user(self, pk):
+        return get_object_or_404(User, pk=pk, is_active=True)
+
+    def _check_safe(self, request, target_user):
+        if target_user == request.user or target_user.is_staff or target_user.is_superuser:
+            raise PermissionDenied
+
+    def get(self, request, pk):
+        target_user = self._get_user(pk)
+        self._check_safe(request, target_user)
+        return self.render_to_response({"viewed_user": target_user})
+
+    def post(self, request, pk):
+        target_user = self._get_user(pk)
+        self._check_safe(request, target_user)
+        display_name = str(target_user)
+        user_service.anonymise(target_user)
+        messages.success(request, f"{display_name} has been anonymised and removed.")
+        return redirect("admin_users")
+
+
 class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
     template_name = "console/remove_member_confirm.html"
 
@@ -202,7 +247,16 @@ class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
         org, membership = self._get_objects(org_pk, membership_pk)
         user_display = str(membership.user)
         org_name = org.name
-        membership.delete()
+        try:
+            remove_membership_and_record_event(
+                OrganisationMembership.objects.filter(
+                    pk=membership_pk, organisation=org
+                ),
+                actioned_by=request.user,
+                notes=f"Removed from organisation '{org_name}'",
+            )
+        except OrganisationMembership.DoesNotExist:
+            pass  # already removed by a concurrent request; end state is correct
         messages.success(request, f"{user_display} removed from {org_name}.")
         return redirect("admin_organisation_detail", pk=org_pk)
 
@@ -219,8 +273,9 @@ class ConsoleSuspendUserView(StaffRequiredMixin, TemplateResponseMixin, View):
 
     def _get_suspendable_user(self, request, pk):
         user = get_object_or_404(User, pk=pk)
-        # Guard against locking out yourself or a superuser.
-        if user == request.user or user.is_superuser:
+        # Guard against locking out yourself or a superuser, and against
+        # suspending an already-anonymised (deleted) account.
+        if user == request.user or user.is_superuser or user.is_deleted:
             raise PermissionDenied("This account cannot be suspended.")
         return user
 
@@ -241,7 +296,44 @@ class ConsoleUnsuspendUserView(StaffRequiredMixin, View):
 
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
+        if user.is_deleted:
+            raise PermissionDenied("This account has been deleted and cannot be reactivated.")
         user.is_active = True
         user.save(update_fields=["is_active"])
         messages.success(request, f"The suspension on {user} has been lifted.")
         return redirect("admin_user_detail", pk=pk)
+
+
+class ConsoleDataProtectionLogView(StaffRequiredMixin, TemplateView):
+    template_name = "console/data_protection_log.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        event_type = self.request.GET.get("event_type") or None
+        raw_subject = self.request.GET.get("subject_user") or None
+        try:
+            subject_user_id = int(raw_subject) if raw_subject else None
+        except (TypeError, ValueError):
+            subject_user_id = None
+
+        events = data_protection_service.list_events(
+            self.request.user,
+            event_type=event_type,
+            subject_user_id=subject_user_id,
+        )
+
+        paginator = Paginator(events, 25)
+        page_number = self.request.GET.get("page") or 1
+        page = paginator.get_page(page_number)
+
+        filter_params = self.request.GET.copy()
+        filter_params.pop("page", None)
+
+        context["events"] = page
+        context["page_obj"] = page
+        context["paginator"] = paginator
+        context["event_types"] = DataProtectionEvent.EventType.choices
+        context["selected_event_type"] = event_type
+        context["selected_subject_user"] = raw_subject
+        context["filter_qs"] = filter_params.urlencode()
+        return context

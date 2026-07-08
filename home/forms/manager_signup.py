@@ -5,6 +5,7 @@ New manager registration form
 import django.contrib.auth.models
 import django.forms as forms
 from django.contrib.auth.forms import UserCreationForm
+from django.db import transaction
 from invitations.models import Invitation
 
 from home.constants import ROLE_PROJECT_MANAGER
@@ -61,18 +62,22 @@ class ManagerSignupForm(UserCreationForm):
         return self.invitation.email
 
     def save(self, commit=True):
-        user = super().save(commit=False)
-        user.email = self.email
-        user.username = user.email
-        if commit:
-            user.save()
+        # Create the user and add them to the organisation atomically: if adding
+        # the membership fails (e.g. the inviter lacks permission), the new user
+        # account is rolled back rather than left orphaned without a membership.
+        with transaction.atomic():
+            user = super().save(commit=False)
+            user.email = self.email
+            user.username = user.email
+            if commit:
+                user.save()
 
-        # Add user to organisation
-        organisation_service.add_user_to_organisation(
-            user_to_add=user,
-            organisation=self.organisation,
-            user=self.inviter,
-            role=ROLE_PROJECT_MANAGER,
-        )
+            # Add user to organisation
+            organisation_service.add_user_to_organisation(
+                user_to_add=user,
+                organisation=self.organisation,
+                user=self.inviter,
+                role=ROLE_PROJECT_MANAGER,
+            )
 
         return user

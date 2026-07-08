@@ -1,0 +1,30 @@
+name: Release to ORDA
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  upload:
+    name: Upload to ORDA
+    runs-on: ubuntu-latest
+    if: vars.FIGSHARE_ARTICLE_ID != ''
+    env:
+      ARCHIVE_NAME: SORT-${{ github.event.release.tag_name }}
+    steps:
+      - name: Download release archives
+        run: |
+          mkdir data
+          curl -sL "${{ github.event.release.zipball_url }}" -o "data/${ARCHIVE_NAME}.zip"
+          curl -sL "${{ github.event.release.tarball_url }}" -o "data/${ARCHIVE_NAME}.tar.gz"
+
+      - name: Upload to ORDA via Figshare API
+        uses: figshare/github-upload-action@v1.1
+        with:
+          FIGSHARE_TOKEN: ${{ secrets.FIGSHARE_TOKEN }}
+          FIGSHARE_ENDPOINT: 'https://orda.shef.ac.uk/v2'
+          FIGSHARE_ARTICLE_ID: ${{ vars.FIGSHARE_ARTICLE_ID }}
+          DATA_DIR: data

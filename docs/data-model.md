@@ -153,6 +153,12 @@ Organisational unit for grouping related surveys within an organisation.
 - `is_active`: Returns True if any survey in the project is active
 - `surveys`: Returns all surveys in this project
 
+### DataProtectionEvent (home/models.py)
+
+Append-only audit record of actions taken on a user's personal data, kept for UK GDPR Article 5(2) accountability. Entries are immutable and survive erasure of the subject — subject identity is stored as the original user id plus a one-way pseudonym, never as a FK to User.
+
+See [data-protection.md](data-protection.md) for the full subsystem (model, service API, and console view).
+
 ### Survey (survey/models.py)
 
 Core model representing a SORT assessment questionnaire.

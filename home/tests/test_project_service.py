@@ -6,7 +6,7 @@ from django.core.exceptions import PermissionDenied
 
 import SORT.test.test_case
 from home.models import Project
-from home.services import ProjectService
+from home.services import project_service
 from SORT.test.model_factory import OrganisationFactory
 
 
@@ -14,7 +14,7 @@ class ProjectServiceTestCase(SORT.test.test_case.ServiceTestCase):
 
     def setUp(self):
         super().setUp()
-        self.service = ProjectService()
+        self.service = project_service
         self.organisation = OrganisationFactory()
         self.admin = self.organisation.members.first()
 
