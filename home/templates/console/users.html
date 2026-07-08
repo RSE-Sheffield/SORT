@@ -32,10 +32,12 @@
                         <tr{% if not user.is_active %} class="text-muted"{% endif %}>
                             <td>
                                 <a href="{% url 'admin_user_detail' user.pk %}">
-                                    {% if user.first_name or user.last_name %}
+                                    {% if user.is_deleted %}
+                                        <em>(deleted user)</em>
+                                    {% elif user.first_name or user.last_name %}
                                         {{ user.first_name }} {{ user.last_name }}
                                     {% else %}
-                                        <em>(deleted user)</em>
+                                        <em>(no name set)</em>
                                     {% endif %}
                                 </a>
                             </td>
