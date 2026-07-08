@@ -13,7 +13,7 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
     PasswordResetView,
 )
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied
 from django.db import IntegrityError
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -82,7 +82,11 @@ class SignupView(CreateView):
                 "administrator of your organisation to re-send your invitation.",
             )
             return self.form_invalid(form)
-        login(self.request, user, backend="django.contrib.auth.backends.ModelBackend")
+        login(
+            self.request,
+            user,
+            backend="django.contrib.auth.backends.AllowAllUsersModelBackend",
+        )
         return redirect(reverse_lazy("dashboard"))
 
 
@@ -96,14 +100,12 @@ class LoginInterfaceView(LoginView):
     success_url = reverse_lazy("dashboard")
 
     def form_invalid(self, form):
-        # A suspended account (is_active=False) is rejected by ModelBackend before
-        # AuthenticationForm.confirm_login_allowed runs, so it lands here with the
-        # generic error. Surface a clearer message — but only when the password
-        # actually matches, so we don't reveal which emails exist.
-        email = form.cleaned_data.get("username") or form.data.get("username")
-        password = form.cleaned_data.get("password") or form.data.get("password")
-        user = User.objects.filter(email=email).first()
-        if user and password and not user.is_active and user.check_password(password):
+        # AllowAllUsersModelBackend lets authenticate() succeed for suspended
+        # (is_active=False) users, so confirm_login_allowed() raises this
+        # "inactive" error only once the password has already been verified —
+        # avoiding a second check_password() call that would otherwise leak
+        # suspension status via a timing side-channel.
+        if form.has_error(NON_FIELD_ERRORS, code="inactive"):
             messages.error(
                 self.request,
                 "Your account has been suspended. Please contact your administrator.",
