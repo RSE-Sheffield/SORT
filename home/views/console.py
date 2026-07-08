@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Count
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import TemplateView, View
 from django.views.generic.base import TemplateResponseMixin
@@ -227,6 +228,50 @@ class ConsoleDeleteUserView(StaffRequiredMixin, TemplateResponseMixin, View):
         user_service.anonymise(target_user)
         messages.success(request, f"{display_name} has been anonymised and removed.")
         return redirect("admin_users")
+
+
+class ConsoleExportUserDataView(StaffRequiredMixin, TemplateResponseMixin, View):
+    """
+    Generate a UK GDPR Article 15 subject access export for a user (issue #582).
+    """
+
+    template_name = "console/export_user_data_confirm.html"
+
+    def _get_exportable_user(self, pk):
+        user = get_object_or_404(User, pk=pk)
+        if user.is_deleted:
+            raise PermissionDenied("This account has been erased and has no personal data to export.")
+        return user
+
+    def get(self, request, pk):
+        return self.render_to_response({"viewed_user": self._get_exportable_user(pk)})
+
+    def post(self, request, pk):
+        target_user = self._get_exportable_user(pk)
+
+        data = user_service.export_personal_data(target_user)
+        data["data_protection_history"] = [
+            {
+                "event_type": event.get_event_type_display(),
+                "notes": event.notes,
+                "actioned_at": event.actioned_at,
+                "requested_at": event.requested_at,
+            }
+            for event in data_protection_service.list_events(
+                request.user, subject_user_id=target_user.pk
+            )
+        ]
+
+        data_protection_service.record_event(
+            event_type=DataProtectionEvent.EventType.EXPORT,
+            subject_user=target_user,
+            actioned_by=request.user,
+            notes="Subject access data exported via staff console",
+        )
+
+        response = JsonResponse(data, json_dumps_params={"indent": 2})
+        response["Content-Disposition"] = f'attachment; filename="sar-export-user-{target_user.pk}.json"'
+        return response
 
 
 class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):

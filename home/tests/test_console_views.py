@@ -1,9 +1,12 @@
+import json
 from http import HTTPStatus
 
 import SORT.test.test_case
 from SORT.test.model_factory import OrganisationFactory, OrganisationMembershipFactory, ProjectFactory, SurveyFactory, \
     UserFactory
 from SORT.test.model_factory.user.constants import PASSWORD
+
+from home.models import DataProtectionEvent
 
 
 class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
@@ -310,4 +313,77 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         """Anonymous users are redirected away from the delete user view."""
         target = UserFactory()
         response = self.client.get(f"/console/users/{target.pk}/delete/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_export_user_data_get_shows_confirmation(self):
+        """Staff users see the export confirmation page for a user."""
+        target = UserFactory()
+        self.login_staff()
+        response = self.client.get(f"/console/users/{target.pk}/export/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_export_user_data_post_returns_json_attachment(self):
+        """POST returns a downloadable JSON export of the user's own data."""
+        target = UserFactory()
+        org = OrganisationFactory()
+        OrganisationMembershipFactory(user=target, organisation=org)
+        project = ProjectFactory(organisation=org, created_by=target)
+        self.login_staff()
+        response = self.client.post(f"/console/users/{target.pk}/export/")
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(response["Content-Type"], "application/json")
+        self.assertIn("attachment", response["Content-Disposition"])
+
+        data = json.loads(response.content)
+        self.assertEqual(data["profile"]["id"], target.pk)
+        self.assertEqual(data["profile"]["email"], target.email)
+        self.assertEqual(len(data["organisation_memberships"]), 1)
+        self.assertEqual(data["organisation_memberships"][0]["organisation"], org.name)
+        self.assertEqual(len(data["projects_created"]), 1)
+        self.assertEqual(data["projects_created"][0]["name"], project.name)
+
+    def test_export_user_data_excludes_other_members_personal_data(self):
+        """The export must not leak data belonging to fellow organisation members."""
+        target = UserFactory()
+        other_member = UserFactory()
+        org = OrganisationFactory()
+        OrganisationMembershipFactory(user=target, organisation=org)
+        OrganisationMembershipFactory(user=other_member, organisation=org)
+        self.login_staff()
+        response = self.client.post(f"/console/users/{target.pk}/export/")
+
+        self.assertEqual(len(json.loads(response.content)["organisation_memberships"]), 1)
+        self.assertNotContains(response, other_member.email)
+        self.assertNotContains(response, other_member.first_name)
+
+    def test_export_user_data_records_data_protection_event(self):
+        """POST records an EXPORT event in the data protection audit log."""
+        target = UserFactory()
+        self.login_staff()
+        self.client.post(f"/console/users/{target.pk}/export/")
+
+        event = DataProtectionEvent.objects.get(
+            event_type=DataProtectionEvent.EventType.EXPORT, subject_user_id=target.pk
+        )
+        self.assertEqual(event.actioned_by, self.staff_user)
+
+    def test_export_user_data_forbidden_for_deleted_user(self):
+        """A previously erased (anonymised) account has nothing to export."""
+        target = UserFactory(is_active=False, first_name="Deleted", last_name="User", email="deleted-abc@deleted.invalid")
+        self.login_staff()
+        response = self.client.get(f"/console/users/{target.pk}/export/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_export_user_data_forbidden_for_regular_users(self):
+        """Regular users cannot access the export view."""
+        target = UserFactory()
+        self.login()
+        response = self.client.get(f"/console/users/{target.pk}/export/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_export_user_data_redirects_anonymous(self):
+        """Anonymous users are redirected away from the export view."""
+        target = UserFactory()
+        response = self.client.get(f"/console/users/{target.pk}/export/")
         self.assertEqual(response.status_code, HTTPStatus.FOUND)

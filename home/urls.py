@@ -161,6 +161,11 @@ urlpatterns = [
     path("console/users/<int:pk>/", views.ConsoleUserDetailView.as_view(), name="admin_user_detail"),
     path("console/users/<int:pk>/delete/", views.ConsoleDeleteUserView.as_view(), name="admin_delete_user"),
     path(
+        "console/users/<int:pk>/export/",
+        views.ConsoleExportUserDataView.as_view(),
+        name="admin_export_user_data",
+    ),
+    path(
         "console/surveys/", views.ConsoleSurveyListView.as_view(), name="admin_surveys"
     ),
     path(
