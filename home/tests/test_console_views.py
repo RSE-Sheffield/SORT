@@ -370,7 +370,9 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
 
     def test_export_user_data_forbidden_for_deleted_user(self):
         """A previously erased (anonymised) account has nothing to export."""
-        target = UserFactory(is_active=False, first_name="Deleted", last_name="User", email="deleted-abc@deleted.invalid")
+        target = UserFactory(
+            is_active=False, first_name="Deleted", last_name="User", email="deleted-abc@deleted.invalid"
+        )
         self.login_staff()
         response = self.client.get(f"/console/users/{target.pk}/export/")
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
