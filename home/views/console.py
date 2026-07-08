@@ -273,9 +273,10 @@ class ConsoleSuspendUserView(StaffRequiredMixin, TemplateResponseMixin, View):
 
     def _get_suspendable_user(self, request, pk):
         user = get_object_or_404(User, pk=pk)
-        # Guard against locking out yourself or a superuser, and against
-        # suspending an already-anonymised (deleted) account.
-        if user == request.user or user.is_superuser or user.is_deleted:
+        # Guard against locking out yourself, a fellow staff member, or a
+        # superuser, and against suspending an already-anonymised (deleted)
+        # account.
+        if user == request.user or user.is_staff or user.is_superuser or user.is_deleted:
             raise PermissionDenied("This account cannot be suspended.")
         return user
 

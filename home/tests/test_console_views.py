@@ -314,6 +314,15 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         target.refresh_from_db()
         self.assertTrue(target.is_active)
 
+    def test_console_suspend_staff_forbidden(self):
+        """Staff cannot suspend another staff member's account."""
+        target = UserFactory(is_staff=True)
+        self.login_staff()
+        response = self.client.post(f"/console/users/{target.pk}/suspend/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+        target.refresh_from_db()
+        self.assertTrue(target.is_active)
+
     def test_console_user_list_shows_suspended_users(self):
         """Suspended users remain visible in the console user list."""
         suspended = UserFactory(is_active=False)
