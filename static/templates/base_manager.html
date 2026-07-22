@@ -61,6 +61,29 @@
                         {% endif %}
                     </ol>
                     <ul class="navbar-nav">
+                        {% if user.is_authenticated and switchable_organisations|length > 1 %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="orgSwitcherDropdown"
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bx bxs-buildings"></i> {{ active_organisation.name }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="orgSwitcherDropdown">
+                                    {% for org in switchable_organisations %}
+                                        <li>
+                                            <form method="POST" action="{% url 'organisation_switch' %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="organisation_id" value="{{ org.id }}">
+                                                <input type="hidden" name="next" value="{{ request.path }}">
+                                                <button type="submit"
+                                                        class="dropdown-item{% if org.id == active_organisation.id %} active{% endif %}">
+                                                    {{ org.name }}
+                                                </button>
+                                            </form>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
                         {% if user.is_authenticated %}
                             <li class="nav-item">
                                 <form id="logout-form"

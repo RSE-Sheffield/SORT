@@ -13,9 +13,9 @@
                             Your name has not been set. Click to <a href="{% url 'profile' %}">update your profile.</a>
                         </p>
                     {% endif %}
-                    {% if user.organisation_set.first %}
+                    {% if active_organisation %}
                         <p class="card-text">You're signed in under <a href="{% url 'myorganisation' %}">
-                            <strong><i class="bx bxs-buildings"></i>&nbsp;{{ user.organisation_set.first.name }}</strong></a>.
+                            <strong><i class="bx bxs-buildings"></i>&nbsp;{{ active_organisation.name }}</strong></a>.
                         </p>
                         {% if projects.count > 0 %}
                             <p class="card-text">
