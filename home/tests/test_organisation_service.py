@@ -3,13 +3,19 @@ Test the organisation service
 """
 
 from django.contrib.auth import get_user_model
+from django.contrib.sessions.backends.db import SessionStore
 from django.core.exceptions import PermissionDenied
+from django.test import RequestFactory
 
 import SORT.test.test_case
 from home.constants import ROLE_ADMIN, ROLES
 from home.models import Organisation, OrganisationMembership
 from home.services import organisation_service
-from SORT.test.model_factory import OrganisationFactory, UserFactory
+from SORT.test.model_factory import (
+    OrganisationFactory,
+    OrganisationMembershipFactory,
+    UserFactory,
+)
 
 User = get_user_model()
 
@@ -23,6 +29,13 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.manager: User = self.organisation.members.first()
         self.manager.first_name = "Manager"
         self.another_user = UserFactory()
+        self.factory = RequestFactory()
+
+    def _make_request(self, user):
+        request = self.factory.get("/")
+        request.user = user
+        request.session = SessionStore()
+        return request
 
     def test_create_organisation(self):
         """
@@ -41,6 +54,24 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertTrue(
             Organisation.objects.filter(name=name).exists(),
             "Organisation doesn't exist",
+        )
+
+    def test_create_organisation_when_already_a_member(self):
+        """
+        A user who already belongs to an organisation can still create
+        (and join) another one (issue #675).
+        """
+        self.assertTrue(self.service.can_create_organisation(self.manager))
+
+        organisation = self.service.create_organisation(
+            user=self.manager,
+            name="A second organisation",
+            description="",
+        )
+
+        self.assertEqual(
+            {self.organisation.pk, organisation.pk},
+            self.service.get_user_organisation_ids(self.manager),
         )
 
     def test_create_organisation_as_superuser(self):
@@ -81,7 +112,7 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.service.can_edit(user=user, organisation=organisation)
         self.service.can_delete(user=user, organisation=organisation)
         self.service.can_manage_members(user=user, organisation=organisation)
-        self.service.can_create(user=user)
+        self.service.can_create_organisation(user=user)
         self.service.get_user_organisation(user=user)
 
         # Check member exists in that organisation
@@ -204,3 +235,120 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
         # See if a random user can view the membership
         with self.assertRaises(PermissionDenied):
             self.service.get_organisation_members(self.another_user, self.organisation)
+
+
+class ActiveOrganisationTestCase(SORT.test.test_case.ServiceTestCase):
+    """Tests for the session-backed "active organisation" concept (#675)."""
+
+    def setUp(self):
+        super().setUp()
+        self.service = organisation_service
+        self.factory = RequestFactory()
+
+    def _make_request(self, user):
+        request = self.factory.get("/")
+        request.user = user
+        request.session = SessionStore()
+        return request
+
+    def test_anonymous_user_has_no_active_organisation(self):
+        from django.contrib.auth.models import AnonymousUser
+
+        request = self._make_request(AnonymousUser())
+        self.assertIsNone(self.service.get_active_organisation(request))
+
+    def test_user_with_no_organisations_has_no_active_organisation(self):
+        request = self._make_request(self.user)
+        request.session["active_organisation_id"] = 999
+        self.assertIsNone(self.service.get_active_organisation(request))
+        self.assertNotIn("active_organisation_id", request.session)
+
+    def test_user_with_one_organisation_is_auto_selected(self):
+        membership = OrganisationMembershipFactory(
+            user=self.user, organisation=OrganisationFactory()
+        )
+        request = self._make_request(self.user)
+
+        organisation = self.service.get_active_organisation(request)
+
+        self.assertEqual(membership.organisation, organisation)
+        self.assertEqual(
+            membership.organisation.id, request.session["active_organisation_id"]
+        )
+
+    def test_user_with_multiple_organisations_defaults_to_earliest_joined(self):
+        first = OrganisationMembershipFactory(
+            user=self.user, organisation=OrganisationFactory()
+        )
+        second = OrganisationMembershipFactory(
+            user=self.user, organisation=OrganisationFactory()
+        )
+        request = self._make_request(self.user)
+
+        organisation = self.service.get_active_organisation(request)
+
+        self.assertEqual(first.organisation, organisation)
+        self.assertEqual(
+            first.organisation.id, request.session["active_organisation_id"]
+        )
+        self.assertNotEqual(second.organisation, organisation)
+
+    def test_active_organisation_choice_persists_via_session(self):
+        OrganisationMembershipFactory(user=self.user, organisation=OrganisationFactory())
+        second = OrganisationMembershipFactory(
+            user=self.user, organisation=OrganisationFactory()
+        )
+        request = self._make_request(self.user)
+        request.session["active_organisation_id"] = second.organisation.id
+
+        organisation = self.service.get_active_organisation(request)
+
+        self.assertEqual(second.organisation, organisation)
+
+    def test_stale_active_organisation_falls_back_to_valid_membership(self):
+        first = OrganisationMembershipFactory(
+            user=self.user, organisation=OrganisationFactory()
+        )
+        removed = OrganisationMembershipFactory(
+            user=self.user, organisation=OrganisationFactory()
+        )
+        request = self._make_request(self.user)
+        request.session["active_organisation_id"] = removed.organisation.id
+
+        # The user has since been removed from that organisation.
+        removed.delete()
+
+        organisation = self.service.get_active_organisation(request)
+
+        self.assertEqual(first.organisation, organisation)
+        self.assertEqual(
+            first.organisation.id, request.session["active_organisation_id"]
+        )
+
+    def test_set_active_organisation(self):
+        OrganisationMembershipFactory(user=self.user, organisation=OrganisationFactory())
+        second = OrganisationMembershipFactory(
+            user=self.user, organisation=OrganisationFactory()
+        )
+        request = self._make_request(self.user)
+
+        self.service.set_active_organisation(request, second.organisation)
+
+        self.assertEqual(
+            second.organisation, self.service.get_active_organisation(request)
+        )
+
+    def test_get_user_organisations(self):
+        first = OrganisationMembershipFactory(
+            user=self.user, organisation=OrganisationFactory()
+        )
+        second = OrganisationMembershipFactory(
+            user=self.user, organisation=OrganisationFactory()
+        )
+
+        organisations = self.service.get_user_organisations(self.user)
+
+        self.assertEqual(
+            {first.organisation.pk, second.organisation.pk},
+            set(organisations.values_list("pk", flat=True)),
+        )
