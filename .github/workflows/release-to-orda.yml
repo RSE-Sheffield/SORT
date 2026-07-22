@@ -25,6 +25,9 @@ jobs:
         uses: figshare/github-upload-action@v1.1
         with:
           FIGSHARE_TOKEN: ${{ secrets.FIGSHARE_TOKEN }}
-          FIGSHARE_ENDPOINT: 'https://orda.shef.ac.uk/v2'
+          FIGSHARE_ENDPOINT: 'https://api.figshare.com/v2'
           FIGSHARE_ARTICLE_ID: ${{ vars.FIGSHARE_ARTICLE_ID }}
           DATA_DIR: data
+
+      - name: Link to ORDA record
+        run: echo "📦 [View this release on ORDA](https://doi.org/10.15131/shef.data.${{ vars.FIGSHARE_ARTICLE_ID }})" >> "$GITHUB_STEP_SUMMARY"
