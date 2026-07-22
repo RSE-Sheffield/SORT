@@ -11,11 +11,15 @@ class UserProfileForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
+        if email:
+            # Lowercase to match UserManager's write-side normalization
+            # (see home/models.py) and catch case-variant duplicates below.
+            email = email.lower()
 
         if email == self.instance.email:
             return email
 
-        if User.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
+        if User.objects.exclude(pk=self.instance.pk).filter(email__iexact=email).exists():
             raise forms.ValidationError("This email is already in use.")
         return email
 

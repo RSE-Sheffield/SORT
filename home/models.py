@@ -12,17 +12,33 @@ from .constants import DELETED_EMAIL_DOMAIN, ROLE_ADMIN, ROLE_PROJECT_MANAGER, R
 
 
 class UserManager(BaseUserManager):
+    """
+    A custom manager is required because User is a bespoke AbstractBaseUser
+    subclass with no `username` field (see User.USERNAME_FIELD below) — Django's
+    built-in UserManager assumes a username and can't be reused as-is.
+    """
+
     def create_user(self, first_name, last_name, email, password=None):
         if not email:
             raise ValueError("Email is required")
+        # normalize_email() only lowercases the domain, not the local part, so
+        # the whole address is lowercased explicitly (case #667: an account
+        # created with mixed-case local part could never log in again).
+        # .lower() (not .casefold()) matches what normalize_email() and
+        # allauth's filter_users_by_email() already do on the lookup side.
         user = self.model(
-            email=self.normalize_email(email),
+            email=self.normalize_email(email).lower(),
             first_name=first_name,
             last_name=last_name,
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
+
+    def get_by_natural_key(self, email):
+        # Case-insensitive lookup as a safety net alongside the write-side
+        # normalization above, per Django's own custom-user-model docs.
+        return self.get(email__iexact=email)
 
     def create_superuser(self, email, first_name, last_name, password=None):
         user = self.create_user(
@@ -46,6 +62,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
 
+    # Email is the unique identifier for this app (there is no username
+    # field), so users log in with email + password.
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
 

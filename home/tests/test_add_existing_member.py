@@ -44,6 +44,20 @@ class AddExistingMemberFormTestCase(TestCase):
             "User should not be marked as duplicate",
         )
 
+    def test_form_valid_with_different_case_email(self):
+        """Emails should match regardless of case (issue #667)"""
+        form = AddExistingMemberForm(
+            data={
+                "email": self.existing_user.email.upper(),
+                "role": ROLE_PROJECT_MANAGER,
+            },
+            organisation=self.organisation,
+            user=self.admin_user,
+        )
+
+        self.assertTrue(form.is_valid(), f"Form errors: {form.errors}")
+        self.assertEqual(form.get_user(), self.existing_user)
+
     def test_form_invalid_with_nonexistent_user(self):
         """Test that the form is invalid when given a non-existent email"""
         form = AddExistingMemberForm(

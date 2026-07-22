@@ -67,7 +67,9 @@ class ManagerSignupForm(UserCreationForm):
         # account is rolled back rather than left orphaned without a membership.
         with transaction.atomic():
             user = super().save(commit=False)
-            user.email = self.email
+            # Bypasses UserManager.create_user, so lowercase explicitly too
+            # (see home/models.py UserManager for why this matters).
+            user.email = self.email.lower()
             user.username = user.email
             if commit:
                 user.save()
