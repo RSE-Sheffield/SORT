@@ -5,6 +5,7 @@ Unit tests for organisation views
 from http import HTTPStatus
 
 import django.contrib.auth
+import django.contrib.messages
 import django.test
 import django.urls
 
@@ -125,7 +126,10 @@ class OrganisationViewTestCase(ViewTestCase):
     def test_organisation_create_when_already_a_member(self):
         """
         A user can create a second organisation even though they already
-        belong to one (issue #675), and it becomes their active organisation.
+        belong to one (issue #675), but their active organisation is not
+        silently switched to the new one (issue #682) - their existing
+        organisation stays active, and they're told how to switch to the
+        new one.
         """
         OrganisationMembershipFactory(
             user=self.user, organisation=self.organisation, role=ROLE_ADMIN
@@ -138,9 +142,34 @@ class OrganisationViewTestCase(ViewTestCase):
         )
 
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        new_organisation = Organisation.objects.get(name="My second org")
+        self.assertTrue(Organisation.objects.filter(name="My second org").exists())
 
-        # The newly created organisation is now active.
+        messages = list(django.contrib.messages.get_messages(response.wsgi_request))
+        self.assertTrue(
+            any("switcher" in str(message) for message in messages),
+            "Expected a message explaining how to switch to the new organisation",
+        )
+
+        # The user's original organisation is still active - not silently
+        # switched to the newly created one.
+        dashboard_response = self.client.get(django.urls.reverse("myorganisation"))
+        self.assertContains(dashboard_response, self.organisation.name)
+
+    def test_organisation_create_when_not_already_a_member(self):
+        """
+        A user with no existing organisation has their newly created
+        organisation set as active, as before (issue #682).
+        """
+        self.login()
+
+        response = self.client.post(
+            path=django.urls.reverse("organisation_create"),
+            data=dict(name="My first org", description=""),
+        )
+
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        new_organisation = Organisation.objects.get(name="My first org")
+
         dashboard_response = self.client.get(django.urls.reverse("myorganisation"))
         self.assertContains(dashboard_response, new_organisation.name)
 
