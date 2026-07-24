@@ -89,13 +89,26 @@ class OrganisationCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy("myorganisation")
 
     def form_valid(self, form):
+        had_organisation = (
+            organisation_service.get_active_organisation(self.request) is not None
+        )
         try:
             organisation = organisation_service.create_organisation(
                 user=self.request.user,
                 name=form.cleaned_data["name"],
                 description=form.cleaned_data["description"],
             )
-            organisation_service.set_active_organisation(self.request, organisation)
+            if had_organisation:
+                messages.success(
+                    self.request,
+                    f"{organisation.name} created. Use the organisation switcher "
+                    "in the navigation menu to switch to it.",
+                )
+            else:
+                organisation_service.set_active_organisation(
+                    self.request, organisation
+                )
+                messages.success(self.request, f"{organisation.name} created.")
             self.object = organisation
             return redirect(self.get_success_url())
         except PermissionDenied:
