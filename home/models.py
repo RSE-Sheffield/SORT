@@ -96,6 +96,15 @@ class Organisation(models.Model):
 
 
 class OrganisationMembership(models.Model):
+    """
+    Each user can be a member of one or more organisations, and each organisation
+    can have one or more members. This model represents the relationship between a
+    user and an organisation, along with the user's role within that organisation.
+    """
+
+    class Meta:
+        unique_together = ["user", "organisation"]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLES, default=ROLE_PROJECT_MANAGER)
@@ -104,14 +113,12 @@ class OrganisationMembership(models.Model):
         User, on_delete=models.CASCADE, related_name="members_added", null=True
     )
 
-    class Meta:
-        unique_together = ["user", "organisation"]
-
 
 class Project(models.Model):
     """
     A project is an organisation unit for surveys within an organisation.
     """
+
     name = models.CharField(max_length=100, help_text="Project title")
     description = models.TextField(blank=True, null=True)
     organisation = models.ForeignKey(
