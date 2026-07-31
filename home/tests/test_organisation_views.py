@@ -5,12 +5,13 @@ Unit tests for organisation views
 from http import HTTPStatus
 
 import django.contrib.auth
+import django.contrib.messages
 import django.test
 import django.urls
 
-from home.constants import ROLE_PROJECT_MANAGER
+from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from home.models import Organisation, OrganisationMembership
-from SORT.test.model_factory import OrganisationFactory
+from SORT.test.model_factory import OrganisationFactory, OrganisationMembershipFactory
 from SORT.test.model_factory.user.constants import PASSWORD
 from SORT.test.test_case import ViewTestCase
 
@@ -122,5 +123,127 @@ class OrganisationViewTestCase(ViewTestCase):
         self.organisation.refresh_from_db()
         self.assertEqual(self.organisation.name, original_name)
 
+    def test_organisation_create_when_already_a_member(self):
+        """
+        A user can create a second organisation even though they already
+        belong to one (issue #675), but their active organisation is not
+        silently switched to the new one (issue #682) - their existing
+        organisation stays active, and they're told how to switch to the
+        new one.
+        """
+        OrganisationMembershipFactory(
+            user=self.user, organisation=self.organisation, role=ROLE_ADMIN
+        )
+        self.login()
+
+        response = self.client.post(
+            path=django.urls.reverse("organisation_create"),
+            data=dict(name="My second org", description=""),
+        )
+
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        self.assertTrue(Organisation.objects.filter(name="My second org").exists())
+
+        messages = list(django.contrib.messages.get_messages(response.wsgi_request))
+        self.assertTrue(
+            any("switcher" in str(message) for message in messages),
+            "Expected a message explaining how to switch to the new organisation",
+        )
+
+        # The user's original organisation is still active - not silently
+        # switched to the newly created one.
+        dashboard_response = self.client.get(django.urls.reverse("myorganisation"))
+        self.assertContains(dashboard_response, self.organisation.name)
+
+    def test_organisation_create_when_not_already_a_member(self):
+        """
+        A user with no existing organisation has their newly created
+        organisation set as active, as before (issue #682).
+        """
+        self.login()
+
+        response = self.client.post(
+            path=django.urls.reverse("organisation_create"),
+            data=dict(name="My first org", description=""),
+        )
+
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        new_organisation = Organisation.objects.get(name="My first org")
+
+        dashboard_response = self.client.get(django.urls.reverse("myorganisation"))
+        self.assertContains(dashboard_response, new_organisation.name)
+
     def test_organisation_view(self):
         self.skipTest("Not yet implemented")
+
+
+class SetActiveOrganisationViewTestCase(ViewTestCase):
+    """Tests for the org-switcher view (issue #675)."""
+
+    def setUp(self):
+        super().setUp()
+        self.first_organisation = OrganisationFactory()
+        self.second_organisation = OrganisationFactory()
+        OrganisationMembershipFactory(
+            user=self.user, organisation=self.first_organisation, role=ROLE_ADMIN
+        )
+        OrganisationMembershipFactory(
+            user=self.user, organisation=self.second_organisation, role=ROLE_ADMIN
+        )
+
+    def test_switch_to_a_member_organisation(self):
+        self.login()
+
+        response = self.client.post(
+            django.urls.reverse("organisation_switch"),
+            data={"organisation_id": self.second_organisation.pk},
+        )
+
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+        dashboard_response = self.client.get(django.urls.reverse("myorganisation"))
+        self.assertContains(
+            dashboard_response, f"<h1>{self.second_organisation.name}</h1>"
+        )
+        self.assertNotContains(
+            dashboard_response, f"<h1>{self.first_organisation.name}</h1>"
+        )
+
+    def test_cannot_switch_to_an_organisation_not_a_member_of(self):
+        other_organisation = OrganisationFactory()
+        self.login()
+
+        response = self.client.post(
+            django.urls.reverse("organisation_switch"),
+            data={"organisation_id": other_organisation.pk},
+        )
+
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+
+    def test_switch_requires_login(self):
+        response = self.client.post(
+            django.urls.reverse("organisation_switch"),
+            data={"organisation_id": self.first_organisation.pk},
+        )
+
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+        self.assertIn(django.urls.reverse("login"), response.url)
+
+    def test_switcher_not_shown_for_single_organisation_user(self):
+        OrganisationMembership.objects.filter(
+            user=self.user, organisation=self.second_organisation
+        ).delete()
+        self.login()
+
+        response = self.client.get(django.urls.reverse("myorganisation"))
+
+        self.assertNotContains(response, "orgSwitcherDropdown")
+
+    def test_switcher_shown_for_multi_organisation_user(self):
+        self.login()
+
+        response = self.client.get(django.urls.reverse("myorganisation"))
+
+        self.assertContains(response, "orgSwitcherDropdown")
+        self.assertContains(response, self.first_organisation.name)
+        self.assertContains(response, self.second_organisation.name)

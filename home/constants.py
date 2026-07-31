@@ -34,5 +34,7 @@ PERMISSION_CHOICES = [
     (PERMISSION_EDIT, "View and Edit"),
 ]
 
-# Email domain used to mark accounts anonymised for GDPR erasure (see UserService.anonymise)
-DELETED_EMAIL_DOMAIN = "deleted.invalid"
+# Email domain used to anonymise a user's address on GDPR erasure (see
+# UserService.anonymise). Used to distinguish erased accounts from merely
+# suspended ones, since both share is_active=False.
+DELETED_ACCOUNT_EMAIL_DOMAIN = "deleted.invalid"

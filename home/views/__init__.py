@@ -28,6 +28,7 @@ from .organisation import (
     OrganisationEditView,
     OrganisationMembershipDeleteView,
     OrganisationMembershipListView,
+    SetActiveOrganisationView,
 )
 from .console import (
     ConsoleDataProtectionLogView,
@@ -42,6 +43,8 @@ from .console import (
     ConsoleProjectDetailView,
     ConsoleProjectListView,
     ConsoleRemoveMemberView,
+    ConsoleSuspendUserView,
+    ConsoleUnsuspendUserView,
     ConsoleUserDetailView,
 )
 from .project import (
@@ -78,6 +81,7 @@ __all__ = [
     "OrganisationEditView",
     "OrganisationMembershipDeleteView",
     "OrganisationMembershipListView",
+    "SetActiveOrganisationView",
     "ProjectCreateView",
     "ProjectDeleteView",
     "ProjectEditView",
@@ -93,6 +97,8 @@ __all__ = [
     "ConsoleProjectDetailView",
     "ConsoleProjectListView",
     "ConsoleRemoveMemberView",
+    "ConsoleSuspendUserView",
+    "ConsoleUnsuspendUserView",
     "ConsoleUserDetailView",
     "ConsoleDataProtectionLogView",
 ]

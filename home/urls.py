@@ -53,6 +53,11 @@ urlpatterns = [
     ),
     path("myorganisation/", views.MyOrganisationView.as_view(), name="myorganisation"),
     path(
+        "myorganisation/switch/",
+        views.SetActiveOrganisationView.as_view(),
+        name="organisation_switch",
+    ),
+    path(
         "myorganisation/edit/",
         views.OrganisationEditView.as_view(),
         name="organisation_edit",
@@ -161,9 +166,14 @@ urlpatterns = [
     path("console/users/<int:pk>/", views.ConsoleUserDetailView.as_view(), name="admin_user_detail"),
     path("console/users/<int:pk>/delete/", views.ConsoleDeleteUserView.as_view(), name="admin_delete_user"),
     path(
-        "console/users/<int:pk>/export/",
-        views.ConsoleExportUserDataView.as_view(),
-        name="admin_export_user_data",
+        "console/users/<int:pk>/suspend/",
+        views.ConsoleSuspendUserView.as_view(),
+        name="admin_suspend_user",
+    ),
+    path(
+        "console/users/<int:pk>/unsuspend/",
+        views.ConsoleUnsuspendUserView.as_view(),
+        name="admin_unsuspend_user",
     ),
     path(
         "console/surveys/", views.ConsoleSurveyListView.as_view(), name="admin_surveys"

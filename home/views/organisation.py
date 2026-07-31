@@ -7,8 +7,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views import View
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -35,7 +37,7 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
-        self.organisation = organisation_service.get_user_organisation(request.user)
+        self.organisation = organisation_service.get_active_organisation(request)
 
         if not self.organisation:
             messages.error(request, "You are not a member of any organisation.")
@@ -87,12 +89,26 @@ class OrganisationCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy("myorganisation")
 
     def form_valid(self, form):
+        had_organisation = (
+            organisation_service.get_active_organisation(self.request) is not None
+        )
         try:
             organisation = organisation_service.create_organisation(
                 user=self.request.user,
                 name=form.cleaned_data["name"],
                 description=form.cleaned_data["description"],
             )
+            if had_organisation:
+                messages.success(
+                    self.request,
+                    f"{organisation.name} created. Use the organisation switcher "
+                    "in the navigation menu to switch to it.",
+                )
+            else:
+                organisation_service.set_active_organisation(
+                    self.request, organisation
+                )
+                messages.success(self.request, f"{organisation.name} created.")
             self.object = organisation
             return redirect(self.get_success_url())
         except PermissionDenied:
@@ -100,6 +116,29 @@ class OrganisationCreateView(LoginRequiredMixin, CreateView):
                 self.request, "You don't have permission to create organisations."
             )
             return redirect("dashboard")
+
+
+class SetActiveOrganisationView(LoginRequiredMixin, View):
+    """
+    Switch the session's active organisation to one the user is a member
+    of (issue #675). POST-only, since this changes state.
+    """
+
+    def post(self, request, *args, **kwargs):
+        organisation = get_object_or_404(
+            Organisation,
+            pk=request.POST.get("organisation_id"),
+            members=request.user,
+        )
+        organisation_service.set_active_organisation(request, organisation)
+        messages.success(request, f"Switched to {organisation.name}.")
+
+        next_url = request.POST.get("next") or reverse("myorganisation")
+        if not url_has_allowed_host_and_scheme(
+            next_url, allowed_hosts={request.get_host()}
+        ):
+            next_url = reverse("myorganisation")
+        return redirect(next_url)
 
 
 class OrganisationEditView(LoginRequiredMixin, OrganisationRequiredMixin, UpdateView):
@@ -117,10 +156,11 @@ class OrganisationEditView(LoginRequiredMixin, OrganisationRequiredMixin, Update
     context_object_name = "organisation"
 
     def dispatch(self, request, *args, **kwargs):
-        # Resolve the user's organisation and check edit permission up front so
-        # that non-admins are redirected cleanly rather than shown the form.
+        # Resolve the user's active organisation and check edit permission up
+        # front so that non-admins are redirected cleanly rather than shown
+        # the form.
         if request.user.is_authenticated:
-            organisation = organisation_service.get_user_organisation(request.user)
+            organisation = organisation_service.get_active_organisation(request)
             if organisation and not organisation_service.can_edit(
                 request.user, organisation
             ):
@@ -131,7 +171,7 @@ class OrganisationEditView(LoginRequiredMixin, OrganisationRequiredMixin, Update
         return super().dispatch(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
-        return organisation_service.get_user_organisation(self.request.user)
+        return organisation_service.get_active_organisation(self.request)
 
     def get_success_url(self):
         return reverse("myorganisation")
@@ -159,7 +199,7 @@ class OrganisationMembershipListView(
 
     @property
     def organisation(self) -> Organisation:
-        return organisation_service.get_user_organisation(self.request.user)
+        return organisation_service.get_active_organisation(self.request)
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -198,7 +238,7 @@ class MyOrganisationInviteView(
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
-        self.organisation = organisation_service.get_user_organisation(request.user)
+        self.organisation = organisation_service.get_active_organisation(request)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -379,7 +419,7 @@ class DataSharingAgreementView(LoginRequiredMixin, DetailView):
         Get the organisation and verify user has access to it.
         """
 
-        organisation = self.request.user.organisation_set.first()
+        organisation = organisation_service.get_active_organisation(self.request)
 
         # Verify user is a member of this organisation
         if not organisation_service.can_view(self.request.user, organisation):

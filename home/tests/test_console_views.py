@@ -3,7 +3,7 @@ from http import HTTPStatus
 
 import SORT.test.test_case
 from SORT.test.model_factory import OrganisationFactory, OrganisationMembershipFactory, ProjectFactory, SurveyFactory, \
-    UserFactory
+    SuperUserFactory, UserFactory
 from SORT.test.model_factory.user.constants import PASSWORD
 
 from home.models import DataProtectionEvent
@@ -89,6 +89,17 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         response = self.client.get("/console/users/?status=deleted")
         self.assertNotIn(active_user, response.context["users"])
         self.assertIn(deleted_user, response.context["users"])
+
+    def test_console_users_suspended_filter_shows_only_suspended(self):
+        """?status=suspended shows only suspended (inactive, non-deleted) users."""
+        active_user = UserFactory()
+        suspended_user = UserFactory(is_active=False)
+        deleted_user = UserFactory(is_active=False, first_name="", last_name="", email="deleted-sus@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/?status=suspended")
+        self.assertNotIn(active_user, response.context["users"])
+        self.assertIn(suspended_user, response.context["users"])
+        self.assertNotIn(deleted_user, response.context["users"])
 
     def test_console_users_all_filter_shows_both(self):
         """?status=all shows both active and deleted users."""
@@ -263,6 +274,87 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         self.assertRedirects(response, f"/console/organisations/{org.pk}/")
         from home.models import OrganisationMembership
         self.assertFalse(OrganisationMembership.objects.filter(pk=membership_pk).exists())
+
+    # -- Suspend / unsuspend user --------------------------------------------
+
+    def test_console_suspend_user_get_accessible_to_staff(self):
+        """Staff users can access the suspend confirmation page."""
+        user = UserFactory()
+        self.login_staff()
+        response = self.client.get(f"/console/users/{user.pk}/suspend/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_suspend_user_get_redirects_anonymous(self):
+        """Anonymous users are redirected away from the suspend page."""
+        user = UserFactory()
+        response = self.client.get(f"/console/users/{user.pk}/suspend/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_suspend_user_get_forbidden_for_regular_users(self):
+        """Regular users cannot access the suspend page."""
+        user = UserFactory()
+        self.login()
+        response = self.client.get(f"/console/users/{user.pk}/suspend/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_suspend_user_post_suspends_without_deleting_data(self):
+        """POSTing to suspend sets is_active=False, leaving data intact."""
+        user = UserFactory()
+        membership = OrganisationMembershipFactory(user=user, organisation=OrganisationFactory())
+        self.login_staff()
+        response = self.client.post(f"/console/users/{user.pk}/suspend/")
+        self.assertRedirects(response, f"/console/users/{user.pk}/")
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+        # No cascade: the user and their memberships still exist.
+        self.assertTrue(UserFactory._meta.model.objects.filter(pk=user.pk).exists())
+        from home.models import OrganisationMembership
+        self.assertTrue(OrganisationMembership.objects.filter(pk=membership.pk).exists())
+
+    def test_console_suspend_user_post_unsuspends(self):
+        """POSTing to unsuspend restores is_active=True."""
+        user = UserFactory(is_active=False)
+        self.login_staff()
+        response = self.client.post(f"/console/users/{user.pk}/unsuspend/")
+        self.assertRedirects(response, f"/console/users/{user.pk}/")
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+
+    def test_console_suspend_self_forbidden(self):
+        """Staff cannot suspend their own account."""
+        self.login_staff()
+        response = self.client.post(f"/console/users/{self.staff_user.pk}/suspend/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+        self.staff_user.refresh_from_db()
+        self.assertTrue(self.staff_user.is_active)
+
+    def test_console_suspend_superuser_forbidden(self):
+        """Superuser accounts cannot be suspended."""
+        target = SuperUserFactory()
+        self.login_staff()
+        response = self.client.post(f"/console/users/{target.pk}/suspend/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+        target.refresh_from_db()
+        self.assertTrue(target.is_active)
+
+    def test_console_suspend_staff_forbidden(self):
+        """Staff cannot suspend another staff member's account."""
+        target = UserFactory(is_staff=True)
+        self.login_staff()
+        response = self.client.post(f"/console/users/{target.pk}/suspend/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+        target.refresh_from_db()
+        self.assertTrue(target.is_active)
+
+    def test_console_user_list_shows_suspended_users(self):
+        """Suspended users remain visible in the console user list."""
+        suspended = UserFactory(is_active=False)
+        self.login_staff()
+        response = self.client.get("/console/users/")
+        self.assertContains(response, suspended.email)
+        self.assertContains(response, "Suspended")
+
+    # -- Delete (anonymise) user ---------------------------------------------
 
     def test_delete_user_get_shows_confirmation(self):
         """Staff users see the delete confirmation page for a regular user."""

@@ -8,21 +8,37 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.urls import reverse
 
-from .constants import DELETED_EMAIL_DOMAIN, ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
+from .constants import DELETED_ACCOUNT_EMAIL_DOMAIN, ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
 
 
 class UserManager(BaseUserManager):
+    """
+    A custom manager is required because User is a bespoke AbstractBaseUser
+    subclass with no `username` field (see User.USERNAME_FIELD below) — Django's
+    built-in UserManager assumes a username and can't be reused as-is.
+    """
+
     def create_user(self, first_name, last_name, email, password=None):
         if not email:
             raise ValueError("Email is required")
+        # normalize_email() only lowercases the domain, not the local part, so
+        # the whole address is lowercased explicitly (case #667: an account
+        # created with mixed-case local part could never log in again).
+        # .lower() (not .casefold()) matches what normalize_email() and
+        # allauth's filter_users_by_email() already do on the lookup side.
         user = self.model(
-            email=self.normalize_email(email),
+            email=self.normalize_email(email).lower(),
             first_name=first_name,
             last_name=last_name,
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
+
+    def get_by_natural_key(self, email):
+        # Case-insensitive lookup as a safety net alongside the write-side
+        # normalization above, per Django's own custom-user-model docs.
+        return self.get(email__iexact=email)
 
     def create_superuser(self, email, first_name, last_name, password=None):
         user = self.create_user(
@@ -46,6 +62,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
 
+    # Email is the unique identifier for this app (there is no username
+    # field), so users log in with email + password.
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
@@ -59,11 +77,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_deleted(self) -> bool:
-        """
-        Whether this account has been anonymised for GDPR erasure (see UserService.anonymise),
-        as opposed to just having a blank name.
-        """
-        return self.email.endswith(f"@{DELETED_EMAIL_DOMAIN}")
+        """True once this account has been anonymised via GDPR erasure (see
+        UserService.anonymise), as opposed to merely suspended — both set
+        is_active=False."""
+        return self.email.endswith(f"@{DELETED_ACCOUNT_EMAIL_DOMAIN}")
 
     @property
     def active_projects(self) -> int:
@@ -106,6 +123,15 @@ class Organisation(models.Model):
 
 
 class OrganisationMembership(models.Model):
+    """
+    Each user can be a member of one or more organisations, and each organisation
+    can have one or more members. This model represents the relationship between a
+    user and an organisation, along with the user's role within that organisation.
+    """
+
+    class Meta:
+        unique_together = ["user", "organisation"]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLES, default=ROLE_PROJECT_MANAGER)
@@ -114,14 +140,12 @@ class OrganisationMembership(models.Model):
         User, on_delete=models.CASCADE, related_name="members_added", null=True
     )
 
-    class Meta:
-        unique_together = ["user", "organisation"]
-
 
 class Project(models.Model):
     """
     A project is an organisation unit for surveys within an organisation.
     """
+
     name = models.CharField(max_length=100, help_text="Project title")
     description = models.TextField(blank=True, null=True)
     organisation = models.ForeignKey(
