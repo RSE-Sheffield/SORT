@@ -57,6 +57,14 @@
                title="Invite a new user to join this organisation and manage surveys.">
                 <i class='bx bxs-user-plus'></i> Invite new member
             </a>
+            <a href="{% url 'join_requests' %}" type="button" class="btn btn-light border"
+               title="Review people who have asked to join this organisation.">
+                <i class='bx bxs-user-check'></i> Join requests
+                {% if pending_join_request_count %}
+                    <span class="badge bg-warning text-dark">{{ pending_join_request_count }}</span>
+                    <span class="visually-hidden">awaiting review</span>
+                {% endif %}
+            </a>
         </div>
         {% endif %}
         <div>

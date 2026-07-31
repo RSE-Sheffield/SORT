@@ -33,6 +33,14 @@
                                 {% if '/invite' in request.path %}active{% endif %}"
                                href="{% url 'myorganisation' %}"><i class="bx bxs-buildings"></i> Organisation Dashboard</a>
                         </li>
+                        {% if pending_join_request_count %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/join-requests' in request.path %}active{% endif %}"
+                               href="{% url 'join_requests' %}"><i class="bx bxs-user-plus"></i> Join requests
+                                <span class="badge bg-warning text-dark">{{ pending_join_request_count }}</span>
+                                <span class="visually-hidden">pending join requests awaiting review</span></a>
+                        </li>
+                        {% endif %}
                         <li class="nav-item">
                             <a class="nav-link {% if '/profile' in request.path %}active{% endif %}"
                                href="{% url 'profile' %}"><i class="bx bxs-user"></i> Profile</a>

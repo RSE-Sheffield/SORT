@@ -4,6 +4,12 @@
     <div>
         <h1>Create an Organisation</h1>
         <p class="subtitle">Use the form below to create a new organisation.</p>
+        <p class="alert alert-info" role="status">
+            Does your organisation already use SORT Online?
+            <a href="{% url 'organisation_browse' %}">Request to join it</a>
+            instead of creating a duplicate. An administrator there can give you
+            access.
+        </p>
     </div>
     <div class="card custom-card shadow-sm my-4">
         <div class="card-body">

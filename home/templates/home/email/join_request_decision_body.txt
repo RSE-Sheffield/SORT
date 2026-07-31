@@ -1,0 +1,25 @@
+{% autoescape off %}Hi {{ join_request.user.first_name }},
+{% if is_approved %}
+Your request to join {{ join_request.organisation.name }} on SORT has been
+approved. You have been added as {{ join_request.get_granted_role_display }}.
+
+You can see the organisation's projects and surveys on your dashboard:
+
+{{ dashboard_url }}
+{% else %}
+Your request to join {{ join_request.organisation.name }} on SORT was not
+approved.
+{% if join_request.decision_note %}
+The administrator added:
+
+{{ join_request.decision_note }}
+{% endif %}
+If you think this was a mistake, contact the organisation's administrators
+directly. You can also submit a new request:
+
+{{ requests_url }}
+{% endif %}
+Thanks,
+
+The SORT Team
+{% endautoescape %}

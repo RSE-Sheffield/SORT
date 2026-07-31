@@ -8,6 +8,8 @@ This document describes the database schema and relationships for the SORT (Self
 erDiagram
     User ||--o{ OrganisationMembership : "has"
     Organisation ||--o{ OrganisationMembership : "has"
+    User ||--o{ OrganisationJoinRequest : "submits"
+    Organisation ||--o{ OrganisationJoinRequest : "receives"
     Organisation ||--o{ Project : "contains"
     Project ||--o{ Survey : "contains"
     User ||--o{ Project : "creates"
@@ -42,6 +44,19 @@ erDiagram
         string role "ADMIN or PROJECT_MANAGER"
         datetime joined_at
         int added_by_id FK
+    }
+
+    OrganisationJoinRequest {
+        int id PK
+        int user_id FK
+        int organisation_id FK
+        string status "PENDING, APPROVED, REJECTED or WITHDRAWN"
+        text message
+        datetime created_at
+        int decided_by_id FK
+        datetime decided_at
+        string granted_role
+        text decision_note
     }
 
     Project {
@@ -139,6 +154,19 @@ Through table for the many-to-many relationship between User and Organisation. I
 
 **Constraints:**
 - Unique together: (user, organisation)
+
+### OrganisationJoinRequest (home/models.py)
+
+A user's self-service request to join an existing organisation. An organisation ADMIN approves it — creating an `OrganisationMembership` with a role of their choosing — or rejects it; the requester may withdraw it while it is still pending. Decided requests are retained so both sides keep a record of the outcome.
+
+**Statuses:**
+- `PENDING`, `APPROVED`, `REJECTED`, `WITHDRAWN`
+
+**Constraints:**
+- Partial unique constraint on (user, organisation) `WHERE status = 'PENDING'`, so at most one request may be outstanding per pair while still allowing a rejected or withdrawn request to be submitted again. `unique_together` cannot express a conditional uniqueness, which is why this model uses `Meta.constraints` where `OrganisationMembership` uses `unique_together`.
+
+**Audit fields:**
+- `decided_by`, `decided_at`, `granted_role` (the role granted at approval time, recorded separately from the resulting membership because that membership's role may be edited later) and `decision_note`
 
 ### Project (home/models.py)
 
@@ -286,7 +314,7 @@ Survey
 
 ### Access Control Flow
 
-1. User joins Organisation via OrganisationMembership (role: ADMIN or PROJECT_MANAGER)
+1. User joins Organisation via OrganisationMembership (role: ADMIN or PROJECT_MANAGER) — either invited/added by an ADMIN, or by submitting an OrganisationJoinRequest that an ADMIN approves
 2. Organisation contains Projects
 3. Projects contain Surveys
 4. Permissions cascade: organisation role → project access → survey access
@@ -296,6 +324,9 @@ Survey
 - **Unique Together:**
   - OrganisationMembership: (user, organisation)
   - SurveyEvidenceSection: (survey, section_id)
+
+- **Conditional Unique Constraints:**
+  - OrganisationJoinRequest: (user, organisation) `WHERE status = 'PENDING'`
 
 - **Unique Fields:**
   - User.email
