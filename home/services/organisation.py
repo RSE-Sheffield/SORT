@@ -262,5 +262,26 @@ class OrganisationService(BasePermissionService):
             organisation=organisation
         ).select_related("user")
 
+    def get_sole_admin_orgs_with_other_members(self, user: User) -> QuerySet[Organisation]:
+        """
+        Organisations where `user` is the only ADMIN and other members
+        exist. Erasing `user` immediately would strand these orgs with
+        nobody able to manage them, so self-service erasure defers to staff
+        instead (see UserService.request_self_erasure).
+        """
+        admin_org_ids = OrganisationMembership.objects.filter(
+            user=user, role=ROLE_ADMIN
+        ).values_list("organisation_id", flat=True)
+
+        blocking_ids = [
+            org_id
+            for org_id in admin_org_ids
+            if not OrganisationMembership.objects.filter(organisation_id=org_id, role=ROLE_ADMIN)
+            .exclude(user=user)
+            .exists()
+            and OrganisationMembership.objects.filter(organisation_id=org_id).exclude(user=user).exists()
+        ]
+        return Organisation.objects.filter(pk__in=blocking_ids)
+
 
 organisation_service = OrganisationService()
