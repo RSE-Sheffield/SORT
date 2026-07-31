@@ -222,6 +222,7 @@
     sectionIndex: number,
     fieldIndex: number,
   ) {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- local, non-reactive collection
     const allOptions = new Set<string>(fieldConfig.options);
     for (const response of responses) {
       allOptions.add(response[sectionIndex][fieldIndex]);
