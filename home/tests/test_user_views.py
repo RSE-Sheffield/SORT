@@ -30,6 +30,19 @@ class UserViewTestCase(SORT.test.test_case.ViewTestCase):
             login=False,
         )
 
+    def test_login_post_case_insensitive_email(self):
+        """
+        Login should succeed even if the email is submitted with different
+        case than stored (issue #667).
+        """
+        self.assertTrue(
+            self.client.login(
+                username=self.user.email.upper(),
+                password=PASSWORD,
+            ),
+            "Authentication with a differently-cased email should succeed",
+        )
+
     def test_logout(self):
         # Expect to be redirected
         self.post("logout", expected_status_code=HTTPStatus.FOUND, login=True)

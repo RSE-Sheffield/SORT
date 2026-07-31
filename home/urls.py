@@ -53,6 +53,11 @@ urlpatterns = [
     ),
     path("myorganisation/", views.MyOrganisationView.as_view(), name="myorganisation"),
     path(
+        "myorganisation/switch/",
+        views.SetActiveOrganisationView.as_view(),
+        name="organisation_switch",
+    ),
+    path(
         "myorganisation/edit/",
         views.OrganisationEditView.as_view(),
         name="organisation_edit",

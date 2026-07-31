@@ -28,9 +28,9 @@ class AddExistingMemberForm(forms.Form):
     def clean_email(self):
         email = self.cleaned_data["email"]
 
-        # Check if user exists
+        # Check if user exists (case-insensitive: see issue #667)
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
             raise ValidationError(
                 f"No user with email address '{email}' exists. "

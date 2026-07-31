@@ -7,6 +7,7 @@ from typing import Dict, Optional, Set
 from django.db import transaction
 from django.db.models import Count
 from django.db.models.query import QuerySet
+from django.http import HttpRequest
 
 from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from ..models import (
@@ -73,14 +74,10 @@ class OrganisationService(BasePermissionService):
         role = self.get_user_role(user, organisation)
         return role == ROLE_ADMIN
 
-    def can_create(self, user: User) -> bool:
-        if user.is_superuser:
-            return True
-
-        if OrganisationMembership.objects.filter(user=user).count() < 1:
-            return True
-        else:
-            return False
+    def can_create_organisation(self, user: User) -> bool:
+        """Anyone with a login can create an organisation, including users
+        who already belong to one or more organisations."""
+        return bool(user and user.is_authenticated)
 
     def can_delete(self, user: User, organisation: Organisation) -> bool:
         if user.is_superuser:
@@ -105,6 +102,58 @@ class OrganisationService(BasePermissionService):
             return None
 
         return user.organisation_set.first()
+
+    def get_active_organisation(self, request: HttpRequest) -> Optional[Organisation]:
+        """
+        Resolve the organisation the user is currently "in", for users who may
+        belong to more than one. The choice is sticky across requests via
+        ``request.session["active_organisation_id"]``.
+
+        Fallback chain: no memberships -> None; exactly one membership -> that
+        organisation (so single-org users see no behaviour change); a valid
+        session choice -> that organisation; otherwise (no session choice yet,
+        or the previously active organisation was left/removed) -> the
+        earliest-joined membership, and the session is brought back in sync.
+        """
+        user = request.user
+        if not user or not user.is_authenticated:
+            return None
+
+        memberships = list(
+            OrganisationMembership.objects.filter(user=user)
+            .select_related("organisation")
+            .order_by("joined_at")
+        )
+        if not memberships:
+            request.session.pop("active_organisation_id", None)
+            return None
+
+        if len(memberships) == 1:
+            organisation = memberships[0].organisation
+            request.session["active_organisation_id"] = organisation.id
+            return organisation
+
+        active_id = request.session.get("active_organisation_id")
+        for membership in memberships:
+            if membership.organisation_id == active_id:
+                return membership.organisation
+
+        organisation = memberships[0].organisation
+        request.session["active_organisation_id"] = organisation.id
+        return organisation
+
+    def set_active_organisation(
+        self, request: HttpRequest, organisation: Organisation
+    ) -> None:
+        """
+        Switch the session's active organisation. Caller must have already
+        verified the user is a member of ``organisation``.
+        """
+        request.session["active_organisation_id"] = organisation.id
+
+    def get_user_organisations(self, user: User) -> QuerySet[Organisation]:
+        """All organisations `user` belongs to, for switcher UI."""
+        return Organisation.objects.filter(members=user).order_by("name")
 
     def get_user_organisation_ids(self, user: User) -> Set[int]:
         """Get IDs of organisations user belongs to"""

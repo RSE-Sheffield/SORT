@@ -28,6 +28,7 @@ from .organisation import (
     OrganisationEditView,
     OrganisationMembershipDeleteView,
     OrganisationMembershipListView,
+    SetActiveOrganisationView,
 )
 from .console import (
     ConsoleDataProtectionLogView,
@@ -79,6 +80,7 @@ __all__ = [
     "OrganisationEditView",
     "OrganisationMembershipDeleteView",
     "OrganisationMembershipListView",
+    "SetActiveOrganisationView",
     "ProjectCreateView",
     "ProjectDeleteView",
     "ProjectEditView",

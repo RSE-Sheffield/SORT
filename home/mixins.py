@@ -25,8 +25,8 @@ class MemberManagementRequiredMixin:
     )
 
     def get_member_management_organisation(self, request):
-        # Default: the user's primary organisation.
-        return organisation_service.get_user_organisation(request.user)
+        # Default: the user's active organisation.
+        return organisation_service.get_active_organisation(request)
 
     def dispatch(self, request, *args, **kwargs):
         organisation = self.get_member_management_organisation(request)
