@@ -247,3 +247,32 @@ class SetActiveOrganisationViewTestCase(ViewTestCase):
         self.assertContains(response, "orgSwitcherDropdown")
         self.assertContains(response, self.first_organisation.name)
         self.assertContains(response, self.second_organisation.name)
+
+    def test_switch_redirects_to_safe_next_url(self):
+        self.login()
+
+        response = self.client.post(
+            django.urls.reverse("organisation_switch"),
+            data={
+                "organisation_id": self.second_organisation.pk,
+                "next": "/projects/",
+            },
+        )
+
+        self.assertRedirects(
+            response, "/projects/", fetch_redirect_response=False
+        )
+
+    def test_switch_ignores_unsafe_next_url(self):
+        """An off-site `next` value must not be used as a redirect target (CWE-601)."""
+        self.login()
+
+        response = self.client.post(
+            django.urls.reverse("organisation_switch"),
+            data={
+                "organisation_id": self.second_organisation.pk,
+                "next": "https://evil.example.com/phishing",
+            },
+        )
+
+        self.assertRedirects(response, django.urls.reverse("myorganisation"))
