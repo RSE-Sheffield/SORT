@@ -14,6 +14,7 @@ from django.views.generic import TemplateView, View
 from django.views.generic.base import TemplateResponseMixin
 
 from home.constants import DELETED_ACCOUNT_EMAIL_DOMAIN
+from home.forms.user_profile import UserProfileForm
 from home.mixins import StaffRequiredMixin
 from home.models import (
     DataProtectionEvent,
@@ -349,6 +350,68 @@ class ConsoleUnsuspendUserView(StaffRequiredMixin, View):
         user.is_active = True
         user.save(update_fields=["is_active"])
         messages.success(request, f"The suspension on {user} has been lifted.")
+        return redirect("admin_user_detail", pk=pk)
+
+
+class ConsoleEditUserView(StaffRequiredMixin, TemplateResponseMixin, View):
+    """
+    Let staff correct a user's name/email on their behalf (UK GDPR Art. 16,
+    Right to Rectification — issue #695). Used when a correction request
+    arrives by phone/email rather than via the user's own profile page.
+
+    Email changes take effect immediately without re-verification: staff
+    have already verified the requester's identity and the new address
+    off-platform before making this change.
+    """
+
+    template_name = "console/edit_user.html"
+
+    def _get_user(self, pk):
+        return get_object_or_404(User, pk=pk)
+
+    def get(self, request, pk):
+        target_user = self._get_user(pk)
+        form = UserProfileForm(instance=target_user)
+        return self.render_to_response({"viewed_user": target_user, "form": form})
+
+    def post(self, request, pk):
+        target_user = self._get_user(pk)
+        old_values = {
+            "first_name": target_user.first_name,
+            "last_name": target_user.last_name,
+            "email": target_user.email,
+        }
+        form = UserProfileForm(request.POST, instance=target_user)
+        if not form.is_valid():
+            return self.render_to_response({"viewed_user": target_user, "form": form})
+
+        changes = []
+        for field, label in (
+            ("first_name", "First name"),
+            ("last_name", "Last name"),
+            ("email", "Email"),
+        ):
+            old, new = old_values[field], form.cleaned_data[field]
+            if old != new:
+                changes.append(f"{label}: '{old}' -> '{new}'")
+
+        if not changes:
+            messages.info(request, "No changes were made.")
+            return redirect("admin_user_detail", pk=pk)
+
+        user_service.update_user(
+            target_user,
+            first_name=form.cleaned_data["first_name"],
+            last_name=form.cleaned_data["last_name"],
+            email=form.cleaned_data["email"],
+        )
+        data_protection_service.record_event(
+            event_type=DataProtectionEvent.EventType.RECTIFICATION,
+            subject_user=target_user,
+            actioned_by=request.user,
+            notes="Corrected by staff via console: " + "; ".join(changes),
+        )
+        messages.success(request, f"{target_user}'s details have been updated.")
         return redirect("admin_user_detail", pk=pk)
 
 

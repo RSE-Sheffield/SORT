@@ -14,6 +14,18 @@ class UserService:
         user.save()
         OrganisationMembership.objects.filter(user=user).delete()
 
+    def update_user(self, user: User, *, first_name: str, last_name: str, email: str) -> User:
+        """
+        Apply a corrected name/email to ``user`` (UK GDPR Art. 16 Right to
+        Rectification). Callers are responsible for enforcing permission and
+        recording any audit event.
+        """
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email
+        user.save(update_fields=["first_name", "last_name", "email"])
+        return user
+
     def export_personal_data(self, user: User) -> dict:
         """
         Build a UK GDPR Art. 15 subject access export of ``user``'s personal data.
