@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import TemplateView, View
 from django.views.generic.base import TemplateResponseMixin
 
+from home.constants import DELETED_ACCOUNT_EMAIL_DOMAIN
 from home.mixins import StaffRequiredMixin
 from home.models import (
     DataProtectionEvent,
@@ -85,13 +86,16 @@ class ConsoleUserListView(StaffRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         status = self.request.GET.get("status", "active")
         qs = User.objects.order_by("last_name", "first_name")
+        deleted_filter = {"email__endswith": f"@{DELETED_ACCOUNT_EMAIL_DOMAIN}"}
         if status == "deleted":
-            qs = qs.filter(is_active=False)
+            qs = qs.filter(**deleted_filter)
+        elif status == "suspended":
+            qs = qs.filter(is_active=False).exclude(**deleted_filter)
         elif status == "all":
             pass
         else:
             status = "active"
-            qs = qs.filter(is_active=True)
+            qs = qs.exclude(**deleted_filter)
         context["users"] = qs
         context["status_filter"] = status
         return context
@@ -257,6 +261,50 @@ class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
             pass  # already removed by a concurrent request; end state is correct
         messages.success(request, f"{user_display} removed from {org_name}.")
         return redirect("admin_organisation_detail", pk=org_pk)
+
+
+class ConsoleSuspendUserView(StaffRequiredMixin, TemplateResponseMixin, View):
+    """
+    Suspend a user account (UK GDPR Article 18, Right to Restriction).
+
+    Sets ``is_active = False`` so the user can no longer log in. No data is
+    deleted and the action is reversible via :class:`ConsoleUnsuspendUserView`.
+    """
+
+    template_name = "console/suspend_user_confirm.html"
+
+    def _get_suspendable_user(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        # Guard against locking out yourself, a fellow staff member, or a
+        # superuser, and against suspending an already-anonymised (deleted)
+        # account.
+        if user == request.user or user.is_staff or user.is_superuser or user.is_deleted:
+            raise PermissionDenied("This account cannot be suspended.")
+        return user
+
+    def get(self, request, pk):
+        user = self._get_suspendable_user(request, pk)
+        return self.render_to_response({"viewed_user": user})
+
+    def post(self, request, pk):
+        user = self._get_suspendable_user(request, pk)
+        user.is_active = False
+        user.save(update_fields=["is_active"])
+        messages.success(request, f"{user} has been suspended.")
+        return redirect("admin_user_detail", pk=pk)
+
+
+class ConsoleUnsuspendUserView(StaffRequiredMixin, View):
+    """Lift the suspension on a user account, restoring login access."""
+
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        if user.is_deleted:
+            raise PermissionDenied("This account has been deleted and cannot be reactivated.")
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+        messages.success(request, f"The suspension on {user} has been lifted.")
+        return redirect("admin_user_detail", pk=pk)
 
 
 class ConsoleDataProtectionLogView(StaffRequiredMixin, TemplateView):

@@ -215,7 +215,12 @@ EMAIL_USE_LOCALTIME = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_LOCALTIME", Tr
 DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "noreply@noreply.com")
 
 AUTHENTICATION_BACKENDS = (
-    "django.contrib.auth.backends.ModelBackend",
+    # Allows authenticate() to succeed for inactive (suspended) users so that
+    # AuthenticationForm.confirm_login_allowed() can reject them with a specific
+    # error, reusing the single password hash check already performed here rather
+    # than requiring a second check_password() call that leaks suspension status
+    # via a timing side-channel.
+    "django.contrib.auth.backends.AllowAllUsersModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 

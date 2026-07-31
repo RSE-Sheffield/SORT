@@ -8,7 +8,7 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.urls import reverse
 
-from .constants import DELETED_EMAIL_DOMAIN, ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
+from .constants import DELETED_ACCOUNT_EMAIL_DOMAIN, ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
 
 
 class UserManager(BaseUserManager):
@@ -77,11 +77,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_deleted(self) -> bool:
-        """
-        Whether this account has been anonymised for GDPR erasure (see UserService.anonymise),
-        as opposed to just having a blank name.
-        """
-        return self.email.endswith(f"@{DELETED_EMAIL_DOMAIN}")
+        """True once this account has been anonymised via GDPR erasure (see
+        UserService.anonymise), as opposed to merely suspended — both set
+        is_active=False."""
+        return self.email.endswith(f"@{DELETED_ACCOUNT_EMAIL_DOMAIN}")
 
     @property
     def active_projects(self) -> int:
