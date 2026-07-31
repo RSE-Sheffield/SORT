@@ -43,7 +43,8 @@
     "vitest": "^3.2.4"
   },
   "overrides": {
-    "undici": ">=6.27.0"
+    "undici": ">=6.27.0",
+    "js-yaml": ">=4.3.0"
   },
   "dependencies": {
     "axios": "^1.18.1",
