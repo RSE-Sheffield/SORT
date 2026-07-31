@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("home", "0014_lowercase_existing_emails"),
+        ("home", "0015_add_rectification_event_type"),
     ]
 
     operations = [
