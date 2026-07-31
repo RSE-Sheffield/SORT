@@ -220,6 +220,7 @@ function fieldStatForLikert(fieldConfig: FieldConfig, si: number, fi: number, re
 }
 
 function histogramFromConfigAndValues(fieldConfig: FieldConfig, values: string[]) {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- local, non-reactive collection
     const valuesCountMap = new Map<string, number>();
     // Histogram from options in the configuration
     fieldConfig.options.map((value: string) => {
