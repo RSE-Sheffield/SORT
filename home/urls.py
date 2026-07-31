@@ -19,6 +19,7 @@ urlpatterns = [
         name="signup",
     ),
     path("profile/", views.ProfileView.as_view(), name="profile"),
+    path("profile/delete/", views.AccountDeletionView.as_view(), name="delete_account"),
     # Change password using built-in authentication view
     # https://docs.djangoproject.com/en/5.2/topics/auth/default/#built-in-auth-views
     # https://docs.djangoproject.com/en/5.2/topics/auth/default/#django.contrib.auth.views.PasswordChangeView
@@ -197,5 +198,10 @@ urlpatterns = [
         "console/data-protection/",
         views.ConsoleDataProtectionLogView.as_view(),
         name="admin_data_protection_log",
+    ),
+    path(
+        "console/erasure-requests/",
+        views.ConsolePendingErasureRequestsView.as_view(),
+        name="admin_pending_erasure_requests",
     ),
 ]

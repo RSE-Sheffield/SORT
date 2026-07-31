@@ -58,6 +58,18 @@
                     </div>
                 </div>
             </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{% url 'admin_pending_erasure_requests' %}" class="text-decoration-none">
+                    <div class="card text-center h-100 border-0 shadow-sm {% if stats.pending_erasure_requests %}border-warning{% endif %}">
+                        <div class="card-body">
+                            <div class="fs-2 fw-bold {% if stats.pending_erasure_requests %}text-warning{% else %}text-primary{% endif %}">
+                                <i class="bx bxs-user-minus"></i> {{ stats.pending_erasure_requests }}
+                            </div>
+                            <div class="text-muted small">Pending erasure requests</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
 
         {# --- Recent activity --- #}

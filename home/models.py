@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -7,6 +9,7 @@ from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.urls import reverse
+from django.utils import timezone
 
 from .constants import DELETED_ACCOUNT_EMAIL_DOMAIN, ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
 
@@ -236,3 +239,45 @@ class DataProtectionEvent(models.Model):
 @receiver(pre_delete, sender=DataProtectionEvent)
 def _prevent_dp_event_delete(sender, instance, **kwargs):
     raise ValueError("DataProtectionEvent is append-only and cannot be deleted")
+
+
+class ErasureRequest(models.Model):
+    """
+    A pending self-service GDPR erasure request that could not be actioned
+    immediately (see UserService.request_self_erasure) — e.g. the requester
+    is the sole admin of an organisation with other members. Staff complete
+    it via the existing ConsoleDeleteUserView.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        COMPLETED = "completed", "Completed"
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="erasure_requests")
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    requested_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    completed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="erasure_requests_completed",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user"],
+                condition=models.Q(status="pending"),
+                name="unique_pending_erasure_request_per_user",
+            ),
+        ]
+
+    @property
+    def is_overdue(self) -> bool:
+        """UK GDPR Art. 12(3): erasure requests must be completed within one month."""
+        return self.status == self.Status.PENDING and timezone.now() - self.requested_at > timedelta(days=30)
+
+    def __str__(self):
+        return f"Erasure request for {self.user} ({self.get_status_display()})"

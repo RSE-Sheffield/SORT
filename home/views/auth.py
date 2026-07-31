@@ -3,7 +3,7 @@ from typing import Optional
 import django.contrib.auth.views
 import invitations.models
 from django.contrib import messages
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import (
     LoginView,
@@ -15,14 +15,15 @@ from django.contrib.auth.views import (
 )
 from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied
 from django.db import IntegrityError
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView
+from django.views.generic.base import TemplateResponseMixin, View
 
 from ..forms.manager_login import ManagerLoginForm
 from ..forms.manager_signup import ManagerSignupForm
 from ..forms.user_profile import UserProfileForm
-from ..services import organisation_service
+from ..services import organisation_service, user_service
 
 User = get_user_model()
 
@@ -144,6 +145,34 @@ class ProfileView(LoginRequiredMixin, UpdateView):
             self.request, "There was an error updating your profile. Please try again."
         )
         return super().form_invalid(form)
+
+
+class AccountDeletionView(LoginRequiredMixin, TemplateResponseMixin, View):
+    """
+    Self-service GDPR consent withdrawal / erasure (issue #585, UK GDPR Art.
+    7(3), 17(1)(b)) — a "delete my account" action reachable from the
+    profile page, so withdrawing consent is as easy as giving it.
+    """
+
+    template_name = "home/delete_account_confirm.html"
+
+    def get(self, request):
+        return self.render_to_response({})
+
+    def post(self, request):
+        user = request.user
+        immediate = user_service.request_self_erasure(user)
+        if immediate:
+            logout(request)
+            return render(request, "home/account_deleted.html")
+
+        messages.success(
+            request,
+            "Your account deletion request has been received. Because you're "
+            "the only admin of an organisation with other members, our staff "
+            "need to reassign that first — this will be completed within 30 days.",
+        )
+        return redirect("profile")
 
 
 class CustomPasswordResetView(PasswordResetView):
