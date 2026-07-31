@@ -191,6 +191,7 @@ class DataProtectionEvent(models.Model):
         UNRESTRICTION = "unrestriction", "Account restriction lifted"
         CONSENT_WITHDRAWAL = "consent_withdrawal", "Consent withdrawn"
         MEMBERSHIP_REMOVED = "membership_removed", "Removed from organisation"
+        RECTIFICATION = "rectification", "Personal data corrected by staff"
 
     event_type = models.CharField(max_length=32, choices=EventType.choices)
     subject_user_id = models.IntegerField(null=True, blank=True)

@@ -481,3 +481,95 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         target = UserFactory()
         response = self.client.get(f"/console/users/{target.pk}/export/")
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_edit_user_get_accessible_to_staff(self):
+        """Staff users can access the edit user form, pre-filled with current values."""
+        target = UserFactory()
+        self.login_staff()
+        response = self.client.get(f"/console/users/{target.pk}/edit/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(response, target.email)
+
+    def test_edit_user_get_redirects_anonymous(self):
+        """Anonymous users are redirected away from the edit user view."""
+        target = UserFactory()
+        response = self.client.get(f"/console/users/{target.pk}/edit/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_edit_user_get_forbidden_for_regular_users(self):
+        """Regular users cannot access the edit user view."""
+        target = UserFactory()
+        self.login()
+        response = self.client.get(f"/console/users/{target.pk}/edit/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_edit_user_post_forbidden_for_regular_users(self):
+        """Regular users cannot submit changes via the edit user view."""
+        target = UserFactory()
+        self.login()
+        response = self.client.post(
+            f"/console/users/{target.pk}/edit/",
+            {"first_name": "New", "last_name": "Name", "email": target.email},
+        )
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_edit_user_post_updates_name_and_email(self):
+        """A valid POST updates the target user's name and email."""
+        target = UserFactory()
+        self.login_staff()
+        response = self.client.post(
+            f"/console/users/{target.pk}/edit/",
+            {"first_name": "Corrected", "last_name": "Name", "email": "corrected@example.com"},
+        )
+        self.assertRedirects(response, f"/console/users/{target.pk}/")
+
+        target.refresh_from_db()
+        self.assertEqual(target.first_name, "Corrected")
+        self.assertEqual(target.last_name, "Name")
+        self.assertEqual(target.email, "corrected@example.com")
+
+    def test_edit_user_post_rejects_duplicate_email(self):
+        """Duplicate-email validation still applies when staff edit another user."""
+        target = UserFactory()
+        other_user = UserFactory()
+        original_email = target.email
+        self.login_staff()
+        response = self.client.post(
+            f"/console/users/{target.pk}/edit/",
+            {"first_name": target.first_name, "last_name": target.last_name, "email": other_user.email},
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(response, "This email is already in use.")
+
+        target.refresh_from_db()
+        self.assertEqual(target.email, original_email)
+
+    def test_edit_user_post_records_rectification_event(self):
+        """A successful edit records a RECTIFICATION event with the correct actor/subject."""
+        target = UserFactory()
+        self.login_staff()
+        self.client.post(
+            f"/console/users/{target.pk}/edit/",
+            {"first_name": "Corrected", "last_name": target.last_name, "email": target.email},
+        )
+
+        event = DataProtectionEvent.objects.get(
+            event_type=DataProtectionEvent.EventType.RECTIFICATION, subject_user_id=target.pk
+        )
+        self.assertEqual(event.actioned_by, self.staff_user)
+        self.assertIn("First name", event.notes)
+
+    def test_edit_user_post_no_event_recorded_when_unchanged(self):
+        """Submitting unchanged values does not create a spurious audit event."""
+        target = UserFactory()
+        self.login_staff()
+        response = self.client.post(
+            f"/console/users/{target.pk}/edit/",
+            {"first_name": target.first_name, "last_name": target.last_name, "email": target.email},
+        )
+        self.assertRedirects(response, f"/console/users/{target.pk}/")
+        self.assertFalse(
+            DataProtectionEvent.objects.filter(
+                event_type=DataProtectionEvent.EventType.RECTIFICATION, subject_user_id=target.pk
+            ).exists()
+        )

@@ -38,6 +38,7 @@
                 <a href="{% url 'admin_suspend_user' viewed_user.pk %}" class="btn btn-outline-danger btn-sm">Suspend account</a>
             {% endif %}
             {% if not viewed_user.is_deleted %}
+                <a href="{% url 'admin_edit_user' viewed_user.pk %}" class="btn btn-sm btn-outline-primary">Edit details</a>
                 <a href="{% url 'admin_export_user_data' viewed_user.pk %}" class="btn btn-sm btn-outline-primary">Export data (SAR)</a>
             {% endif %}
             {% if viewed_user.is_active and not viewed_user.is_staff and not viewed_user.is_superuser and viewed_user != request.user %}

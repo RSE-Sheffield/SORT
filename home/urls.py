@@ -181,6 +181,11 @@ urlpatterns = [
         name="admin_export_user_data",
     ),
     path(
+        "console/users/<int:pk>/edit/",
+        views.ConsoleEditUserView.as_view(),
+        name="admin_edit_user",
+    ),
+    path(
         "console/surveys/", views.ConsoleSurveyListView.as_view(), name="admin_surveys"
     ),
     path(
