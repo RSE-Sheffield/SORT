@@ -48,7 +48,7 @@ reserved for their corresponding flows as they are built.
 |-------|-------|----------------|
 | `membership_removed` | Removed from organisation | ✅ Yes — by `ConsoleRemoveMemberView`. |
 | `erasure` | Erasure request actioned | Reserved — call `record_event` from the erasure flow. |
-| `export` | Subject access export generated | Reserved — call `record_event` from the export flow. |
+| `export` | Subject access export generated | ✅ Yes — by `ConsoleExportUserDataView`. |
 | `restriction` | Account restricted / suspended | Reserved. |
 | `unrestriction` | Account restriction lifted | Reserved. |
 | `consent_withdrawal` | Consent withdrawn | Reserved. |

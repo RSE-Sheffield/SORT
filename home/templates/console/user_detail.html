@@ -37,6 +37,9 @@
             {% elif viewed_user != request.user and not viewed_user.is_superuser %}
                 <a href="{% url 'admin_suspend_user' viewed_user.pk %}" class="btn btn-outline-danger btn-sm">Suspend account</a>
             {% endif %}
+            {% if not viewed_user.is_deleted %}
+                <a href="{% url 'admin_export_user_data' viewed_user.pk %}" class="btn btn-sm btn-outline-primary">Export data (SAR)</a>
+            {% endif %}
             {% if viewed_user.is_active and not viewed_user.is_staff and not viewed_user.is_superuser and viewed_user != request.user %}
                 <a href="{% url 'admin_delete_user' viewed_user.pk %}" class="btn btn-sm btn-outline-danger">Delete user</a>
             {% endif %}
