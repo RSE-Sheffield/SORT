@@ -283,13 +283,28 @@ class OrganisationJoinRequestService(BasePermissionService):
             ).values_list("organisation_id", flat=True)
         )
 
-    def get_pending_count(self, user: User, organisation: Organisation) -> int:
+    def get_pending_count(
+        self,
+        user: User,
+        organisation: Organisation,
+        role: Optional[str] = None,
+    ) -> int:
         """Number of requests awaiting a decision, for the navigation badge.
 
         Returns 0 rather than raising for users who may not manage members, so
         callers rendering shared page furniture do not need to guard.
+
+        Pass `role` (e.g. from a membership already fetched for this
+        organisation) to skip ``can_manage_members``'s own role lookup.
         """
-        if not organisation or not self.can_manage_members(user, organisation):
+        if not organisation:
+            return 0
+        can_manage = (
+            user.is_superuser or role == ROLE_ADMIN
+            if role is not None
+            else self.can_manage_members(user, organisation)
+        )
+        if not can_manage:
             return 0
         return OrganisationJoinRequest.objects.filter(
             organisation=organisation, status=OrganisationJoinRequest.Status.PENDING
