@@ -1,6 +1,6 @@
 import uuid
 
-from ..constants import DELETED_EMAIL_DOMAIN
+from ..constants import DELETED_ACCOUNT_EMAIL_DOMAIN
 from ..models import OrganisationMembership, Project, User
 
 
