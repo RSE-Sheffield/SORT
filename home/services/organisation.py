@@ -375,18 +375,20 @@ class OrganisationService(BasePermissionService):
 
             Project.objects.filter(organisation=source).update(organisation=target)
 
-            data_protection_service.record_event(
-                event_type=DataProtectionEvent.EventType.ORGANISATION_MERGED,
-                subject_user=user,
-                actioned_by=user,
-                notes=(
-                    f"Merged organisation '{source.name}' (id={source.pk}) into "
-                    f"'{target.name}' (id={target.pk}): {len(plan.projects)} "
-                    f"project(s) moved, {len(plan.memberships_to_move)} "
-                    f"membership(s) transferred, {len(plan.memberships_to_drop)} "
-                    f"duplicate membership(s) removed."
-                ),
+            merge_notes = (
+                f"Merged organisation '{source.name}' (id={source.pk}) into "
+                f"'{target.name}' (id={target.pk}): {len(plan.projects)} "
+                f"project(s) moved, {len(plan.memberships_to_move)} "
+                f"membership(s) transferred, {len(plan.memberships_to_drop)} "
+                f"duplicate membership(s) removed."
             )
+            for membership in plan.memberships_to_move + plan.memberships_to_drop:
+                data_protection_service.record_event(
+                    event_type=DataProtectionEvent.EventType.ORGANISATION_MERGED,
+                    subject_user=membership.user,
+                    actioned_by=user,
+                    notes=merge_notes,
+                )
 
             source.delete()
 
