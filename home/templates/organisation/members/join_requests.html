@@ -1,0 +1,185 @@
+{% extends "base_manager.html" %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'myorganisation' %}">
+                        <i class="bx bxs-buildings"></i> Organisation Dashboard
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'members' %}">
+                        <i class="bx bxs-group"></i> Members
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bx bxs-user-plus"></i> Join requests
+                </li>
+            </ol>
+        </nav>
+    </div>
+    <div class="container mx-auto px-4 py-8">
+        <h1>Join requests</h1>
+        <p>
+            People who have asked to join {{ organisation.name }}. Approving a
+            request adds that person to your organisation with the role you
+            choose, and emails them to say so. Rejecting a request also emails
+            them, and they can ask again later.
+        </p>
+        <div class="mb-3">
+            {% if show_all %}
+                <a href="{% url 'join_requests' %}" class="btn btn-light border">
+                    <i class="bx bxs-hourglass"></i> Show pending only
+                </a>
+            {% else %}
+                <a href="{% url 'join_requests' %}?status=all" class="btn btn-light border">
+                    <i class="bx bxs-history"></i> Show all requests
+                </a>
+            {% endif %}
+        </div>
+        <table class="table align-middle">
+            <caption hidden>Requests to join this organisation, with options to approve or reject each one.</caption>
+            <thead class="thead">
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Email address</th>
+                <th scope="col">Message</th>
+                <th scope="col">Requested</th>
+                {% if show_all %}
+                    <th scope="col">Status</th>
+                {% endif %}
+                <th scope="col">Decision</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for join_request in join_requests %}
+                <tr>
+                    <th scope="row">{{ join_request.user }}</th>
+                    <td>
+                        <a href="mailto:{{ join_request.user.email }}">
+                            {{ join_request.user.email }}
+                        </a>
+                    </td>
+                    <td>{{ join_request.message }}</td>
+                    <td>
+                        <time datetime="{{ join_request.created_at.isoformat }}">
+                            {{ join_request.created_at }}
+                        </time>
+                    </td>
+                    {% if show_all %}
+                        <td>
+                            {% if join_request.status == "PENDING" %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% elif join_request.status == "APPROVED" %}
+                                <span class="badge bg-success">Approved</span>
+                            {% elif join_request.status == "REJECTED" %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Withdrawn</span>
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                    <td>
+                        {% if join_request.is_pending %}
+                            <form method="post"
+                                  action="{% url 'join_request_approve' join_request.pk %}"
+                                  class="mb-3">
+                                {% csrf_token %}
+                                <fieldset class="mb-2">
+                                    <legend class="fs-6">
+                                        Role for {{ join_request.user }}
+                                    </legend>
+                                    {% for value, label in roles %}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio"
+                                                   name="role" value="{{ value }}"
+                                                   id="role-{{ join_request.pk }}-{{ value }}"
+                                                   {% if value == default_role %}checked{% endif %}>
+                                            <label class="form-check-label"
+                                                   for="role-{{ join_request.pk }}-{{ value }}">
+                                                {{ label }}
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </fieldset>
+                                <div class="mb-2">
+                                    <label class="form-label"
+                                           for="approve-note-{{ join_request.pk }}">
+                                        Note to the requester (optional)
+                                    </label>
+                                    <textarea class="form-control" name="note" rows="2"
+                                              maxlength="500"
+                                              id="approve-note-{{ join_request.pk }}"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bx bxs-user-check"></i> Approve
+                                </button>
+                            </form>
+                            <form method="post"
+                                  action="{% url 'join_request_reject' join_request.pk %}">
+                                {% csrf_token %}
+                                <div class="mb-2">
+                                    <label class="form-label"
+                                           for="reject-note-{{ join_request.pk }}">
+                                        Reason for rejecting (optional, shared with the requester)
+                                    </label>
+                                    <textarea class="form-control" name="note" rows="2"
+                                              maxlength="500"
+                                              id="reject-note-{{ join_request.pk }}"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bx bxs-user-x"></i> Reject
+                                </button>
+                            </form>
+                        {% else %}
+                            {{ join_request.get_status_display }}
+                            {% if join_request.decided_by %}
+                                by {{ join_request.decided_by }}
+                            {% endif %}
+                            {% if join_request.granted_role %}
+                                as {{ join_request.get_granted_role_display }}
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6">
+                        {% if show_all %}
+                            No one has requested to join this organisation.
+                        {% else %}
+                            No pending requests.
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Join request navigation" class="mt-3">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.previous_page_number }}{% if show_all %}&amp;status=all{% endif %}"
+                               aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.next_page_number }}{% if show_all %}&amp;status=all{% endif %}"
+                               aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            <p class="text-center text-muted mt-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+        {% endif %}
+    </div>
+{% endblock %}

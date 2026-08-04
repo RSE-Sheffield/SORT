@@ -141,6 +141,81 @@ class OrganisationMembership(models.Model):
     )
 
 
+class OrganisationJoinRequest(models.Model):
+    """
+    A user's self-service request to join an existing organisation.
+
+    An organisation ADMIN approves the request (creating an
+    OrganisationMembership with a role of their choosing) or rejects it; the
+    requester may also withdraw it while it is still pending. Decided requests
+    are kept rather than deleted, so both sides retain a record of the outcome.
+
+    At most one PENDING request may exist per (user, organisation), so a
+    rejected or withdrawn request can be submitted again. That needs a
+    *conditional* uniqueness, which ``unique_together`` (as used by
+    OrganisationMembership above) cannot express — hence the partial
+    UniqueConstraint below. Both idioms therefore coexist in this module.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+        WITHDRAWN = "WITHDRAWN", "Withdrawn by requester"
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="join_requests"
+    )
+    organisation = models.ForeignKey(
+        Organisation, on_delete=models.CASCADE, related_name="join_requests"
+    )
+    status = models.CharField(
+        max_length=16, choices=Status.choices, default=Status.PENDING
+    )
+    message = models.TextField(
+        blank=True,
+        default="",
+        help_text="Optional note from the requester to the organisation's administrators",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    decided_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="join_requests_decided",
+    )
+    decided_at = models.DateTimeField(null=True, blank=True)
+    # The role granted at approval time. Recorded separately from the resulting
+    # membership because that membership's role may be edited later, and the
+    # approval email needs to state what was granted.
+    granted_role = models.CharField(
+        max_length=20, choices=ROLES, blank=True, default=""
+    )
+    decision_note = models.TextField(blank=True, default="")
+
+    class Meta:
+        ordering = ("-created_at",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "organisation"],
+                condition=models.Q(status="PENDING"),
+                name="unique_pending_join_request_per_user_organisation",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["organisation", "status", "-created_at"]),
+            models.Index(fields=["user", "status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user} → {self.organisation} ({self.get_status_display()})"
+
+    @property
+    def is_pending(self) -> bool:
+        return self.status == self.Status.PENDING
+
+
 class Project(models.Model):
     """
     A project is an organisation unit for surveys within an organisation.

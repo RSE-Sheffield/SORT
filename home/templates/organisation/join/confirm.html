@@ -1,0 +1,44 @@
+{% extends "base_manager.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'dashboard' %}">
+                        <i class="bx bxs-home"></i> Dashboard
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'organisation_browse' %}">
+                        <i class="bx bxs-buildings"></i> Find an organisation
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    Request to join
+                </li>
+            </ol>
+        </nav>
+    </div>
+    <div class="container mx-auto px-4 py-8">
+        <h1>Request to join {{ organisation.name }}</h1>
+        {% if organisation.description %}
+            <p>{{ organisation.description }}</p>
+        {% endif %}
+        <p>
+            An administrator of {{ organisation.name }} will be asked to approve or
+            reject your request. They will see your name
+            (<strong>{{ request.user }}</strong>), your email address
+            (<strong>{{ request.user.email }}</strong>) and any message you add
+            below. We will email you once they have decided.
+        </p>
+        <form method="post">
+            {% csrf_token %}
+            {{ form | crispy }}
+            <button type="submit" class="btn btn-primary">
+                <i class="bx bxs-send"></i> Send request
+            </button>
+            <a href="{% url 'organisation_browse' %}" class="btn btn-light border">Cancel</a>
+        </form>
+    </div>
+{% endblock %}

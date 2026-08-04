@@ -1,0 +1,143 @@
+{% extends "base_manager.html" %}
+{% load search_tags %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'dashboard' %}">
+                        <i class="bx bxs-home"></i> Dashboard
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bx bxs-buildings"></i> Find an organisation
+                </li>
+            </ol>
+        </nav>
+    </div>
+    <div class="container mx-auto px-4 py-8">
+        <h1>Find an organisation</h1>
+        <p>
+            Search for the organisation you work for and ask to join it. An
+            administrator of that organisation will review your request and
+            decide whether to give you access.
+        </p>
+        <p>
+            If your organisation is not listed here, you can
+            <a href="{% url 'organisation_create' %}">create it</a> instead.
+            You can also
+            <a href="{% url 'join_requests_mine' %}">check your existing requests</a>.
+        </p>
+        <div class="mb-3">
+            {% search_bar placeholder="Search organisations..." %}
+        </div>
+        <table class="table">
+            <caption hidden>Organisations registered in SORT, and whether you can request to join them.</caption>
+            <thead class="thead">
+            <tr>
+                <th scope="col">Organisation</th>
+                <th scope="col">Description</th>
+                <th scope="col">Request to join</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for organisation in organisations %}
+                <tr>
+                    <th scope="row">{{ organisation.name }}</th>
+                    <td>{{ organisation.description|default_if_none:""|truncatewords:25 }}</td>
+                    <td>
+                        {% if organisation.pk in member_organisation_ids %}
+                            <span class="badge bg-success">Already a member</span>
+                        {% elif organisation.pk in pending_organisation_ids %}
+                            <span class="badge bg-warning text-dark">Request pending</span>
+                        {% else %}
+                            <a href="{% url 'organisation_join_request' organisation.pk %}"
+                               class="btn btn-primary"
+                               title="Ask an administrator of {{ organisation.name }} for access">
+                                <i class="bx bxs-user-plus"></i> Request to join
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">
+                        {% if current_search %}
+                            No organisations match &ldquo;{{ current_search }}&rdquo;.
+                        {% else %}
+                            No organisations have been registered yet.
+                        {% endif %}
+                        You can
+                        <a href="{% url 'organisation_create' %}">create an organisation</a>.
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% comment %} pagination — page links keep the search term {% endcomment %}
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Organisation navigation" class="mt-3">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if current_search %}&amp;q={{ current_search|urlencode }}{% endif %}"
+                               aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.previous_page_number }}{% if current_search %}&amp;q={{ current_search|urlencode }}{% endif %}"
+                               aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;&laquo;</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active" aria-current="page">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?page={{ num }}{% if current_search %}&amp;q={{ current_search|urlencode }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.next_page_number }}{% if current_search %}&amp;q={{ current_search|urlencode }}{% endif %}"
+                               aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.paginator.num_pages }}{% if current_search %}&amp;q={{ current_search|urlencode }}{% endif %}"
+                               aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;&raquo;</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            <p class="text-center text-muted mt-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+        {% endif %}
+    </div>
+{% endblock %}

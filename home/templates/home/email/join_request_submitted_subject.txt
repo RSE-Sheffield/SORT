@@ -1,0 +1,1 @@
+{% autoescape off %}Join request from {{ join_request.user }} for {{ join_request.organisation.name }}{% endautoescape %}
