@@ -2,8 +2,10 @@
 Organisation service with integrated permissions
 """
 
-from typing import Dict, Optional, Set
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Set
 
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Count
 from django.db.models.query import QuerySet
@@ -50,6 +52,71 @@ def remove_membership_and_record_event(
             actioned_by=actioned_by,
             notes=notes,
         )
+
+
+@dataclass(frozen=True)
+class OrganisationMergePlan:
+    """
+    What merging `source` into `target` would do, computed up front so a
+    dry-run report and the real merge share one source of truth.
+    """
+
+    source: Organisation
+    target: Organisation
+    projects: List[Project]
+    memberships_to_move: List[OrganisationMembership]
+    memberships_to_drop: List[OrganisationMembership]
+
+    def describe(self) -> str:
+        lines = [
+            f"Merge '{self.source.name}' (id={self.source.pk}) into "
+            f"'{self.target.name}' (id={self.target.pk})",
+            f"  Projects to move: {len(self.projects)}",
+            *(f"    - {p.name} (id={p.pk})" for p in self.projects),
+            f"  Memberships to transfer: {len(self.memberships_to_move)}",
+            *(f"    - {m.user.email} as {m.role}" for m in self.memberships_to_move),
+            f"  Duplicate memberships to drop (keeping target's role): "
+            f"{len(self.memberships_to_drop)}",
+            *(
+                f"    - {m.user.email} (was {m.role} in source)"
+                for m in self.memberships_to_drop
+            ),
+            f"  '{self.source.name}' will be deleted after the merge.",
+        ]
+        return "\n".join(lines)
+
+
+def plan_organisation_merge(
+    source: Organisation, target: Organisation
+) -> OrganisationMergePlan:
+    """
+    Read-only: work out which projects and memberships a merge of `source`
+    into `target` would move, and which duplicate memberships it would drop.
+    """
+    if source.pk == target.pk:
+        raise ValueError("Cannot merge an organisation into itself")
+
+    target_user_ids = set(
+        OrganisationMembership.objects.filter(organisation=target).values_list(
+            "user_id", flat=True
+        )
+    )
+    source_memberships = list(
+        OrganisationMembership.objects.filter(organisation=source).select_related(
+            "user"
+        )
+    )
+    memberships_to_drop = [
+        m for m in source_memberships if m.user_id in target_user_ids
+    ]
+    memberships_to_move = [
+        m for m in source_memberships if m.user_id not in target_user_ids
+    ]
+    projects = list(Project.objects.filter(organisation=source))
+
+    return OrganisationMergePlan(
+        source, target, projects, memberships_to_move, memberships_to_drop
+    )
 
 
 class OrganisationService(BasePermissionService):
@@ -261,6 +328,69 @@ class OrganisationService(BasePermissionService):
         return OrganisationMembership.objects.filter(
             organisation=organisation
         ).select_related("user")
+
+    def can_merge(self, user: User) -> bool:
+        """
+        Merging spans two organisations, so this is a staff-level action
+        rather than something scoped to a role within either org.
+        """
+        return bool(
+            user and user.is_authenticated and (user.is_staff or user.is_superuser)
+        )
+
+    def merge_organisations(
+        self, user: User, source: Organisation, target: Organisation
+    ) -> OrganisationMergePlan:
+        """
+        Move source's projects and memberships into target, then delete
+        source. Where a user belongs to both orgs, target's existing role
+        wins and the duplicate source membership is dropped.
+
+        Atomic: the plan is computed once and applied as a single unit, so a
+        failure partway through (e.g. the audit write) rolls back every
+        reassignment and the source org is never left half-merged.
+        """
+        if not self.can_merge(user):
+            raise PermissionDenied(
+                f"User '{user}' does not have permission to merge organisations"
+            )
+
+        plan = plan_organisation_merge(source, target)
+
+        with transaction.atomic():
+            for membership in plan.memberships_to_drop:
+                remove_membership_and_record_event(
+                    OrganisationMembership.objects.filter(pk=membership.pk),
+                    actioned_by=user,
+                    notes=(
+                        f"Duplicate membership in '{source.name}' removed: "
+                        f"already a member of '{target.name}' during "
+                        f"organisation merge"
+                    ),
+                )
+
+            OrganisationMembership.objects.filter(
+                pk__in=[m.pk for m in plan.memberships_to_move]
+            ).update(organisation=target)
+
+            Project.objects.filter(organisation=source).update(organisation=target)
+
+            data_protection_service.record_event(
+                event_type=DataProtectionEvent.EventType.ORGANISATION_MERGED,
+                subject_user=user,
+                actioned_by=user,
+                notes=(
+                    f"Merged organisation '{source.name}' (id={source.pk}) into "
+                    f"'{target.name}' (id={target.pk}): {len(plan.projects)} "
+                    f"project(s) moved, {len(plan.memberships_to_move)} "
+                    f"membership(s) transferred, {len(plan.memberships_to_drop)} "
+                    f"duplicate membership(s) removed."
+                ),
+            )
+
+            source.delete()
+
+        return plan
 
 
 organisation_service = OrganisationService()
