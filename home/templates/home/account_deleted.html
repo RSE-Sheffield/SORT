@@ -1,0 +1,13 @@
+{% extends "login_base.html" %}
+
+{% block title %}Account deleted{% endblock %}
+
+{% block content %}
+    <h3 class="text-center mb-4">Account deleted</h3>
+
+    <p>Your account has been deleted and your personal data has been erased. You have been logged out and can no longer sign in with this account.</p>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'landing' %}" class="btn btn-primary w-100">Return to homepage</a>
+    </div>
+{% endblock %}
