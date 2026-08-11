@@ -310,7 +310,7 @@
     "pk": 41,
     "fields": {
       "questionnaire": 6,
-      "question_text": "C2. take part in research leadership and advisory activities outside organisations",
+      "question_text": "C2. take part in the research leadership and advisory activities of outside organisations",
       "question_type": "rating"
     }
   },
@@ -328,7 +328,7 @@
     "pk": 43,
     "fields": {
       "questionnaire": 6,
-      "question_text": "C4. are members of forums outside our organisation which support research activity",
+      "question_text": "C4. Our colleagues are members of forums outside our organisation which support research activity",
       "question_type": "rating"
     }
   },
