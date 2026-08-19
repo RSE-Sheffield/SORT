@@ -25,12 +25,14 @@ then
     exit 2
 fi
 
-# svelte-check exits non-zero when it finds errors, which is what we are measuring
-output="$(cd "$repository_root" && npm run --silent check 2>&1 || true)"
+# svelte-check exits non-zero when it finds errors, which is what we are measuring.
+# NO_COLOR disables chalk's ANSI colour codes, which otherwise break the summary-line match below.
+output="$(cd "$repository_root" && NO_COLOR=1 npm run --silent check 2>&1 || true)"
 echo "$output"
 
-# The summary line reads: "svelte-check found N errors and M warnings in K files"
-errors="$(echo "$output" | sed -n 's/^svelte-check found \([0-9]\+\) error.*/\1/p' | tail -n 1)"
+# The summary line reads: "svelte-check found N errors and M warnings in K files".
+# Strip ANSI escape codes defensively in case colour output slips through despite NO_COLOR.
+errors="$(echo "$output" | sed -E 's/\x1b\[[0-9;]*m//g' | sed -n 's/^svelte-check found \([0-9]\+\) error.*/\1/p' | tail -n 1)"
 if [[ -z "$errors" ]]
 then
     echo "Could not read the error count from the svelte-check output" >&2
