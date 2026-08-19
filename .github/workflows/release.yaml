@@ -1,21 +1,42 @@
 name: Create Release
+
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
   contents: write
-  issues: write
   pull-requests: write
+  issues: write
 
 jobs:
-  release:
-    name: Build and create release
+  release-please:
+    name: Manage release pull request
+    runs-on: ubuntu-24.04
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Release Please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          # A PAT is required, not secrets.GITHUB_TOKEN: GitHub does not cascade
+          # the release: published event to other workflows (e.g. release-to-orda.yml)
+          # when the release was created by the default token. See docs/publish.md.
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+  build-artifacts:
+    name: Build and attach release assets
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0  # Full history for semantic-release
+          ref: ${{ needs.release-please.outputs.tag_name }}
           persist-credentials: false
 
       - name: Setup Node.js
@@ -31,31 +52,32 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
-      - name: Run semantic-release
-        env:
-          # A PAT is required, not secrets.GITHUB_TOKEN: GitHub does not cascade
-          # the release: published event to other workflows (e.g. release-to-orda.yml)
-          # when the release was created by the default token. See docs/publish.md.
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        run: npx semantic-release
-
       - name: Create release artifacts
         run: |
           mkdir -p release-artifacts
-          VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
+          VERSION=$(echo "${{ needs.release-please.outputs.tag_name }}" | sed 's/^v//')
           # Include built frontend assets
           tar -czf release-artifacts/sort-frontend-${VERSION}.tar.gz static/ui-components/
           # Create source archive with built assets
           git archive --format=tar.gz --prefix=SORT-${VERSION}/ HEAD > release-artifacts/SORT-${VERSION}.tar.gz
 
+      - name: Upload release artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          gh release upload "${{ needs.release-please.outputs.tag_name }}" \
+            release-artifacts/* \
+            --repo "${{ github.repository }}"
+
       - name: Summary
         if: success()
         run: |
-          VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
+          TAG="${{ needs.release-please.outputs.tag_name }}"
+          VERSION=$(echo "$TAG" | sed 's/^v//')
           echo "## Release Created Successfully!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version**: v${VERSION}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Release URL**: https://github.com/${{ github.repository }}/releases/tag/v${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${TAG}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release URL**: https://github.com/${{ github.repository }}/releases/tag/${TAG}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "- Frontend assets: \`sort-frontend-${VERSION}.tar.gz\`" >> $GITHUB_STEP_SUMMARY

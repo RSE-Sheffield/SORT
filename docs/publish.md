@@ -5,13 +5,19 @@ This guide covers the end-to-end flow for releasing SORT and archiving it to [OR
 ## Release pipeline overview
 
 ```
-Merge to main
+Push to main
      │
      ▼
-release.yaml (semantic-release, authenticated with RELEASE_TOKEN)
-  • bumps version
+release.yaml (release-please, authenticated with RELEASE_TOKEN)
+  • opens/updates a release PR with version bump + changelog
+     │
+     ▼
+Merge the release PR (whenever you're ready to deploy)
+     │
+     ▼
+release.yaml build-artifacts job
   • builds frontend
-  • creates GitHub Release with artifacts
+  • attaches artifacts to the GitHub Release release-please created
      │
      ▼
 release-to-orda.yml (triggered by GitHub Release)
@@ -26,7 +32,7 @@ ORDA mints / updates DOI
 
 ## One-time setup: release token
 
-`release-to-orda.yml` listens for the `release: published` event. GitHub does not deliver that event to other workflows when the release was created using the default `secrets.GITHUB_TOKEN` — this is an intentional anti-recursion safeguard, not a bug. Since `release.yaml` creates the release via `npx semantic-release`, it must authenticate with a different token or `release-to-orda.yml` will simply never run (silently — the pipeline looks fine, no DOI ever gets minted).
+`release-to-orda.yml` listens for the `release: published` event. GitHub does not deliver that event to other workflows when the release was created using the default `secrets.GITHUB_TOKEN` — this is an intentional anti-recursion safeguard, not a bug. Since `release.yaml` creates the release via the release-please GitHub Action, it must authenticate with a different token or `release-to-orda.yml` will simply never run (silently — the pipeline looks fine, no DOI ever gets minted).
 
 1. Create a fine-grained personal access token (or use a dedicated bot/service account) scoped to the `RSE-Sheffield/SORT` repository with **Contents: Read and write** permission.
 2. Add it to the repository as secret **`RELEASE_TOKEN`** (**Settings → Secrets and variables → Actions**).
@@ -76,16 +82,15 @@ The `release-to-orda.yml` workflow is gated on `vars.FIGSHARE_ARTICLE_ID != ''`,
 
 ## Automated release flow
 
-Once the one-time setup is complete, every merge to `main` that triggers a release follows this path automatically:
+Once the one-time setup is complete, this path runs automatically once you choose to merge the release PR:
 
-1. A `feat:` or `fix:` commit is merged to `main`.
-2. The **Create Release** workflow (`release.yaml`) runs:
-   - Builds the frontend (`npm run build`)
-   - Runs `npx semantic-release` to determine the version, generate a changelog, and create a GitHub Release with source and frontend archives attached
-3. GitHub fires the `release: [published]` event, triggering **Release to ORDA** (`release-to-orda.yml`):
+1. A `feat:` or `fix:` commit is merged to `main`, and the **Create Release** workflow (`release.yaml`) updates the open release PR with the proposed version and changelog.
+2. When you merge that release PR (typically alongside a VM deployment), release-please creates the git tag and GitHub Release.
+3. `release.yaml`'s `build-artifacts` job builds the frontend (`npm run build`) and attaches the source and frontend archives to that release.
+4. GitHub fires the `release: [published]` event, triggering **Release to ORDA** (`release-to-orda.yml`):
    - Downloads the release `.zip` and `.tar.gz` from GitHub
    - Uploads both files to the ORDA article via the Figshare API
-4. ORDA updates the article and mints or increments the DOI.
+5. ORDA updates the article and mints or increments the DOI.
 
 ---
 
@@ -123,6 +128,6 @@ After a release:
 
 ## Further reading
 
-- [semantic-release guide](semantic-release-guide.md) — commit conventions and version automation
+- [release-please guide](release-please-guide.md) — commit conventions and version automation
 - [figshare/github-upload-action](https://github.com/figshare/github-upload-action) — the action used for uploads
 - [RSE-Sheffield/release_to_ORDA](https://github.com/RSE-Sheffield/release_to_ORDA) — template repository for this pattern

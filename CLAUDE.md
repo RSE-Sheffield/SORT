@@ -38,7 +38,7 @@ make check   # Django checks + migration verification (run before committing mod
 
 ## Commits
 
-Use [Conventional Commits](https://www.conventionalcommits.org/). Releases are automated via semantic-release on merge to `main`.
+Use [Conventional Commits](https://www.conventionalcommits.org/). Pushes to `main` update an open release-please PR (version bump + changelog); merging that PR cuts the actual release. See `RELEASING.md`.
 
 ```
 feat: ...   → minor release
