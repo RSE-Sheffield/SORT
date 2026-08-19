@@ -23,6 +23,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # diff-cover needs full history to diff against the base branch
+          fetch-depth: 0
       - name: Setup Python
         uses: actions/setup-python@v5.3.0
         with:
@@ -55,13 +58,27 @@ jobs:
       - name: Run Django test suites
         run: |
           export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
+          coverage erase
           # Iterate over Django apps with test directories
           for test_dir in **/tests
           do
             echo "Testing $test_dir"
             # https://docs.djangoproject.com/en/5.1/topics/testing/advanced/#integration-with-coverage-py
-            coverage run --source="home,survey" manage.py test "$test_dir" --verbosity=2 --parallel=auto
+            coverage run --append --source="home,survey" manage.py test "$test_dir" --verbosity=2 --parallel=auto
           done
           # Generate coverage report
           echo "## Coverage report" >> $GITHUB_STEP_SUMMARY
           coverage report --format="markdown" >> $GITHUB_STEP_SUMMARY
+          coverage xml
+      - name: Check diff coverage
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin "${{ github.base_ref }}"
+          diff-cover coverage.xml \
+            --compare-branch="origin/${{ github.base_ref }}" \
+            --format markdown:diff-cover-report.md \
+            --fail-under=80
+          exit_code=$?
+          echo "## Diff coverage report" >> $GITHUB_STEP_SUMMARY
+          cat diff-cover-report.md >> $GITHUB_STEP_SUMMARY
+          exit $exit_code
