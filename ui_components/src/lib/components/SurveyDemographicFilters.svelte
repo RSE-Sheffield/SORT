@@ -40,14 +40,16 @@
   // Categorical filters hold an array of selected options (empty = "All").
   // Numeric (text) filters hold a {min, max} Range.
   let filterValues: (string[] | Range | null)[] = $state([]);
-  let filteredResponses = $state(responses);
+  let filteredResponses = $state(responses ?? []);
   let initialFilterValues: Array<null | Range | string[]> = [];
 
   onMount(() => {
-    for (let si = 0; si < config.sections.length; si++) {
-      if (config.sections[si].type === "demographic") {
-        for (let fi = 0; fi < config.sections[si].fields.length; fi++) {
-          const fieldConfig = config.sections[si].fields[fi];
+    const sections = config?.sections ?? [];
+    for (let si = 0; si < sections.length; si++) {
+      if (sections[si].type === "demographic") {
+        const sectionFields = sections[si].fields ?? [];
+        for (let fi = 0; fi < sectionFields.length; fi++) {
+          const fieldConfig = sectionFields[fi];
           // Hide deactivated fields
           if (fieldConfig.disabled) {
             console.log(`Concealing disabled field "${fieldConfig.label}"`);
@@ -78,8 +80,8 @@
               ) {
                 let min = 0;
                 let max = 0;
-                for (let ri = 0; ri < responses.length; ri++) {
-                  const value = Number(responses[ri][si][fi]);
+                for (let ri = 0; ri < (responses?.length ?? 0); ri++) {
+                  const value = Number(responses[ri]?.[si]?.[fi]);
                   if (min >= value) min = value;
                   if (max <= value) max = value;
                 }
@@ -113,7 +115,7 @@
     const filtered: SurveyResponseBatch = [];
     const activeFilters: Array<{ label: string; value: string }> = [];
 
-    for (let ri = 0; ri < responses.length; ri++) {
+    for (let ri = 0; ri < (responses?.length ?? 0); ri++) {
       let addToFilteredSet = true;
       for (
         let filterIndex = 0;
@@ -124,7 +126,7 @@
         const filterValue = filterValues[filterIndex];
         if (filterItem.fieldConfig.type === "text") {
           const value = Number(
-            responses[ri][filterItem.sectionIndex][filterItem.fieldIndex],
+            responses[ri]?.[filterItem.sectionIndex]?.[filterItem.fieldIndex],
           );
           if (!(value >= filterValue.min && value <= filterValue.max)) {
             addToFilteredSet = false;
@@ -137,7 +139,7 @@
             Array.isArray(filterValue) &&
             filterValue.length > 0 &&
             !filterValue.includes(
-              responses[ri][filterItem.sectionIndex][filterItem.fieldIndex],
+              responses[ri]?.[filterItem.sectionIndex]?.[filterItem.fieldIndex],
             )
           ) {
             addToFilteredSet = false;
@@ -225,7 +227,8 @@
     // eslint-disable-next-line svelte/prefer-svelte-reactivity -- local, non-reactive collection
     const allOptions = new Set<string>(fieldConfig.options);
     for (const response of responses) {
-      allOptions.add(response[sectionIndex][fieldIndex]);
+      const value = response?.[sectionIndex]?.[fieldIndex];
+      if (value !== undefined && value !== null) allOptions.add(value);
     }
     return [...allOptions];
   }

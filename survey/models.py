@@ -579,15 +579,56 @@ class SurveyResponse(models.Model):
         - Likert answers expand into one value per sub-label (matching fields_iter)
         - Checkbox answers may hold more than one selected option, but each checkbox
           field is a single column, so its selected options are joined into one value
+
+        Answers that predate response schema validation, or that were stored before the
+        survey configuration changed, may hold fewer sections, fields or likert
+        sub-labels than the configuration describes. Emit a blank cell for each of those
+        so every row still lines up with the header, rather than silently dropping the
+        remaining columns.
         """
-        for section, section_answers in zip(self.survey.sections, self.answers):
-            for field, answer in zip(section["fields"], section_answers):
+        for section_index, section in enumerate(self.survey.sections):
+            section_answers = self._section_answers(section_index)
+            for field_index, field in enumerate(section["fields"]):
+                answer = (
+                    section_answers[field_index]
+                    if field_index < len(section_answers)
+                    else None
+                )
                 if field["type"] == "likert":
-                    yield from answer
+                    sublabels = field.get("sublabels", [])
+                    selected = self._as_list(answer)
+                    for sublabel_index in range(len(sublabels)):
+                        yield (
+                            selected[sublabel_index]
+                            if sublabel_index < len(selected)
+                            else ""
+                        )
                 elif field["type"] == "checkbox":
-                    yield ", ".join(answer)
+                    yield ", ".join(self._as_list(answer))
                 else:
-                    yield answer
+                    yield "" if answer is None else answer
+
+    def _section_answers(self, section_index: int) -> list:
+        """
+        The stored answers for one section, or an empty list if the response has none.
+        """
+        try:
+            section_answers = self.answers[section_index]
+        except (IndexError, KeyError, TypeError):
+            return list()
+        return section_answers if isinstance(section_answers, list) else list()
+
+    @staticmethod
+    def _as_list(answer) -> list:
+        """
+        The selected options of a multiple-choice answer.
+
+        Malformed answers may hold a bare string where a list is expected; wrap it rather
+        than treating each character as a selected option.
+        """
+        if answer is None:
+            return list()
+        return answer if isinstance(answer, list) else [answer]
 
 
 class Invitation(models.Model):

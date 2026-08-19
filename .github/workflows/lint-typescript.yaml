@@ -10,6 +10,8 @@ on:
       - tsconfig*.json
       - vite*.json
       - svelte*.json
+      - .svelte-check-baseline
+      - scripts/svelte_check_ratchet.sh
   pull_request:
     branches: [ "main" ]
     paths:
@@ -18,6 +20,8 @@ on:
       - tsconfig*.json
       - vite*.json
       - svelte*.json
+      - .svelte-check-baseline
+      - scripts/svelte_check_ratchet.sh
 permissions:
   contents: read
   pull-requests: write  # post coverage reports
@@ -39,6 +43,11 @@ jobs:
       # https://eslint.org/docs/latest/use/configure/configuration-files#configuration-file
       - name: Run linter
         run: npm run lint
+      # svelte-check catches null/undefined dereferences that only show up at runtime,
+      # such as reading a property of an optional field statistic. There is a backlog of
+      # pre-existing errors, so this ratchets the count down rather than gating on zero.
+      - name: Check TypeScript types
+        run: scripts/svelte_check_ratchet.sh
       - name: Run test suite
         run: npm run test:coverage
       - name: Report coverage

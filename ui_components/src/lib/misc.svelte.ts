@@ -3,7 +3,7 @@ import {
     type FieldConfig,
     type FieldStats,
     type SectionConfig,
-    type SurveyConfig, type SurveyResponseBatch,
+    type SurveyConfig, type SurveyResponse, type SurveyResponseBatch,
     type SurveyStats,
     type ValueCount
 } from "./interfaces.ts";
@@ -119,21 +119,55 @@ export function clickOutside(node: HTMLElement, handler: () => void) {
     };
 }
 
+/**
+ * Read a single answer from a batch of responses.
+ *
+ * Stored responses do not always match the survey configuration: responses submitted
+ * before `Survey.response_schema` validation was introduced, or a survey whose
+ * configuration was regenerated from the template files, can hold fewer sections or
+ * fields than the configuration describes. Return `undefined` for those so the caller
+ * can skip the answer instead of throwing.
+ */
+function getAnswer(responses: SurveyResponseBatch, ri: number, si: number, fi: number) {
+    return responses[ri]?.[si]?.[fi];
+}
+
+/**
+ * True when an answer is present, i.e. the response actually holds a value here.
+ */
+function hasAnswer(answer: SurveyResponse | undefined): answer is SurveyResponse {
+    return answer !== undefined && answer !== null;
+}
+
+/**
+ * Coerce an answer to the list of selected options.
+ *
+ * Multi-option fields (checkbox, likert) store a list, but a malformed response may
+ * hold a bare string. Wrap it rather than iterating over its characters.
+ */
+function answerAsList(answer: SurveyResponse | undefined): string[] {
+    if (!hasAnswer(answer)) return [];
+    return Array.isArray(answer) ? answer : [answer];
+}
+
 export function generateStatsFromSurveyResponses(config: SurveyConfig, responses: SurveyResponseBatch) {
     if (config === null ||
+        config === undefined ||
         responses === null ||
         responses === undefined ||
         responses.length < 1)
         return null;
 
     const stats: SurveyStats = {sections: []};
-    for (let si = 0; si < config.sections.length; si++) {
+    const sections = config.sections ?? [];
+    for (let si = 0; si < sections.length; si++) {
         // Stats for each section
-        const sectionConfig: SectionConfig = config.sections[si];
+        const sectionConfig: SectionConfig = sections[si];
         const fieldStats: FieldStats[] = [];
-        for (let fi = 0; fi < sectionConfig.fields.length; fi++) {
+        const fields = sectionConfig.fields ?? [];
+        for (let fi = 0; fi < fields.length; fi++) {
             // Stats for each field
-            const fieldConfig = sectionConfig.fields[fi];
+            const fieldConfig = fields[fi];
             switch (fieldConfig.type) {
                 case "likert":
                     fieldStats.push(fieldStatForLikert(fieldConfig, si, fi, responses));
@@ -149,6 +183,12 @@ export function generateStatsFromSurveyResponses(config: SurveyConfig, responses
                 case "textarea":
                     fieldStats.push(fieldStatsForText(fieldConfig, si, fi, responses));
                     break;
+                default:
+                    // Keep one entry per configured field: consumers index these stats by
+                    // the *configuration* field index, so skipping an unrecognised field
+                    // type would silently shift every later field in this section.
+                    fieldStats.push({});
+                    break;
             }
         }
         stats.sections.push({
@@ -161,7 +201,9 @@ export function generateStatsFromSurveyResponses(config: SurveyConfig, responses
 function fieldStatsForText(fieldConfig: FieldConfig, si: number, fi: number, responses: SurveyResponseBatch): FieldStats {
     const values: string[] = [];
     for (let ri = 0; ri < responses.length; ri++) {
-        values.push(responses[ri][si][fi] as string)
+        const answer = getAnswer(responses, ri, si, fi);
+        if (!hasAnswer(answer)) continue;
+        values.push(answer as string)
     }
     return {values: values}
 }
@@ -169,13 +211,15 @@ function fieldStatsForText(fieldConfig: FieldConfig, si: number, fi: number, res
 function fieldStatsForSingleOption(fieldConfig: FieldConfig, si: number, fi: number, responses: SurveyResponseBatch): FieldStats {
     const values: string[] = [];
     for (let ri = 0; ri < responses.length; ri++) {
-        values.push(responses[ri][si][fi] as string)
+        const answer = getAnswer(responses, ri, si, fi);
+        if (!hasAnswer(answer)) continue;
+        values.push(answer as string)
     }
     const fieldStats: FieldStats = {
         histogram: histogramFromConfigAndValues(fieldConfig, values)
     }
 
-    genNumericFieldStats(fieldConfig, values, fieldStats);
+    genNumericFieldStats(values, fieldStats);
 
     return fieldStats;
 }
@@ -183,15 +227,13 @@ function fieldStatsForSingleOption(fieldConfig: FieldConfig, si: number, fi: num
 function fieldStatsForMultiOption(fieldConfig: FieldConfig, si: number, fi: number, responses: SurveyResponseBatch): FieldStats {
     const values: string[] = [];
     for (let ri = 0; ri < responses.length; ri++) {
-        for (let oi = 0; oi < responses[ri][si][fi].length; oi++) {
-            values.push(responses[ri][si][fi][oi])
-        }
+        values.push(...answerAsList(getAnswer(responses, ri, si, fi)));
     }
     const fieldStats: FieldStats = {
         histogram: histogramFromConfigAndValues(fieldConfig, values)
     }
 
-    genNumericFieldStats(fieldConfig, values, fieldStats);
+    genNumericFieldStats(values, fieldStats);
 
     return fieldStats;
 }
@@ -201,10 +243,13 @@ function fieldStatForLikert(fieldConfig: FieldConfig, si: number, fi: number, re
     // Build histogram for the likert table
     let allValues: string[] = [];
     const histograms: ValueCount[][] = [];
-    for (let subi = 0; subi < fieldConfig.sublabels.length; subi++) {
+    const sublabels = fieldConfig.sublabels ?? [];
+    for (let subi = 0; subi < sublabels.length; subi++) {
         const values: string[] = [];
         for (let ri = 0; ri < responses.length; ri++) {
-            values.push(responses[ri][si][fi][subi])
+            const value = answerAsList(getAnswer(responses, ri, si, fi))[subi];
+            if (value === undefined || value === null) continue;
+            values.push(value)
         }
         allValues = allValues.concat(values);
         histograms.push(histogramFromConfigAndValues(fieldConfig, values));
@@ -214,7 +259,7 @@ function fieldStatForLikert(fieldConfig: FieldConfig, si: number, fi: number, re
         histograms: histograms
     }
 
-    genNumericFieldStats(fieldConfig, allValues, fieldStats);
+    genNumericFieldStats(allValues, fieldStats);
 
     return fieldStats;
 }
@@ -223,7 +268,7 @@ function histogramFromConfigAndValues(fieldConfig: FieldConfig, values: string[]
     // eslint-disable-next-line svelte/prefer-svelte-reactivity -- local, non-reactive collection
     const valuesCountMap = new Map<string, number>();
     // Histogram from options in the configuration
-    fieldConfig.options.map((value: string) => {
+    (fieldConfig.options ?? []).map((value: string) => {
         valuesCountMap.set(value, 0);
     });
 
@@ -248,8 +293,9 @@ function histogramFromConfigAndValues(fieldConfig: FieldConfig, values: string[]
     return valuesHistogram
 }
 
-function genNumericFieldStats(fieldConfig: FieldConfig, values: string[], fieldStats: FieldStats) {
-    const fieldIsNumeric = values.every(val => isOptionNumeric(val));
+function genNumericFieldStats(values: string[], fieldStats: FieldStats) {
+    // An empty set of values tells us nothing, so do not report a mean of NaN for it.
+    const fieldIsNumeric = values.length > 0 && values.every(val => isOptionNumeric(val));
     if (fieldIsNumeric) {
         const valuesNum = values.map(Number);
         fieldStats.areValuesNumeric = true;
@@ -285,7 +331,8 @@ export function getHistogramMean(histogram: ValueCount[]) {
 
 const numFormat = Intl.NumberFormat("en-GB", {maximumFractionDigits: 3})
 
-export function formatNumber(num: number) {
+export function formatNumber(num: number | undefined | null) {
+    if (num === undefined || num === null || Number.isNaN(num)) return "";
     return numFormat.format(num)
 }
 
@@ -316,6 +363,12 @@ export const MATURITY_LABELS = {
     SUBSTANTIAL_PROGRESS: "Substantial progress",
     ESTABLISHED: "Established"
 } as const;
+
+/**
+ * Shown in place of a maturity label when there is no score to describe, e.g. a section
+ * whose responses hold no numeric answers.
+ */
+export const MATURITY_LABEL_UNKNOWN = "Not available";
 
 /**
  * Maturity label type - union of all possible maturity level labels
@@ -362,7 +415,14 @@ const colourRange: ColourRange[] = [
     },
 ]
 
-export function getColourForMeanValue(mean: number): string {
+/** Cell background used when there is no mean score to colour by */
+const UNKNOWN_MEAN_COLOUR = "transparent";
+/** Text colour used alongside UNKNOWN_MEAN_COLOUR */
+const UNKNOWN_MEAN_TEXT_COLOUR = "inherit";
+
+export function getColourForMeanValue(mean: number | undefined | null): string {
+    // No score: leave the cell unshaded rather than implying the lowest maturity level
+    if (mean === undefined || mean === null || Number.isNaN(mean)) return UNKNOWN_MEAN_COLOUR;
     for (let i = 0; i < colourRange.length; i++) {
         // Use exclusive upper bound for all ranges except the last one
         const matchesRange = i === colourRange.length - 1
@@ -376,7 +436,8 @@ export function getColourForMeanValue(mean: number): string {
     return colourRange[0].colour;
 }
 
-export function getTextColourForMeanValue(mean: number): string {
+export function getTextColourForMeanValue(mean: number | undefined | null): string {
+    if (mean === undefined || mean === null || Number.isNaN(mean)) return UNKNOWN_MEAN_TEXT_COLOUR;
     for (let i = 0; i < colourRange.length; i++) {
         // Use exclusive upper bound for all ranges except the last one
         const matchesRange = i === colourRange.length - 1
@@ -393,20 +454,29 @@ export function getTextColourForMeanValue(mean: number): string {
 /**
  * Get the readiness level label for a given mean score.
  *
- * @param score The maturity score (0.0 to 4.0 inclusive)
+ * A missing score (undefined, null or NaN) yields MATURITY_LABEL_UNKNOWN rather than an
+ * error: a field whose answers are absent or non-numeric has no mean, and that must not
+ * take down the whole report.
+ *
+ * @param score The maturity score (0.0 to 4.0 inclusive), or undefined when unknown
  * @returns The human-readable maturity level label
  * @throws {TypeError} If score is not a number
- * @throws {RangeError} If score is outside the valid range [0, 4]
+ * @throws {RangeError} If score is a number outside the valid range [0, 4]
  *
  * @example
- * getSortMaturityLabel(0.3);  // "Not yet planned"
- * getSortMaturityLabel(2.8);  // "Substantial progress"
+ * getSortMaturityLabel(0.3);        // "Not yet planned"
+ * getSortMaturityLabel(2.8);        // "Substantial progress"
+ * getSortMaturityLabel(undefined);  // "Not available"
  */
-export function getSortMaturityLabel(score: number): MaturityLabel {
+export function getSortMaturityLabel(score: number | undefined | null): MaturityLabel | typeof MATURITY_LABEL_UNKNOWN {
     // Validate input
     // Reject string inputs
     if (typeof score === 'string') {
         throw new TypeError(`Score must be a number, not a string. Got: ${score}`);
+    }
+    // No score to describe
+    if (score === undefined || score === null || Number.isNaN(score)) {
+        return MATURITY_LABEL_UNKNOWN;
     }
     // Reject numbers out of range
     if (!Number.isFinite(score) || score < 0.0 || score > 4.0) {

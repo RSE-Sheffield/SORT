@@ -4,6 +4,7 @@ import io
 from django.test import TestCase
 
 from SORT.test.model_factory import SurveyFactory
+from survey.models import SurveyResponse
 
 
 class TestSurveyCsvExport(TestCase):
@@ -50,6 +51,57 @@ class TestSurveyCsvExport(TestCase):
 
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["Which colours do you like?"], "Red, Blue")
+
+    def test_csv_export_with_a_checkbox_answer_stored_as_a_string(self):
+        """
+        A checkbox answer should be one column even when the stored value is a bare
+        string rather than a list of selected options, which is the shape of some
+        answers recorded before response validation existed.
+        """
+        survey = SurveyFactory()
+        survey.survey_config = {
+            "sections": [
+                {
+                    "title": "Section 1",
+                    "fields": [
+                        {
+                            "type": "checkbox",
+                            "name": "colours",
+                            "label": "Which colours do you like?",
+                            "sublabels": [],
+                            "options": ["Red", "Green", "Blue"],
+                        }
+                    ],
+                }
+            ]
+        }
+        survey.save()
+        # Bypass validation: this shape can no longer be submitted, but it exists
+        SurveyResponse.objects.create(survey=survey, answers=[["Red"]])
+
+        rows = list(csv.DictReader(io.StringIO(survey.to_csv())))
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["Which colours do you like?"], "Red")
+
+    def test_csv_export_with_answers_missing_from_a_response(self):
+        """
+        A response holding fewer answers than the survey has questions should still
+        produce one cell per column, so the remaining answers stay under the right
+        headings.
+        """
+        answers = self.survey._generate_mock_response()
+        # Drop the last field of the first section, and the whole final section
+        del answers[0][-1]
+        del answers[-1]
+        SurveyResponse.objects.create(survey=self.survey, answers=answers)
+
+        rows = list(csv.DictReader(io.StringIO(self.survey.to_csv())))
+
+        self.assertEqual(len(rows), self.survey.responses_count)
+        for row in rows:
+            self.assertEqual(len(row), len(self.survey.fields))
+            self.assertNotIn(None, row.keys(), "Answers overflowed past the headings")
 
     def test_csv_export(self):
         """
