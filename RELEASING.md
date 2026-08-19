@@ -28,7 +28,7 @@ When a PR contains multiple commits, the highest-priority type wins.
 
 ## Triggering a release manually
 
-Go to **Actions → Create Release → Run workflow**. Useful for re-running a failed release.
+Go to **Actions → [Create Release](https://github.com/RSE-Sheffield/SORT/actions/workflows/release.yaml) → Run workflow**. Useful for re-running a failed release.
 
 ## Troubleshooting
 
