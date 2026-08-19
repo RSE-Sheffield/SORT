@@ -1,15 +1,14 @@
+# SORT
+### Self-Assessment of Organisational Readiness Tool
+
 [![DOI](https://img.shields.io/badge/DOI-10.15131%2Fshef.data.32788914-blue)](https://doi.org/10.15131/shef.data.32788914)
 [![Run Django checks](https://github.com/RSE-Sheffield/SORT/actions/workflows/django-check.yaml/badge.svg)](https://github.com/RSE-Sheffield/SORT/actions/workflows/django-check.yaml)
 [![Validate JSON files](https://github.com/RSE-Sheffield/SORT/actions/workflows/validate-json.yaml/badge.svg)](https://github.com/RSE-Sheffield/SORT/actions/workflows/validate-json.yaml)
 
-# SORT
-### Self-Assessment of Organisational Readiness Tool
-
-The SORT provides a comprehensive self-assessment framework, enabling organisations to evaluate and strengthen their research capabilities within nursing and 
+The SORT Online platform provides a comprehensive self-assessment framework, enabling organisations to evaluate and strengthen their research capabilities within nursing and 
 broader health and care practices. By guiding you through forty-four targeted statements, SORT helps assess your current level of research maturity 
 and the support available for nurses involved in research. Upon completion, your organisation will be equipped to create a tailored improvement plan to better 
 integrate research into nursing practice, ultimately contributing to improved patient care.
-
 
 ## Running Locally
 
@@ -76,7 +75,6 @@ The app will be available at http://127.0.0.1:8000.
 # Deployment
 
 Please read [`docs/deployment.md`](docs/deployment.md).
-
 
 # Vite integration
 The SORT app uses some JavaScript components such as the survey configurator and the survey response form. This is
