@@ -559,17 +559,21 @@ class SurveyResponse(models.Model):
     @property
     def answers_values(self) -> Generator[str, None, None]:
         """
-        Build a flat iterable of all the answer values for this response.
+        Build a flat iterable of all the answer values for this response, aligned
+        column-for-column with Survey.fields_iter().
 
-        - Likert sub-labels are expanded into individual columns
+        - Likert answers expand into one value per sub-label (matching fields_iter)
+        - Checkbox answers may hold more than one selected option, but each checkbox
+          field is a single column, so its selected options are joined into one value
         """
-        for section in self.answers:
-            for field in section:
-                # Flatten sub-labels
-                if isinstance(field, list):
-                    yield from field
+        for section, section_answers in zip(self.survey.sections, self.answers):
+            for field, answer in zip(section["fields"], section_answers):
+                if field["type"] == "likert":
+                    yield from answer
+                elif field["type"] == "checkbox":
+                    yield ", ".join(answer)
                 else:
-                    yield field
+                    yield answer
 
 
 class Invitation(models.Model):
