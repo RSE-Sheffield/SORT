@@ -16,6 +16,41 @@ class TestSurveyCsvExport(TestCase):
         self.survey.initialise()
         self.survey.generate_mock_responses()
 
+    def test_csv_export_with_multiple_checkbox_selections(self):
+        """
+        A checkbox field with more than one selected option should collapse into a
+        single CSV column instead of overflowing into extra, unnamed columns.
+
+        Regression test for https://github.com/UniversityOfSheffield/SORT/issues/705
+        """
+        survey = SurveyFactory()
+        survey.survey_config = {
+            "sections": [
+                {
+                    "title": "Section 1",
+                    "fields": [
+                        {
+                            "type": "checkbox",
+                            "name": "colours",
+                            "label": "Which colours do you like?",
+                            "sublabels": [],
+                            "options": ["Red", "Green", "Blue"],
+                        }
+                    ],
+                }
+            ]
+        }
+        survey.save()
+        survey.accept_response([[["Red", "Blue"]]])
+
+        csv_data = survey.to_csv()
+
+        csv_file = io.StringIO(csv_data)
+        rows = list(csv.DictReader(csv_file))
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["Which colours do you like?"], "Red, Blue")
+
     def test_csv_export(self):
         """
         The survey CSV export function should export valid CSV data.
