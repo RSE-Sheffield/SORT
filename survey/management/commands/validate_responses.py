@@ -7,10 +7,22 @@ from survey.models import Survey
 class Command(BaseCommand):
     help = "Validate all survey response answers against their survey's JSON Schema"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--survey",
+            type=int,
+            dest="survey_id",
+            help="Only validate the responses of this survey (by primary key)",
+        )
+
     def handle(self, *args, **options):
         errors = 0
         total = 0
-        for survey in Survey.objects.prefetch_related("survey_response").iterator(chunk_size=100):
+        surveys = Survey.objects.prefetch_related("survey_response")
+        survey_id = options.get("survey_id")
+        if survey_id is not None:
+            surveys = surveys.filter(pk=survey_id)
+        for survey in surveys.iterator(chunk_size=100):
             for response in survey.survey_response.all():
                 total += 1
                 try:

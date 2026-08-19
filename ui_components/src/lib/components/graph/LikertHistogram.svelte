@@ -42,15 +42,19 @@
     }
 
     let {fieldConfig, fieldStats, maxHistogramCount = 0, sectionTitle = 'Default title'}: LikertHistogramProps = $props();
+    // A likert field whose configuration or stored answers are incomplete has no
+    // sub-labels or histograms; render an empty chart rather than throwing.
+    let sublabels = $derived(fieldConfig?.sublabels ?? []);
+    let histograms = $derived(fieldStats?.histograms ?? []);
     let barChartContainer: HTMLCanvasElement = $state()
     const barThickness = 30;  // Must match the barThickness in dataset
-    let chartHeightPx = $derived((fieldConfig.sublabels.length * (barThickness + 10)) + 150); // Calculate in pixels
+    let chartHeightPx = $derived((sublabels.length * (barThickness + 10)) + 150); // Calculate in pixels
     let chart: Chart | null = $state(null);
     let sortByMean = $state(false);
     let sortAscending = $state(true);
     let indexMean: IndexMean[] = $derived.by(() => {
         let ims: IndexMean[] = [];
-        fieldStats.histograms.map((value, index) => {
+        histograms.map((value, index) => {
             ims.push({
                 index: index,
                 mean: getHistogramMean(value)
@@ -72,15 +76,15 @@
 
         // Sorted labels
         indexMean.map(im => {
-            labels.push(fieldConfig.sublabels[im.index]);
+            labels.push(sublabels[im.index]);
         });
 
         // Sorted data for stacked bars
-        fieldConfig.options.map((value, optionIndex) => {
+        (fieldConfig.options ?? []).map((value, optionIndex) => {
             const values: number[] = [];
             for (let i = 0; i < indexMean.length; i++) {
                 const im = indexMean[i];
-                values.push(fieldStats.histograms[im.index][optionIndex].count);
+                values.push(histograms[im.index]?.[optionIndex]?.count ?? 0);
             }
             const colour = getColourForMeanValue(Number(value));
 
@@ -134,7 +138,7 @@
                         ticks: {
                             autoSkip: false,
                             callback: function(value) {
-                                const labelValue: string = fieldConfig.sublabels[indexMean[value].index];
+                                const labelValue: string = sublabels[indexMean[value].index];
                                 const maxCharsPerLine = 40;
                                 const maxLines = 2;
 

@@ -38,12 +38,16 @@
     }
 
     let {fieldConfig, fieldStats, maxHistogramCount = 0}: LikertHistogramProps = $props();
+    // A likert field whose configuration or stored answers are incomplete has no
+    // sub-labels or histograms; render an empty chart rather than throwing.
+    let sublabels = $derived(fieldConfig?.sublabels ?? []);
+    let histograms = $derived(fieldStats?.histograms ?? []);
     let barChartContainer: HTMLCanvasElement = $state()
-    let chartHeight = $derived(fieldConfig.sublabels.length * 2.5); // Reduced height since we're showing less data
+    let chartHeight = $derived(sublabels.length * 2.5); // Reduced height since we're showing less data
     let chart: Chart | null = $state(null);
     let indexMean: IndexMean[] = $derived.by(() => {
         let ims: IndexMean[] = [];
-        fieldStats.histograms.map((value, index) => {
+        histograms.map((value, index) => {
             ims.push({
                 index: index,
                 mean: getHistogramMean(value)
@@ -59,7 +63,7 @@
 
         // Generate labels, mean values, and colors
         indexMean.map(im => {
-            labels.push(fieldConfig.sublabels[im.index]);
+            labels.push(sublabels[im.index]);
             meanValues.push(im.mean);
             backgroundColors.push(getColourForMeanValue(im.mean));
         });
@@ -106,7 +110,7 @@
                         ticks: {
                             callback: (value) => {
                                 const maxCutoff = 80;
-                                const labelValue: string = fieldConfig.sublabels[indexMean[value].index];
+                                const labelValue: string = sublabels[indexMean[value].index];
                                 if (labelValue.length > maxCutoff)
                                     return labelValue.substring(0, maxCutoff) + "...";
                                 else

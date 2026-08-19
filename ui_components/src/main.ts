@@ -13,6 +13,14 @@ import SurveyReportApp from "./lib/components/SurveyReportApp.svelte";
 
 const csrf: string = getDataInElem("csrf", []);
 
+/**
+ * Fallback survey configuration.
+ *
+ * Survey.survey_config is nullable, and json_script emits `null` for it, so components
+ * must be given something with a `sections` array rather than a bare object.
+ */
+const EMPTY_SURVEY_CONFIG: SurveyConfig = {sections: []};
+
 function mapMatchedElement(selector: string, handler: (elem: HTMLElement) => void) {
     const matchingElements = document.querySelectorAll(selector);
     for (let i = 0; i < matchingElements.length; i++) {
@@ -115,7 +123,7 @@ mapMatchedElement(".sort-response-section-viewer", (elem) => {
     const readinessDescriptionsAllSections = getDataInElem(readinessDescriptionsId, []);
     // Readiness descriptions for just this section (levels 0 to 4)
     const readinessDescriptions = readinessDescriptionsAllSections[sectionIndex - 1];
-    const config = getDataInElem(configId, {}) as SurveyConfig;
+    const config = getDataInElem(configId, EMPTY_SURVEY_CONFIG) as SurveyConfig;
     const responses: SurveyResponseBatch = getDataInElem(responsesId, []) as [];
     const surveyStats = generateStatsFromSurveyResponses(config, responses);
     const useBarChart = elem.dataset.useBarChart === 'true'; // Convert string to boolean
@@ -134,7 +142,7 @@ mapMatchedElement(".sort-response-section-viewer", (elem) => {
 mapMatchedElement(".sort-response-summary-matrix", (elem) => {
     const configId = elem.dataset.jsonConfigId;
     const responsesId = elem.dataset.jsonResponsesId;
-    const config = getDataInElem(configId, {}) as SurveyConfig;
+    const config = getDataInElem(configId, EMPTY_SURVEY_CONFIG) as SurveyConfig;
     const responses: SurveyResponseBatch = getDataInElem(responsesId, []) as [];
     const surveyStats = generateStatsFromSurveyResponses(config, responses)
     mount(SortSummaryMatrix, {
@@ -151,7 +159,7 @@ mapMatchedElement(".sort-report-app", (elem) => {
     const responsesId = elem.dataset.jsonResponsesId;
     const csvUrl = elem.dataset.csvUrl ?? "";
     const excelUrl = elem.dataset.excelUrl ?? "";
-    const config = getDataInElem(configId, {}) as SurveyConfig;
+    const config = getDataInElem(configId, EMPTY_SURVEY_CONFIG) as SurveyConfig;
     const responses: SurveyResponseBatch = getDataInElem(responsesId, []) as [];
     mount(SurveyReportApp, {
         target: elem,

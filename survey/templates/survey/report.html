@@ -8,6 +8,19 @@
         <h1><i class='bx bxs-report'></i> Report: {{ survey.name }}</h1>
         <p>{{ survey.description }}</p>
 
+        {% if invalid_response_count %}
+            <div class="alert alert-warning" role="alert">
+                <h2 class="h5 alert-heading">Some responses could not be included in full</h2>
+                <p class="mb-0">
+                    {{ invalid_response_count }} of {{ response_count }} recorded
+                    response{{ response_count|pluralize }} do not match this survey's
+                    current questions. Any answers that cannot be matched to a question are
+                    left out of the figures below, so the totals may be lower than the
+                    number of responses received.
+                </p>
+            </div>
+        {% endif %}
+
         <div class="mb-3">
             <div class="sort-report-app"
                  data-json-config-id="configData"
@@ -64,7 +77,6 @@
 
 
         {{ csrf | json_script:"csrf" }}
-        {{ files_list | json_script:"filesListData" }}
         {{ survey.survey_config | json_script:"configData" }}
         {{ responses | json_script:"responsesData" }}
         {{ readiness_descriptions | json_script:"readinessDescriptions" }}

@@ -37,13 +37,17 @@
     }
 
     let {fieldConfig, fieldStats}: LikertMeanChartProps = $props();
+    // A likert field whose configuration or stored answers are incomplete has no
+    // sub-labels or histograms; render an empty chart rather than throwing.
+    let sublabels = $derived(fieldConfig?.sublabels ?? []);
+    let histograms = $derived(fieldStats?.histograms ?? []);
     let barChartContainer: HTMLCanvasElement = $state()
     const barThickness = 30;  // Match the barThickness in LikertHistogram
-    let chartHeightPx = $derived((fieldConfig.sublabels.length * (barThickness + 10)) + 150); // Match LikertHistogram calculation
+    let chartHeightPx = $derived((sublabels.length * (barThickness + 10)) + 150); // Match LikertHistogram calculation
     let chart: Chart | null = $state(null);
     let indexMean: IndexMean[] = $derived.by(() => {
         let ims: IndexMean[] = [];
-        fieldStats.histograms.map((value, index) => {
+        histograms.map((value, index) => {
             ims.push({
                 index: index,
                 mean: getHistogramMean(value)
@@ -59,7 +63,7 @@
 
         // Generate labels, mean values, and colors
         indexMean.map(im => {
-            labels.push(fieldConfig.sublabels[im.index]);
+            labels.push(sublabels[im.index]);
             meanValues.push(im.mean);
             backgroundColors.push(getColourForMeanValue(im.mean));
         });
@@ -111,7 +115,7 @@
                         ticks: {
                             autoSkip: false,
                             callback: function(value) {
-                                const labelValue: string = fieldConfig.sublabels[indexMean[value].index];
+                                const labelValue: string = sublabels[indexMean[value].index];
                                 const maxCharsPerLine = 40;
                                 const maxLines = 2;
 
