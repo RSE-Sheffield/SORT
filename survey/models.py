@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import random
+import re
 import itertools
 import secrets
 import tempfile
@@ -367,6 +368,19 @@ class Survey(models.Model):
                 writer.writerow(row)
             return buffer.getvalue()
 
+    #: Excel worksheet names cannot exceed this many characters
+    EXCEL_SHEET_NAME_MAX_LENGTH = 31
+    #: Characters Excel does not allow in a worksheet name
+    EXCEL_SHEET_NAME_INVALID_CHARS = re.compile(r"[\[\]:*?/\\]")
+
+    def _excel_sheet_name(self) -> str:
+        """
+        A worksheet name derived from the survey name, valid for Excel
+        (<=31 characters, and none of [ ] : * ? / \\).
+        """
+        name = self.EXCEL_SHEET_NAME_INVALID_CHARS.sub("", str(self))
+        return name[: self.EXCEL_SHEET_NAME_MAX_LENGTH] or "Survey"
+
     @contextmanager
     def _to_excel(self) -> ContextManager[Path]:
         """
@@ -379,7 +393,7 @@ class Survey(models.Model):
 
         # Create spreadsheet data
         workbook = xlsxwriter.Workbook(filename=path)
-        sheet = workbook.add_worksheet(name=str(self))
+        sheet = workbook.add_worksheet(name=self._excel_sheet_name())
         # Iterate over responses (one row per response)
         for i, row in enumerate(self.responses_iter()):
             # Write headers
