@@ -2,8 +2,10 @@
 Organisation service with integrated permissions
 """
 
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Set, Union
 
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Count
 from django.db.models.query import QuerySet
@@ -50,6 +52,75 @@ def remove_membership_and_record_event(
             actioned_by=actioned_by,
             notes=notes,
         )
+
+
+@dataclass(frozen=True)
+class OrganisationMergePlan:
+    """
+    What merging `source` into `target` would do, computed up front so a
+    dry-run report and the real merge share one source of truth.
+    """
+
+    source: Organisation
+    target: Organisation
+    projects: List[Project]
+    memberships_to_move: List[OrganisationMembership]
+    memberships_to_drop: List[OrganisationMembership]
+
+    def describe(self) -> str:
+        lines = [
+            f"Merge '{self.source.name}' (id={self.source.pk}) into "
+            f"'{self.target.name}' (id={self.target.pk})",
+            f"  Projects to move: {len(self.projects)}",
+            *(f"    - {p.name} (id={p.pk})" for p in self.projects),
+            f"  Memberships to transfer: {len(self.memberships_to_move)}",
+            *(f"    - {m.user.email} as {m.role}" for m in self.memberships_to_move),
+            f"  Duplicate memberships to drop (keeping target's role): "
+            f"{len(self.memberships_to_drop)}",
+            *(
+                f"    - {m.user.email} (was {m.role} in source)"
+                for m in self.memberships_to_drop
+            ),
+            f"  '{self.source.name}' will be deleted after the merge.",
+        ]
+        return "\n".join(lines)
+
+
+def plan_organisation_merge(
+    source: Organisation, target: Organisation
+) -> OrganisationMergePlan:
+    """
+    Read-only: work out which projects and memberships a merge of `source`
+    into `target` would move, and which duplicate memberships it would drop.
+
+    Module-level rather than a service method so the merge_organisations
+    management command can call it directly for a --dry-run report without
+    a User to satisfy OrganisationService's permission checks.
+    """
+    if source.pk == target.pk:
+        raise ValueError("Cannot merge an organisation into itself")
+
+    target_user_ids = set(
+        OrganisationMembership.objects.filter(organisation=target).values_list(
+            "user_id", flat=True
+        )
+    )
+    source_memberships = list(
+        OrganisationMembership.objects.filter(organisation=source).select_related(
+            "user"
+        )
+    )
+    memberships_to_drop = [
+        m for m in source_memberships if m.user_id in target_user_ids
+    ]
+    memberships_to_move = [
+        m for m in source_memberships if m.user_id not in target_user_ids
+    ]
+    projects = list(Project.objects.filter(organisation=source))
+
+    return OrganisationMergePlan(
+        source, target, projects, memberships_to_move, memberships_to_drop
+    )
 
 
 class OrganisationService(BasePermissionService):

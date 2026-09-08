@@ -8,12 +8,14 @@ from django.core.exceptions import PermissionDenied
 from django.test import RequestFactory
 
 import SORT.test.test_case
-from home.constants import ROLE_ADMIN, ROLES
-from home.models import Organisation, OrganisationMembership
+from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
+from home.models import DataProtectionEvent, Organisation, OrganisationMembership
 from home.services import organisation_service
+from home.services.organisation import plan_organisation_merge
 from SORT.test.model_factory import (
     OrganisationFactory,
     OrganisationMembershipFactory,
+    ProjectFactory,
     UserFactory,
 )
 
@@ -351,4 +353,106 @@ class ActiveOrganisationTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertEqual(
             {first.organisation.pk, second.organisation.pk},
             set(organisations.values_list("pk", flat=True)),
+        )
+
+
+class OrganisationMergeTestCase(SORT.test.test_case.ServiceTestCase):
+    """Tests for the org-merge tool (issue #676)."""
+
+    def setUp(self):
+        super().setUp()
+        self.service = organisation_service
+        self.source = OrganisationFactory()
+        self.target = OrganisationFactory()
+        self.source_admin = self.source.members.first()
+        self.target_admin = self.target.members.first()
+
+    def test_plan_merge_into_self_raises(self):
+        with self.assertRaises(ValueError):
+            plan_organisation_merge(self.source, self.source)
+
+    def test_plan_moves_projects_and_non_colliding_memberships(self):
+        project = ProjectFactory(organisation=self.source)
+
+        plan = plan_organisation_merge(self.source, self.target)
+
+        self.assertEqual([project], plan.projects)
+        self.assertEqual(
+            [self.source_admin.pk], [m.user.pk for m in plan.memberships_to_move]
+        )
+        self.assertEqual([], plan.memberships_to_drop)
+
+    def test_plan_drops_duplicate_membership_keeping_target_role(self):
+        # source_admin is ADMIN in source; make them a plain member of target too.
+        OrganisationMembershipFactory(
+            user=self.source_admin,
+            organisation=self.target,
+            role=ROLE_PROJECT_MANAGER,
+        )
+
+        plan = plan_organisation_merge(self.source, self.target)
+
+        self.assertEqual([], plan.memberships_to_move)
+        self.assertEqual(
+            [self.source_admin.pk], [m.user.pk for m in plan.memberships_to_drop]
+        )
+
+    def test_merge_requires_staff(self):
+        with self.assertRaises(PermissionDenied):
+            self.service.merge_organisations(self.user, self.source, self.target)
+
+    def test_merge_moves_projects_and_memberships_and_deletes_source(self):
+        project = ProjectFactory(organisation=self.source)
+
+        self.service.merge_organisations(self.superuser, self.source, self.target)
+
+        project.refresh_from_db()
+        self.assertEqual(self.target, project.organisation)
+        self.assertTrue(
+            OrganisationMembership.objects.filter(
+                user=self.source_admin, organisation=self.target
+            ).exists()
+        )
+        self.assertFalse(Organisation.objects.filter(pk=self.source.pk).exists())
+
+    def test_merge_drops_duplicate_membership_keeping_target_role(self):
+        OrganisationMembershipFactory(
+            user=self.source_admin,
+            organisation=self.target,
+            role=ROLE_PROJECT_MANAGER,
+        )
+
+        self.service.merge_organisations(self.superuser, self.source, self.target)
+
+        membership = OrganisationMembership.objects.get(
+            user=self.source_admin, organisation=self.target
+        )
+        self.assertEqual(ROLE_PROJECT_MANAGER, membership.role)
+        self.assertEqual(
+            1,
+            OrganisationMembership.objects.filter(
+                user=self.source_admin, organisation=self.target
+            ).count(),
+        )
+
+    def test_merge_records_audit_events(self):
+        OrganisationMembershipFactory(
+            user=self.source_admin,
+            organisation=self.target,
+            role=ROLE_PROJECT_MANAGER,
+        )
+
+        self.service.merge_organisations(self.superuser, self.source, self.target)
+
+        self.assertTrue(
+            DataProtectionEvent.objects.filter(
+                event_type=DataProtectionEvent.EventType.ORGANISATION_MERGED,
+                actioned_by=self.superuser,
+            ).exists()
+        )
+        self.assertTrue(
+            DataProtectionEvent.objects.filter(
+                event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
+                actioned_by=self.superuser,
+            ).exists()
         )
