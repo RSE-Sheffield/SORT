@@ -64,8 +64,12 @@ jobs:
           do
             echo "Testing $test_dir"
             # https://docs.djangoproject.com/en/5.1/topics/testing/advanced/#integration-with-coverage-py
-            coverage run --append --source="home,survey" manage.py test "$test_dir" --verbosity=2 --parallel=auto
+            coverage run --source="home,survey" manage.py test "$test_dir" --verbosity=2 --parallel=auto
           done
+          # Merge the per-process data files (main process plus each
+          # --parallel worker) written because of the `parallel`/
+          # `concurrency` settings in pyproject.toml.
+          coverage combine
           # Generate coverage report
           echo "## Coverage report" >> $GITHUB_STEP_SUMMARY
           coverage report --format="markdown" >> $GITHUB_STEP_SUMMARY

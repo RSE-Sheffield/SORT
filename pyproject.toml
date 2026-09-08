@@ -17,6 +17,11 @@ skip = ["migrations", "node_modules", "venv", "env"]
 
 [tool.coverage.run]
 source = ["."]
+# Django's --parallel test runner forks worker processes; without these,
+# coverage recorded inside those workers is lost instead of merged in by
+# `coverage combine` (see .github/workflows/django-check.yaml).
+parallel = true
+concurrency = ["multiprocessing"]
 omit = [
     "__init__.py",
     "*/migrations/*",
