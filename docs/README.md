@@ -17,7 +17,7 @@ Follow this recommended reading order:
 Once you've read the above, check out:
 
 - **[../CONTRIBUTING.md](../CONTRIBUTING.md)** - Contribution guidelines and PR process
-- **[../RELEASING.md](../RELEASING.md)** - Semantic versioning and automated release process
+- **[../RELEASING.md](../RELEASING.md)** - Semantic versioning and release-please process
 
 ### 🚀 Deploying to Production?
 
@@ -113,8 +113,8 @@ make check             # Django system checks + migration verification
 
 **Release process:**
 - [../RELEASING.md](../RELEASING.md) - Automated semantic versioning
-- Merges to `main` with `feat:` or `fix:` commits trigger releases automatically
-- No manual version bumping needed!
+- Merges to `main` with `feat:` or `fix:` commits update an open release PR
+- Merging that release PR (e.g. alongside a VM deployment) cuts the actual release — no manual version bumping needed
 
 ### 📋 Feature-Specific Documentation
 
@@ -197,7 +197,7 @@ SORT/
 
 - **Main README**: [../README.md](../README.md) - Project overview and quick start
 - **Contributing Guide**: [../CONTRIBUTING.md](../CONTRIBUTING.md) - PR workflow and standards
-- **Release Guide**: [../RELEASING.md](../RELEASING.md) - Semantic versioning with semantic-release
+- **Release Guide**: [../RELEASING.md](../RELEASING.md) - Semantic versioning with release-please
 - **Project Instructions**: [../CLAUDE.md](../CLAUDE.md) - Comprehensive development guide
 
 ## Need Help?
