@@ -381,18 +381,23 @@ class OrganisationService(BasePermissionService):
         source. Where a user belongs to both orgs, target's existing role
         wins and the duplicate source membership is dropped.
 
-        Atomic: the plan is computed once and applied as a single unit, so a
-        failure partway through (e.g. the audit write) rolls back every
-        reassignment and the source org is never left half-merged.
+        Atomic: source and target are locked with select_for_update() before
+        the plan is computed, so the plan can't go stale between being read
+        and being applied; a failure partway through (e.g. the audit write)
+        rolls back every reassignment and the source org is never left
+        half-merged.
         """
         if not self.can_merge(user):
             raise PermissionDenied(
                 f"User '{user}' does not have permission to merge organisations"
             )
 
-        plan = plan_organisation_merge(source, target)
-
         with transaction.atomic():
+            source = Organisation.objects.select_for_update().get(pk=source.pk)
+            target = Organisation.objects.select_for_update().get(pk=target.pk)
+
+            plan = plan_organisation_merge(source, target)
+
             for membership in plan.memberships_to_drop:
                 remove_membership_and_record_event(
                     OrganisationMembership.objects.filter(pk=membership.pk),
