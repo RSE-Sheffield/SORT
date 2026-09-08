@@ -92,6 +92,10 @@ def plan_organisation_merge(
     """
     Read-only: work out which projects and memberships a merge of `source`
     into `target` would move, and which duplicate memberships it would drop.
+
+    Module-level rather than a service method so the merge_organisations
+    management command can call it directly for a --dry-run report without
+    a User to satisfy OrganisationService's permission checks.
     """
     if source.pk == target.pk:
         raise ValueError("Cannot merge an organisation into itself")
