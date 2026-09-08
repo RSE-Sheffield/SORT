@@ -127,6 +127,9 @@
                 </div>
                 <div class="card-body">
                     <p class="small text-muted mb-2">These actions are irreversible. Proceed with care.</p>
+                    <a href="{% url 'admin_merge_organisation' organisation.pk %}" class="btn btn-outline-danger btn-sm w-100 mb-2">
+                        <i class="bx bx-merge"></i> Merge into another organisation
+                    </a>
                     <button class="btn btn-danger btn-sm w-100" disabled>
                         <i class="bx bx-trash"></i> Delete organisation
                     </button>

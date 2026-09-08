@@ -193,6 +193,11 @@ urlpatterns = [
         name="admin_remove_member",
     ),
     path(
+        "console/organisations/<int:pk>/merge/",
+        views.ConsoleMergeOrganisationView.as_view(),
+        name="admin_merge_organisation",
+    ),
+    path(
         "console/projects/",
         views.ConsoleProjectListView.as_view(),
         name="admin_projects",
