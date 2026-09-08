@@ -20,6 +20,16 @@ from .help import (
     VideoTutorialView,
 )
 from .home import HomeView, LandingView
+from .join_request import (
+    JoinRequestApproveView,
+    JoinRequestCreateView,
+    JoinRequestRejectView,
+    JoinRequestWithdrawView,
+    MyJoinRequestListView,
+    OrganisationBrowseView,
+    OrganisationGetStartedView,
+    OrganisationJoinRequestListView,
+)
 from .organisation import (
     DataSharingAgreementView,
     MyOrganisationAcceptInviteView,
@@ -77,6 +87,14 @@ __all__ = [
     "VideoTutorialView",
     "HomeView",
     "LandingView",
+    "JoinRequestApproveView",
+    "JoinRequestCreateView",
+    "JoinRequestRejectView",
+    "JoinRequestWithdrawView",
+    "MyJoinRequestListView",
+    "OrganisationBrowseView",
+    "OrganisationGetStartedView",
+    "OrganisationJoinRequestListView",
     "DataSharingAgreementView",
     "MyOrganisationAcceptInviteView",
     "MyOrganisationInviteView",

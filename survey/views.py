@@ -7,7 +7,7 @@ import django.core.mail
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.uploadhandler import UploadFileException
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
@@ -437,7 +437,7 @@ class SurveyReportView(LoginRequiredMixin, View):
         }
 
         sections = []
-        for index, section in enumerate(survey.survey_config["sections"]):
+        for index, section in enumerate(survey.sections):
             sections.append(
                 {
                     "section_config": section,
@@ -460,15 +460,31 @@ class SurveyReportView(LoginRequiredMixin, View):
         with open("data/readiness_descriptions/matrix.json") as file:
             readiness_descriptions: list[list[str]] = list(json.load(file))
 
+        # Report figures are calculated in the browser from these raw answers. Answers
+        # that predate response schema validation, or that were stored before the survey
+        # configuration changed, may not line up with the questions; the front end skips
+        # what it cannot use, so warn the reader that the figures are incomplete.
+        answers = list()
+        invalid_response_count = 0
+        for response in SurveyResponse.objects.filter(survey=survey):
+            answers.append(response.answers)
+            try:
+                response.validate()
+            except ValidationError:
+                invalid_response_count += 1
+                logger.warning(
+                    "Survey %s response %s does not match the survey configuration",
+                    survey.pk,
+                    response.pk,
+                )
+
         context = {
             "survey": survey,
-            "responses": [
-                response.answers
-                for response in SurveyResponse.objects.filter(survey=survey)
-            ],
+            "responses": answers,
+            "response_count": len(answers),
+            "invalid_response_count": invalid_response_count,
             "sections": sections,
             "csrf": str(csrf(self.request)["csrf_token"]),
-            # "files_list": files_list,
             "readiness_descriptions": readiness_descriptions,
         }
 

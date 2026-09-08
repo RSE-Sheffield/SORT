@@ -2,7 +2,7 @@
 Organisation service with integrated permissions
 """
 
-from typing import Dict, Optional, Set
+from typing import Dict, List, Optional, Set, Union
 
 from django.db import transaction
 from django.db.models import Count
@@ -103,7 +103,25 @@ class OrganisationService(BasePermissionService):
 
         return user.organisation_set.first()
 
-    def get_active_organisation(self, request: HttpRequest) -> Optional[Organisation]:
+    def get_user_memberships(self, user: User) -> List[OrganisationMembership]:
+        """All of `user`'s memberships, with each organisation preloaded.
+
+        Callers that need more than one of {active organisation, switchable
+        organisations, the user's role} for the same user can fetch this once
+        and pass it to ``get_active_organisation``/``get_user_organisations``
+        to avoid re-querying membership data for each.
+        """
+        return list(
+            OrganisationMembership.objects.filter(user=user)
+            .select_related("organisation")
+            .order_by("joined_at")
+        )
+
+    def get_active_organisation(
+        self,
+        request: HttpRequest,
+        memberships: Optional[List[OrganisationMembership]] = None,
+    ) -> Optional[Organisation]:
         """
         Resolve the organisation the user is currently "in", for users who may
         belong to more than one. The choice is sticky across requests via
@@ -114,16 +132,16 @@ class OrganisationService(BasePermissionService):
         session choice -> that organisation; otherwise (no session choice yet,
         or the previously active organisation was left/removed) -> the
         earliest-joined membership, and the session is brought back in sync.
+
+        Pass `memberships` (from ``get_user_memberships``) to reuse an
+        already-fetched list instead of querying again.
         """
         user = request.user
         if not user or not user.is_authenticated:
             return None
 
-        memberships = list(
-            OrganisationMembership.objects.filter(user=user)
-            .select_related("organisation")
-            .order_by("joined_at")
-        )
+        if memberships is None:
+            memberships = self.get_user_memberships(user)
         if not memberships:
             request.session.pop("active_organisation_id", None)
             return None
@@ -151,8 +169,21 @@ class OrganisationService(BasePermissionService):
         """
         request.session["active_organisation_id"] = organisation.id
 
-    def get_user_organisations(self, user: User) -> QuerySet[Organisation]:
-        """All organisations `user` belongs to, for switcher UI."""
+    def get_user_organisations(
+        self,
+        user: User,
+        memberships: Optional[List[OrganisationMembership]] = None,
+    ) -> Union[QuerySet[Organisation], List[Organisation]]:
+        """All organisations `user` belongs to, for switcher UI.
+
+        Pass `memberships` (from ``get_user_memberships``) to derive this
+        from an already-fetched list instead of querying again.
+        """
+        if memberships is not None:
+            return sorted(
+                (membership.organisation for membership in memberships),
+                key=lambda organisation: organisation.name,
+            )
         return Organisation.objects.filter(members=user).order_by("name")
 
     def get_user_organisation_ids(self, user: User) -> Set[int]:

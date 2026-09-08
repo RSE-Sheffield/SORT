@@ -31,43 +31,53 @@
                                 {% if '/survey' in request.path %}active{% endif %} 
                                 {% if '/completion' in request.path %}active{% endif %}
                                 {% if '/invite' in request.path %}active{% endif %}"
-                               href="{% url 'myorganisation' %}"><i class="bx bxs-buildings"></i> Organisation Dashboard</a>
+                               href="{% url 'myorganisation' %}"><i class="bx bxs-buildings"></i>&nbsp;Organisation</a>
                         </li>
+                        {% if pending_join_request_count %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/join-requests' in request.path %}active{% endif %}"
+                               href="{% url 'join_requests' %}"><i class="bx bxs-user-plus"></i> Join requests
+                                <span class="badge bg-warning text-dark">{{ pending_join_request_count }}</span>
+                                <span class="visually-hidden">pending join requests awaiting review</span></a>
+                        </li>
+                        {% endif %}
                         <li class="nav-item">
                             <a class="nav-link {% if '/profile' in request.path %}active{% endif %}"
-                               href="{% url 'profile' %}"><i class="bx bxs-user"></i> Profile</a>
+                               href="{% url 'profile' %}"><i class="bx bxs-user"></i>&nbsp;Profile</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if '/help' in request.path %}active{% endif %}"
-                               href="{% url 'help' %}"><i class='bx bxs-help-circle'></i> Help</a>
+                               href="{% url 'help' %}"><i class='bx bxs-help-circle'></i>&nbsp;Help</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link"
                                href="https://docs.google.com/forms/d/e/1FAIpQLSfo1aaPWWqwTEfG7w6OL6TjaOZJw3h8SkOgs87t4lyRdb6Ybg/viewform?usp=dialog"
-                               target="_blank"><i class='bx  bx-message-edit'></i> Feedback
+                               target="_blank"><i class='bx  bx-message-edit'></i>&nbsp;Feedback
                                 <i class='bx bx-link-external'></i></a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link"
                                href="https://docs.google.com/forms/d/e/1FAIpQLSfy6nXvjBiKroZnF92lJjYjMDsldxMnamlObfKDxNDZkIWzvw/viewform?usp=dialog"
-                               target="_blank"><i class='bx bxs-bug'></i> Report issues
+                               target="_blank"><i class='bx bxs-bug'></i>&nbsp;Report issues
                                 <i class='bx bx-link-external'></i></a>
                         </li>
                         {% if user.is_staff %}
                         <li class="nav-item">
                             <a class="nav-link {% if '/console' in request.path %}active{% endif %}"
-                               href="{% url 'admin_dashboard' %}"><i class='bx bxs-dashboard'></i> Console</a>
+                               href="{% url 'admin_dashboard' %}"><i class='bx bxs-dashboard'></i>&nbsp;Console</a>
                         </li>
                         {% endif %}
                     </ol>
                     <ul class="navbar-nav">
                         {% if user.is_authenticated and switchable_organisations|length > 1 %}
-                            <li class="nav-item dropdown">
+                            <li class="nav-item dropdown org-switcher">
                                 <a class="nav-link dropdown-toggle" href="#" id="orgSwitcherDropdown"
-                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bx bxs-buildings"></i> {{ active_organisation.name }}
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                   title="{{ active_organisation.name }}">
+                                    <i class="bx bxs-buildings"></i>
+                                    <span class="org-switcher-name">{{ active_organisation.name }}</span>
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="orgSwitcherDropdown">
+                                <ul class="dropdown-menu dropdown-menu-end org-switcher-menu" aria-labelledby="orgSwitcherDropdown">
                                     {% for org in switchable_organisations %}
                                         <li>
                                             <form method="POST" action="{% url 'organisation_switch' %}">

@@ -133,12 +133,12 @@ class SetActiveOrganisationView(LoginRequiredMixin, View):
         organisation_service.set_active_organisation(request, organisation)
         messages.success(request, f"Switched to {organisation.name}.")
 
-        next_url = request.POST.get("next") or reverse("myorganisation")
-        if not url_has_allowed_host_and_scheme(
+        next_url = request.POST.get("next")
+        if next_url and url_has_allowed_host_and_scheme(
             next_url, allowed_hosts={request.get_host()}
         ):
-            next_url = reverse("myorganisation")
-        return redirect(next_url)
+            return redirect(next_url)
+        return redirect("myorganisation")
 
 
 class OrganisationEditView(LoginRequiredMixin, OrganisationRequiredMixin, UpdateView):

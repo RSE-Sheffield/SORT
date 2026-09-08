@@ -6,11 +6,19 @@ from .services import organisation_service
 
 
 class OrganisationRequiredMixin:
+    """Require membership of at least one organisation.
+
+    Users with none are sent to the get-started chooser rather than to the
+    create-an-organisation form: creating is only one of the two ways out, and
+    assuming it pushes users who should be joining an existing organisation
+    into making a duplicate.
+    """
+
     def dispatch(self, request, *args, **kwargs):
         if request.user.organisation_set.count() > 0:
             return super().dispatch(request, *args, **kwargs)
         else:
-            return redirect("organisation_create")
+            return redirect("organisation_get_started")
 
 
 class MemberManagementRequiredMixin:

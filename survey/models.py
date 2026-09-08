@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import random
+import re
 import itertools
 import secrets
 import tempfile
@@ -367,6 +368,19 @@ class Survey(models.Model):
                 writer.writerow(row)
             return buffer.getvalue()
 
+    #: Excel worksheet names cannot exceed this many characters
+    EXCEL_SHEET_NAME_MAX_LENGTH = 31
+    #: Characters Excel does not allow in a worksheet name
+    EXCEL_SHEET_NAME_INVALID_CHARS = re.compile(r"[\[\]:*?/\\]")
+
+    def _excel_sheet_name(self) -> str:
+        """
+        A worksheet name derived from the survey name, valid for Excel
+        (<=31 characters, and none of [ ] : * ? / \\).
+        """
+        name = self.EXCEL_SHEET_NAME_INVALID_CHARS.sub("", str(self))
+        return name[: self.EXCEL_SHEET_NAME_MAX_LENGTH] or "Survey"
+
     @contextmanager
     def _to_excel(self) -> ContextManager[Path]:
         """
@@ -379,7 +393,7 @@ class Survey(models.Model):
 
         # Create spreadsheet data
         workbook = xlsxwriter.Workbook(filename=path)
-        sheet = workbook.add_worksheet(name=str(self))
+        sheet = workbook.add_worksheet(name=self._excel_sheet_name())
         # Iterate over responses (one row per response)
         for i, row in enumerate(self.responses_iter()):
             # Write headers
@@ -559,17 +573,62 @@ class SurveyResponse(models.Model):
     @property
     def answers_values(self) -> Generator[str, None, None]:
         """
-        Build a flat iterable of all the answer values for this response.
+        Build a flat iterable of all the answer values for this response, aligned
+        column-for-column with Survey.fields_iter().
 
-        - Likert sub-labels are expanded into individual columns
+        - Likert answers expand into one value per sub-label (matching fields_iter)
+        - Checkbox answers may hold more than one selected option, but each checkbox
+          field is a single column, so its selected options are joined into one value
+
+        Answers that predate response schema validation, or that were stored before the
+        survey configuration changed, may hold fewer sections, fields or likert
+        sub-labels than the configuration describes. Emit a blank cell for each of those
+        so every row still lines up with the header, rather than silently dropping the
+        remaining columns.
         """
-        for section in self.answers:
-            for field in section:
-                # Flatten sub-labels
-                if isinstance(field, list):
-                    yield from field
+        for section_index, section in enumerate(self.survey.sections):
+            section_answers = self._section_answers(section_index)
+            for field_index, field in enumerate(section["fields"]):
+                answer = (
+                    section_answers[field_index]
+                    if field_index < len(section_answers)
+                    else None
+                )
+                if field["type"] == "likert":
+                    sublabels = field.get("sublabels", [])
+                    selected = self._as_list(answer)
+                    for sublabel_index in range(len(sublabels)):
+                        yield (
+                            selected[sublabel_index]
+                            if sublabel_index < len(selected)
+                            else ""
+                        )
+                elif field["type"] == "checkbox":
+                    yield ", ".join(self._as_list(answer))
                 else:
-                    yield field
+                    yield "" if answer is None else answer
+
+    def _section_answers(self, section_index: int) -> list:
+        """
+        The stored answers for one section, or an empty list if the response has none.
+        """
+        try:
+            section_answers = self.answers[section_index]
+        except (IndexError, KeyError, TypeError):
+            return list()
+        return section_answers if isinstance(section_answers, list) else list()
+
+    @staticmethod
+    def _as_list(answer) -> list:
+        """
+        The selected options of a multiple-choice answer.
+
+        Malformed answers may hold a bare string where a list is expected; wrap it rather
+        than treating each character as a selected option.
+        """
+        if answer is None:
+            return list()
+        return answer if isinstance(answer, list) else [answer]
 
 
 class Invitation(models.Model):
