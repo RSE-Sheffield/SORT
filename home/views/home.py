@@ -32,4 +32,6 @@ class HomeView(LoginRequiredMixin, View):
         user = self.request.user
         # all projects for current user
         projects = project_service.get_user_projects(user)
+        # Users with no organisation are pointed at organisation_get_started,
+        # which owns the join-or-create choice and the pending-request state.
         return render(request, self.template_name, context=dict(projects=projects))

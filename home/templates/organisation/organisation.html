@@ -48,7 +48,19 @@
                title="Invite a new user to join this organisation">
                 <i class='bx bxs-user-plus'></i> Invite new member
             </a>
+            <a href="{% url 'join_requests' %}" class="btn btn-primary" role="button"
+               title="Review people who have asked to join this organisation">
+                <i class='bx bxs-user-check'></i> Join requests
+                {% if pending_join_request_count %}
+                    <span class="badge bg-warning text-dark">{{ pending_join_request_count }}</span>
+                    <span class="visually-hidden">awaiting review</span>
+                {% endif %}
+            </a>
             {% endif %}
+            <a href="{% url 'organisation_browse' %}" class="btn btn-light border" role="button"
+               title="Find and request to join another organisation">
+                <i class='bx bxs-buildings'></i> Join another organisation
+            </a>
             <a href="{% url 'data_sharing_agreement' %}" class="btn btn-primary" role="button"
                title="View the data sharing agreement between your organisation and the University">
                 <i class="bx bxs-note"></i> Data Sharing Agreement

@@ -12,19 +12,30 @@
     interface Props {
         config: SurveyConfig,
         surveyStats: SurveyStats | null,
-        sectionIndex: number,
-        readinessDescriptions: string[],
-        useBarChart: boolean,
-        maxHistogramCount: number
+        sectionIndex?: number,
+        readinessDescriptions?: string[],
+        useBarChart?: boolean,
+        maxHistogramCount?: number
     }
 
-    let {config, surveyStats, sectionIndex = 0, readinessDescriptions, useBarChart = false, maxHistogramCount = 0}: Props = $props();
-    let sectionConfig = $derived(config.sections[sectionIndex]);
+    let {config, surveyStats, sectionIndex = 0, readinessDescriptions = [], useBarChart = false, maxHistogramCount = 0}: Props = $props();
+    let sectionConfig = $derived(config?.sections?.[sectionIndex]);
+
+    /**
+     * Stats for one field of this section.
+     *
+     * Returns an empty object when the field has no stats, e.g. an unrecognised field
+     * type or a section that is missing from the stored responses. The chart components
+     * each render an empty state for that.
+     */
+    function fieldStatsFor(fi: number) {
+        return surveyStats?.sections?.[sectionIndex]?.fields?.[fi] ?? {};
+    }
 
 </script>
-{#if surveyStats && config}
+{#if surveyStats && sectionConfig}
     <div class="d-flex flex-wrap">
-        {#each sectionConfig.fields as fieldConfig, fi (fi)}
+        {#each sectionConfig.fields ?? [] as fieldConfig, fi (fi)}
             {#if !fieldConfig.disabled}
             {#if fieldConfig.type === "likert" && sectionConfig.type === "sort"}
                 <div class="mb-3 flex-grow-1 flex-fill w-100">
@@ -44,11 +55,11 @@
                 <div class="mb-3 flex-grow-1 flex-fill w-100">
                     {#if useBarChart}
                     <LikertBarChart fieldConfig={fieldConfig}
-                                     fieldStats={surveyStats.sections[sectionIndex].fields[fi]}
+                                     fieldStats={fieldStatsFor(fi)}
                                      maxHistogramCount={maxHistogramCount}></LikertBarChart>
                     {:else}
                     <LikertHistogram fieldConfig={fieldConfig}
-                                     fieldStats={surveyStats.sections[sectionIndex].fields[fi]}
+                                     fieldStats={fieldStatsFor(fi)}
                                      maxHistogramCount={maxHistogramCount}
                                      sectionTitle={sectionConfig.title}></LikertHistogram>
                     {/if}
@@ -61,7 +72,7 @@
                     </div>
                     <div class="card-body">
                         <OptionsPieChart fieldConfig={fieldConfig}
-                                          fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></OptionsPieChart>
+                                          fieldStats={fieldStatsFor(fi)}></OptionsPieChart>
                     </div>
                 </div>
             {/if}
@@ -72,19 +83,19 @@
                     </div>
                     <div class="card-body">
                         <ScalarHistogram fieldConfig={fieldConfig}
-                                         fieldStats={surveyStats.sections[sectionIndex].fields[fi]}></ScalarHistogram>
+                                         fieldStats={fieldStatsFor(fi)}></ScalarHistogram>
                     </div>
                 </div>
             {/if}
             {#if fieldConfig.type === "textarea"}
                 <div class="mb-3 flex-grow-1 w-100">
                     <CollapsibleCard
-                            title={`${fieldConfig.label} (${surveyStats.sections[sectionIndex].fields[fi].values.length})`}
+                            title={`${fieldConfig.label} (${(fieldStatsFor(fi).values ?? []).length})`}
                             startCollapsed={true}
                     >
                         {#snippet content()}
                             <ul class="list-group">
-                                {#each surveyStats.sections[sectionIndex].fields[fi].values as text, index (index)}
+                                {#each fieldStatsFor(fi).values ?? [] as text, index (index)}
 
                                     <li class="list-group-item">{text}</li>
                                 {/each}
