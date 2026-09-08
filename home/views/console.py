@@ -24,8 +24,11 @@ from home.models import (
     Project,
     User,
 )
-from home.services import data_protection_service, user_service
-from home.services.organisation import remove_membership_and_record_event
+from home.services import data_protection_service, organisation_service, user_service
+from home.services.organisation import (
+    plan_organisation_merge,
+    remove_membership_and_record_event,
+)
 from survey.models import Survey, SurveyResponse
 
 
@@ -315,6 +318,53 @@ class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
             pass  # already removed by a concurrent request; end state is correct
         messages.success(request, f"{user_display} removed from {org_name}.")
         return redirect("admin_organisation_detail", pk=org_pk)
+
+
+class ConsoleMergeOrganisationView(StaffRequiredMixin, TemplateResponseMixin, View):
+    """
+    Merge one organisation into another via the console, wrapping
+    organisation_service.merge_organisations() (previously only reachable
+    via the merge_organisations management command).
+    """
+
+    template_name = "console/merge_organisation_confirm.html"
+
+    def _get_source(self, pk):
+        return get_object_or_404(Organisation, pk=pk)
+
+    def get(self, request, pk):
+        source = self._get_source(pk)
+        context = {
+            "source": source,
+            "organisations": Organisation.objects.exclude(pk=pk).order_by("name"),
+        }
+
+        target_id = request.GET.get("target")
+        if target_id:
+            target = Organisation.objects.filter(pk=target_id).first()
+            if target is not None:
+                try:
+                    context["target"] = target
+                    context["plan"] = plan_organisation_merge(source, target)
+                except ValueError:
+                    messages.error(request, "An organisation cannot be merged into itself.")
+
+        return self.render_to_response(context)
+
+    def post(self, request, pk):
+        source = self._get_source(pk)
+        target = get_object_or_404(Organisation, pk=request.POST.get("target_id"))
+        source_name = source.name
+        target_name = target.name
+
+        try:
+            organisation_service.merge_organisations(request.user, source, target)
+        except (ValueError, PermissionDenied) as exc:
+            messages.error(request, str(exc))
+            return redirect("admin_merge_organisation", pk=source.pk)
+
+        messages.success(request, f"'{source_name}' merged into '{target_name}'.")
+        return redirect("admin_organisation_detail", pk=target.pk)
 
 
 class ConsoleSuspendUserView(StaffRequiredMixin, TemplateResponseMixin, View):
