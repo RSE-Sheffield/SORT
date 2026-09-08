@@ -1,0 +1,1 @@
+{% autoescape off %}Your request to join {{ join_request.organisation.name }} was {{ join_request.get_status_display|lower }}{% endautoescape %}

@@ -42,6 +42,24 @@ header {
     filter: brightness(1.0);
 }
 
+.org-switcher-name {
+    display: inline-block;
+    max-width: 12rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+}
+
+.org-switcher-menu {
+    max-width: 20rem;
+}
+
+.org-switcher-menu .dropdown-item {
+    white-space: normal;
+    word-break: break-word;
+}
+
 .container {
     display: flex;
     justify-content: center;

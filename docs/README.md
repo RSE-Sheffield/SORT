@@ -39,6 +39,7 @@ Required reading for deployment:
 | [troubleshooting.md](troubleshooting.md) | Debugging techniques, log analysis, common issues, and recovery procedures | Investigating bugs, production incidents, error diagnosis |
 | [data-management.md](data-management.md) | Data export commands, CSV generation, and database management utilities | Exporting survey data, generating reports, data migrations |
 | [invitations.md](invitations.md) | Token-based invitation system, email workflows, and invitation management | Implementing invitation features, debugging invite issues |
+| [join-requests.md](join-requests.md) | Self-service organisation join requests — model, service API, email notifications, admin approval flow | Working on organisation membership, onboarding, or the join request queue |
 | [data-protection.md](data-protection.md) | Data protection audit log — DataProtectionEvent model, service API, GDPR accountability | Recording/auditing actions on personal data, GDPR compliance work |
 | [templates.md](templates.md) | Icon system, template resources, and UI component guidelines | Adding icons, updating templates, UI consistency |
 
@@ -137,6 +138,11 @@ make check             # Django system checks + migration verification
 - Complete guide: [invitations.md](invitations.md)
 - Token generation: [data-model.md](data-model.md#invitation)
 - Email workflows: [invitations.md](invitations.md#email-workflows)
+
+**Organisation Join Requests:**
+- Complete guide: [join-requests.md](join-requests.md)
+- Request model: [data-model.md](data-model.md#organisationjoinrequest)
+- Service API: [join-requests.md](join-requests.md#service-api)
 
 **Data Protection & Compliance:**
 - Complete guide: [data-protection.md](data-protection.md)

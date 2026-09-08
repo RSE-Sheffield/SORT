@@ -19,6 +19,7 @@ from home.mixins import StaffRequiredMixin
 from home.models import (
     DataProtectionEvent,
     Organisation,
+    OrganisationJoinRequest,
     OrganisationMembership,
     Project,
     User,
@@ -78,6 +79,13 @@ class ConsoleOrganisationDetailView(StaffRequiredMixin, TemplateView):
         )
         context["projects"] = org.projects.order_by("name")
         context["survey_count"] = Survey.objects.filter(project__organisation=org).count()
+        # Queried directly rather than via organisation_join_request_service:
+        # that service's get_requests() requires manage_members permission on
+        # the organisation, which staff viewing the console may not hold —
+        # StaffRequiredMixin above is the only gate this page needs.
+        context["join_requests"] = OrganisationJoinRequest.objects.filter(
+            organisation=org
+        ).select_related("user", "decided_by")
         return context
 
 

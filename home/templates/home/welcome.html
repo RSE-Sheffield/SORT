@@ -43,8 +43,10 @@
                             to manage your projects, send surveys, and review responses.
                         </p>
                     {% else %}
-                        <p class="card-text">You are not part of an organisation.
-                            Click to <a href="{% url 'organisation_create' %}">create your first organisation.</a>
+                        <p class="card-text">You are not part of an organisation yet.
+                            👉 <a href="{% url 'organisation_get_started' %}">
+                                <strong><i class="bx bxs-buildings"></i> Get started with an organisation</strong></a>
+                            to join the one you work for, or create a new one.
                         </p>
                     {% endif %}
                 </div>

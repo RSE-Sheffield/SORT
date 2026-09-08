@@ -1,0 +1,83 @@
+{% extends "base_manager.html" %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'dashboard' %}">
+                        <i class="bx bxs-home"></i> Dashboard
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bx bxs-buildings"></i> Get started
+                </li>
+            </ol>
+        </nav>
+    </div>
+    <div class="container mx-auto px-4 py-8">
+        <h1>Get started with an organisation</h1>
+        <p>
+            SORT assessments belong to an organisation, so you need to be a
+            member of one before you can create projects or send surveys.
+        </p>
+
+        {% if pending_join_requests %}
+            <div class="alert alert-info" role="status">
+                <h2 class="h5">⏳ Your request is waiting for a decision</h2>
+                <p class="mb-0">
+                    You have asked to join
+                    {% for join_request in pending_join_requests %}
+                        <strong>{{ join_request.organisation.name }}</strong>{% if not forloop.last %},{% endif %}
+                    {% endfor %}.
+                    An administrator there needs to approve your request before
+                    you can see the organisation. We will email you once they
+                    have decided.
+                    <a href="{% url 'join_requests_mine' %}">View your requests</a>.
+                </p>
+            </div>
+        {% endif %}
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card custom-card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h2 class="card-title h4">
+                            <i class="bx bxs-user-plus"></i> Join an existing organisation
+                        </h2>
+                        <p class="card-text flex-grow-1">
+                            If your organisation already uses SORT Online, search
+                            for it and ask to join. An administrator there will
+                            review your request and choose your role.
+                        </p>
+                        <a href="{% url 'organisation_browse' %}" class="btn btn-primary">
+                            Find an organisation
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card custom-card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h2 class="card-title h4">
+                            <i class="bx bxs-buildings"></i> Create a new organisation
+                        </h2>
+                        <p class="card-text flex-grow-1">
+                            If your organisation is not registered yet, create it
+                            and you will become its first administrator. Please
+                            check the list of existing organisations first, so
+                            you do not create a duplicate.
+                        </p>
+                        <a href="{% url 'organisation_create' %}" class="btn btn-light border">
+                            Create an organisation
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p class="mt-4">
+            Already asked to join one?
+            <a href="{% url 'join_requests_mine' %}">Check your join requests</a>.
+        </p>
+    </div>
+{% endblock %}

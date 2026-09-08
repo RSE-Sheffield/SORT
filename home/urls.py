@@ -83,6 +83,21 @@ urlpatterns = [
         name="member_invite_accept",
     ),
     path(
+        "myorganisation/join-requests/",
+        views.OrganisationJoinRequestListView.as_view(),
+        name="join_requests",
+    ),
+    path(
+        "myorganisation/join-requests/<int:pk>/approve/",
+        views.JoinRequestApproveView.as_view(),
+        name="join_request_approve",
+    ),
+    path(
+        "myorganisation/join-requests/<int:pk>/reject/",
+        views.JoinRequestRejectView.as_view(),
+        name="join_request_reject",
+    ),
+    path(
         "myorganisation/data-sharing-agreement/",
         views.DataSharingAgreementView.as_view(),
         name="data_sharing_agreement",
@@ -91,6 +106,31 @@ urlpatterns = [
         "organisation/create/",
         views.OrganisationCreateView.as_view(),
         name="organisation_create",
+    ),
+    path(
+        "organisations/get-started/",
+        views.OrganisationGetStartedView.as_view(),
+        name="organisation_get_started",
+    ),
+    path(
+        "organisations/",
+        views.OrganisationBrowseView.as_view(),
+        name="organisation_browse",
+    ),
+    path(
+        "organisations/<int:pk>/join/",
+        views.JoinRequestCreateView.as_view(),
+        name="organisation_join_request",
+    ),
+    path(
+        "myjoinrequests/",
+        views.MyJoinRequestListView.as_view(),
+        name="join_requests_mine",
+    ),
+    path(
+        "myjoinrequests/<int:pk>/withdraw/",
+        views.JoinRequestWithdrawView.as_view(),
+        name="join_request_withdraw",
     ),
     path("projects/<int:project_id>/", views.ProjectView.as_view(), name="project"),
     path(
