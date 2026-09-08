@@ -12,5 +12,5 @@ gunicorn==23.*
 jsonschema==4.*
 strenum==0.4.15
 xlsxwriter==3.2.5
-sqlparse==0.5.4
+sqlparse==0.6.0
 tzdata==2024.1
