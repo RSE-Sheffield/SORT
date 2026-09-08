@@ -28,6 +28,11 @@
             {% elif not viewed_user.is_active %}
                 <span class="badge bg-secondary">Suspended</span>
             {% endif %}
+            {% if pending_erasure_request %}
+                <span class="badge {% if pending_erasure_request.is_overdue %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                    Erasure requested {{ pending_erasure_request.requested_at|date:"d M Y" }}
+                </span>
+            {% endif %}
             {% if viewed_user.is_deleted %}
             {% elif not viewed_user.is_active %}
                 <form method="post" action="{% url 'admin_unsuspend_user' viewed_user.pk %}">

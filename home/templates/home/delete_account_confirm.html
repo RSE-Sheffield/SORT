@@ -1,0 +1,49 @@
+{% extends "base_manager.html" %}
+{% block title %}Delete my account{% endblock %}
+
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Delete my account</li>
+            </ol>
+        </nav>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-danger shadow-sm">
+                    <div class="card-header bg-white text-danger">
+                        <h1 class="h5 mb-0">Delete my account</h1>
+                    </div>
+                    <div class="card-body">
+                        <p>This withdraws your consent to SORT processing your personal data and requests its erasure, as described in our <a href="{% url 'privacy' %}">privacy notice</a>.</p>
+                        <p>In most cases this happens immediately and will:</p>
+                        <ul>
+                            <li>Wipe your personal data (name, email, password)</li>
+                            <li>Remove you from all organisations</li>
+                            <li>Deactivate your account so you can no longer log in</li>
+                        </ul>
+                        <p class="text-muted small">
+                            If you're the only admin of an organisation that has other
+                            members, we can't erase your account automatically without
+                            leaving that organisation unmanaged. In that case, your
+                            request will be sent to our staff to complete within 30
+                            days, and your account will remain active until then.
+                        </p>
+                        <p class="mb-0">This action cannot be undone.</p>
+                    </div>
+                    <div class="card-footer bg-white d-flex gap-2 justify-content-end">
+                        <a href="{% url 'profile' %}" class="btn btn-outline-secondary">Cancel</a>
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Delete my account</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}

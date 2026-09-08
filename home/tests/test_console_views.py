@@ -381,6 +381,24 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         self.assertFalse(target.has_usable_password())
         self.assertFalse(OrganisationMembership.objects.filter(user_id=original_pk).exists())
 
+        event = DataProtectionEvent.objects.get(event_type=DataProtectionEvent.EventType.ERASURE)
+        self.assertEqual(event.actioned_by, self.staff_user)
+
+    def test_delete_user_completes_pending_erasure_request(self):
+        """Deleting a user with a pending self-service erasure request marks it completed."""
+        from home.models import ErasureRequest
+
+        target = UserFactory()
+        erasure_request = ErasureRequest.objects.create(user=target)
+        self.login_staff()
+
+        self.client.post(f"/console/users/{target.pk}/delete/")
+
+        erasure_request.refresh_from_db()
+        self.assertEqual(erasure_request.status, ErasureRequest.Status.COMPLETED)
+        self.assertEqual(erasure_request.completed_by, self.staff_user)
+        self.assertIsNotNone(erasure_request.completed_at)
+
     def test_delete_user_cannot_delete_self(self):
         """Staff users cannot delete their own account."""
         self.login_staff()

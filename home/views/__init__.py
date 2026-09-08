@@ -1,4 +1,5 @@
 from .auth import (
+    AccountDeletionView,
     CustomPasswordResetCompleteView,
     CustomPasswordResetConfirmView,
     CustomPasswordResetDoneView,
@@ -43,6 +44,7 @@ from .organisation import (
 from .console import (
     ConsoleDataProtectionLogView,
     ConsoleUserListView,
+    ConsolePendingErasureRequestsView,
     ConsoleSurveyDetailView,
     ConsoleSurveyListView,
     ConsoleView,
@@ -66,6 +68,7 @@ from .project import (
 )
 
 __all__ = [
+    "AccountDeletionView",
     "CustomPasswordResetCompleteView",
     "CustomPasswordResetConfirmView",
     "CustomPasswordResetDoneView",
@@ -121,4 +124,5 @@ __all__ = [
     "ConsoleUnsuspendUserView",
     "ConsoleUserDetailView",
     "ConsoleDataProtectionLogView",
+    "ConsolePendingErasureRequestsView",
 ]

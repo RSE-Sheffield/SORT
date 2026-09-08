@@ -364,75 +364,26 @@ class OrganisationService(BasePermissionService):
             organisation=organisation
         ).select_related("user")
 
-    def can_merge(self, user: User) -> bool:
+    def get_sole_admin_orgs_with_other_members(self, user: User) -> QuerySet[Organisation]:
         """
-        Merging spans two organisations, so this is a staff-level action
-        rather than something scoped to a role within either org.
+        Organisations where `user` is the only ADMIN and other members
+        exist. Erasing `user` immediately would strand these orgs with
+        nobody able to manage them, so self-service erasure defers to staff
+        instead (see UserService.request_self_erasure).
         """
-        return bool(
-            user and user.is_authenticated and (user.is_staff or user.is_superuser)
-        )
+        admin_org_ids = OrganisationMembership.objects.filter(
+            user=user, role=ROLE_ADMIN
+        ).values_list("organisation_id", flat=True)
 
-    def merge_organisations(
-        self, user: User, source: Organisation, target: Organisation
-    ) -> OrganisationMergePlan:
-        """
-        Move source's projects and memberships into target, then delete
-        source. Where a user belongs to both orgs, target's existing role
-        wins and the duplicate source membership is dropped.
-
-        Atomic: source and target are locked with select_for_update() before
-        the plan is computed, so the plan can't go stale between being read
-        and being applied; a failure partway through (e.g. the audit write)
-        rolls back every reassignment and the source org is never left
-        half-merged.
-        """
-        if not self.can_merge(user):
-            raise PermissionDenied(
-                f"User '{user}' does not have permission to merge organisations"
-            )
-
-        with transaction.atomic():
-            source = Organisation.objects.select_for_update().get(pk=source.pk)
-            target = Organisation.objects.select_for_update().get(pk=target.pk)
-
-            plan = plan_organisation_merge(source, target)
-
-            for membership in plan.memberships_to_drop:
-                remove_membership_and_record_event(
-                    OrganisationMembership.objects.filter(pk=membership.pk),
-                    actioned_by=user,
-                    notes=(
-                        f"Duplicate membership in '{source.name}' removed: "
-                        f"already a member of '{target.name}' during "
-                        f"organisation merge"
-                    ),
-                )
-
-            OrganisationMembership.objects.filter(
-                pk__in=[m.pk for m in plan.memberships_to_move]
-            ).update(organisation=target)
-
-            Project.objects.filter(organisation=source).update(organisation=target)
-
-            merge_notes = (
-                f"Merged organisation '{source.name}' (id={source.pk}) into "
-                f"'{target.name}' (id={target.pk}): {len(plan.projects)} "
-                f"project(s) moved, {len(plan.memberships_to_move)} "
-                f"membership(s) transferred, {len(plan.memberships_to_drop)} "
-                f"duplicate membership(s) removed."
-            )
-            for membership in plan.memberships_to_move + plan.memberships_to_drop:
-                data_protection_service.record_event(
-                    event_type=DataProtectionEvent.EventType.ORGANISATION_MERGED,
-                    subject_user=membership.user,
-                    actioned_by=user,
-                    notes=merge_notes,
-                )
-
-            source.delete()
-
-        return plan
+        blocking_ids = [
+            org_id
+            for org_id in admin_org_ids
+            if not OrganisationMembership.objects.filter(organisation_id=org_id, role=ROLE_ADMIN)
+            .exclude(user=user)
+            .exists()
+            and OrganisationMembership.objects.filter(organisation_id=org_id).exclude(user=user).exists()
+        ]
+        return Organisation.objects.filter(pk__in=blocking_ids)
 
 
 organisation_service = OrganisationService()
