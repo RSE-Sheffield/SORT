@@ -27,6 +27,9 @@ from survey.schema import field_schema
 
 logger = logging.getLogger(__name__)
 
+# The optional research consent question in the consent section (see CONSENT_TEMPLATE)
+RESEARCH_CONSENT_FIELD_NAME = "consent-research"
+
 
 class Profession(models.TextChoices):
     """
@@ -569,6 +572,21 @@ class SurveyResponse(models.Model):
 
         # Validate response structure against survey config
         self.validate()
+
+    @property
+    def has_research_consent(self) -> bool:
+        """
+        Whether the participant ticked the optional research consent box in the
+        consent (first) section. Only these responses may be shared for research.
+        """
+        fields = self.survey.sections[0].get("fields", []) if self.survey.sections else []
+        for field_index, field in enumerate(fields):
+            if field.get("name") == RESEARCH_CONSENT_FIELD_NAME:
+                section_answers = self._section_answers(0)
+                if field_index < len(section_answers):
+                    return len(self._as_list(section_answers[field_index])) > 0
+                return False
+        return False
 
     @property
     def answers_values(self) -> Generator[str, None, None]:
