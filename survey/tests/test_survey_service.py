@@ -18,6 +18,7 @@ from survey.models import (
     SurveyImprovementPlanSection,
 )
 from survey.services import SurveyService
+from survey.services.survey import InvalidInviteTokenException
 
 
 class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
@@ -145,6 +146,20 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertIsInstance(token, str)
         survey = self.service.get_survey_from_token(token=token)
         self.assertIsInstance(survey, Survey)
+
+    def test_get_token_from_short_code(self):
+        token = self.service.get_token_from_short_code(self.invitation.short_code)
+        self.assertEqual(token, self.invitation.token)
+
+    def test_get_token_from_short_code_case_insensitive(self):
+        token = self.service.get_token_from_short_code(
+            f" {self.invitation.short_code.lower()} "
+        )
+        self.assertEqual(token, self.invitation.token)
+
+    def test_get_token_from_short_code_invalid(self):
+        with self.assertRaises(InvalidInviteTokenException):
+            self.service.get_token_from_short_code("NOTACODE")
 
     def test_accept_response(self):
         self.service.accept_response(
