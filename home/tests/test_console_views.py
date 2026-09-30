@@ -7,6 +7,7 @@ from SORT.test.model_factory import OrganisationFactory, OrganisationMembershipF
 from SORT.test.model_factory.user.constants import PASSWORD
 
 from home.models import DataProtectionEvent
+from survey.models import SurveyResponse
 
 
 class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
@@ -573,3 +574,50 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
                 event_type=DataProtectionEvent.EventType.RECTIFICATION, subject_user_id=target.pk
             ).exists()
         )
+
+    def test_console_analytics_accessible_to_staff(self):
+        """Staff users can view usage analytics."""
+        survey = SurveyFactory()
+        SurveyResponse.objects.create(survey=survey, answers=[])
+        self.login_staff()
+        response = self.client.get("/console/analytics/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(response, survey.organisation.name)
+        self.assertEqual(response.context["analytics"]["active_days"], 90)
+
+    def test_console_analytics_redirects_anonymous(self):
+        response = self.client.get("/console/analytics/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_analytics_forbidden_for_regular_users(self):
+        self.login()
+        response = self.client.get("/console/analytics/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_analytics_days_parameter(self):
+        """The activity window is read from ?days=, and invalid values fall back to the default."""
+        self.login_staff()
+        for value, expected in (("30", 30), ("abc", 90), ("0", 1), ("999999", 3650)):
+            with self.subTest(days=value):
+                response = self.client.get("/console/analytics/", {"days": value})
+                self.assertEqual(response.context["analytics"]["active_days"], expected)
+
+    def test_console_analytics_export_csv(self):
+        """Staff can download each analytics table as CSV."""
+        self.login_staff()
+        for report in ("surveys", "trends", "organisations"):
+            with self.subTest(report=report):
+                response = self.client.get("/console/analytics/export/", {"report": report})
+                self.assertEqual(response.status_code, HTTPStatus.OK)
+                self.assertEqual(response["Content-Type"], "text/csv")
+                self.assertIn(f"sort_usage_{report}.csv", response["Content-Disposition"])
+
+    def test_console_analytics_export_unknown_report(self):
+        self.login_staff()
+        response = self.client.get("/console/analytics/export/", {"report": "nonsense"})
+        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
+
+    def test_console_analytics_export_forbidden_for_regular_users(self):
+        self.login()
+        response = self.client.get("/console/analytics/export/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
