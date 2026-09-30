@@ -1,4 +1,5 @@
 {% extends "base_console.html" %}
+{% load console_tags %}
 {% block title %}| Admin — Users{% endblock %}
 
 {% block content %}
@@ -8,10 +9,10 @@
         <div class="mb-3">
             <div class="d-flex gap-2 align-items-center">
                 <span class="text-muted text-nowrap">Status:</span>
-                <a href="?status=active" class="btn btn-sm {% if status_filter == 'active' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Active</a>
-                <a href="?status=suspended" class="btn btn-sm {% if status_filter == 'suspended' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Suspended</a>
-                <a href="?status=deleted" class="btn btn-sm {% if status_filter == 'deleted' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Deleted</a>
-                <a href="?status=all" class="btn btn-sm {% if status_filter == 'all' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">All</a>
+                <a href="?status=active{% if request.GET.sort %}&sort={{ sort }}&dir={{ dir }}{% endif %}" class="btn btn-sm {% if status_filter == 'active' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Active</a>
+                <a href="?status=suspended{% if request.GET.sort %}&sort={{ sort }}&dir={{ dir }}{% endif %}" class="btn btn-sm {% if status_filter == 'suspended' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Suspended</a>
+                <a href="?status=deleted{% if request.GET.sort %}&sort={{ sort }}&dir={{ dir }}{% endif %}" class="btn btn-sm {% if status_filter == 'deleted' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Deleted</a>
+                <a href="?status=all{% if request.GET.sort %}&sort={{ sort }}&dir={{ dir }}{% endif %}" class="btn btn-sm {% if status_filter == 'all' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">All</a>
             </div>
         </div>
 
@@ -20,11 +21,11 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                     <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Status</th>
-                        <th>Organisations</th>
-                        <th>Joined</th>
+                        {% sort_header "name" "Name" %}
+                        {% sort_header "email" "Email" %}
+                        {% sort_header "status" "Status" %}
+                        {% sort_header "organisations" "Organisations" %}
+                        {% sort_header "joined" "Joined" %}
                     </tr>
                     </thead>
                     <tbody>
@@ -51,7 +52,7 @@
                                     <span class="badge bg-secondary">Suspended</span>
                                 {% endif %}
                             </td>
-                            <td>{{ user.organisationmembership_set.count }}</td>
+                            <td>{{ user.organisation_count }}</td>
                             <td>{{ user.date_joined|date:"d M Y" }}</td>
                         </tr>
                     {% empty %}
