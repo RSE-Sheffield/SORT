@@ -41,6 +41,8 @@ from .organisation import (
     SetActiveOrganisationView,
 )
 from .console import (
+    ConsoleAnalyticsExportView,
+    ConsoleAnalyticsView,
     ConsoleDataProtectionLogView,
     ConsoleUserListView,
     ConsoleSurveyDetailView,
@@ -109,6 +111,8 @@ __all__ = [
     "ConsoleSurveyDetailView",
     "ConsoleSurveyListView",
     "ConsoleView",
+    "ConsoleAnalyticsExportView",
+    "ConsoleAnalyticsView",
     "ConsoleDeleteUserView",
     "ConsoleEditUserView",
     "ConsoleExportUserDataView",

@@ -177,6 +177,12 @@ urlpatterns = [
     ),
     # Management console (staff only)
     path("console/", views.ConsoleView.as_view(), name="admin_dashboard"),
+    path("console/analytics/", views.ConsoleAnalyticsView.as_view(), name="admin_analytics"),
+    path(
+        "console/analytics/export/",
+        views.ConsoleAnalyticsExportView.as_view(),
+        name="admin_analytics_export",
+    ),
     path(
         "console/organisations/",
         views.ConsoleOrganisationListView.as_view(),

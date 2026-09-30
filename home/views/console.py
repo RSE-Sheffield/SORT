@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Count
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import TemplateView, View
 from django.views.generic.base import TemplateResponseMixin
@@ -25,6 +25,7 @@ from home.models import (
     User,
 )
 from home.services import data_protection_service, user_service
+from home.services.analytics import CSV_REPORTS, DEFAULT_ACTIVE_DAYS, UsageAnalytics
 from home.services.organisation import remove_membership_and_record_event
 from home.views.sorting import SortableMixin
 from survey.models import Survey, SurveyResponse
@@ -50,6 +51,50 @@ class ConsoleView(StaffRequiredMixin, TemplateView):
         context["recent_surveys"] = Survey.objects.order_by("-created_at")[:5]
 
         return context
+
+
+# Bounds for the "active in the last N days" window on the analytics page
+MAX_ACTIVE_DAYS = 3650
+
+
+def get_active_days(request) -> int:
+    """Parse the ?days= query parameter, falling back to the default when missing or invalid."""
+    try:
+        days = int(request.GET.get("days", DEFAULT_ACTIVE_DAYS))
+    except ValueError:
+        return DEFAULT_ACTIVE_DAYS
+    return min(max(days, 1), MAX_ACTIVE_DAYS)
+
+
+class ConsoleAnalyticsView(StaffRequiredMixin, TemplateView):
+    """
+    Usage analytics for impact reporting: headline figures, leaderboards and trends over time.
+    """
+
+    template_name = "console/analytics.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        analytics = UsageAnalytics(active_days=get_active_days(self.request))
+        context["analytics"] = analytics.as_dict()
+        context["csv_reports"] = CSV_REPORTS
+        return context
+
+
+class ConsoleAnalyticsExportView(StaffRequiredMixin, View):
+    """
+    Download one of the usage analytics tables as CSV.
+    """
+
+    def get(self, request):
+        report = request.GET.get("report", "surveys")
+        if report not in CSV_REPORTS:
+            return HttpResponse(f"Unknown report '{report}'", status=400, content_type="text/plain")
+        analytics = UsageAnalytics(active_days=get_active_days(request))
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f"attachment; filename=sort_usage_{report}.csv"
+        analytics.write_csv(report, response)
+        return response
 
 
 class ConsoleOrganisationListView(StaffRequiredMixin, SortableMixin, TemplateView):

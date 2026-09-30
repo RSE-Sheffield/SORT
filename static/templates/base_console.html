@@ -18,33 +18,39 @@
             <div class="collapse navbar-collapse" id="adminNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/admin-portal/' %}active{% endif %}"
+                        <a class="nav-link {% if request.path == '/console/' %}active{% endif %}"
                            href="{% url 'admin_dashboard' %}">
                             <i class="bx bxs-home"></i> Overview
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if '/admin-portal/organisations' in request.path %}active{% endif %}"
+                        <a class="nav-link {% if '/console/organisations' in request.path %}active{% endif %}"
                            href="{% url 'admin_organisations' %}">
                             <i class="bx bxs-buildings"></i> Organisations
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if '/admin-portal/projects' in request.path %}active{% endif %}"
+                        <a class="nav-link {% if '/console/projects' in request.path %}active{% endif %}"
                            href="{% url 'admin_projects' %}">
                             <i class="bx bxs-folder"></i> Projects
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if '/admin-portal/users' in request.path %}active{% endif %}"
+                        <a class="nav-link {% if '/console/users' in request.path %}active{% endif %}"
                            href="{% url 'admin_users' %}">
                             <i class="bx bxs-group"></i> Users
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if '/admin-portal/surveys' in request.path %}active{% endif %}"
+                        <a class="nav-link {% if '/console/surveys' in request.path %}active{% endif %}"
                            href="{% url 'admin_surveys' %}">
                             <i class="bx bxs-file-doc"></i> Surveys
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/console/analytics' in request.path %}active{% endif %}"
+                           href="{% url 'admin_analytics' %}">
+                            <i class="bx bx-line-chart"></i> Analytics
                         </a>
                     </li>
                     <li class="nav-item">

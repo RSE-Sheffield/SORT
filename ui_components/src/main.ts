@@ -1,5 +1,10 @@
 import {mount} from 'svelte'
-import {type FileDescriptionType, type SurveyConfig, type SurveyResponseBatch} from "./lib/interfaces.ts"
+import {
+    type FileDescriptionType,
+    type SurveyConfig,
+    type SurveyResponseBatch,
+    type UsageTrendRow
+} from "./lib/interfaces.ts"
 import {generateStatsFromSurveyResponses, getDataInElem} from "./lib/misc.svelte.js";
 import SmartTable from "./lib/components/SmartTable.svelte";
 import SurveyConfigConsentDemographyApp from "./SurveyConfigConsentDemographyApp.svelte";
@@ -10,6 +15,7 @@ import SurveyResponseViewerApp from "./lib/components/SurveyResponseViewerApp.sv
 import SurveySectionDataView from "./lib/components/SurveySectionDataView.svelte";
 import SortSummaryMatrix from "./lib/components/SortSummaryMatrix.svelte";
 import SurveyReportApp from "./lib/components/SurveyReportApp.svelte";
+import UsageTrendsChart from "./lib/components/graph/UsageTrendsChart.svelte";
 
 const csrf: string = getDataInElem("csrf", []);
 
@@ -167,5 +173,13 @@ mapMatchedElement(".sort-report-app", (elem) => {
             config: config,
             responses: responses
         }
+    });
+});
+
+mapMatchedElement(".sort-usage-trends", (elem) => {
+    const trends = getDataInElem(elem.dataset.jsonId, []) as UsageTrendRow[];
+    mount(UsageTrendsChart, {
+        target: elem,
+        props: {trends: trends}
     });
 });
