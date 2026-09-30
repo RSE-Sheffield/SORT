@@ -3,8 +3,6 @@ import logging
 import mimetypes
 import os.path
 
-import django.core.mail
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -598,26 +596,43 @@ class SurveyCreateInviteView(LoginRequiredMixin, View):
         return redirect("survey", pk=pk)
 
 
-class InvitationView(FormView):
-    model = Survey
+class InvitationView(LoginRequiredMixin, FormView):
+    """
+    Send the survey invitation link to participants by email.
+    """
+
     template_name = "invitations/send_invitation.html"
     form_class = InvitationForm
 
+    def get(self, request, *args, **kwargs):
+        self.survey = survey_service.get_survey(request.user, kwargs["pk"])
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.survey = survey_service.get_survey(request.user, kwargs["pk"])
+        return super().post(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(survey=self.survey, **kwargs)
+
     def form_valid(self, form):
         recipient_list = Invitation.recipient_list(form.cleaned_data["email"])
-        message = form.data["message"]
-        survey = Survey.objects.get(pk=self.kwargs["pk"])
         # Generate the survey link with the token
-        survey_link = survey.get_invite_link(request=self.request)
+        survey_link = self.survey.get_invite_link(request=self.request)
+        if survey_link is None:
+            form.add_error(
+                None,
+                "This survey has no active invitation link. "
+                "Generate one on the survey page first.",
+            )
+            return self.form_invalid(form)
 
-        # Send the email
-        # https://docs.djangoproject.com/en/5.1/topics/email/
-        django.core.mail.send_mail(
-            subject="Your SORT Survey Invitation",
-            message=f"Click here to start the SORT survey:\n{survey_link}\n\n{message}",
-            from_email=settings.DEFAULT_FROM_EMAIL,
+        survey_service.send_invitation(
+            self.request.user,
+            self.survey,
             recipient_list=recipient_list,
-            fail_silently=False,
+            survey_link=survey_link,
+            message=form.cleaned_data["message"],
         )
 
         # Show success message
