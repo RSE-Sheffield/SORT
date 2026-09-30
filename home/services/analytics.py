@@ -29,6 +29,8 @@ from survey.models import Survey, SurveyResponse
 COMPLETED_SURVEY_MIN_RESPONSES = 10
 # An organisation is "active" if it has received a response within this many days.
 DEFAULT_ACTIVE_DAYS = 90
+# Upper bound for the active window (~10 years); larger values overflow date arithmetic.
+MAX_ACTIVE_DAYS = 3650
 # Number of rows in the "biggest users/organisations" leaderboards.
 TOP_N = 10
 

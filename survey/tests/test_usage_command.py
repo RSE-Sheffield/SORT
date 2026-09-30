@@ -53,3 +53,7 @@ class UsageCommandTestCase(SORT.test.test_case.ServiceTestCase):
     def test_invalid_active_days(self):
         with self.assertRaises(CommandError):
             self._call("--active-days", "0")
+
+    def test_active_days_too_large(self):
+        with self.assertRaises(CommandError):
+            self._call("--active-days", "1000000")

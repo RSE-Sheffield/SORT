@@ -25,7 +25,12 @@ from home.models import (
     User,
 )
 from home.services import data_protection_service, user_service
-from home.services.analytics import CSV_REPORTS, DEFAULT_ACTIVE_DAYS, UsageAnalytics
+from home.services.analytics import (
+    CSV_REPORTS,
+    DEFAULT_ACTIVE_DAYS,
+    MAX_ACTIVE_DAYS,
+    UsageAnalytics,
+)
 from home.services.organisation import remove_membership_and_record_event
 from home.views.sorting import SortableMixin
 from survey.models import Survey, SurveyResponse
@@ -51,10 +56,6 @@ class ConsoleView(StaffRequiredMixin, TemplateView):
         context["recent_surveys"] = Survey.objects.order_by("-created_at")[:5]
 
         return context
-
-
-# Bounds for the "active in the last N days" window on the analytics page
-MAX_ACTIVE_DAYS = 3650
 
 
 def get_active_days(request) -> int:

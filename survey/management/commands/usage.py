@@ -2,7 +2,12 @@ import json
 
 from django.core.management import BaseCommand, CommandError
 
-from home.services.analytics import CSV_REPORTS, DEFAULT_ACTIVE_DAYS, UsageAnalytics
+from home.services.analytics import (
+    CSV_REPORTS,
+    DEFAULT_ACTIVE_DAYS,
+    MAX_ACTIVE_DAYS,
+    UsageAnalytics,
+)
 
 
 class Command(BaseCommand):
@@ -37,12 +42,15 @@ class Command(BaseCommand):
             "--active-days",
             type=int,
             default=DEFAULT_ACTIVE_DAYS,
-            help=f"Window in days for an organisation to count as active (default: {DEFAULT_ACTIVE_DAYS})",
+            help=(
+                "Window in days for an organisation to count as active,"
+                f" 1 to {MAX_ACTIVE_DAYS} (default: {DEFAULT_ACTIVE_DAYS})"
+            ),
         )
 
     def handle(self, *args, **options):
-        if options["active_days"] < 1:
-            raise CommandError("--active-days must be a positive number")
+        if not 1 <= options["active_days"] <= MAX_ACTIVE_DAYS:
+            raise CommandError(f"--active-days must be between 1 and {MAX_ACTIVE_DAYS}")
         analytics = UsageAnalytics(active_days=options["active_days"])
 
         if options["format"] == "csv":
