@@ -37,3 +37,7 @@ omit = [
 format = "markdown"
 skip_empty = true
 sort = "Cover"
+
+[tool.bandit]
+# Tests use asserts and hardcoded passwords, which are noise for a security scan.
+exclude_dirs = ["node_modules", ".venv", "e2e", "home/tests", "survey/tests", "SORT/test"]

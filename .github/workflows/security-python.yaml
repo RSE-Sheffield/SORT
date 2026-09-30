@@ -1,0 +1,49 @@
+name: Python security scans
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "**/*.py"
+      - requirements*.txt
+      - pyproject.toml
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "**/*.py"
+      - requirements*.txt
+      - pyproject.toml
+  schedule:
+    # New vulnerabilities are published without any code change, so also scan weekly
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bandit:
+    name: Bandit (static analysis)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5.6.0
+        with:
+          python-version-file: .python-version
+      - name: Install Bandit
+        run: pip install "bandit[toml]"
+      - name: Scan Python code
+        run: bandit -r . -c pyproject.toml --severity-level medium
+  pip-audit:
+    name: pip-audit (dependency vulnerabilities)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5.6.0
+        with:
+          python-version-file: .python-version
+      - name: Install pip-audit
+        run: pip install pip-audit
+      - name: Audit production dependencies
+        run: pip-audit -r requirements.txt
