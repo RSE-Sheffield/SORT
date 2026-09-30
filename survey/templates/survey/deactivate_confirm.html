@@ -15,34 +15,33 @@
                     <i class="bx bxs-chart"></i> Survey: {{ survey.name }}
                 </li>
                 <li class="breadcrumb-item active" aria-current="page">
-                    <i class="bx bx-pause-circle"></i>&nbsp;Deactivate survey
+                    <i class="bx bx-check-circle"></i>&nbsp;Conclude survey
                 </li>
             </ol>
         </nav>
     </div>
     <div class="container px-4">
-        <h1>Deactivate survey</h1>
+        <h1>Conclude survey</h1>
         <p>
-            Please confirm that you would like to <strong>pause response gathering</strong> for survey "{{ survey }}".
+            Please confirm that you would like to <strong>conclude</strong> survey "{{ survey }}".
         </p>
 
         <p>
-            After you have paused the survey, to resume response gathering please click the "Activate survey" button on
-            the survey management page.
+            Concluding marks the survey as complete. If you need to resume response gathering, click the "Reopen survey"
+            button on the survey management page.
         </p>
-        <h2>Confirm deactivation</h2>
+        <h2>Confirm conclusion</h2>
         <p>
-            If the survey is deactivated then participants will not be able to submit survey data until it is activated
-            again.
+            Once the survey is concluded, participants will not be able to submit survey data unless it is reopened.
         </p>
         <form action="{% url 'survey_deactivate' survey.id %}" method="post">
             {% csrf_token %}
             <button type="submit" name="deactivate" value="1" class="btn btn-warning">
-                <i class="bx bx-pause-circle"></i>&nbsp;Deactivate survey
+                <i class="bx bx-check-circle"></i>&nbsp;Conclude survey
             </button>
             <label for="confirm" class="m-3">
                 <input type="checkbox" required id="confirm" name="confirm" value="1"/>
-                I <strong>confirm</strong> that I want to pause response gathering
+                I <strong>confirm</strong> that I want to conclude this survey
             </label>
         </form>
     </div>
