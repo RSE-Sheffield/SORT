@@ -236,6 +236,21 @@ class TestSurveyResponseValidate(TestCase):
         with self.assertRaises(ValidationError):
             self._response(survey, [["Maybe"]]).validate()
 
+    # --- disabled fields ---
+
+    def test_disabled_required_field_accepts_null(self):
+        survey = self._make_survey([
+            {"fields": [{"type": "text", "required": True, "disabled": True}]}
+        ])
+        self._response(survey, [[None]]).validate()
+
+    def test_enabled_required_field_rejects_null(self):
+        survey = self._make_survey([
+            {"fields": [{"type": "text", "required": True}]}
+        ])
+        with self.assertRaises(ValidationError):
+            self._response(survey, [[None]]).validate()
+
     # --- required text ---
 
     def test_required_text_empty_raises(self):
