@@ -28,6 +28,7 @@ omit = [
     "SORT/*",
     "*/admin.py",
     "*/tests/*",
+    "e2e/*",
     "home/management/*",
     "survey/management/*",
 ]
