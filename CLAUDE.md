@@ -14,6 +14,7 @@ make test
 python manage.py test home/tests --parallel=auto --failfast
 python manage.py test survey/tests --parallel=auto --failfast
 npm test
+make e2e     # Playwright browser tests in e2e/ (needs: playwright install chromium)
 
 # Quality
 make lint

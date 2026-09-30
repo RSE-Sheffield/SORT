@@ -35,8 +35,13 @@ shell:
 	$(MANAGE) shell
 
 test:
-	$(MANAGE) test --parallel=auto --failfast
+	$(MANAGE) test --parallel=auto --failfast --exclude-tag=e2e
 	npm test
+
+# End-to-end browser tests (requires: playwright install chromium)
+e2e:
+	npm run build
+	$(MANAGE) test e2e --tag=e2e
 
 clean:
 	find . -type f -name "*.pyc" -delete
@@ -57,4 +62,4 @@ format:
 .DEFAULT_GOAL := help
 
 # Mark these targets as always needing to run (not files)
-.PHONY: help runserver migrations migrate check superuser static shell test clean requirements lint
+.PHONY: help runserver migrations migrate check superuser static shell test e2e clean requirements lint

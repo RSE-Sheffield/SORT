@@ -90,3 +90,6 @@ lerna-debug.log*
 
 # Coding agents
 .claude/
+
+# Playwright end-to-end test screenshots
+/test-results/
