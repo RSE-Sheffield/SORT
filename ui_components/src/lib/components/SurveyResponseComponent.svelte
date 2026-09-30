@@ -25,6 +25,9 @@
     // when components are deleted the derived property filters this out
     let currentSectionComponent: SectionComponent | undefined = $state();
 
+    type ConfigField = {disabled?: boolean};
+    type ConfigSection = {fields?: ConfigField[]};
+
     // Value in plaintext for submitting to the backend
     let valueStr = $derived(JSON.stringify(value))
 
@@ -33,7 +36,7 @@
     $effect(() => {
         // Skipped (fully disabled) sections are never rendered, so they have no answers.
         // Submit null for each of their fields so the answers match the survey configuration.
-        value = config.sections.map((section: any, index: number) =>
+        value = config.sections.map((section: ConfigSection, index: number) =>
             sectionValues[index] ?? (section.fields ?? []).map(() => null)
         );
     })
@@ -42,9 +45,9 @@
     // Indexes refer to config.sections so that answers stay aligned with the config.
     let visibleSections: number[] = $derived(
         config.sections
-            .map((section: any, index: number) => ({section, index}))
-            .filter(({section}: any) => (section.fields ?? []).some((f: any) => !f.disabled))
-            .map(({index}: any) => index)
+            .map((section: ConfigSection, index: number) => ({section, index}))
+            .filter(({section}: {section: ConfigSection}) => (section.fields ?? []).some((f) => !f.disabled))
+            .map(({index}: {index: number}) => index)
     );
 
     let currentPage = $state(0);
