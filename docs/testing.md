@@ -1,6 +1,6 @@
 # SORT testing
 
-There are two testing frameworks in place: one for the frontend (JavaScript and Node.js) and another for the backend (Python Django).
+There are three kinds of tests: frontend unit tests (JavaScript and Node.js), backend tests (Python Django), and end-to-end browser tests that exercise the whole app.
 
 There is a testing script for Windows at [scripts/test.bat](../scripts/test.bat).
 
@@ -73,3 +73,49 @@ There are test case classes defined in the [`SORT.test.test_case`](SORT/test/tes
 ### Object factories
 
 There are factory utilities that are used to create mock objects of our Django models for testing in the [`SORT.test.model_factory`](SORT/test/model_factory) module. This uses the [Factory Boy](https://factoryboy.readthedocs.io/en/stable/index.html) library, which [supports the Django ORM](https://factoryboy.readthedocs.io/en/stable/orms.html#module-factory.django).
+
+# End-to-end testing
+
+The end-to-end tests in the [`e2e`](../e2e) directory run the real Django app, with the built Svelte front end, in a headless Chromium browser using [Playwright for Python](https://playwright.dev/python/). They focus on the key user journeys, especially survey capture, rather than aiming for full coverage:
+
+- `test_smoke.py` loads each key page, checks it renders, and that the Svelte components mount
+- `test_survey_response.py` generates an invitation link and completes a survey as a respondent, including validation and page navigation
+- `test_survey_configure.py` adds a demographic question and checks respondents see it
+- `test_evidence_improvement.py` saves an evidence statement, uploads evidence and saves an improvement plan
+- `test_auth.py` covers the login form
+
+Every test automatically fails if the browser reports an uncaught JavaScript exception or a console error, or if the server returns an HTTP 5xx response.
+
+## Installation
+
+Install the development packages (see above), then download the browser and build the front-end assets:
+
+```bash
+playwright install chromium
+npm run build
+```
+
+Rebuild the front end (`npm run build`) whenever the Svelte code changes, because the tests use the built assets rather than the Vite development server.
+
+## Usage
+
+```bash
+make e2e
+# or
+python manage.py test e2e
+```
+
+The tests are tagged `e2e` and are excluded from `make test`. They are skipped if Playwright isn't installed or the front end hasn't been built.
+
+To watch the browser while the tests run, set `E2E_HEADED=1`. When a test fails, screenshots of the open pages are saved to the `test-results/` directory (these are also uploaded as an artifact by the GitHub Actions workflow).
+
+## Writing tests
+
+Extend `e2e.base.PlaywrightTestCase`, which provides:
+
+- `self.page`: a Playwright page, and `self.new_anonymous_page()` for a separate, logged-out browser session
+- `self.login(user)`: log in without using the login form
+- `self.visit(url_name, **kwargs)`: open a page by its URL name and check the response is successful
+- `self.create_survey()`: create a fully configured survey and return it with its organisation administrator
+
+The helpers in `e2e/survey.py` fill in the survey response form based on the survey configuration. Prefer user-facing locators such as `get_by_role` and `get_by_label` (see [Playwright locators](https://playwright.dev/python/docs/locators)).
