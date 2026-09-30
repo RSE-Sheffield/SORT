@@ -88,6 +88,10 @@ We expect all contributors to follow the SORT [Code of Conduct](CODE_OF_CONDUCT.
 
 Please read the [testing documentation](docs/testing.md).
 
+# Security scans
+
+CI runs [Bandit](https://bandit.readthedocs.io/) (Python code) and [pip-audit](https://pypi.org/project/pip-audit/) (Python dependencies). Run both locally with `make security`. Suppress a Bandit false positive inline with `# nosec Bxxx` and explain why in a comment on the line above.
+
 # Documentation
 
 Developer documentation is available in the [docs/](docs/) directory. See [docs/README.md](docs/README.md) for a guide to navigating the documentation.
