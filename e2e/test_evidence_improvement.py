@@ -24,9 +24,9 @@ class EvidenceImprovementTestCase(PlaywrightTestCase):
         self.visit("survey_evidence_gathering", pk=self.survey.pk, section_id=self.section_id)
 
         page.locator(".sort-richtext-field [contenteditable=true]").fill(STATEMENT)
-        page.get_by_role("button", name="Save statement").click()
+        with page.expect_navigation():
+            page.get_by_role("button", name="Save statement").click()
 
-        page.wait_for_url(self.url("survey_evidence_gathering", pk=self.survey.pk, section_id=self.section_id))
         expect(page.locator(".sort-richtext-field [contenteditable=true]")).to_contain_text(STATEMENT)
         section = self.survey.evidence_sections.get(section_id=self.section_id)
         self.assertIn(STATEMENT, section.text)
