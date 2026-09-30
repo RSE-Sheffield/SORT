@@ -5,22 +5,23 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+permissions: {}
 
 jobs:
   release-please:
     name: Manage release pull request
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - name: Release Please
         id: release
-        uses: googleapis/release-please-action@v4
+        uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.4.1
         with:
           # A PAT is required, not secrets.GITHUB_TOKEN: GitHub does not cascade
           # the release: published event to other workflows (e.g. release-to-orda.yml)
@@ -32,15 +33,17 @@ jobs:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created }}
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read  # checkout only; assets are uploaded with RELEASE_TOKEN
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           ref: ${{ needs.release-please.outputs.tag_name }}
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version-file: package.json
           cache: 'npm'
@@ -55,24 +58,27 @@ jobs:
       - name: Create release artifacts
         run: |
           mkdir -p release-artifacts
-          VERSION=$(echo "${{ needs.release-please.outputs.tag_name }}" | sed 's/^v//')
+          VERSION=$(echo "${NEEDS_RELEASE_PLEASE_OUTPUTS_TAG_NAME}" | sed 's/^v//')
           # Include built frontend assets
           tar -czf release-artifacts/sort-frontend-${VERSION}.tar.gz static/ui-components/
           # Create source archive with built assets
           git archive --format=tar.gz --prefix=SORT-${VERSION}/ HEAD > release-artifacts/SORT-${VERSION}.tar.gz
+        env:
+          NEEDS_RELEASE_PLEASE_OUTPUTS_TAG_NAME: ${{ needs.release-please.outputs.tag_name }}
 
       - name: Upload release artifacts
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          NEEDS_RELEASE_PLEASE_OUTPUTS_TAG_NAME: ${{ needs.release-please.outputs.tag_name }}
         run: |
-          gh release upload "${{ needs.release-please.outputs.tag_name }}" \
+          gh release upload "${NEEDS_RELEASE_PLEASE_OUTPUTS_TAG_NAME}" \
             release-artifacts/* \
             --repo "${{ github.repository }}"
 
       - name: Summary
         if: success()
         run: |
-          TAG="${{ needs.release-please.outputs.tag_name }}"
+          TAG="${NEEDS_RELEASE_PLEASE_OUTPUTS_TAG_NAME}"
           VERSION=$(echo "$TAG" | sed 's/^v//')
           echo "## Release Created Successfully!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -82,3 +88,5 @@ jobs:
           echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "- Frontend assets: \`sort-frontend-${VERSION}.tar.gz\`" >> $GITHUB_STEP_SUMMARY
           echo "- Source archive: \`SORT-${VERSION}.tar.gz\`" >> $GITHUB_STEP_SUMMARY
+        env:
+          NEEDS_RELEASE_PLEASE_OUTPUTS_TAG_NAME: ${{ needs.release-please.outputs.tag_name }}
