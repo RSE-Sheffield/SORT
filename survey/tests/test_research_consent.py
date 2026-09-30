@@ -59,7 +59,10 @@ class MakeResearchConsentOptionalCommandTestCase(TestCase):
         self.survey.initialise()
         # Simulate a survey created before research consent became optional
         self.index = field_index(self.survey, RESEARCH_CONSENT_FIELD_NAME)
-        self.survey.survey_config["sections"][0]["fields"][self.index]["required"] = True
+        field = self.survey.survey_config["sections"][0]["fields"][self.index]
+        self.template_description = field["description"]
+        field["required"] = True
+        field["description"] = "You must agree before proceeding."
         self.survey.save()
 
     def research_field(self) -> dict:
@@ -79,7 +82,22 @@ class MakeResearchConsentOptionalCommandTestCase(TestCase):
 
         # Nothing else changed
         before["sections"][0]["fields"][self.index]["required"] = False
+        before["sections"][0]["fields"][self.index][
+            "description"
+        ] = self.template_description
         self.assertEqual(self.survey.survey_config, before)
+
+    def test_description_updated_to_template(self):
+        call_command("make_research_consent_optional", stdout=StringIO())
+        description = self.research_field()["description"]
+        self.assertEqual(description, self.template_description)
+        self.assertIn("This is optional", description)
+
+    def test_dry_run_leaves_description(self):
+        call_command("make_research_consent_optional", "--dry-run", stdout=StringIO())
+        self.assertEqual(
+            self.research_field()["description"], "You must agree before proceeding."
+        )
 
     def test_internal_consent_left_required(self):
         call_command("make_research_consent_optional", stdout=StringIO())
