@@ -19,8 +19,8 @@
           "type": "checkbox",
           "name": "consent-research",
           "label": "Do you consent for your response to be used for research purposes?",
-          "description": "<div class=\"alert alert-primary\" role=\"alert\">You must read to and agree to the <a href=\"/participant-information\">participant information sheet</a> before proceeding.</div>",
-          "required": true,
+          "description": "<div class=\"alert alert-primary\" role=\"alert\">This is optional. You can still complete the survey without agreeing. If you agree, please first read the <a href=\"/participant-information\">participant information sheet</a>.</div>",
+          "required": false,
           "options": [
             "I have read and agree with the participant information sheet consent for my data to be used for research."
           ]

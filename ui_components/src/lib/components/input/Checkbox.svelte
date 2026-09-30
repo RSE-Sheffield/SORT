@@ -16,7 +16,8 @@
   }
 
   export function validate() {
-    if (config.required && !value) {
+    // Unticking every box leaves an empty array, which must not satisfy a required field
+    if (config.required && (!Array.isArray(value) || value.length === 0)) {
       setIsValid(false);
       return false;
     }
@@ -27,7 +28,7 @@
 </script>
 <div class={{"form-label":true }}>
     {config.label}{#if config.required}<RequiredBadge />{/if}
-    {#if config.description || config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
+    {#if config.description && config.description.length > 0}<p class="form-text">{@html DOMPurify.sanitize(config.description)}</p>{/if}
     {#each config.options as option, index}
         <div class="form-check">
             <input class={{"form-check-input": true, "is-valid": isValid, "is-invalid": isInvalid}}
@@ -42,7 +43,11 @@
             {#if config.options && index >= config.options.length - 1}
             <!-- Feedback on the last component only -->
             <div class="invalid-feedback">
-                At least one option must be selected.
+                {#if config.options.length === 1}
+                    This box must be ticked to continue.
+                {:else}
+                    At least one option must be selected.
+                {/if}
             </div>
             {/if}
         </div>
