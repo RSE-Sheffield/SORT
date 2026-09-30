@@ -25,18 +25,38 @@
     // when components are deleted the derived property filters this out
     let currentSectionComponent: SectionComponent | undefined = $state();
 
+    type ConfigField = {disabled?: boolean};
+    type ConfigSection = {fields?: ConfigField[]};
+
     // Value in plaintext for submitting to the backend
     let valueStr = $derived(JSON.stringify(value))
 
 
     let sectionValues = $state(initValue !== null ? initValue : []);
     $effect(() => {
-        value = sectionValues;
+        // Skipped (fully disabled) sections are never rendered, so they have no answers.
+        // Submit null for each of their fields so the answers match the survey configuration.
+        value = config.sections.map((section: ConfigSection, index: number) =>
+            sectionValues[index] ?? (section.fields ?? []).map(() => null)
+        );
     })
+
+    // Sections where every field is disabled are not shown to respondents.
+    // Indexes refer to config.sections so that answers stay aligned with the config.
+    let visibleSections: number[] = $derived(
+        config.sections
+            .map((section: ConfigSection, index: number) => ({section, index}))
+            .filter(({section}: {section: ConfigSection}) => (section.fields ?? []).some((f) => !f.disabled))
+            .map(({index}: {index: number}) => index)
+    );
 
     let currentPage = $state(0);
 
     function validate() {
+        // Nothing is shown to the respondent, so there is nothing to validate
+        if (visibleSections.length === 0) {
+            return true;
+        }
         const currentPageValidates = currentSectionComponent?.validate() ?? false;
         setIsValid(currentPageValidates)
         return currentPageValidates;
@@ -51,7 +71,7 @@
 
     function nextPage() {
         if (validate()) {
-            if (currentPage < config.sections.length - 1) {
+            if (currentPage < visibleSections.length - 1) {
                 currentPage += 1;
                 clearValidation();
             }
@@ -68,7 +88,7 @@
 
 </script>
 {#each config.sections as section, index (index)}
-    {#if currentPage === index}
+    {#if visibleSections[currentPage] === index}
         <SectionComponent bind:config={config.sections[index]}
                           editable={false}
                           displaySectionType={false}
@@ -86,7 +106,7 @@
 <div class="d-flex">
     <button class="btn btn-primary me-3" disabled={currentPage < 1} onclick={previousPage}>&lt; Previous</button>
 
-    {#if currentPage < config.sections.length - 1}
+    {#if currentPage < visibleSections.length - 1}
         <button class="btn btn-primary" onclick={nextPage}>Next &gt;</button>
     {:else}
         <form method="post" onsubmit={onSubmitHandler}>
