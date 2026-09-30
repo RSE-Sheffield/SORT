@@ -31,7 +31,11 @@
 
     let sectionValues = $state(initValue !== null ? initValue : []);
     $effect(() => {
-        value = sectionValues;
+        // Skipped (fully disabled) sections are never rendered, so they have no answers.
+        // Submit null for each of their fields so the answers match the survey configuration.
+        value = config.sections.map((section: any, index: number) =>
+            sectionValues[index] ?? (section.fields ?? []).map(() => null)
+        );
     })
 
     // Sections where every field is disabled are not shown to respondents.
@@ -46,6 +50,10 @@
     let currentPage = $state(0);
 
     function validate() {
+        // Nothing is shown to the respondent, so there is nothing to validate
+        if (visibleSections.length === 0) {
+            return true;
+        }
         const currentPageValidates = currentSectionComponent?.validate() ?? false;
         setIsValid(currentPageValidates)
         return currentPageValidates;

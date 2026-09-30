@@ -251,6 +251,27 @@ class TestSurveyResponseValidate(TestCase):
         with self.assertRaises(ValidationError):
             self._response(survey, [[None]]).validate()
 
+    def test_disabled_choice_and_likert_fields_accept_null(self):
+        survey = self._make_survey([
+            {"fields": [
+                {"type": "likert", "options": ["1", "2"], "sublabels": ["a", "b"], "disabled": True},
+                {"type": "radio", "options": ["Yes", "No"], "required": True, "disabled": True},
+                {"type": "checkbox", "options": ["A", "B"], "required": True, "disabled": True},
+            ]}
+        ])
+        self._response(survey, [[None, None, None]]).validate()
+
+    def test_mixed_disabled_and_enabled_fields(self):
+        survey = self._make_survey([
+            {"fields": [
+                {"type": "text", "required": True},
+                {"type": "text", "required": True, "disabled": True},
+            ]}
+        ])
+        self._response(survey, [["Answer", None]]).validate()
+        with self.assertRaises(ValidationError):
+            self._response(survey, [[None, None]]).validate()
+
     # --- required text ---
 
     def test_required_text_empty_raises(self):
