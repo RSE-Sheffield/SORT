@@ -1,11 +1,45 @@
 import uuid
 
+import django.core.mail
+from django.conf import settings
+
 from ..constants import DELETED_ACCOUNT_EMAIL_DOMAIN
-from ..models import OrganisationMembership, Project, User
+from ..models import DataProtectionEvent, ErasureRequest, OrganisationMembership, Project, User
+from .data_protection import data_protection_service
+from .organisation import organisation_service
+
+
+def notify_staff_of_pending_erasure(user: User) -> None:
+    """
+    Alert staff that a self-service erasure request needs manual action
+    (see UserService.request_self_erasure). Follows the same plain
+    ``send_mail`` pattern used for survey invitations (survey/views.py) —
+    there's no shared notification service yet.
+    """
+    staff_emails = list(
+        User.objects.filter(is_staff=True, is_active=True).values_list("email", flat=True)
+    )
+    if not staff_emails:
+        return
+
+    django.core.mail.send_mail(
+        subject="SORT: account erasure request needs action",
+        message=(
+            f"{user} ({user.email}) has requested account erasure but is the "
+            "sole admin of an organisation with other members, so it could not "
+            "be completed automatically.\n\n"
+            "UK GDPR Art. 12(3) requires this to be actioned within one month "
+            "of the request. Please review and complete it via the console: "
+            f"/console/users/{user.pk}/"
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=staff_emails,
+        fail_silently=False,
+    )
 
 
 class UserService:
-    def anonymise(self, user: User) -> None:
+    def anonymise(self, user: User, *, requested_by: User, actioned_by: User) -> None:
         user.first_name = "Deleted"
         user.last_name = "User"
         user.email = f"deleted-{uuid.uuid4().hex}@{DELETED_ACCOUNT_EMAIL_DOMAIN}"
@@ -13,6 +47,28 @@ class UserService:
         user.set_unusable_password()
         user.save()
         OrganisationMembership.objects.filter(user=user).delete()
+        data_protection_service.record_event(
+            event_type=DataProtectionEvent.EventType.ERASURE,
+            subject_user=user,
+            requested_by=requested_by,
+            actioned_by=actioned_by,
+        )
+
+    def request_self_erasure(self, user: User) -> bool:
+        """
+        Self-service GDPR erasure/consent-withdrawal (UK GDPR Art. 7(3),
+        17(1)(b)). Returns True if the account was erased immediately, or
+        False if it was deferred to staff because `user` is the sole admin
+        of an organisation with other members — erasing them immediately
+        would leave that organisation unmanageable.
+        """
+        if organisation_service.get_sole_admin_orgs_with_other_members(user).exists():
+            ErasureRequest.objects.get_or_create(user=user, status=ErasureRequest.Status.PENDING)
+            notify_staff_of_pending_erasure(user)
+            return False
+
+        self.anonymise(user, requested_by=user, actioned_by=user)
+        return True
 
     def update_user(self, user: User, *, first_name: str, last_name: str, email: str) -> User:
         """
