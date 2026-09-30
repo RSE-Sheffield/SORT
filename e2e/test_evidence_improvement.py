@@ -50,9 +50,9 @@ class EvidenceImprovementTestCase(PlaywrightTestCase):
         row = table.locator("tbody tr").last
         row.locator("td textarea").nth(1).fill(OBJECTIVE)
         row.locator("input[type=text]").fill("Research lead")
-        table.get_by_role("button", name="Save plan").click()
+        with page.expect_navigation():
+            table.get_by_role("button", name="Save plan").click()
 
-        page.wait_for_url(self.url("survey_improvement_plan", pk=self.survey.pk, section_id=self.section_id))
         expect(table.locator("tbody tr").last.locator("td textarea").nth(1)).to_have_value(OBJECTIVE)
         section = self.survey.improvement_sections.get(section_id=self.section_id)
         self.assertIn(OBJECTIVE, section.plan)

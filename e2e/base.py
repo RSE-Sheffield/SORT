@@ -25,10 +25,11 @@ from survey.models import Survey
 from survey.services import survey_service
 
 try:
+    from playwright.sync_api import Error as PlaywrightError
     from playwright.sync_api import Locator, Page, expect, sync_playwright
 except ImportError:  # pragma: no cover
     # The tests are skipped (see below), but the modules must still be importable for test discovery
-    Locator = Page = expect = sync_playwright = None
+    Locator = Page = PlaywrightError = expect = sync_playwright = None
 
 # The Vite build output that the templates load when DEBUG is off
 VITE_MANIFEST = Path(settings.BASE_DIR) / "static" / settings.VITE_MANIFEST_FILE_PATH
@@ -68,23 +69,27 @@ class PlaywrightTestCase(StaticLiveServerTestCase):
             raise unittest.SkipTest(reason)
         # Playwright's sync API runs an asyncio event loop in the main thread, which
         # makes Django refuse synchronous ORM calls unless this is set.
-        cls._async_unsafe = os.environ.get("DJANGO_ALLOW_ASYNC_UNSAFE")
+        # Register cleanups straight after acquiring each resource, as tearDownClass
+        # is not called if setUpClass raises (e.g. Chromium is not installed).
+        cls.addClassCleanup(cls._restore_async_unsafe, os.environ.get("DJANGO_ALLOW_ASYNC_UNSAFE"))
         os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
         super().setUpClass()
         cls.playwright = sync_playwright().start()
-        cls.browser = cls.playwright.chromium.launch(
-            headless=not os.getenv("E2E_HEADED"),
-        )
+        cls.addClassCleanup(cls.playwright.stop)
+        try:
+            cls.browser = cls.playwright.chromium.launch(
+                headless=not os.getenv("E2E_HEADED"),
+            )
+        except PlaywrightError as exc:
+            raise unittest.SkipTest(f"Chromium could not be launched (run: playwright install chromium): {exc}")
+        cls.addClassCleanup(cls.browser.close)
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.browser.close()
-        cls.playwright.stop()
-        super().tearDownClass()
-        if cls._async_unsafe is None:
+    @staticmethod
+    def _restore_async_unsafe(previous):
+        if previous is None:
             os.environ.pop("DJANGO_ALLOW_ASYNC_UNSAFE", None)
         else:
-            os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = cls._async_unsafe
+            os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = previous
 
     def setUp(self):
         super().setUp()
