@@ -27,7 +27,7 @@ def vite_client():
     if settings.DEBUG:
         vite_client_path = urljoin(settings.VITE_BASE_URL, "/@vite/client")
         # built from trusted settings only
-        return mark_safe(  # nosec B703,B308
+        return mark_safe(  # nosec B703, B308
             f"<script type = 'module' src = '{vite_client_path}'> </script>"
         )
 
@@ -48,7 +48,7 @@ def vite_asset(asset_path: str) -> str:
     if settings.DEBUG:
         vite_asset_path = urljoin(settings.VITE_BASE_URL, asset_path)
         # built from trusted settings only
-        return mark_safe(  # nosec B703,B308
+        return mark_safe(  # nosec B703, B308
             f"<script type = 'module' src = '{vite_asset_path}' > </script>"
         )
     else:
@@ -84,7 +84,7 @@ def vite_asset(asset_path: str) -> str:
                 )
 
             # tags built from trusted Vite manifest
-            return mark_safe("".join(import_tags))  # nosec B703,B308
+            return mark_safe("".join(import_tags))  # nosec B703, B308
 
     return ""
 
