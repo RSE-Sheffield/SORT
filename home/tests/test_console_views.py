@@ -1,3 +1,4 @@
+import logging
 import json
 from http import HTTPStatus
 
@@ -641,6 +642,18 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         self.assertIn("attachment; filename=\"sort_research_data_", response["Content-Disposition"])
         self.assertEqual(response["Cache-Control"], "no-store")
         self.assertTrue(response.content.startswith(b"PK"))
+
+    def test_console_research_export_download_is_logged(self):
+        """Each download leaves an audit record, even when the root log level is WARNING."""
+        # assertLogs overrides the logger level, so check the configured level separately
+        self.assertTrue(logging.getLogger("home.views.console").isEnabledFor(logging.INFO))
+        self.login_staff()
+        with self.assertLogs("home.views.console", level="INFO") as logs:
+            self.client.post("/console/research-export/")
+        self.assertIn(
+            f"Research data export downloaded by user {self.staff_user.pk}",
+            logs.output[0],
+        )
 
     def test_console_research_export_redirects_anonymous(self):
         for method in (self.client.get, self.client.post):

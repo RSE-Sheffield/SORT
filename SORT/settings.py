@@ -300,6 +300,13 @@ LOGGING = {
             "level": "ERROR",
             "propagate": False,
         },
+        # Staff console audit records (e.g. research data downloads) must be kept
+        # regardless of DJANGO_LOG_LEVEL, so pin this logger to INFO.
+        "home.views.console": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
 
