@@ -4,6 +4,9 @@ Staff management console.
 This interface provides a dashboard overview of the app status. It's different from the /admin/ dashboard.
 """
 
+import io
+import logging
+
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
@@ -11,6 +14,7 @@ from django.db.models import Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import TemplateView, View
+from django.utils import timezone
 from django.views.generic.base import TemplateResponseMixin
 
 from home.constants import DELETED_ACCOUNT_EMAIL_DOMAIN
@@ -32,8 +36,13 @@ from home.services.analytics import (
     UsageAnalytics,
 )
 from home.services.organisation import remove_membership_and_record_event
+from home.services.research_export import ResearchExport
 from home.views.sorting import SortableMixin
 from survey.models import Survey, SurveyResponse
+
+logger = logging.getLogger(__name__)
+
+XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 class ConsoleView(StaffRequiredMixin, TemplateView):
@@ -95,6 +104,32 @@ class ConsoleAnalyticsExportView(StaffRequiredMixin, View):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = f"attachment; filename=sort_usage_{report}.csv"
         analytics.write_csv(report, response)
+        return response
+
+
+class ConsoleResearchExportView(StaffRequiredMixin, TemplateResponseMixin, View):
+    """
+    Download all consented research data (shared surveys, participants who gave
+    research consent) across every organisation as one Excel workbook.
+    """
+
+    template_name = "console/research_export.html"
+
+    def get(self, request):
+        return self.render_to_response({"summary": ResearchExport().summary()})
+
+    def post(self, request):
+        buffer = io.BytesIO()
+        row_count = ResearchExport().write_xlsx(buffer)
+        logger.info(
+            "Research data export downloaded by user %s (%d responses)",
+            request.user.pk,
+            row_count,
+        )
+        response = HttpResponse(buffer.getvalue(), content_type=XLSX_CONTENT_TYPE)
+        filename = f"sort_research_data_{timezone.localdate().isoformat()}.xlsx"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response["Cache-Control"] = "no-store"
         return response
 
 

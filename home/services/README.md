@@ -94,4 +94,5 @@ class OrganisationService:
 Some services are not user-scoped and so do not use `@requires_permission`; the calling view or command enforces access instead:
 
 - `analytics.UsageAnalytics`: platform-wide usage figures, shown only on the staff console (`StaffRequiredMixin`) and via the `usage` management command.
+- `research_export.ResearchExport`: platform-wide consented research data, downloaded only from the staff console (`StaffRequiredMixin`) and via the `research_export` management command.
 - `data_protection.DataProtectionService.record_event`: see its docstring.

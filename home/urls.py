@@ -184,6 +184,11 @@ urlpatterns = [
         name="admin_analytics_export",
     ),
     path(
+        "console/research-export/",
+        views.ConsoleResearchExportView.as_view(),
+        name="admin_research_export",
+    ),
+    path(
         "console/organisations/",
         views.ConsoleOrganisationListView.as_view(),
         name="admin_organisations",
