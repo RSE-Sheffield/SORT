@@ -9,7 +9,7 @@ import secrets
 import tempfile
 from functools import cached_property
 from pathlib import Path
-from typing import Generator, ContextManager
+from typing import Callable, Generator, ContextManager, Optional
 from contextlib import contextmanager
 
 import jsonschema
@@ -144,16 +144,34 @@ class Survey(models.Model):
     def get_absolute_url(self):
         return reverse("survey", kwargs={"pk": self.pk})
 
-    def current_invite_token(self):
+    def current_invitation(self) -> Optional["Invitation"]:
         for invite in self.invitation_set.all():
             if not invite.used:
-                return invite.token
+                return invite
         return None
+
+    def current_invite_token(self):
+        invite = self.current_invitation()
+        return invite.token if invite else None
 
     def get_invite_link(self, request: HttpRequest):
         token = self.current_invite_token()
         if token is not None:
-            return request.build_absolute_uri("/survey_response/" + token)
+            return request.build_absolute_uri(
+                reverse("survey_response", kwargs={"token": token})
+            )
+
+        return None
+
+    def get_short_invite_link(self, request: HttpRequest):
+        """
+        A shortened version of the invitation link, e.g. https://host/s/ABCD2345
+        """
+        invite = self.current_invitation()
+        if invite is not None and invite.short_code:
+            return request.build_absolute_uri(
+                reverse("survey_short_link", kwargs={"code": invite.short_code})
+            )
 
         return None
 
@@ -649,6 +667,19 @@ class SurveyResponse(models.Model):
         return answer if isinstance(answer, list) else [answer]
 
 
+# Characters used in short codes: upper-case letters and digits, excluding
+# look-alikes (0/O, 1/I/L) so that codes are easy to read and type.
+SHORT_CODE_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ"
+# 31^8 is roughly 8.5e11 (~40 bits) possible codes
+SHORT_CODE_LENGTH = 8
+
+
+def generate_short_code() -> str:
+    return "".join(
+        secrets.choice(SHORT_CODE_ALPHABET) for _ in range(SHORT_CODE_LENGTH)
+    )
+
+
 class Invitation(models.Model):
     """
     An invitation to submit a response to a survey.
@@ -656,23 +687,37 @@ class Invitation(models.Model):
 
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
     token = models.CharField(max_length=64, unique=True, blank=True, editable=False)
+    short_code = models.CharField(
+        max_length=SHORT_CODE_LENGTH,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="Short code used in shortened invitation links",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     used = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Invitation for {self.survey.name}"
 
+    @classmethod
+    def _unique_value(cls, field: str, generate: Callable[[], str]) -> Optional[str]:
+        """
+        Try new values until one doesn't clash with an existing one.
+        """
+        max_tries = 50
+        for _ in range(max_tries):
+            value = generate()
+            if not cls.objects.filter(**{field: value}).exists():
+                return value
+        return None
+
     def save(self, *args, **kwargs):
         if not self.token:
-            # Try a new token until it doesn't clash with an existing one
-            num_token_tries = 0
-            max_token_tries = 50
-            while num_token_tries < max_token_tries:
-                token = secrets.token_urlsafe(32)
-                if Invitation.objects.filter(token=token).count() < 1:
-                    self.token = token
-                    break
-                num_token_tries += 1
+            self.token = self._unique_value("token", lambda: secrets.token_urlsafe(32))
+        if not self.short_code:
+            self.short_code = self._unique_value("short_code", generate_short_code)
 
         super().save(*args, **kwargs)
 

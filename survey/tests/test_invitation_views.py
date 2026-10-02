@@ -55,7 +55,8 @@ class InvitationViewTestCase(SORT.test.test_case.ViewTestCase):
         )
         self.assertEqual(len(mail.outbox), 1)
         body = mail.outbox[0].body
-        self.assertIn(f"/survey_response/{self.invitation.token}", body)
+        self.invitation.refresh_from_db()
+        self.assertIn(f"/s/{self.invitation.short_code}", body)
         self.assertNotIn("None", body)
         self.assertIn("My message", body)
 

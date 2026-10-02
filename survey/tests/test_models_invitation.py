@@ -8,7 +8,9 @@ from django.test import TestCase
 from django.utils import timezone
 
 from SORT.test.model_factory import SurveyFactory
-from survey.models import Invitation
+from django.test import RequestFactory
+
+from survey.models import Invitation, SHORT_CODE_ALPHABET, SHORT_CODE_LENGTH
 
 
 class TestInvitationModel(TestCase):
@@ -171,3 +173,36 @@ class TestInvitationModel(TestCase):
         """Test that the token field respects max_length constraint."""
         field = Invitation._meta.get_field('token')
         self.assertEqual(field.max_length, 64)
+
+    def test_short_code_auto_generation(self):
+        """Test that a short code is automatically generated using the unambiguous alphabet."""
+        invitation = Invitation.objects.create(survey=self.survey)
+        self.assertEqual(len(invitation.short_code), SHORT_CODE_LENGTH)
+        self.assertTrue(set(invitation.short_code) <= set(SHORT_CODE_ALPHABET))
+
+    def test_short_code_is_unique(self):
+        """Test that short codes are unique across invitations."""
+        codes = {Invitation.objects.create(survey=self.survey).short_code for _ in range(10)}
+        self.assertEqual(len(codes), 10)
+
+    def test_short_code_not_editable(self):
+        field = Invitation._meta.get_field("short_code")
+        self.assertFalse(field.editable)
+
+    def test_invite_links(self):
+        """Test that both the full and short invitation links are built for the current invitation."""
+        invitation = Invitation.objects.create(survey=self.survey)
+        request = RequestFactory().get("/")
+        self.assertEqual(
+            self.survey.get_invite_link(request),
+            f"http://testserver/survey_response/{invitation.token}",
+        )
+        self.assertEqual(
+            self.survey.get_short_invite_link(request),
+            f"http://testserver/s/{invitation.short_code}",
+        )
+
+    def test_invite_links_none_without_invitation(self):
+        request = RequestFactory().get("/")
+        self.assertIsNone(self.survey.get_invite_link(request))
+        self.assertIsNone(self.survey.get_short_invite_link(request))
