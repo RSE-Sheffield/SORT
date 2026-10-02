@@ -1,0 +1,41 @@
+{% extends "base_console.html" %}
+{% block title %}| Research data export{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h1 class="h5 mb-0">Export research data</h1>
+                </div>
+                <div class="card-body">
+                    <p>Download every survey response that has been consented for research, across all organisations, as one Excel workbook.</p>
+                    <p>A response is included only when:</p>
+                    <ul>
+                        <li>its organisation has confirmed the data sharing agreement for the survey, and</li>
+                        <li>the participant consented for their response to be used for research.</li>
+                    </ul>
+                    <dl class="row mb-3">
+                        <dt class="col-sm-4">Surveys</dt>
+                        <dd class="col-sm-8">{{ summary.surveys }}</dd>
+                        <dt class="col-sm-4">Responses</dt>
+                        <dd class="col-sm-8">{{ summary.responses }}</dd>
+                    </dl>
+                    <div class="alert alert-warning mb-0" role="alert">
+                        This file contains research data. Store and handle it in line with the data sharing agreement, and do not share it outside the research team. Each download is logged.
+                    </div>
+                </div>
+                <div class="card-footer bg-white d-flex justify-content-end">
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">Download export (Excel)</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

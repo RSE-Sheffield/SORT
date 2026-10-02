@@ -1,3 +1,4 @@
+import logging
 import json
 from http import HTTPStatus
 
@@ -620,4 +621,54 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
     def test_console_analytics_export_forbidden_for_regular_users(self):
         self.login()
         response = self.client.get("/console/analytics/export/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_research_export_page_accessible_to_staff(self):
+        """Staff see how much consented research data the export contains."""
+        self.login_staff()
+        response = self.client.get("/console/research-export/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(response.context["summary"], {"surveys": 0, "responses": 0})
+
+    def test_console_research_export_download(self):
+        """Staff download the research data as an Excel workbook that is not cached."""
+        self.login_staff()
+        response = self.client.post("/console/research-export/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(
+            response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        self.assertIn("attachment; filename=\"sort_research_data_", response["Content-Disposition"])
+        self.assertEqual(response["Cache-Control"], "no-store")
+        self.assertTrue(response.content.startswith(b"PK"))
+
+    def test_console_research_export_download_is_logged(self):
+        """Each download leaves an audit record, even when the root log level is WARNING."""
+        # assertLogs overrides the logger level, so check the configured level separately
+        self.assertTrue(logging.getLogger("home.views.console").isEnabledFor(logging.INFO))
+        self.login_staff()
+        with self.assertLogs("home.views.console", level="INFO") as logs:
+            self.client.post("/console/research-export/")
+        self.assertIn(
+            f"Research data export downloaded by user {self.staff_user.pk}",
+            logs.output[0],
+        )
+
+    def test_console_research_export_redirects_anonymous(self):
+        for method in (self.client.get, self.client.post):
+            with self.subTest(method=method.__name__):
+                response = method("/console/research-export/")
+                self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_research_export_forbidden_for_regular_users(self):
+        self.login()
+        for method in (self.client.get, self.client.post):
+            with self.subTest(method=method.__name__):
+                response = method("/console/research-export/")
+                self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_research_export_forbidden_for_non_staff_superusers(self):
+        self.login_superuser()
+        response = self.client.post("/console/research-export/")
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
