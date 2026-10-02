@@ -1,3 +1,4 @@
+import csv
 import json
 
 from django.core.management import BaseCommand, CommandError
@@ -8,6 +9,7 @@ from home.services.analytics import (
     MAX_ACTIVE_DAYS,
     UsageAnalytics,
 )
+from survey.models import Survey
 
 
 class Command(BaseCommand):
@@ -23,14 +25,17 @@ class Command(BaseCommand):
     * Monthly trends
     """
 
-    help = "Generate a SORT Online usage report (text summary, full JSON, or a CSV table)."
+    help = (
+        "Generate a SORT Online usage report. With no arguments, outputs the original per-survey CSV;"
+        " use --format for a text summary, the full JSON, or a CSV table."
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--format",
             choices=("text", "json", "csv"),
-            default="text",
-            help="Output format (default: text)",
+            default=None,
+            help="Output format. Omit for the original per-survey CSV (legacy column names)",
         )
         parser.add_argument(
             "--report",
@@ -51,6 +56,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if not 1 <= options["active_days"] <= MAX_ACTIVE_DAYS:
             raise CommandError(f"--active-days must be between 1 and {MAX_ACTIVE_DAYS}")
+        if options["format"] is None:
+            return self.write_legacy_csv()
         analytics = UsageAnalytics(active_days=options["active_days"])
 
         if options["format"] == "csv":
@@ -59,6 +66,22 @@ class Command(BaseCommand):
             self.stdout.write(json.dumps(analytics.as_dict(), indent=2))
         else:
             self.write_text(analytics.as_dict())
+
+    def write_legacy_csv(self):
+        """The original output, kept unchanged for existing scripts."""
+        writer = csv.writer(self.stdout, lineterminator="\n")
+        writer.writerow(["Organisation", "Project", "Survey ID", "Survey", "Survey created at", "Responses"])
+        for survey in Survey.objects.all():
+            writer.writerow(
+                (
+                    survey.organisation,
+                    survey.project,
+                    survey.pk,
+                    survey,
+                    survey.created_at.isoformat(),
+                    survey.survey_response.count(),
+                )
+            )
 
     def write_text(self, data: dict):
         summary = data["summary"]

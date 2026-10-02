@@ -26,8 +26,16 @@ class UsageCommandTestCase(SORT.test.test_case.ServiceTestCase):
         call_command("usage", *args, stdout=stdout, stderr=io.StringIO())
         return stdout.getvalue()
 
+    def test_default_is_legacy_csv(self):
+        rows = list(csv.reader(io.StringIO(self._call())))
+        self.assertEqual(
+            rows[0], ["Organisation", "Project", "Survey ID", "Survey", "Survey created at", "Responses"]
+        )
+        self.assertEqual(rows[1][2], str(self.survey.pk))
+        self.assertEqual(rows[1][5], "1")
+
     def test_text(self):
-        output = self._call()
+        output = self._call("--format", "text")
         self.assertIn("SORT Online usage report", output)
         self.assertIn(self.survey.organisation.name, output)
 
@@ -52,8 +60,8 @@ class UsageCommandTestCase(SORT.test.test_case.ServiceTestCase):
 
     def test_invalid_active_days(self):
         with self.assertRaises(CommandError):
-            self._call("--active-days", "0")
+            self._call("--format", "text", "--active-days", "0")
 
     def test_active_days_too_large(self):
         with self.assertRaises(CommandError):
-            self._call("--active-days", "1000000")
+            self._call("--format", "text", "--active-days", "1000000")
