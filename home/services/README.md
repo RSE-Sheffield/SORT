@@ -89,3 +89,9 @@ class OrganisationService:
     def can_view(self, user: User, org: Organisation) -> bool:
         return self.get_policy(user, org).can(Permission.VIEW)
 ```
+## Exceptions
+
+Some services are not user-scoped and so do not use `@requires_permission`; the calling view or command enforces access instead:
+
+- `analytics.UsageAnalytics`: platform-wide usage figures, shown only on the staff console (`StaffRequiredMixin`) and via the `usage` management command.
+- `data_protection.DataProtectionService.record_event`: see its docstring.

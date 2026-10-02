@@ -22,12 +22,13 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # diff-cover needs full history to diff against the base branch
           fetch-depth: 0
+          persist-credentials: false
       - name: Setup Python
-        uses: actions/setup-python@v5.3.0
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           # This should match the version used in production
           python-version-file: .python-version
@@ -35,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: pip install --requirement requirements.txt --requirement requirements-dev.txt
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: package.json
           cache: 'npm'
@@ -77,9 +78,9 @@ jobs:
       - name: Check diff coverage
         if: github.event_name == 'pull_request'
         run: |
-          git fetch origin "${{ github.base_ref }}"
+          git fetch origin "${GITHUB_BASE_REF}"
           diff-cover coverage.xml \
-            --compare-branch="origin/${{ github.base_ref }}" \
+            --compare-branch="origin/${GITHUB_BASE_REF}" \
             --format markdown:diff-cover-report.md \
             --fail-under=80
           exit_code=$?

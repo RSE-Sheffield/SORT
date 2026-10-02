@@ -57,6 +57,42 @@ class SurveyResponseTestCase(PlaywrightTestCase):
                 elif config["type"] == "textarea":
                     self.assertEqual(answer, COMMENT)
 
+    def disable_demography(self, required: bool):
+        """
+        Disable every question on the final (demographic) page, as a manager can in the survey configuration.
+        """
+        for field in self.sections[-1]["fields"]:
+            field["disabled"] = True
+            field["required"] = required
+        self.survey.survey_config = {"sections": self.sections}
+        self.survey.save()
+
+    def check_disabled_demography(self):
+        self.create_invite_link()
+        page = self.open_survey()
+
+        # The disabled demographic page is skipped, so the last visible page has the submit button
+        fill_pages(page, self.sections[:-2])
+        fill_section(page, self.sections[-2])
+        expect(page.get_by_role("button", name="Next >")).to_be_hidden()
+        page.get_by_role("button", name="Submit").click()
+
+        expect(page.get_by_role("heading", name="Survey Completed!")).to_be_visible()
+        answers = SurveyResponse.objects.get(survey=self.survey).answers
+        self.assertEqual(len(answers), len(self.sections))
+        self.assertTrue(all(answer is None for answer in answers[-1]))
+
+    def test_disabled_demography_required(self):
+        """
+        #741: disabled demographic questions leave no blank page and don't block submitting.
+        """
+        self.disable_demography(required=True)
+        self.check_disabled_demography()
+
+    def test_disabled_demography_not_required(self):
+        self.disable_demography(required=False)
+        self.check_disabled_demography()
+
     def test_required_fields(self):
         """
         The respondent can't continue until the required questions are answered.

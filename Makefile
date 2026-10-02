@@ -55,6 +55,11 @@ requirements:
 lint:
 	flake8
 
+# Security scans: Bandit (code) and pip-audit (dependencies)
+security:
+	.venv/bin/bandit -r . -c pyproject.toml --severity-level medium
+	.venv/bin/pip-audit -r requirements.txt
+
 format:
 	black $(PROJECT_NAME) --exclude="migrations|settings.py"
 
@@ -62,4 +67,4 @@ format:
 .DEFAULT_GOAL := help
 
 # Mark these targets as always needing to run (not files)
-.PHONY: help runserver migrations migrate check superuser static shell test e2e clean requirements lint
+.PHONY: help runserver migrations migrate check superuser static shell test e2e clean requirements lint security

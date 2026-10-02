@@ -6,6 +6,7 @@ import json
 
 import django.contrib.auth.models
 import django.core.exceptions
+import django.core.mail
 import django.test
 
 import SORT.test.model_factory
@@ -79,6 +80,38 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
     def test_get_survey_unauthorised(self):
         with self.assertRaises(django.core.exceptions.PermissionDenied):
             self.service.get_survey(user=self.anonymous_user, survey_id=self.survey.pk)
+
+    def test_send_invitation(self):
+        sent = self.service.send_invitation(
+            user=self.admin,
+            survey=self.survey,
+            recipient_list={"test@test.com"},
+            survey_link="https://sort.test/survey_response/abc",
+            message="Hello",
+        )
+        self.assertEqual(sent, 1)
+        self.assertEqual(len(django.core.mail.outbox), 1)
+        self.assertIn("https://sort.test/survey_response/abc", django.core.mail.outbox[0].body)
+
+    def test_send_invitation_unauthorised(self):
+        with self.assertRaises(django.core.exceptions.PermissionDenied):
+            self.service.send_invitation(
+                user=self.anonymous_user,
+                survey=self.survey,
+                recipient_list={"test@test.com"},
+                survey_link="https://sort.test/survey_response/abc",
+            )
+        self.assertEqual(len(django.core.mail.outbox), 0)
+
+    def test_send_invitation_without_link(self):
+        with self.assertRaises(ValueError):
+            self.service.send_invitation(
+                user=self.admin,
+                survey=self.survey,
+                recipient_list={"test@test.com"},
+                survey_link=None,
+            )
+        self.assertEqual(len(django.core.mail.outbox), 0)
 
     def test_initialise_survey(self):
         self.service.initialise_survey(

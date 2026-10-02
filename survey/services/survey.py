@@ -1,6 +1,7 @@
 import logging
-from typing import Dict, Optional
+from typing import Dict, Iterable, Optional
 
+import django.core.mail
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.files.uploadedfile import UploadedFile
@@ -207,6 +208,30 @@ class SurveyService(BasePermissionService):
 
         # Add new invite token
         return Invitation.objects.create(survey=survey)
+
+    @requires_permission("edit", obj_param="survey")
+    def send_invitation(
+            self,
+            user: User,
+            survey: Survey,
+            recipient_list: Iterable[str],
+            survey_link: str,
+            message: str = "",
+    ) -> int:
+        """
+        Email the survey invitation link to participants.
+        https://docs.djangoproject.com/en/5.1/topics/email/
+        """
+        if not survey_link:
+            raise ValueError("Survey has no active invitation link")
+
+        return django.core.mail.send_mail(
+            subject="Your SORT Survey Invitation",
+            message=f"Click here to start the SORT survey:\n{survey_link}\n\n{message}",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=list(recipient_list),
+            fail_silently=False,
+        )
 
     @requires_permission("view", obj_param="survey")
     def export_csv(self, user: User, survey: Survey) -> str:
