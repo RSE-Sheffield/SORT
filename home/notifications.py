@@ -20,7 +20,6 @@ strictly worse than a missing email.
 """
 
 import logging
-import smtplib
 from typing import List, Optional, Tuple
 
 from django.conf import settings
@@ -30,6 +29,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 
 from .constants import DELETED_ACCOUNT_EMAIL_DOMAIN, ROLE_ADMIN
+from .mail import EMAIL_SEND_ERRORS
 from .models import OrganisationJoinRequest, User
 
 logger = logging.getLogger(__name__)
@@ -82,7 +82,7 @@ def send_templated_mail(
                 recipient_list=[recipient],
                 fail_silently=False,
             )
-        except (smtplib.SMTPException, OSError):
+        except EMAIL_SEND_ERRORS:
             logger.exception(
                 "Failed to send email (subject=%s, to=%s)", subject, recipient
             )

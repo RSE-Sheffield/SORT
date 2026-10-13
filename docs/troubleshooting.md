@@ -232,18 +232,35 @@ Should show `UTF8`. If not, you may need to recreate the database (see [deployme
 
 #### Password reset emails not arriving
 
-1. Check email configuration in `.env`
-2. Test email sending:
-   ```bash
-   cd /opt/sort
-   sudo /opt/sort/venv/bin/python manage.py shell
-   ```
-   ```python
-   from django.core.mail import send_mail
-   send_mail('Test', 'Test message', 'from@example.com', ['to@example.com'])
-   ```
-3. Check spam folders
-4. Review Gunicorn logs for email sending errors
+See [Email isn't being sent](#email-isnt-being-sent) below, and check spam folders.
+
+### Email Issues
+
+#### Email isn't being sent
+
+Email failures are logged rather than shown to users (except for member invitations), so start with the logs:
+
+```bash
+sudo journalctl -u gunicorn.service --since "1 hour ago" | grep -i -A 5 "failed to send email"
+```
+
+Then send a test email (see [Test Email Configuration](#test-email-configuration)).
+
+Find which backend is in use with `grep EMAIL_BACKEND /opt/sort/.env`; if it's absent, SMTP is used. The setup for both backends is in [deployment.md](deployment.md#email-settings).
+
+**Gmail API backend** (`gmailapi_backend.mail.GmailBackend`):
+
+| Error in the logs | Cause and fix |
+|---|---|
+| `home.E004` from `manage.py check` | A `DJANGO_GMAIL_API_*` setting is missing from `.env`. |
+| `RefreshError: ('invalid_grant: ...')` | The refresh token was revoked or has expired (e.g. the sending account's password changed). Run `manage.py gmail_refresh_token` again and update `DJANGO_GMAIL_API_REFRESH_TOKEN`. |
+| `RefreshError: ('invalid_client: ...')` | `DJANGO_GMAIL_API_CLIENT_ID` or `DJANGO_GMAIL_API_CLIENT_SECRET` is wrong, or the OAuth client was deleted. |
+| `HttpError 403` ... `Gmail API has not been used in project` | Enable the Gmail API in the Google Cloud project. |
+| `HttpError 403` ... `insufficient authentication scopes` | The refresh token was created without the `gmail.send` scope. Create a new one with `gmail_refresh_token`. |
+| `HttpError 429` | Gmail's sending limits were reached. Wait and try again. |
+| Emails arrive from the wrong address | `DJANGO_DEFAULT_FROM_EMAIL` isn't the sending account or one of its "Send mail as" aliases. |
+
+**SMTP backend**: an `SMTPAuthenticationError` means the App Password is no longer valid; create a new one. A timeout or `ConnectionRefusedError` means the server can't reach `DJANGO_EMAIL_HOST` on `DJANGO_EMAIL_PORT`.
 
 ### File Upload Issues
 
@@ -445,28 +462,14 @@ JOIN sort.home_organisation o ON o.id = om.organisation_id;
 
 ### Test Email Configuration
 
+Send a test email using the configured backend with Django's [`sendtestemail`](https://docs.djangoproject.com/en/5.2/ref/django-admin/#sendtestemail) command:
+
 ```bash
 cd /opt/sort
-sudo /opt/sort/venv/bin/python manage.py shell
+sudo /opt/sort/venv/bin/python manage.py sendtestemail your-email@example.com
 ```
 
-```python
-from django.core.mail import send_mail
-from django.conf import settings
-
-print(f"Backend: {settings.EMAIL_BACKEND}")
-print(f"Host: {settings.EMAIL_HOST}")
-print(f"Port: {settings.EMAIL_PORT}")
-
-# Send test email
-send_mail(
-    'SORT Test Email',
-    'This is a test email from SORT.',
-    settings.DEFAULT_FROM_EMAIL,
-    ['your-email@example.com'],
-    fail_silently=False,
-)
-```
+Any error, such as a `RefreshError` or `SMTPAuthenticationError`, is printed in full. See [Email isn't being sent](#email-isnt-being-sent).
 
 ### Check Environment Variables
 
