@@ -93,6 +93,7 @@ All commands use [django-admin](https://docs.djangoproject.com/en/5.1/ref/django
 | `shell` | Interactive Python/Django shell | `sudo $django_admin shell` | See [troubleshooting.md](troubleshooting.md#interactive-django-shell) for query examples |
 | `dbshell` | Interactive PostgreSQL shell | `sudo $django_admin dbshell` | See [deployment.md](deployment.md#database-administration) for schema commands |
 | `check --deploy` | Run Django's production readiness checks | `sudo $django_admin check --deploy` | Also run automatically in `scripts/deploy.sh` |
+| `sendtestemail <address>` | Send a test email using the configured email backend | `sudo $django_admin sendtestemail you@sheffield.ac.uk` | See [troubleshooting.md](troubleshooting.md#email-isnt-being-sent) if it fails |
 | `loaddata` | Load fixtures | `sudo $python manage.py loaddata data/*.json` | Used for initial seed data |
 
 ## Custom SORT commands
@@ -100,6 +101,7 @@ All commands use [django-admin](https://docs.djangoproject.com/en/5.1/ref/django
 | Command | App | Purpose | Example | Notes |
 |---|---|---|---|---|
 | `clear_orphaned_files` | home | Delete uploaded files no longer referenced by any `SurveyEvidenceFile`/`SurveyFile`, and any empty upload directories left behind | `sudo $django_admin clear_orphaned_files` | No arguments; safe to run repeatedly |
+| `gmail_refresh_token --client-secrets PATH [--no-browser] [--port PORT]` | home | Sign in to the sending Google account and print the OAuth2 settings for the Gmail API email backend | `python manage.py gmail_refresh_token --client-secrets client_secret.json` | Run on your own computer, which needs a web browser, not on the server. See [deployment.md](deployment.md#gmail-api-with-oauth2) |
 | `csv <survey_id>` | survey | Write one survey's responses as CSV to stdout | `sudo $django_admin csv 42 > survey_42.csv` | Positional integer survey PK |
 | `excel <survey_id> [-o/--output PATH]` | survey | Write one survey's responses as an `.xlsx` workbook | `sudo $django_admin excel 42 --output /tmp/survey_42.xlsx` | Defaults to `survey_<id>_responses.xlsx` in the current directory if `--output` is omitted |
 | `pdf <survey_id> [--output-dir DIR] [--base-url URL]` | survey | Render `/survey/<pk>/report` in headless Chromium and save it as a PDF | `sudo $django_admin pdf 42 --output-dir /tmp/reports --base-url https://sort-web-app.shef.ac.uk` | See prerequisites below. `--output-dir` defaults to `exports/reports`; `--base-url` defaults to `http://127.0.0.1:8000` and **must** be overridden in production |
