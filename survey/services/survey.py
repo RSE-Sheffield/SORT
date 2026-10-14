@@ -185,6 +185,16 @@ class SurveyService(BasePermissionService):
 
         return invitation.survey
 
+    def get_token_from_short_code(self, code: str) -> str:
+        """
+        Resolve a shortened invitation link code to its full invitation token.
+        """
+        invitation = Invitation.objects.filter(short_code=code.strip().upper()).first()
+        if invitation is None:
+            logger.warning("Trying to use a short code that does not exist")
+            raise InvalidInviteTokenException("Short code does not exist")
+        return invitation.token
+
     def accept_response(self, survey: Survey, responseValues):
         SurveyResponse.objects.create(survey=survey, answers=responseValues)
 

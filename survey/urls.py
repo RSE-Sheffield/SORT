@@ -120,6 +120,7 @@ urlpatterns = [
         views.SurveyResponseView.as_view(),
         name="survey_response",
     ),
+    path("s/<str:code>", views.SurveyShortLinkView.as_view(), name="survey_short_link"),
     path(
         "survey_link_invalid/",
         views.SurveyLinkInvalidView.as_view(),

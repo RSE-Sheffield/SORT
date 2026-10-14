@@ -114,22 +114,37 @@
 
                         <div class="row">
                             <div class="col-lg-10">
+                                {% if short_invite_link %}
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                            <label for="short_invitation_link" class="input-group-text">Short link</label>
+                                        </div>
+                                        <input type="text" id="short_invitation_link" class="form-control" disabled
+                                               value="{{ short_invite_link }}"/>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" type="button"
+                                                    onclick="copyInviteLink('short_invitation_link', 'copyShortBtnText')"><i
+                                                    class='bx bx-clipboard'></i> <span id="copyShortBtnText">Copy</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endif %}
                                 <div class="input-group mb-3">
                                     <div class="input-group-prepend">
-                                        <label for="invitation_link" class="input-group-text">Invitation link</label>
+                                        <label for="invitation_link" class="input-group-text">Full link</label>
                                     </div>
                                     <input type="text" id="invitation_link" class="form-control" disabled
                                            value="{{ invite_link }}"/>
                                     <div class="input-group-append">
                                         <button class="btn btn-primary" type="button"
-                                                onclick="copyInviteLink()"><i
+                                                onclick="copyInviteLink('invitation_link', 'copyBtnText')"><i
                                                 class='bx bx-clipboard'></i> <span id="copyBtnText">Copy</span>
                                         </button>
                                     </div>
                                 </div>
                                 <div class="d-flex mb-3">
                                     <div class="card" style="width: 20em" id="survey_invite_qr_code_card">
-                                        {% qr_from_text invite_link image_format="png" size="s" alt_text="Survey invitation link" class_names="card-img-top" %}
+                                        {% qr_from_text short_invite_link|default:invite_link image_format="png" size="s" alt_text="Survey invitation link" class_names="card-img-top" %}
                                         <div class="card-body">
                                             <div class="card-text text-center">
                                                 <button onclick="downloadQRCode()" class="btn btn-primary">
@@ -144,9 +159,9 @@
 
 
                                 <script>
-                                    function copyInviteLink() {
-                                        let copyBtnTextElem = document.getElementById("copyBtnText");
-                                        let link = document.getElementById("invitation_link").value;
+                                    function copyInviteLink(inputId, btnTextId) {
+                                        let copyBtnTextElem = document.getElementById(btnTextId);
+                                        let link = document.getElementById(inputId).value;
                                         navigator.clipboard.writeText(link);
                                         copyBtnTextElem.innerHTML = "Copied";
                                         setTimeout(() => {

@@ -122,6 +122,64 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
         self.assertEqual(response.status_code, HTTPStatus.INTERNAL_SERVER_ERROR)
         self.assertTemplateUsed(response, "survey/survey_response_submission_error.html")
 
+    def test_survey_short_link_redirects(self):
+        invitation = Invitation.objects.create(survey=self.survey)
+        response = self.get(
+            "survey_short_link",
+            expected_status_code=HTTPStatus.FOUND,
+            login=False,
+            code=invitation.short_code,
+        )
+        self.assertRedirects(
+            response,
+            django.urls.reverse("survey_response", kwargs={"token": invitation.token}),
+        )
+
+    def test_survey_short_link_lowercase(self):
+        invitation = Invitation.objects.create(survey=self.survey)
+        response = self.get(
+            "survey_short_link",
+            expected_status_code=HTTPStatus.FOUND,
+            login=False,
+            code=invitation.short_code.lower(),
+        )
+        self.assertRedirects(
+            response,
+            django.urls.reverse("survey_response", kwargs={"token": invitation.token}),
+        )
+
+    def test_survey_short_link_invalid(self):
+        response = self.get(
+            "survey_short_link",
+            expected_status_code=HTTPStatus.FOUND,
+            login=False,
+            code="NOTACODE",
+        )
+        self.assertRedirects(response, django.urls.reverse("survey_link_invalid"))
+
+    def test_survey_short_link_used_invitation(self):
+        invitation = Invitation.objects.create(survey=self.survey, used=True)
+        url = django.urls.reverse("survey_short_link", kwargs={"code": invitation.short_code})
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(
+            response,
+            django.urls.reverse("survey_link_invalid"),
+            status_code=HTTPStatus.FOUND,
+            target_status_code=HTTPStatus.OK,
+        )
+
+    def test_survey_long_link_still_works(self):
+        """Regression: full-length invitation links must keep working."""
+        invitation = Invitation.objects.create(survey=self.survey)
+        response = self.client.get(f"/survey_response/{invitation.token}")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_survey_shows_short_link(self):
+        invitation = Invitation.objects.create(survey=self.survey)
+        response = self.get("survey", pk=self.survey.pk)
+        self.assertContains(response, f"/s/{invitation.short_code}")
+        self.assertContains(response, f"/survey_response/{invitation.token}")
+
     def test_survey_link_invalid(self):
         self.get("survey_link_invalid")
 
