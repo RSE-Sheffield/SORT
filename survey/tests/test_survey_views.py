@@ -2,6 +2,7 @@ import json
 from http import HTTPStatus
 from unittest.mock import patch
 
+import django.contrib.messages
 import django.urls
 import SORT.test.model_factory
 import SORT.test.test_case
@@ -121,6 +122,45 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
             response = self.client.post(url, data={"value": json.dumps({})})
         self.assertEqual(response.status_code, HTTPStatus.INTERNAL_SERVER_ERROR)
         self.assertTemplateUsed(response, "survey/survey_response_submission_error.html")
+
+    def test_survey_deactivate_get(self):
+        response = self.get("survey_deactivate", pk=self.survey.pk)
+        self.assertContains(response, "Conclude survey")
+
+    def test_survey_deactivate_post_confirmed(self):
+        response = self.post(
+            "survey_deactivate",
+            pk=self.survey.pk,
+            data={"confirm": "1"},
+            expected_status_code=HTTPStatus.FOUND,
+        )
+        self.survey.refresh_from_db()
+        self.assertFalse(self.survey.is_active)
+        messages = [str(m) for m in django.contrib.messages.get_messages(response.wsgi_request)]
+        self.assertIn("Survey concluded", messages)
+
+    def test_survey_deactivate_post_unconfirmed(self):
+        response = self.post(
+            "survey_deactivate",
+            pk=self.survey.pk,
+            data={"confirm": "0"},
+            expected_status_code=HTTPStatus.FOUND,
+        )
+        self.survey.refresh_from_db()
+        self.assertTrue(self.survey.is_active)
+        messages = [str(m) for m in django.contrib.messages.get_messages(response.wsgi_request)]
+        self.assertIn("Please confirm that you want to conclude this survey.", messages)
+
+    def test_survey_activate_post(self):
+        self.survey.is_active = False
+        self.survey.save()
+        response = self.post(
+            "survey_activate", pk=self.survey.pk, expected_status_code=HTTPStatus.FOUND
+        )
+        self.survey.refresh_from_db()
+        self.assertTrue(self.survey.is_active)
+        messages = [str(m) for m in django.contrib.messages.get_messages(response.wsgi_request)]
+        self.assertIn("Survey reopened", messages)
 
     def test_survey_link_invalid(self):
         self.get("survey_link_invalid")
