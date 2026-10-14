@@ -47,5 +47,15 @@
                 </p>
             </div>
         </div>
+        <div class="card custom-card border-danger shadow-sm my-4">
+            <div class="card-body">
+                <h2>Danger zone</h2>
+                <p>Withdraw your consent and permanently delete your SORT account and personal data.</p>
+                <a href="{% url 'delete_account' %}" class="btn btn-outline-danger">
+                    <i class="bx bxs-trash"></i>
+                    Delete my account
+                </a>
+            </div>
+        </div>
     </div>
 {% endblock %}
