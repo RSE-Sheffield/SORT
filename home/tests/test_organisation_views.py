@@ -11,12 +11,7 @@ import django.urls
 
 from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from home.models import Organisation, OrganisationMembership
-from SORT.test.model_factory import (
-    OrganisationFactory,
-    OrganisationMembershipFactory,
-    ProjectFactory,
-    SurveyFactory,
-)
+from SORT.test.model_factory import OrganisationFactory, OrganisationMembershipFactory
 from SORT.test.model_factory.user.constants import PASSWORD
 from SORT.test.test_case import ViewTestCase
 
@@ -180,29 +175,6 @@ class OrganisationViewTestCase(ViewTestCase):
 
     def test_organisation_view(self):
         self.skipTest("Not yet implemented")
-
-    def _dashboard(self, *, is_shared):
-        project = ProjectFactory(organisation=self.organisation)
-        SurveyFactory(project=project, is_shared=is_shared)
-        OrganisationMembershipFactory(
-            user=self.user, organisation=self.organisation, role=ROLE_ADMIN
-        )
-        self.login()
-        return self.client.get(django.urls.reverse("myorganisation"))
-
-    def test_dashboard_links_sharing_documents_when_data_shared(self):
-        response = self._dashboard(is_shared=True)
-        self.assertContains(response, django.urls.reverse("participant_information"))
-        self.assertContains(
-            response, django.urls.reverse("data_sharing_agreement"), count=2
-        )
-
-    def test_dashboard_omits_participant_information_when_not_shared(self):
-        response = self._dashboard(is_shared=False)
-        self.assertNotContains(response, django.urls.reverse("participant_information"))
-        self.assertContains(
-            response, django.urls.reverse("data_sharing_agreement"), count=1
-        )
 
 
 class SetActiveOrganisationViewTestCase(ViewTestCase):

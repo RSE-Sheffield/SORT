@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Exists, OuterRef, Q
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -19,8 +19,6 @@ from django.views.generic import (
     TemplateView,
     UpdateView,
 )
-
-from survey.models import Survey
 
 from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from ..forms.add_existing_member import AddExistingMemberForm
@@ -54,12 +52,6 @@ class MyOrganisationView(LoginRequiredMixin, OrganisationRequiredMixin, ListView
         search_query = self.request.GET.get("q")
         if search_query:
             queryset = queryset.filter(Q(name__icontains=search_query))
-
-        queryset = queryset.annotate(
-            has_shared_survey=Exists(
-                Survey.objects.filter(project=OuterRef("pk"), is_shared=True)
-            )
-        )
 
         return queryset.order_by("-created_at")
 

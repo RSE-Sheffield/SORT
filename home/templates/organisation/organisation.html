@@ -103,18 +103,6 @@
                         <p class="card-text"><strong>Surveys:</strong> {{ project.survey.count }}</p>
 
                         <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
-                            {% if project.has_shared_survey %}
-                                <a href="{% url 'participant_information' %}"
-                                   title="View the participant information sheet for surveys with data sharing enabled"
-                                   class="btn btn-light border" role="button">
-                                    <i class="bx bxs-info-circle"></i>&nbsp;Participant information
-                                </a>
-                                <a href="{% url 'data_sharing_agreement' %}"
-                                   title="View the data sharing agreement between your organisation and the University"
-                                   class="btn btn-light border" role="button">
-                                    <i class="bx bxs-note"></i>&nbsp;Data sharing agreement
-                                </a>
-                            {% endif %}
                             <a href="{% url 'project' project.id %}" title="Explore the surveys within this project"
                                class="btn btn-primary" role="button" aria-pressed="true">
                                 <i class="bx bxs-folder-open"></i>&nbsp;View
