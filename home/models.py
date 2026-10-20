@@ -4,23 +4,41 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.db import models
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.urls import reverse
 
-from .constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
+from .constants import DELETED_ACCOUNT_EMAIL_DOMAIN, ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
 
 
 class UserManager(BaseUserManager):
+    """
+    A custom manager is required because User is a bespoke AbstractBaseUser
+    subclass with no `username` field (see User.USERNAME_FIELD below) — Django's
+    built-in UserManager assumes a username and can't be reused as-is.
+    """
+
     def create_user(self, first_name, last_name, email, password=None):
         if not email:
             raise ValueError("Email is required")
+        # normalize_email() only lowercases the domain, not the local part, so
+        # the whole address is lowercased explicitly (case #667: an account
+        # created with mixed-case local part could never log in again).
+        # .lower() (not .casefold()) matches what normalize_email() and
+        # allauth's filter_users_by_email() already do on the lookup side.
         user = self.model(
-            email=self.normalize_email(email),
+            email=self.normalize_email(email).lower(),
             first_name=first_name,
             last_name=last_name,
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
+
+    def get_by_natural_key(self, email):
+        # Case-insensitive lookup as a safety net alongside the write-side
+        # normalization above, per Django's own custom-user-model docs.
+        return self.get(email__iexact=email)
 
     def create_superuser(self, email, first_name, last_name, password=None):
         user = self.create_user(
@@ -44,6 +62,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
 
+    # Email is the unique identifier for this app (there is no username
+    # field), so users log in with email + password.
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
@@ -54,6 +74,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         if not self.first_name and not self.last_name:
             return self.email
         return f"{self.first_name} {self.last_name}"
+
+    @property
+    def is_deleted(self) -> bool:
+        """True once this account has been anonymised via GDPR erasure (see
+        UserService.anonymise), as opposed to merely suspended — both set
+        is_active=False."""
+        return self.email.endswith(f"@{DELETED_ACCOUNT_EMAIL_DOMAIN}")
 
     @property
     def active_projects(self) -> int:
@@ -96,6 +123,15 @@ class Organisation(models.Model):
 
 
 class OrganisationMembership(models.Model):
+    """
+    Each user can be a member of one or more organisations, and each organisation
+    can have one or more members. This model represents the relationship between a
+    user and an organisation, along with the user's role within that organisation.
+    """
+
+    class Meta:
+        unique_together = ["user", "organisation"]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLES, default=ROLE_PROJECT_MANAGER)
@@ -104,14 +140,87 @@ class OrganisationMembership(models.Model):
         User, on_delete=models.CASCADE, related_name="members_added", null=True
     )
 
+
+class OrganisationJoinRequest(models.Model):
+    """
+    A user's self-service request to join an existing organisation.
+
+    An organisation ADMIN approves the request (creating an
+    OrganisationMembership with a role of their choosing) or rejects it; the
+    requester may also withdraw it while it is still pending. Decided requests
+    are kept rather than deleted, so both sides retain a record of the outcome.
+
+    At most one PENDING request may exist per (user, organisation), so a
+    rejected or withdrawn request can be submitted again. That needs a
+    *conditional* uniqueness, which ``unique_together`` (as used by
+    OrganisationMembership above) cannot express — hence the partial
+    UniqueConstraint below. Both idioms therefore coexist in this module.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+        WITHDRAWN = "WITHDRAWN", "Withdrawn by requester"
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="join_requests"
+    )
+    organisation = models.ForeignKey(
+        Organisation, on_delete=models.CASCADE, related_name="join_requests"
+    )
+    status = models.CharField(
+        max_length=16, choices=Status.choices, default=Status.PENDING
+    )
+    message = models.TextField(
+        blank=True,
+        default="",
+        help_text="Optional note from the requester to the organisation's administrators",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    decided_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="join_requests_decided",
+    )
+    decided_at = models.DateTimeField(null=True, blank=True)
+    # The role granted at approval time. Recorded separately from the resulting
+    # membership because that membership's role may be edited later, and the
+    # approval email needs to state what was granted.
+    granted_role = models.CharField(
+        max_length=20, choices=ROLES, blank=True, default=""
+    )
+    decision_note = models.TextField(blank=True, default="")
+
     class Meta:
-        unique_together = ["user", "organisation"]
+        ordering = ("-created_at",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "organisation"],
+                condition=models.Q(status="PENDING"),
+                name="unique_pending_join_request_per_user_organisation",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["organisation", "status", "-created_at"]),
+            models.Index(fields=["user", "status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user} → {self.organisation} ({self.get_status_display()})"
+
+    @property
+    def is_pending(self) -> bool:
+        return self.status == self.Status.PENDING
 
 
 class Project(models.Model):
     """
     A project is an organisation unit for surveys within an organisation.
     """
+
     name = models.CharField(max_length=100, help_text="Project title")
     description = models.TextField(blank=True, null=True)
     organisation = models.ForeignKey(
@@ -136,3 +245,70 @@ class Project(models.Model):
     @property
     def surveys(self):
         return self.survey.all()
+
+
+class DataProtectionEvent(models.Model):
+    """
+    Append-only record of data protection actions taken on a user's data,
+    kept for UK GDPR Article 5(2) accountability. Entries survive erasure of
+    the subject user, so subject identity is stored as a stable string plus
+    the original id — never as a FK to User.
+
+    ``subject_identifier`` holds a one-way pseudonym (see
+    ``data_protection.pseudonymise_identifier``), not plaintext personal data,
+    so the immutable log does not itself retain an erased subject's email.
+    """
+
+    class EventType(models.TextChoices):
+        ERASURE = "erasure", "Erasure request actioned"
+        EXPORT = "export", "Subject access export generated"
+        RESTRICTION = "restriction", "Account restricted / suspended"
+        UNRESTRICTION = "unrestriction", "Account restriction lifted"
+        CONSENT_WITHDRAWAL = "consent_withdrawal", "Consent withdrawn"
+        MEMBERSHIP_REMOVED = "membership_removed", "Removed from organisation"
+        RECTIFICATION = "rectification", "Personal data corrected by staff"
+        ORGANISATION_MERGED = "organisation_merged", "Organisations merged"
+
+    event_type = models.CharField(max_length=32, choices=EventType.choices)
+    subject_user_id = models.IntegerField(null=True, blank=True)
+    subject_identifier = models.CharField(max_length=254)
+    actioned_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="dp_events_actioned",
+    )
+    requested_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="dp_events_requested",
+    )
+    requested_at = models.DateTimeField(null=True, blank=True)
+    actioned_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ("-actioned_at",)
+        indexes = [
+            models.Index(fields=["event_type", "-actioned_at"]),
+            models.Index(fields=["subject_user_id"]),
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            raise ValueError("DataProtectionEvent is append-only and cannot be modified")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValueError("DataProtectionEvent is append-only and cannot be deleted")
+
+    def __str__(self):
+        return f"{self.get_event_type_display()} — {self.subject_identifier} @ {self.actioned_at:%Y-%m-%d %H:%M}"
+
+
+@receiver(pre_delete, sender=DataProtectionEvent)
+def _prevent_dp_event_delete(sender, instance, **kwargs):
+    raise ValueError("DataProtectionEvent is append-only and cannot be deleted")

@@ -1,0 +1,43 @@
+[tool.black]
+line-length = 120
+target-version = ["py312"]
+exclude = '''
+/(
+    migrations
+  | node_modules
+  | venv
+  | env
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip = ["migrations", "node_modules", "venv", "env"]
+
+[tool.coverage.run]
+source = ["."]
+# Django's --parallel test runner forks worker processes; without these,
+# coverage recorded inside those workers is lost instead of merged in by
+# `coverage combine` (see .github/workflows/django-check.yaml).
+parallel = true
+concurrency = ["multiprocessing"]
+omit = [
+    "__init__.py",
+    "*/migrations/*",
+    "SORT/*",
+    "*/admin.py",
+    "*/tests/*",
+    "e2e/*",
+    "home/management/*",
+    "survey/management/*",
+]
+
+[tool.coverage.report]
+format = "markdown"
+skip_empty = true
+sort = "Cover"
+
+[tool.bandit]
+# Tests use asserts and hardcoded passwords, which are noise for a security scan.
+exclude_dirs = ["node_modules", ".venv", "e2e", "home/tests", "survey/tests", "SORT/test"]

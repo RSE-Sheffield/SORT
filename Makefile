@@ -2,23 +2,9 @@
 # This Makefile contains common Django management commands for easier development
 
 # Variables
-PYTHON = python
+PYTHON = .venv/bin/python
 MANAGE = $(PYTHON) manage.py
 PROJECT_NAME = SORT
-
-# Help command to list all available commands
-help:
-	@echo "Available commands:"
-	@echo "  make runserver        - Start Django development server"
-	@echo "  make migrations       - Create new database migrations"
-	@echo "  make migrate          - Apply database migrations"
-	@echo "  make superuser       - Create a superuser account"
-	@echo "  make static          - Collect static files"
-	@echo "  make shell           - Open Django shell"
-	@echo "  make test            - Run tests"
-	@echo "  make clean           - Remove Python compiled files"
-	@echo "  make requirements    - Install Python dependencies"
-	@echo "  make lint            - Run code linting on project files"
 
 # Development server
 runserver:
@@ -30,6 +16,11 @@ migrations:
 
 migrate:
 	$(MANAGE) migrate
+
+# System checks
+check:
+	$(MANAGE) check --fail-level WARNING
+	$(MANAGE) makemigrations --check --dry-run
 
 # User management
 superuser:
@@ -44,7 +35,13 @@ shell:
 	$(MANAGE) shell
 
 test:
-	$(MANAGE) test
+	$(MANAGE) test --parallel=auto --failfast --exclude-tag=e2e
+	npm test
+
+# End-to-end browser tests (requires: playwright install chromium)
+e2e:
+	npm run build
+	$(MANAGE) test e2e --tag=e2e
 
 clean:
 	find . -type f -name "*.pyc" -delete
@@ -56,11 +53,18 @@ requirements:
 
 # Code quality - only check project source files
 lint:
-	flake8 $(PROJECT_NAME) --exclude=migrations,settings.py
+	flake8
+
+# Security scans: Bandit (code) and pip-audit (dependencies)
+security:
+	.venv/bin/bandit -r . -c pyproject.toml --severity-level medium
+	.venv/bin/pip-audit -r requirements.txt
+
+format:
 	black $(PROJECT_NAME) --exclude="migrations|settings.py"
 
 # Default target when just running 'make'
 .DEFAULT_GOAL := help
 
 # Mark these targets as always needing to run (not files)
-.PHONY: help runserver migrations migrate superuser static shell test clean requirements lint
+.PHONY: help runserver migrations migrate check superuser static shell test e2e clean requirements lint security

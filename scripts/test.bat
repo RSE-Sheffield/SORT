@@ -15,6 +15,9 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
+echo Checking for missing migrations...
+python manage.py makemigrations --check --dry-run
+
 echo Running Django tests for home...
 python manage.py test home/tests --parallel=auto --failfast
 if %ERRORLEVEL% neq 0 (

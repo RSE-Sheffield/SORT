@@ -1,6 +1,8 @@
 import json
 from http import HTTPStatus
+from unittest.mock import patch
 
+import django.urls
 import SORT.test.model_factory
 import SORT.test.test_case
 from survey.models import Invitation
@@ -91,7 +93,34 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
 
     def test_survey_response_post(self):
         invitation = Invitation.objects.create(survey=self.survey)
-        self.post("survey_response", token=invitation.token)
+        self.post(
+            "survey_response",
+            token=invitation.token,
+            data={"value": json.dumps({})},
+            expected_status_code=HTTPStatus.FOUND,
+        )
+
+    def test_survey_response_post_missing_value(self):
+        invitation = Invitation.objects.create(survey=self.survey)
+        url = django.urls.reverse("survey_response", kwargs={"token": invitation.token})
+        response = self.client.post(url, data={})
+        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
+        self.assertTemplateUsed(response, "survey/survey_response_submission_error.html")
+
+    def test_survey_response_post_invalid_json(self):
+        invitation = Invitation.objects.create(survey=self.survey)
+        url = django.urls.reverse("survey_response", kwargs={"token": invitation.token})
+        response = self.client.post(url, data={"value": "not-valid-json"})
+        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
+        self.assertTemplateUsed(response, "survey/survey_response_submission_error.html")
+
+    def test_survey_response_post_service_error(self):
+        invitation = Invitation.objects.create(survey=self.survey)
+        url = django.urls.reverse("survey_response", kwargs={"token": invitation.token})
+        with patch("survey.views.survey_service.accept_response", side_effect=Exception("db error")):
+            response = self.client.post(url, data={"value": json.dumps({})})
+        self.assertEqual(response.status_code, HTTPStatus.INTERNAL_SERVER_ERROR)
+        self.assertTemplateUsed(response, "survey/survey_response_submission_error.html")
 
     def test_survey_link_invalid(self):
         self.get("survey_link_invalid")

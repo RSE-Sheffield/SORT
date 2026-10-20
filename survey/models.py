@@ -3,24 +3,32 @@ import io
 import json
 import logging
 import random
+import re
 import itertools
 import secrets
 import tempfile
+from functools import cached_property
 from pathlib import Path
 from typing import Generator, ContextManager
 from contextlib import contextmanager
 
+import jsonschema
 import xlsxwriter
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.http import HttpRequest
 from django.urls import reverse
 import django.core.validators
 
 from home.models import Project
+from survey.schema import field_schema
 
 logger = logging.getLogger(__name__)
+
+# The optional research consent question in the consent section (see CONSENT_TEMPLATE)
+RESEARCH_CONSENT_FIELD_NAME = "consent-research"
 
 
 class Profession(models.TextChoices):
@@ -33,6 +41,7 @@ class Profession(models.TextChoices):
     WIDMIVES = "Midwives", "Midwives"
     NURSES_MIDWIVES = "Nurses & Midwives", "Nurses and Midwives"
     AHP = "AHP", "Allied Health Professionals (AHP)"
+    GENERIC = "Generic", "Generic (Other Professional Groups)"
 
 
 class Survey(models.Model):
@@ -183,6 +192,58 @@ class Survey(models.Model):
         # survey_config field
         return tuple(self.survey_config["sections"])
 
+    def describe_error_path(self, path) -> str:
+        """
+        Turn a response_schema validation error path (section index, field index,
+        and for likert fields a sublabel index) into a human-readable location,
+        using this survey's section titles and field labels.
+        """
+        path = list(path)
+        if not path:
+            return "Response"
+
+        section = self.sections[path[0]]
+        description = f"Section {path[0] + 1} '{section.get('title', path[0] + 1)}'"
+        if len(path) == 1:
+            return description
+
+        field = section["fields"][path[1]]
+        description += f", field '{field.get('label', path[1] + 1)}'"
+
+        sublabels = field.get("sublabels", [])
+        if len(path) > 2 and field.get("type") == "likert" and path[2] < len(sublabels):
+            description += f" ('{sublabels[path[2]]}')"
+
+        return description
+
+    @cached_property
+    def response_schema(self) -> dict:
+        """
+        Generate a JSON Schema that validates the structure of response answers.
+        """
+
+        section_schemas = list()
+        for section in self.sections:
+            fields = section.get("fields", [])
+            field_schemas = [field_schema(f) for f in fields]
+            section_schemas.append(
+                {
+                    "type": "array",
+                    "prefixItems": field_schemas,
+                    "items": False,
+                    "minItems": len(fields),
+                    "maxItems": len(fields),
+                }
+            )
+
+        return {
+            "type": "array",
+            "prefixItems": section_schemas,
+            "items": False,
+            "minItems": len(section_schemas),
+            "maxItems": len(section_schemas),
+        }
+
     @classmethod
     def _generate_random_field_value(cls, field_config):
         field_type = field_config["type"]
@@ -242,7 +303,8 @@ class Survey(models.Model):
         """
         Enter a new survey submission.
         """
-        survey_response = SurveyResponse.objects.create(survey=self, answers=answers)
+        survey_response = SurveyResponse(survey=self, answers=answers)
+        survey_response.full_clean()
         survey_response.save()
         return survey_response
 
@@ -309,6 +371,19 @@ class Survey(models.Model):
                 writer.writerow(row)
             return buffer.getvalue()
 
+    #: Excel worksheet names cannot exceed this many characters
+    EXCEL_SHEET_NAME_MAX_LENGTH = 31
+    #: Characters Excel does not allow in a worksheet name
+    EXCEL_SHEET_NAME_INVALID_CHARS = re.compile(r"[\[\]:*?/\\]")
+
+    def _excel_sheet_name(self) -> str:
+        """
+        A worksheet name derived from the survey name, valid for Excel
+        (<=31 characters, and none of [ ] : * ? / \\).
+        """
+        name = self.EXCEL_SHEET_NAME_INVALID_CHARS.sub("", str(self))
+        return name[: self.EXCEL_SHEET_NAME_MAX_LENGTH] or "Survey"
+
     @contextmanager
     def _to_excel(self) -> ContextManager[Path]:
         """
@@ -321,7 +396,7 @@ class Survey(models.Model):
 
         # Create spreadsheet data
         workbook = xlsxwriter.Workbook(filename=path)
-        sheet = workbook.add_worksheet(name=str(self))
+        sheet = workbook.add_worksheet(name=self._excel_sheet_name())
         # Iterate over responses (one row per response)
         for i, row in enumerate(self.responses_iter()):
             # Write headers
@@ -467,27 +542,111 @@ class SurveyResponse(models.Model):
     def get_absolute_url(self, token):
         return reverse("survey", kwargs={"pk": self.survey.pk})
 
+    def validate(self) -> None:
+        """
+        Validate response answers against this survey's JSON Schema.
+
+        Raises django.core.exceptions.ValidationError, with one message per
+        failing field, if the answers do not match.
+        """
+        schema = self.survey.response_schema
+        validator_cls = jsonschema.validators.validator_for(schema)
+        errors = sorted(
+            validator_cls(schema).iter_errors(self.answers),
+            key=lambda exc: list(exc.absolute_path),
+        )
+        if errors:
+            raise ValidationError(
+                [
+                    f"{self.survey.describe_error_path(exc.absolute_path)}: {exc.message}"
+                    for exc in errors
+                ]
+            )
+
     def clean(self):
         super().clean()
 
         # Paused survey
         if not self.survey.is_active:
-            raise ValueError("Cannot submit response to an inactive survey")
+            raise ValidationError("Cannot submit response to an inactive survey")
+
+        # Validate response structure against survey config
+        self.validate()
+
+    @property
+    def has_research_consent(self) -> bool:
+        """
+        Whether the participant ticked the optional research consent box in the
+        consent (first) section. Only these responses may be shared for research.
+        """
+        fields = self.survey.sections[0].get("fields", []) if self.survey.sections else []
+        for field_index, field in enumerate(fields):
+            if field.get("name") == RESEARCH_CONSENT_FIELD_NAME:
+                section_answers = self._section_answers(0)
+                if field_index < len(section_answers):
+                    return len(self._as_list(section_answers[field_index])) > 0
+                return False
+        return False
 
     @property
     def answers_values(self) -> Generator[str, None, None]:
         """
-        Build a flat iterable of all the answer values for this response.
+        Build a flat iterable of all the answer values for this response, aligned
+        column-for-column with Survey.fields_iter().
 
-        - Likert sub-labels are expanded into individual columns
+        - Likert answers expand into one value per sub-label (matching fields_iter)
+        - Checkbox answers may hold more than one selected option, but each checkbox
+          field is a single column, so its selected options are joined into one value
+
+        Answers that predate response schema validation, or that were stored before the
+        survey configuration changed, may hold fewer sections, fields or likert
+        sub-labels than the configuration describes. Emit a blank cell for each of those
+        so every row still lines up with the header, rather than silently dropping the
+        remaining columns.
         """
-        for section in self.answers:
-            for field in section:
-                # Flatten sub-labels
-                if isinstance(field, list):
-                    yield from field
+        for section_index, section in enumerate(self.survey.sections):
+            section_answers = self._section_answers(section_index)
+            for field_index, field in enumerate(section["fields"]):
+                answer = (
+                    section_answers[field_index]
+                    if field_index < len(section_answers)
+                    else None
+                )
+                if field["type"] == "likert":
+                    sublabels = field.get("sublabels", [])
+                    selected = self._as_list(answer)
+                    for sublabel_index in range(len(sublabels)):
+                        yield (
+                            selected[sublabel_index]
+                            if sublabel_index < len(selected)
+                            else ""
+                        )
+                elif field["type"] == "checkbox":
+                    yield ", ".join(self._as_list(answer))
                 else:
-                    yield field
+                    yield "" if answer is None else answer
+
+    def _section_answers(self, section_index: int) -> list:
+        """
+        The stored answers for one section, or an empty list if the response has none.
+        """
+        try:
+            section_answers = self.answers[section_index]
+        except (IndexError, KeyError, TypeError):
+            return list()
+        return section_answers if isinstance(section_answers, list) else list()
+
+    @staticmethod
+    def _as_list(answer) -> list:
+        """
+        The selected options of a multiple-choice answer.
+
+        Malformed answers may hold a bare string where a list is expected; wrap it rather
+        than treating each character as a selected option.
+        """
+        if answer is None:
+            return list()
+        return answer if isinstance(answer, list) else [answer]
 
 
 class Invitation(models.Model):

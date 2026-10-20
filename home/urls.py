@@ -8,7 +8,9 @@ from . import views
 urlpatterns = [
     path("", views.LandingView.as_view(), name="landing"),
     path("dashboard/", views.HomeView.as_view(), name="dashboard"),
-    path("home/", views.HomeView.as_view(), name="home"),  # Backwards compatibility alias
+    path(
+        "home/", views.HomeView.as_view(), name="home"
+    ),  # Backwards compatibility alias
     path("login/", views.LoginInterfaceView.as_view(), name="login"),
     path("logout/", views.LogoutInterfaceView.as_view(), name="logout"),
     re_path(
@@ -51,6 +53,16 @@ urlpatterns = [
     ),
     path("myorganisation/", views.MyOrganisationView.as_view(), name="myorganisation"),
     path(
+        "myorganisation/switch/",
+        views.SetActiveOrganisationView.as_view(),
+        name="organisation_switch",
+    ),
+    path(
+        "myorganisation/edit/",
+        views.OrganisationEditView.as_view(),
+        name="organisation_edit",
+    ),
+    path(
         "myorganisation/members/",
         views.OrganisationMembershipListView.as_view(),
         name="members",
@@ -71,6 +83,21 @@ urlpatterns = [
         name="member_invite_accept",
     ),
     path(
+        "myorganisation/join-requests/",
+        views.OrganisationJoinRequestListView.as_view(),
+        name="join_requests",
+    ),
+    path(
+        "myorganisation/join-requests/<int:pk>/approve/",
+        views.JoinRequestApproveView.as_view(),
+        name="join_request_approve",
+    ),
+    path(
+        "myorganisation/join-requests/<int:pk>/reject/",
+        views.JoinRequestRejectView.as_view(),
+        name="join_request_reject",
+    ),
+    path(
         "myorganisation/data-sharing-agreement/",
         views.DataSharingAgreementView.as_view(),
         name="data_sharing_agreement",
@@ -79,6 +106,31 @@ urlpatterns = [
         "organisation/create/",
         views.OrganisationCreateView.as_view(),
         name="organisation_create",
+    ),
+    path(
+        "organisations/get-started/",
+        views.OrganisationGetStartedView.as_view(),
+        name="organisation_get_started",
+    ),
+    path(
+        "organisations/",
+        views.OrganisationBrowseView.as_view(),
+        name="organisation_browse",
+    ),
+    path(
+        "organisations/<int:pk>/join/",
+        views.JoinRequestCreateView.as_view(),
+        name="organisation_join_request",
+    ),
+    path(
+        "myjoinrequests/",
+        views.MyJoinRequestListView.as_view(),
+        name="join_requests_mine",
+    ),
+    path(
+        "myjoinrequests/<int:pk>/withdraw/",
+        views.JoinRequestWithdrawView.as_view(),
+        name="join_request_withdraw",
     ),
     path("projects/<int:project_id>/", views.ProjectView.as_view(), name="project"),
     path(
@@ -111,12 +163,85 @@ urlpatterns = [
         views.TroubleshootingView.as_view(),
         name="troubleshooting",
     ),
-    path("help/faq/", views.FAQView.as_view(), name="faq", ),
+    path(
+        "help/faq/",
+        views.FAQView.as_view(),
+        name="faq",
+    ),
     path("eula/", views.LicenseAgreementView.as_view(), name="eula"),
     path("privacy/", views.PrivacyPolicyView.as_view(), name="privacy"),
     path(
         "participant-information/",
         views.ParticipantInformationView.as_view(),
         name="participant_information",
+    ),
+    # Management console (staff only)
+    path("console/", views.ConsoleView.as_view(), name="admin_dashboard"),
+    path("console/analytics/", views.ConsoleAnalyticsView.as_view(), name="admin_analytics"),
+    path(
+        "console/analytics/export/",
+        views.ConsoleAnalyticsExportView.as_view(),
+        name="admin_analytics_export",
+    ),
+    path(
+        "console/organisations/",
+        views.ConsoleOrganisationListView.as_view(),
+        name="admin_organisations",
+    ),
+    path(
+        "console/organisations/<int:pk>/",
+        views.ConsoleOrganisationDetailView.as_view(),
+        name="admin_organisation_detail",
+    ),
+    path(
+        "console/organisations/<int:org_pk>/members/<int:membership_pk>/remove/",
+        views.ConsoleRemoveMemberView.as_view(),
+        name="admin_remove_member",
+    ),
+    path(
+        "console/projects/",
+        views.ConsoleProjectListView.as_view(),
+        name="admin_projects",
+    ),
+    path(
+        "console/projects/<int:pk>/",
+        views.ConsoleProjectDetailView.as_view(),
+        name="admin_project_detail",
+    ),
+    path("console/users/", views.ConsoleUserListView.as_view(), name="admin_users"),
+    path("console/users/<int:pk>/", views.ConsoleUserDetailView.as_view(), name="admin_user_detail"),
+    path("console/users/<int:pk>/delete/", views.ConsoleDeleteUserView.as_view(), name="admin_delete_user"),
+    path(
+        "console/users/<int:pk>/suspend/",
+        views.ConsoleSuspendUserView.as_view(),
+        name="admin_suspend_user",
+    ),
+    path(
+        "console/users/<int:pk>/unsuspend/",
+        views.ConsoleUnsuspendUserView.as_view(),
+        name="admin_unsuspend_user",
+    ),
+    path(
+        "console/users/<int:pk>/export/",
+        views.ConsoleExportUserDataView.as_view(),
+        name="admin_export_user_data",
+    ),
+    path(
+        "console/users/<int:pk>/edit/",
+        views.ConsoleEditUserView.as_view(),
+        name="admin_edit_user",
+    ),
+    path(
+        "console/surveys/", views.ConsoleSurveyListView.as_view(), name="admin_surveys"
+    ),
+    path(
+        "console/surveys/<int:pk>/",
+        views.ConsoleSurveyDetailView.as_view(),
+        name="admin_survey_detail",
+    ),
+    path(
+        "console/data-protection/",
+        views.ConsoleDataProtectionLogView.as_view(),
+        name="admin_data_protection_log",
     ),
 ]

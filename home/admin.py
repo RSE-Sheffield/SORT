@@ -14,7 +14,10 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(Organisation)
 class OrganisationAdmin(admin.ModelAdmin):
     list_display = ("pk", "name", "created_at")
-    search_fields = ("name", "description",)
+    search_fields = (
+        "name",
+        "description",
+    )
     ordering = ("name",)
 
 
@@ -28,5 +31,8 @@ class OrganisationMembershipAdmin(admin.ModelAdmin):
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ("pk", "name", "created_by", "created_at", "organisation")
-    search_fields = ("name", "description",)
+    search_fields = (
+        "name",
+        "description",
+    )
     list_filter = ("organisation",)

@@ -3,11 +3,9 @@ import logging
 import mimetypes
 import os.path
 
-import django.core.mail
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.uploadhandler import UploadFileException
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
@@ -437,7 +435,7 @@ class SurveyReportView(LoginRequiredMixin, View):
         }
 
         sections = []
-        for index, section in enumerate(survey.survey_config["sections"]):
+        for index, section in enumerate(survey.sections):
             sections.append(
                 {
                     "section_config": section,
@@ -460,15 +458,31 @@ class SurveyReportView(LoginRequiredMixin, View):
         with open("data/readiness_descriptions/matrix.json") as file:
             readiness_descriptions: list[list[str]] = list(json.load(file))
 
+        # Report figures are calculated in the browser from these raw answers. Answers
+        # that predate response schema validation, or that were stored before the survey
+        # configuration changed, may not line up with the questions; the front end skips
+        # what it cannot use, so warn the reader that the figures are incomplete.
+        answers = list()
+        invalid_response_count = 0
+        for response in SurveyResponse.objects.filter(survey=survey):
+            answers.append(response.answers)
+            try:
+                response.validate()
+            except ValidationError:
+                invalid_response_count += 1
+                logger.warning(
+                    "Survey %s response %s does not match the survey configuration",
+                    survey.pk,
+                    response.pk,
+                )
+
         context = {
             "survey": survey,
-            "responses": [
-                response.answers
-                for response in SurveyResponse.objects.filter(survey=survey)
-            ],
+            "responses": answers,
+            "response_count": len(answers),
+            "invalid_response_count": invalid_response_count,
             "sections": sections,
             "csrf": str(csrf(self.request)["csrf_token"]),
-            # "files_list": files_list,
             "readiness_descriptions": readiness_descriptions,
         }
 
@@ -500,14 +514,44 @@ class SurveyResponseView(View):
             context = dict()
 
             if is_post:
-                # Only process if it's a post request
+                if "value" not in request.POST:
+                    logger.error(
+                        "Survey submission missing 'value' field: token=%s survey_id=%s",
+                        token, survey.pk,
+                    )
+                    return render(
+                        request,
+                        "survey/survey_response_submission_error.html",
+                        status=400,
+                    )
 
-                # TODO: Server side value validation to make sure
-                if "value" in request.POST:
-                    responseValues = json.loads(request.POST.get("value", None))
+                try:
+                    responseValues = json.loads(request.POST["value"])
+                except json.JSONDecodeError:
+                    logger.error(
+                        "Survey submission contained invalid JSON: token=%s survey_id=%s",
+                        token, survey.pk,
+                    )
+                    return render(
+                        request,
+                        "survey/survey_response_submission_error.html",
+                        status=400,
+                    )
+
+                try:
                     survey_service.accept_response(survey, responseValues)
-                    context["value"] = responseValues
-                    return redirect("completion_page")
+                except Exception:
+                    logger.exception(
+                        "Failed to save survey response: token=%s survey_id=%s",
+                        token, survey.pk,
+                    )
+                    return render(
+                        request,
+                        "survey/survey_response_submission_error.html",
+                        status=500,
+                    )
+
+                return redirect("completion_page")
 
             context["survey"] = survey
             context["csrf"] = str(csrf(self.request)["csrf_token"])
@@ -552,26 +596,43 @@ class SurveyCreateInviteView(LoginRequiredMixin, View):
         return redirect("survey", pk=pk)
 
 
-class InvitationView(FormView):
-    model = Survey
+class InvitationView(LoginRequiredMixin, FormView):
+    """
+    Send the survey invitation link to participants by email.
+    """
+
     template_name = "invitations/send_invitation.html"
     form_class = InvitationForm
 
+    def get(self, request, *args, **kwargs):
+        self.survey = survey_service.get_survey(request.user, kwargs["pk"])
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.survey = survey_service.get_survey(request.user, kwargs["pk"])
+        return super().post(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(survey=self.survey, **kwargs)
+
     def form_valid(self, form):
         recipient_list = Invitation.recipient_list(form.cleaned_data["email"])
-        message = form.data["message"]
-        survey = Survey.objects.get(pk=self.kwargs["pk"])
         # Generate the survey link with the token
-        survey_link = survey.get_invite_link(request=self.request)
+        survey_link = self.survey.get_invite_link(request=self.request)
+        if survey_link is None:
+            form.add_error(
+                None,
+                "This survey has no active invitation link. "
+                "Generate one on the survey page first.",
+            )
+            return self.form_invalid(form)
 
-        # Send the email
-        # https://docs.djangoproject.com/en/5.1/topics/email/
-        django.core.mail.send_mail(
-            subject="Your SORT Survey Invitation",
-            message=f"Click here to start the SORT survey:\n{survey_link}\n\n{message}",
-            from_email=settings.DEFAULT_FROM_EMAIL,
+        survey_service.send_invitation(
+            self.request.user,
+            self.survey,
             recipient_list=recipient_list,
-            fail_silently=False,
+            survey_link=survey_link,
+            message=form.cleaned_data["message"],
         )
 
         # Show success message

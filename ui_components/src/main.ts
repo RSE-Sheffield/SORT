@@ -1,5 +1,10 @@
 import {mount} from 'svelte'
-import {type FileDescriptionType, type SurveyConfig, type SurveyResponseBatch} from "./lib/interfaces.ts"
+import {
+    type FileDescriptionType,
+    type SurveyConfig,
+    type SurveyResponseBatch,
+    type UsageTrendRow
+} from "./lib/interfaces.ts"
 import {generateStatsFromSurveyResponses, getDataInElem} from "./lib/misc.svelte.js";
 import SmartTable from "./lib/components/SmartTable.svelte";
 import SurveyConfigConsentDemographyApp from "./SurveyConfigConsentDemographyApp.svelte";
@@ -10,8 +15,17 @@ import SurveyResponseViewerApp from "./lib/components/SurveyResponseViewerApp.sv
 import SurveySectionDataView from "./lib/components/SurveySectionDataView.svelte";
 import SortSummaryMatrix from "./lib/components/SortSummaryMatrix.svelte";
 import SurveyReportApp from "./lib/components/SurveyReportApp.svelte";
+import UsageTrendsChart from "./lib/components/graph/UsageTrendsChart.svelte";
 
 const csrf: string = getDataInElem("csrf", []);
+
+/**
+ * Fallback survey configuration.
+ *
+ * Survey.survey_config is nullable, and json_script emits `null` for it, so components
+ * must be given something with a `sections` array rather than a bare object.
+ */
+const EMPTY_SURVEY_CONFIG: SurveyConfig = {sections: []};
 
 function mapMatchedElement(selector: string, handler: (elem: HTMLElement) => void) {
     const matchingElements = document.querySelectorAll(selector);
@@ -115,7 +129,7 @@ mapMatchedElement(".sort-response-section-viewer", (elem) => {
     const readinessDescriptionsAllSections = getDataInElem(readinessDescriptionsId, []);
     // Readiness descriptions for just this section (levels 0 to 4)
     const readinessDescriptions = readinessDescriptionsAllSections[sectionIndex - 1];
-    const config = getDataInElem(configId, {}) as SurveyConfig;
+    const config = getDataInElem(configId, EMPTY_SURVEY_CONFIG) as SurveyConfig;
     const responses: SurveyResponseBatch = getDataInElem(responsesId, []) as [];
     const surveyStats = generateStatsFromSurveyResponses(config, responses);
     const useBarChart = elem.dataset.useBarChart === 'true'; // Convert string to boolean
@@ -134,7 +148,7 @@ mapMatchedElement(".sort-response-section-viewer", (elem) => {
 mapMatchedElement(".sort-response-summary-matrix", (elem) => {
     const configId = elem.dataset.jsonConfigId;
     const responsesId = elem.dataset.jsonResponsesId;
-    const config = getDataInElem(configId, {}) as SurveyConfig;
+    const config = getDataInElem(configId, EMPTY_SURVEY_CONFIG) as SurveyConfig;
     const responses: SurveyResponseBatch = getDataInElem(responsesId, []) as [];
     const surveyStats = generateStatsFromSurveyResponses(config, responses)
     mount(SortSummaryMatrix, {
@@ -151,7 +165,7 @@ mapMatchedElement(".sort-report-app", (elem) => {
     const responsesId = elem.dataset.jsonResponsesId;
     const csvUrl = elem.dataset.csvUrl ?? "";
     const excelUrl = elem.dataset.excelUrl ?? "";
-    const config = getDataInElem(configId, {}) as SurveyConfig;
+    const config = getDataInElem(configId, EMPTY_SURVEY_CONFIG) as SurveyConfig;
     const responses: SurveyResponseBatch = getDataInElem(responsesId, []) as [];
     mount(SurveyReportApp, {
         target: elem,
@@ -159,5 +173,13 @@ mapMatchedElement(".sort-report-app", (elem) => {
             config: config,
             responses: responses
         }
+    });
+});
+
+mapMatchedElement(".sort-usage-trends", (elem) => {
+    const trends = getDataInElem(elem.dataset.jsonId, []) as UsageTrendRow[];
+    mount(UsageTrendsChart, {
+        target: elem,
+        props: {trends: trends}
     });
 });

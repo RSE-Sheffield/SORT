@@ -22,9 +22,13 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # diff-cover needs full history to diff against the base branch
+          fetch-depth: 0
+          persist-credentials: false
       - name: Setup Python
-        uses: actions/setup-python@v5.3.0
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           # This should match the version used in production
           python-version-file: .python-version
@@ -32,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: pip install --requirement requirements.txt --requirement requirements-dev.txt
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: package.json
           cache: 'npm'
@@ -45,11 +49,17 @@ jobs:
       - name: Run Django system checks
         run: |
           export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
-          python manage.py check
+          python manage.py check --fail-level WARNING
+      # https://docs.djangoproject.com/en/5.1/ref/django-admin/#cmdoption-makemigrations-check
+      - name: Check for missing migrations
+        run: |
+          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
+          python manage.py makemigrations --check --dry-run
       # https://docs.djangoproject.com/en/5.1/topics/testing/
       - name: Run Django test suites
         run: |
           export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
+          coverage erase
           # Iterate over Django apps with test directories
           for test_dir in **/tests
           do
@@ -57,6 +67,23 @@ jobs:
             # https://docs.djangoproject.com/en/5.1/topics/testing/advanced/#integration-with-coverage-py
             coverage run --source="home,survey" manage.py test "$test_dir" --verbosity=2 --parallel=auto
           done
+          # Merge the per-process data files (main process plus each
+          # --parallel worker) written because of the `parallel`/
+          # `concurrency` settings in pyproject.toml.
+          coverage combine
           # Generate coverage report
           echo "## Coverage report" >> $GITHUB_STEP_SUMMARY
           coverage report --format="markdown" >> $GITHUB_STEP_SUMMARY
+          coverage xml
+      - name: Check diff coverage
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin "${GITHUB_BASE_REF}"
+          diff-cover coverage.xml \
+            --compare-branch="origin/${GITHUB_BASE_REF}" \
+            --format markdown:diff-cover-report.md \
+            --fail-under=80
+          exit_code=$?
+          echo "## Diff coverage report" >> $GITHUB_STEP_SUMMARY
+          cat diff-cover-report.md >> $GITHUB_STEP_SUMMARY
+          exit $exit_code

@@ -1,0 +1,20 @@
+{% extends "base_anonymous.html" %}
+
+{% block content %}
+    <div class="container mb-3">
+        <h3>Sorry, your submission could not be completed</h3>
+
+        <div class="alert alert-warning" role="alert">
+            <p>Your session could not be verified, so your answers were not submitted.
+               This usually happens when cookies are disabled or the page was left open
+               for a long time.</p>
+            <p>To try again:</p>
+            <ul>
+                <li>Make sure cookies are enabled in your browser.</li>
+                <li>Reopen the survey using the original link and resubmit.</li>
+            </ul>
+        </div>
+
+        {% if reason and debug %}<p class="text-muted small">Reason: {{ reason }}</p>{% endif %}
+    </div>
+{% endblock %}

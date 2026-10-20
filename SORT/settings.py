@@ -110,6 +110,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "home.context_processors.organisation_context",
             ],
         },
     },
@@ -206,7 +207,7 @@ EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("DJANGO_EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_TLS", False))
 EMAIL_USE_SSL = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_SSL", True))
-EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", 3))
+EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", 30))
 EMAIL_SSL_KEYFILE = os.getenv("DJANGO_EMAIL_SSL_KEYFILE")
 EMAIL_SSL_CERTFILE = os.getenv("DJANGO_EMAIL_SSL_CERTFILE")
 EMAIL_SUBJECT_PREFIX = os.getenv("DJANGO_EMAIL_SUBJECT_PREFIX", "[SORT] ")
@@ -214,7 +215,12 @@ EMAIL_USE_LOCALTIME = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_LOCALTIME", Tr
 DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "noreply@noreply.com")
 
 AUTHENTICATION_BACKENDS = (
-    "django.contrib.auth.backends.ModelBackend",
+    # Allows authenticate() to succeed for inactive (suspended) users so that
+    # AuthenticationForm.confirm_login_allowed() can reject them with a specific
+    # error, reusing the single password hash check already performed here rather
+    # than requiring a second check_password() call that leaks suspension status
+    # via a timing side-channel.
+    "django.contrib.auth.backends.AllowAllUsersModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
@@ -234,7 +240,11 @@ VITE_STATIC_DIR = "ui-components"
 "Path to vite-generated asset directory in the static folder"
 VITE_MANIFEST_FILE_PATH = Path(os.path.join(VITE_STATIC_DIR, "manifest.json"))
 
+# SAMEORIGIN (not DENY) is required for the file browser feature; silence the
+# resulting deployment check warning so that `manage.py check --deploy` does
+# not abort before running migrations.
 X_FRAME_OPTIONS = "SAMEORIGIN"
+SILENCED_SYSTEM_CHECKS = ["security.W001", "security.W019"]
 
 # File uploading
 MEDIA_ROOT = os.getenv("DJANGO_MEDIA_ROOT", BASE_DIR / "uploads")
@@ -256,6 +266,10 @@ SESSION_COOKIE_SECURE = cast_to_boolean(
 )
 CSRF_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_CSRF_COOKIE_SECURE", not DEBUG))
 
+# Custom view rendered when CSRF verification fails (issue #623).
+# Renders a friendly retry page and logs the failure (see SORT/views.py).
+CSRF_FAILURE_VIEW = "SORT.views.csrf_failure"
+
 # Logging
 # https://docs.djangoproject.com/en/5.1/topics/logging/
 LOGGING = {
@@ -271,6 +285,22 @@ LOGGING = {
         "handlers": ["console"],
         "level": os.getenv("DJANGO_LOG_LEVEL", "WARNING"),
     },
+    "loggers": {
+        # Reduce FactoryBoy verbosity during testing (issue #521)
+        # FactoryBoy generates verbose DEBUG/INFO logs when creating test fixtures
+        # This configuration suppresses these logs to reduce test output spam
+        "factory": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        # Suppress 4xx WARNING tracebacks in test output (e.g. expected 403s from permission tests)
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
 }
 
 # Survey content configuration files
@@ -281,6 +311,7 @@ SURVEY_TEMPLATES = {
     "NMAHPs": "sort_only_config_nmahps.json",
     "Nurses & Midwives": "sort_only_config_nurses_midwives.json",
     "AHP": "sort_only_config_ahp.json",
+    "Generic": "sort_only_config_generic.json",
 }
 DEMOGRAPHY_TEMPLATES = {
     "Nurses": "demography_only_config_nurses.json",
@@ -288,6 +319,7 @@ DEMOGRAPHY_TEMPLATES = {
     "NMAHPs": "demography_only_config_nmahps.json",
     "Nurses & Midwives": "demography_only_config_nurses_midwives.json",
     "AHP": "demography_only_config_ahp.json",
+    "Generic": "demography_only_config_generic.json",
 }
 CONSENT_TEMPLATE = "consent_only_config.json"
 
@@ -304,6 +336,7 @@ INVITATIONS_EMAIL_SUBJECT_PREFIX = "SORT"
 
 # AllAuth authentication options
 # https://docs.allauth.org/en/latest/account/configuration.html
+ACCOUNT_ADAPTER = "home.adapter.AccountAdapter"
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None

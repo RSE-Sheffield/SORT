@@ -37,7 +37,7 @@
         let labels = [];
         let data = [];
 
-        const dataMap = _.countBy(fieldStats.values.map(Number), Math.floor);
+        const dataMap = _.countBy((fieldStats.values ?? []).map(Number), Math.floor);
         for (let key in dataMap) {
             let value = dataMap[key];
             labels.push(key);

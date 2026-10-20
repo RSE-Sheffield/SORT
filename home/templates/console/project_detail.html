@@ -1,0 +1,93 @@
+{% extends "base_console.html" %}
+{% block title %}| Admin — {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_organisations' %}">Organisations</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_organisation_detail' project.organisation.pk %}">{{ project.organisation.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ project.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex align-items-start justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-1">{{ project.name }}</h1>
+            {% if project.description %}
+                <p class="text-muted mb-0">{{ project.description }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Project metadata #}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Organisation</dt>
+                <dd class="col-sm-9">
+                    <a href="{% url 'admin_organisation_detail' project.organisation.pk %}">{{ project.organisation.name }}</a>
+                </dd>
+                <dt class="col-sm-3">Created</dt>
+                <dd class="col-sm-9 text-muted">{{ project.created_at|date:"d M Y" }}</dd>
+                {% if project.created_by %}
+                <dt class="col-sm-3">Created by</dt>
+                <dd class="col-sm-9 text-muted">{{ project.created_by }}</dd>
+                {% endif %}
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">
+                    {% if project.is_active %}
+                        <span class="badge bg-success">Active</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    {# Surveys table #}
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white d-flex align-items-center justify-content-between">
+            <h2 class="h6 mb-0">Surveys</h2>
+            <a href="{% url 'admin_surveys' %}?project={{ project.pk }}" class="btn btn-outline-secondary btn-sm">
+                View in surveys
+            </a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Profession</th>
+                        <th>Responses</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for survey in surveys %}
+                    <tr>
+                        <td><a href="{% url 'admin_survey_detail' survey.pk %}">{{ survey.name }}</a></td>
+                        <td class="text-muted">{{ survey.get_survey_body_path_display }}</td>
+                        <td>{{ survey.survey_response.count }}</td>
+                        <td>
+                            {% if survey.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted">{{ survey.created_at|date:"d M Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-muted">No surveys</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
