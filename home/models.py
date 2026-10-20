@@ -136,6 +136,7 @@ class OrganisationMembership(models.Model):
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLES, default=ROLE_PROJECT_MANAGER)
     joined_at = models.DateTimeField(auto_now_add=True)
+    # NULL only on memberships created before migration 0005; every new row sets it.
     added_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="members_added", null=True
     )
@@ -226,7 +227,9 @@ class Project(models.Model):
     organisation = models.ForeignKey(
         Organisation, on_delete=models.CASCADE, related_name="projects"
     )
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    # PROTECT stops a user with projects being hard-deleted and orphaning them.
+    # null=True stays until `audit_nullable_fks` confirms no NULL rows remain.
+    created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
