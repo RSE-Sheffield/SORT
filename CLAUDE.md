@@ -24,7 +24,7 @@ make e2e     # Playwright browser tests in e2e/ (needs: playwright install chrom
 # Linting
 npm run lint
 npm run lint:fix
-make lint  # Python linting with flake8 and black
+make lint  # flake8 for Python, djlint for Django templates
 
 # Type checking (TypeScript/Svelte)
 npm run lint:check

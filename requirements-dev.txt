@@ -10,3 +10,4 @@ openpyxl==3.1.5
 playwright==1.*
 bandit[toml]==1.*
 pip-audit==2.*
+djlint==1.*
