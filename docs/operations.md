@@ -129,16 +129,37 @@ No timer unit currently ships with this repo — set one up if you want this aut
 
 # Deploying an update to running code
 
-To ship a code change to an already-provisioned server:
+SORT runs on two virtual machines:
+
+| Environment | Host | Deploy from |
+|---|---|---|
+| Development | `sort-web-dev.sheffield.ac.uk` | A release tag (or `main` to try unreleased changes) |
+| Production | The production VM | A release tag only |
+
+Both are provisioned with [`scripts/deploy.sh`](../scripts/deploy.sh) and updated with the same steps below.
+
+## Rollout order
+
+1. Merge the changes to `main` and check CI is green.
+2. Deploy to the **development VM** (from `main`, or from the tag once the release PR is merged) and smoke-test the changes, especially anything touching survey submission or exports.
+3. Merge the [release PR](../RELEASING.md) to cut the tag, if you haven't already.
+4. Deploy the release tag to **production**.
+
+## Update steps
+
+Run on each VM in turn:
 
 ```bash
-git pull
+git fetch --tags
+git checkout vX.Y.Z                              # the release tag; use `git pull` on main for dev only
 sudo $python -m pip install -r requirements.txt   # if dependencies changed
 npm ci && npm run build                           # if frontend changed
 sudo $django_admin migrate
 sudo $django_admin collectstatic --no-input
 sudo systemctl restart gunicorn
 ```
+
+Check `git diff <previous-tag>..<new-tag> --stat -- '*/migrations/*' requirements.txt package.json` to see which of the optional steps apply.
 
 If anything goes wrong, see [troubleshooting.md](troubleshooting.md).
 
