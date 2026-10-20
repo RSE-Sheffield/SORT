@@ -45,7 +45,7 @@
     function generatePieChartData() {
         let labels = [];
         let data = [];
-        fieldStats.histogram.map(value => {
+        (fieldStats.histogram ?? []).map(value => {
             labels.push(value.option);
             data.push(value.count);
         });

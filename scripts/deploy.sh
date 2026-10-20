@@ -20,8 +20,18 @@ pip="$venv_dir/bin/pip"
 python_version="python$(cat .python-version | xargs)"
 python="$venv_dir/bin/python"
 env_file="$sort_dir/.env"
-node_version=20
+node_version=22
 django_media_root="/srv/www/sort/uploads/"
+
+finish() {
+    local exit_code=$?
+    if [ "$exit_code" -eq 0 ]; then
+        echo "Deployment completed successfully."
+    else
+        echo "Deployment aborted (exit code: $exit_code)."
+    fi
+}
+trap finish EXIT
 
 # Install British UTF-8 locale so we can use this with PostgreSQL.
 # This is important to avoid the limitations of the LATIN1 character set.
@@ -207,31 +217,20 @@ if [ "$user_is_new" = true ] || ! grep -q "^DJANGO_DATABASE_PASSWORD=" "$env_fil
     echo "Database password written to $env_file"
 fi
 
-echo "Database credentials saved to $env_file"
-echo "Database: $db_name"
-echo "User: $db_user"
-echo "Schema: $db_schema"
-
-# Test database connection
-echo "Testing database connection..."
-if ! PGPASSWORD="$db_password" psql -h 127.0.0.1 -U "$db_user" -d "$db_name" -c "SELECT 1;" >/dev/null 2>&1; then
-    echo "ERROR: Database connection test failed"
-    echo "Please check:"
-    echo "  1. PostgreSQL is running: systemctl status postgresql"
-    echo "  2. Database credentials in $env_file"
-    echo "  3. PostgreSQL authentication settings in /etc/postgresql/*/main/pg_hba.conf"
-    exit 1
-fi
-echo "Database connection successful"
-
 # Run deployment checks
 echo "Checking Django system..."
 # https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-# shellcheck source=/opt/sort/.env
-(cd "$sort_dir" && set -a && source "$env_file" && set +a && exec $python manage.py check --deploy)
+(cd "$sort_dir" && $python manage.py check --deploy --fail-level WARNING)
+
+# Check for missing migrations
+# https://docs.djangoproject.com/en/5.1/ref/django-admin/#cmdoption-makemigrations-check
+echo "Checking for missing migrations..."
+(cd "$sort_dir" && $python manage.py makemigrations --check --dry-run)
 
 # Migrate database changes
 # https://docs.djangoproject.com/en/5.1/topics/migrations/
 echo "Applying Django migrations..."
-# shellcheck source=/opt/sort/.env
-(cd "$sort_dir" && set -a && source "$env_file" && set +a && $python manage.py migrate)
+(cd "$sort_dir" && $python manage.py migrate)
+
+echo "Restarting web application service..."
+systemctl restart gunicorn.service

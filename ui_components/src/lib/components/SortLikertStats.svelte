@@ -20,12 +20,12 @@
 
     interface Props {
         config: SurveyConfig;
-        surveyStats: SurveyStats;
+        surveyStats: SurveyStats | null;
         sectionIndex: number,
         fieldIndex: number,
-        readinessDescriptions: string[],
-        useBarChart: boolean,
-        maxHistogramCount: number
+        readinessDescriptions?: string[],
+        useBarChart?: boolean,
+        maxHistogramCount?: number
     }
 
     let {
@@ -38,14 +38,19 @@
         maxHistogramCount = 0
     }: Props = $props();
 
-    let sectionConfig = $derived(config.sections[sectionIndex]);
-    let fieldConfig = $derived(config.sections[sectionIndex].fields[fieldIndex]);
+    let sectionConfig = $derived(config?.sections?.[sectionIndex]);
+    let fieldConfig = $derived(config?.sections?.[sectionIndex]?.fields?.[fieldIndex]);
+    // Stats are optional throughout: a field whose answers are missing from the stored
+    // responses has no histograms and no mean, and that must degrade rather than throw.
+    let fieldStats = $derived(surveyStats?.sections?.[sectionIndex]?.fields?.[fieldIndex] ?? {});
+    let histograms = $derived(fieldStats.histograms ?? []);
+    let sublabels = $derived(fieldConfig?.sublabels ?? []);
     let questionMeanSorted: QM[] = $derived.by(() => {
         const qm = [];
-        for (let i = 0; i < surveyStats.sections[sectionIndex].fields[fieldIndex].histograms.length; i++) {
+        for (let i = 0; i < histograms.length; i++) {
             qm.push({
                 index: i,
-                mean: getHistogramMean(surveyStats.sections[sectionIndex].fields[fieldIndex].histograms[i])
+                mean: getHistogramMean(histograms[i])
             })
         }
         return _.orderBy(qm, ["mean"], ["asc"]);
@@ -53,39 +58,52 @@
     let strongestAreas = $derived.by(() => {
         const strongestList = questionMeanSorted.slice(-2);
         return strongestList.map(qm => ({
-            label: fieldConfig.sublabels[qm.index],
+            label: sublabels[qm.index],
             mean: qm.mean
         }));
     })
     let weakestAreas = $derived.by(() => {
         const weakestList = questionMeanSorted.slice(0, 2);
         return weakestList.map(qm => ({
-            label: fieldConfig.sublabels[qm.index],
+            label: sublabels[qm.index],
             mean: qm.mean
         }));
     })
-    const sectionMeanReadiness: number = surveyStats.sections[sectionIndex].fields[fieldIndex].mean;
-    const sectionMeanReadinessInt: bigint = parseInt(sectionMeanReadiness);
-    const readinessDescription: string = readinessDescriptions[sectionMeanReadinessInt - 1];
+    // undefined when this field has no numeric answers, e.g. the stored responses are
+    // missing this section or hold non-numeric values for it.
+    let sectionMeanReadiness = $derived(fieldStats.mean);
+    let readinessDescription = $derived(
+        sectionMeanReadiness === undefined
+            ? undefined
+            : readinessDescriptions[Math.trunc(sectionMeanReadiness) - 1]
+    );
 
 </script>
-<h3>Summary <span class="badge badge-secondary bg-secondary">{sectionMeanReadiness.toFixed(0)}</span></h3>
-<p>
-    Section {sectionConfig.title} demonstrates an overall score <strong>
-    of {sectionMeanReadiness.toFixed(2)} out of
-    {getHighestHistogramValue(surveyStats.sections[sectionIndex].fields[fieldIndex].histograms[0])}</strong> indicating
-    maturity
-    ranking of <strong>{getSortMaturityLabel(surveyStats.sections[sectionIndex].fields[fieldIndex].mean)}</strong>.
-    {#if readinessDescription}
-        The responses suggest that {readinessDescription}
-    {/if}
-</p>
-<div class="progress">
-    <div class="progress-bar bg-secondary" role="progressbar" style="width: {0.25*sectionMeanReadiness*100}%"
-         aria-valuenow="{sectionMeanReadiness}" aria-valuemin="0" aria-valuemax="4">
-        {sectionMeanReadiness.toFixed(1)} / 4
+{#if sectionMeanReadiness !== undefined}
+    <h3>Summary <span class="badge badge-secondary bg-secondary">{sectionMeanReadiness.toFixed(0)}</span></h3>
+    <p>
+        Section {sectionConfig?.title} demonstrates an overall score <strong>
+        of {sectionMeanReadiness.toFixed(2)} out of
+        {getHighestHistogramValue(histograms[0] ?? [])}</strong> indicating
+        maturity
+        ranking of <strong>{getSortMaturityLabel(sectionMeanReadiness)}</strong>.
+        {#if readinessDescription}
+            The responses suggest that {readinessDescription}
+        {/if}
+    </p>
+    <div class="progress">
+        <div class="progress-bar bg-secondary" role="progressbar" style="width: {0.25*sectionMeanReadiness*100}%"
+             aria-valuenow="{sectionMeanReadiness}" aria-valuemin="0" aria-valuemax="4">
+            {sectionMeanReadiness.toFixed(1)} / 4
+        </div>
     </div>
-</div>
+{:else}
+    <h3>Summary</h3>
+    <p>
+        No overall score is available for section {sectionConfig?.title}, because the
+        recorded answers for this section are missing or not numeric.
+    </p>
+{/if}
 <h4>Areas of strength</h4>
 <p>Areas of strength are demonstrated in the following questions:</p>
 <ul>
@@ -105,17 +123,17 @@
 <h4>Mean scores by question</h4>
 <p>The chart below shows the average (mean) score for each question in this section. Each bar represents the overall performance for that question, with colours indicating the maturity level achieved.</p>
 <LikertMeanChart fieldConfig={fieldConfig}
-                 fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}>
+                 fieldStats={fieldStats}>
 </LikertMeanChart>
 <h4>Response distribution</h4>
 <p>The chart below shows the detailed breakdown of all responses for each question. Each bar is divided into segments representing the number of responses at each maturity level (Not Yet Planned, Planned, Early Progress, Substantial Progress, Established).</p>
 {#if useBarChart}
     <LikertBarChart fieldConfig={fieldConfig}
-                     fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}
+                     fieldStats={fieldStats}
                      maxHistogramCount={maxHistogramCount}></LikertBarChart>
 {:else}
     <LikertHistogram fieldConfig={fieldConfig}
-                    fieldStats={surveyStats.sections[sectionIndex].fields[fieldIndex]}
+                    fieldStats={fieldStats}
                     maxHistogramCount={maxHistogramCount}
-                    sectionTitle={sectionConfig.title}></LikertHistogram>
+                    sectionTitle={sectionConfig?.title}></LikertHistogram>
 {/if}

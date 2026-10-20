@@ -1,0 +1,679 @@
+import json
+import logging
+from http import HTTPStatus
+
+import SORT.test.test_case
+from home.models import DataProtectionEvent
+from SORT.test.model_factory import (
+    OrganisationFactory,
+    OrganisationMembershipFactory,
+    ProjectFactory,
+    SuperUserFactory,
+    SurveyFactory,
+    UserFactory,
+)
+from SORT.test.model_factory.user.constants import PASSWORD
+from survey.models import SurveyResponse
+
+
+class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.staff_user = UserFactory(is_staff=True)
+
+    def login_staff(self):
+        self.assertTrue(
+            self.client.login(username=self.staff_user.email, password=PASSWORD),
+            "Staff authentication failed",
+        )
+
+    def test_console_dashboard_accessible_to_staff(self):
+        """Staff users can access the console dashboard."""
+        self.login_staff()
+        response = self.client.get("/console/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_dashboard_redirects_anonymous(self):
+        """Anonymous users are redirected away from the console dashboard."""
+        response = self.client.get("/console/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_dashboard_forbidden_for_regular_users(self):
+        """Regular (non-staff) users cannot access the console dashboard."""
+        self.login()
+        response = self.client.get("/console/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_organisations_accessible_to_staff(self):
+        """Staff users can access the organisations list."""
+        self.login_staff()
+        response = self.client.get("/console/organisations/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_organisations_redirects_anonymous(self):
+        """Anonymous users are redirected away from the organisations list."""
+        response = self.client.get("/console/organisations/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_organisations_forbidden_for_regular_users(self):
+        """Regular users cannot access the organisations list."""
+        self.login()
+        response = self.client.get("/console/organisations/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_users_accessible_to_staff(self):
+        """Staff users can access the users list."""
+        self.login_staff()
+        response = self.client.get("/console/users/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_users_redirects_anonymous(self):
+        """Anonymous users are redirected away from the users list."""
+        response = self.client.get("/console/users/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_users_forbidden_for_regular_users(self):
+        """Regular users cannot access the users list."""
+        self.login()
+        response = self.client.get("/console/users/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_users_default_shows_only_active(self):
+        """Default view excludes deleted (inactive) users."""
+        active_user = UserFactory()
+        deleted_user = UserFactory(is_active=False, first_name="", last_name="", email="deleted-abc@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/")
+        self.assertIn(active_user, response.context["users"])
+        self.assertNotIn(deleted_user, response.context["users"])
+
+    def test_console_users_deleted_filter_shows_only_inactive(self):
+        """?status=deleted shows only deleted (inactive) users."""
+        active_user = UserFactory()
+        deleted_user = UserFactory(is_active=False, first_name="", last_name="", email="deleted-abc@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/?status=deleted")
+        self.assertNotIn(active_user, response.context["users"])
+        self.assertIn(deleted_user, response.context["users"])
+
+    def test_console_users_suspended_filter_shows_only_suspended(self):
+        """?status=suspended shows only suspended (inactive, non-deleted) users."""
+        active_user = UserFactory()
+        suspended_user = UserFactory(is_active=False)
+        deleted_user = UserFactory(is_active=False, first_name="", last_name="", email="deleted-sus@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/?status=suspended")
+        self.assertNotIn(active_user, response.context["users"])
+        self.assertIn(suspended_user, response.context["users"])
+        self.assertNotIn(deleted_user, response.context["users"])
+
+    def test_console_users_all_filter_shows_both(self):
+        """?status=all shows both active and deleted users."""
+        active_user = UserFactory()
+        deleted_user = UserFactory(is_active=False, first_name="", last_name="", email="deleted-xyz@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/?status=all")
+        self.assertIn(active_user, response.context["users"])
+        self.assertIn(deleted_user, response.context["users"])
+
+    def test_console_users_deleted_renders_placeholder_name(self):
+        """Deleted user with blank name renders without error."""
+        UserFactory(is_active=False, first_name="", last_name="", email="deleted-abc@deleted.invalid")
+        self.login_staff()
+        response = self.client.get("/console/users/?status=deleted")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(response, "deleted user")
+
+    def test_console_users_blank_name_not_shown_as_deleted(self):
+        """A non-deleted user with a blank name is not mislabelled '(deleted user)' (regression test for #661)."""
+        UserFactory(first_name="", last_name="")
+        self.login_staff()
+        response = self.client.get("/console/users/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertNotContains(response, "deleted user")
+        self.assertContains(response, "no name set")
+
+    def test_console_surveys_accessible_to_staff(self):
+        """Staff users can access the surveys list."""
+        self.login_staff()
+        response = self.client.get("/console/surveys/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_surveys_redirects_anonymous(self):
+        """Anonymous users are redirected away from the surveys list."""
+        response = self.client.get("/console/surveys/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_surveys_forbidden_for_regular_users(self):
+        """Regular users cannot access the surveys list."""
+        self.login()
+        response = self.client.get("/console/surveys/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_organisation_detail_accessible_to_staff(self):
+        """Staff users can access the organisation detail view."""
+        org = OrganisationFactory()
+        self.login_staff()
+        response = self.client.get(f"/console/organisations/{org.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_organisation_detail_redirects_anonymous(self):
+        """Anonymous users are redirected away from the organisation detail view."""
+        org = OrganisationFactory()
+        response = self.client.get(f"/console/organisations/{org.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_organisation_detail_forbidden_for_regular_users(self):
+        """Regular users cannot access the organisation detail view."""
+        org = OrganisationFactory()
+        self.login()
+        response = self.client.get(f"/console/organisations/{org.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_projects_accessible_to_staff(self):
+        """Staff users can access the projects list."""
+        self.login_staff()
+        response = self.client.get("/console/projects/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_projects_redirects_anonymous(self):
+        """Anonymous users are redirected away from the projects list."""
+        response = self.client.get("/console/projects/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_projects_forbidden_for_regular_users(self):
+        """Regular users cannot access the projects list."""
+        self.login()
+        response = self.client.get("/console/projects/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_project_detail_accessible_to_staff(self):
+        """Staff users can access the project detail view."""
+        project = ProjectFactory()
+        self.login_staff()
+        response = self.client.get(f"/console/projects/{project.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_project_detail_redirects_anonymous(self):
+        """Anonymous users are redirected away from the project detail view."""
+        project = ProjectFactory()
+        response = self.client.get(f"/console/projects/{project.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_project_detail_forbidden_for_regular_users(self):
+        """Regular users cannot access the project detail view."""
+        project = ProjectFactory()
+        self.login()
+        response = self.client.get(f"/console/projects/{project.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_survey_detail_accessible_to_staff(self):
+        """Staff users can access the survey detail view."""
+        survey = SurveyFactory()
+        self.login_staff()
+        response = self.client.get(f"/console/surveys/{survey.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_survey_detail_redirects_anonymous(self):
+        """Anonymous users are redirected away from the survey detail view."""
+        survey = SurveyFactory()
+        response = self.client.get(f"/console/surveys/{survey.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_survey_detail_forbidden_for_regular_users(self):
+        """Regular users cannot access the survey detail view."""
+        survey = SurveyFactory()
+        self.login()
+        response = self.client.get(f"/console/surveys/{survey.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_user_detail_accessible_to_staff(self):
+        """Staff users can access the user detail view."""
+        user = UserFactory()
+        self.login_staff()
+        response = self.client.get(f"/console/users/{user.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_user_detail_redirects_anonymous(self):
+        """Anonymous users are redirected away from the user detail view."""
+        user = UserFactory()
+        response = self.client.get(f"/console/users/{user.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_user_detail_forbidden_for_regular_users(self):
+        """Regular users cannot access the user detail view."""
+        user = UserFactory()
+        self.login()
+        response = self.client.get(f"/console/users/{user.pk}/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_remove_member_get_accessible_to_staff(self):
+        """Staff users can access the remove member confirmation page."""
+        org = OrganisationFactory()
+        membership = OrganisationMembershipFactory(organisation=org)
+        self.login_staff()
+        response = self.client.get(f"/console/organisations/{org.pk}/members/{membership.pk}/remove/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_remove_member_get_redirects_anonymous(self):
+        """Anonymous users are redirected away from the remove member page."""
+        org = OrganisationFactory()
+        membership = OrganisationMembershipFactory(organisation=org)
+        response = self.client.get(f"/console/organisations/{org.pk}/members/{membership.pk}/remove/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_remove_member_get_forbidden_for_regular_users(self):
+        """Regular users cannot access the remove member confirmation page."""
+        org = OrganisationFactory()
+        membership = OrganisationMembershipFactory(organisation=org)
+        self.login()
+        response = self.client.get(f"/console/organisations/{org.pk}/members/{membership.pk}/remove/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_remove_member_post_removes_membership(self):
+        """Staff users can POST to remove a member from an organisation."""
+        org = OrganisationFactory()
+        membership = OrganisationMembershipFactory(organisation=org)
+        membership_pk = membership.pk
+        self.login_staff()
+        response = self.client.post(f"/console/organisations/{org.pk}/members/{membership_pk}/remove/")
+        self.assertRedirects(response, f"/console/organisations/{org.pk}/")
+        from home.models import OrganisationMembership
+        self.assertFalse(OrganisationMembership.objects.filter(pk=membership_pk).exists())
+
+    # -- Suspend / unsuspend user --------------------------------------------
+
+    def test_console_suspend_user_get_accessible_to_staff(self):
+        """Staff users can access the suspend confirmation page."""
+        user = UserFactory()
+        self.login_staff()
+        response = self.client.get(f"/console/users/{user.pk}/suspend/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_suspend_user_get_redirects_anonymous(self):
+        """Anonymous users are redirected away from the suspend page."""
+        user = UserFactory()
+        response = self.client.get(f"/console/users/{user.pk}/suspend/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_suspend_user_get_forbidden_for_regular_users(self):
+        """Regular users cannot access the suspend page."""
+        user = UserFactory()
+        self.login()
+        response = self.client.get(f"/console/users/{user.pk}/suspend/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_suspend_user_post_suspends_without_deleting_data(self):
+        """POSTing to suspend sets is_active=False, leaving data intact."""
+        user = UserFactory()
+        membership = OrganisationMembershipFactory(user=user, organisation=OrganisationFactory())
+        self.login_staff()
+        response = self.client.post(f"/console/users/{user.pk}/suspend/")
+        self.assertRedirects(response, f"/console/users/{user.pk}/")
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+        # No cascade: the user and their memberships still exist.
+        self.assertTrue(UserFactory._meta.model.objects.filter(pk=user.pk).exists())
+        from home.models import OrganisationMembership
+        self.assertTrue(OrganisationMembership.objects.filter(pk=membership.pk).exists())
+
+    def test_console_suspend_user_post_unsuspends(self):
+        """POSTing to unsuspend restores is_active=True."""
+        user = UserFactory(is_active=False)
+        self.login_staff()
+        response = self.client.post(f"/console/users/{user.pk}/unsuspend/")
+        self.assertRedirects(response, f"/console/users/{user.pk}/")
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+
+    def test_console_suspend_self_forbidden(self):
+        """Staff cannot suspend their own account."""
+        self.login_staff()
+        response = self.client.post(f"/console/users/{self.staff_user.pk}/suspend/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+        self.staff_user.refresh_from_db()
+        self.assertTrue(self.staff_user.is_active)
+
+    def test_console_suspend_superuser_forbidden(self):
+        """Superuser accounts cannot be suspended."""
+        target = SuperUserFactory()
+        self.login_staff()
+        response = self.client.post(f"/console/users/{target.pk}/suspend/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+        target.refresh_from_db()
+        self.assertTrue(target.is_active)
+
+    def test_console_suspend_staff_forbidden(self):
+        """Staff cannot suspend another staff member's account."""
+        target = UserFactory(is_staff=True)
+        self.login_staff()
+        response = self.client.post(f"/console/users/{target.pk}/suspend/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+        target.refresh_from_db()
+        self.assertTrue(target.is_active)
+
+    def test_console_user_list_shows_suspended_users(self):
+        """Suspended users remain visible in the console user list."""
+        suspended = UserFactory(is_active=False)
+        self.login_staff()
+        response = self.client.get("/console/users/")
+        self.assertContains(response, suspended.email)
+        self.assertContains(response, "Suspended")
+
+    # -- Delete (anonymise) user ---------------------------------------------
+
+    def test_delete_user_get_shows_confirmation(self):
+        """Staff users see the delete confirmation page for a regular user."""
+        target = UserFactory()
+        self.login_staff()
+        response = self.client.get(f"/console/users/{target.pk}/delete/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_delete_user_post_anonymises_user(self):
+        """POST anonymises PII, deactivates the account, and removes memberships."""
+        from home.models import OrganisationMembership
+        target = UserFactory()
+        org = OrganisationFactory()
+        OrganisationMembershipFactory(user=target, organisation=org)
+        original_pk = target.pk
+        self.login_staff()
+        response = self.client.post(f"/console/users/{target.pk}/delete/")
+        self.assertRedirects(response, "/console/users/")
+        target.refresh_from_db()
+        self.assertFalse(target.is_active)
+        self.assertEqual(target.first_name, "Deleted")
+        self.assertEqual(target.last_name, "User")
+        self.assertTrue(target.email.startswith("deleted-"))
+        self.assertFalse(target.has_usable_password())
+        self.assertFalse(OrganisationMembership.objects.filter(user_id=original_pk).exists())
+
+    def test_delete_user_cannot_delete_self(self):
+        """Staff users cannot delete their own account."""
+        self.login_staff()
+        response = self.client.post(f"/console/users/{self.staff_user.pk}/delete/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_delete_user_cannot_delete_staff(self):
+        """Staff users cannot delete other staff accounts."""
+        other_staff = UserFactory(is_staff=True)
+        self.login_staff()
+        response = self.client.post(f"/console/users/{other_staff.pk}/delete/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_delete_user_forbidden_for_regular_users(self):
+        """Regular users cannot access the delete user view."""
+        target = UserFactory()
+        self.login()
+        response = self.client.get(f"/console/users/{target.pk}/delete/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_delete_user_redirects_anonymous(self):
+        """Anonymous users are redirected away from the delete user view."""
+        target = UserFactory()
+        response = self.client.get(f"/console/users/{target.pk}/delete/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_export_user_data_get_shows_confirmation(self):
+        """Staff users see the export confirmation page for a user."""
+        target = UserFactory()
+        self.login_staff()
+        response = self.client.get(f"/console/users/{target.pk}/export/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_export_user_data_post_returns_json_attachment(self):
+        """POST returns a downloadable JSON export of the user's own data."""
+        target = UserFactory()
+        org = OrganisationFactory()
+        OrganisationMembershipFactory(user=target, organisation=org)
+        project = ProjectFactory(organisation=org, created_by=target)
+        self.login_staff()
+        response = self.client.post(f"/console/users/{target.pk}/export/")
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(response["Content-Type"], "application/json")
+        self.assertIn("attachment", response["Content-Disposition"])
+
+        data = json.loads(response.content)
+        self.assertEqual(data["profile"]["id"], target.pk)
+        self.assertEqual(data["profile"]["email"], target.email)
+        self.assertEqual(len(data["organisation_memberships"]), 1)
+        self.assertEqual(data["organisation_memberships"][0]["organisation"], org.name)
+        self.assertEqual(len(data["projects_created"]), 1)
+        self.assertEqual(data["projects_created"][0]["name"], project.name)
+
+    def test_export_user_data_excludes_other_members_personal_data(self):
+        """The export must not leak data belonging to fellow organisation members."""
+        target = UserFactory()
+        other_member = UserFactory()
+        org = OrganisationFactory()
+        OrganisationMembershipFactory(user=target, organisation=org)
+        OrganisationMembershipFactory(user=other_member, organisation=org)
+        self.login_staff()
+        response = self.client.post(f"/console/users/{target.pk}/export/")
+
+        self.assertEqual(len(json.loads(response.content)["organisation_memberships"]), 1)
+        self.assertNotContains(response, other_member.email)
+        self.assertNotContains(response, other_member.first_name)
+
+    def test_export_user_data_records_data_protection_event(self):
+        """POST records an EXPORT event in the data protection audit log."""
+        target = UserFactory()
+        self.login_staff()
+        self.client.post(f"/console/users/{target.pk}/export/")
+
+        event = DataProtectionEvent.objects.get(
+            event_type=DataProtectionEvent.EventType.EXPORT, subject_user_id=target.pk
+        )
+        self.assertEqual(event.actioned_by, self.staff_user)
+
+    def test_export_user_data_forbidden_for_deleted_user(self):
+        """A previously erased (anonymised) account has nothing to export."""
+        target = UserFactory(
+            is_active=False, first_name="Deleted", last_name="User", email="deleted-abc@deleted.invalid"
+        )
+        self.login_staff()
+        response = self.client.get(f"/console/users/{target.pk}/export/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_export_user_data_forbidden_for_regular_users(self):
+        """Regular users cannot access the export view."""
+        target = UserFactory()
+        self.login()
+        response = self.client.get(f"/console/users/{target.pk}/export/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_export_user_data_redirects_anonymous(self):
+        """Anonymous users are redirected away from the export view."""
+        target = UserFactory()
+        response = self.client.get(f"/console/users/{target.pk}/export/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_edit_user_get_accessible_to_staff(self):
+        """Staff users can access the edit user form, pre-filled with current values."""
+        target = UserFactory()
+        self.login_staff()
+        response = self.client.get(f"/console/users/{target.pk}/edit/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(response, target.email)
+
+    def test_edit_user_get_redirects_anonymous(self):
+        """Anonymous users are redirected away from the edit user view."""
+        target = UserFactory()
+        response = self.client.get(f"/console/users/{target.pk}/edit/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_edit_user_get_forbidden_for_regular_users(self):
+        """Regular users cannot access the edit user view."""
+        target = UserFactory()
+        self.login()
+        response = self.client.get(f"/console/users/{target.pk}/edit/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_edit_user_post_forbidden_for_regular_users(self):
+        """Regular users cannot submit changes via the edit user view."""
+        target = UserFactory()
+        self.login()
+        response = self.client.post(
+            f"/console/users/{target.pk}/edit/",
+            {"first_name": "New", "last_name": "Name", "email": target.email},
+        )
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_edit_user_post_updates_name_and_email(self):
+        """A valid POST updates the target user's name and email."""
+        target = UserFactory()
+        self.login_staff()
+        response = self.client.post(
+            f"/console/users/{target.pk}/edit/",
+            {"first_name": "Corrected", "last_name": "Name", "email": "corrected@example.com"},
+        )
+        self.assertRedirects(response, f"/console/users/{target.pk}/")
+
+        target.refresh_from_db()
+        self.assertEqual(target.first_name, "Corrected")
+        self.assertEqual(target.last_name, "Name")
+        self.assertEqual(target.email, "corrected@example.com")
+
+    def test_edit_user_post_rejects_duplicate_email(self):
+        """Duplicate-email validation still applies when staff edit another user."""
+        target = UserFactory()
+        other_user = UserFactory()
+        original_email = target.email
+        self.login_staff()
+        response = self.client.post(
+            f"/console/users/{target.pk}/edit/",
+            {"first_name": target.first_name, "last_name": target.last_name, "email": other_user.email},
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(response, "This email is already in use.")
+
+        target.refresh_from_db()
+        self.assertEqual(target.email, original_email)
+
+    def test_edit_user_post_records_rectification_event(self):
+        """A successful edit records a RECTIFICATION event with the correct actor/subject."""
+        target = UserFactory()
+        self.login_staff()
+        self.client.post(
+            f"/console/users/{target.pk}/edit/",
+            {"first_name": "Corrected", "last_name": target.last_name, "email": target.email},
+        )
+
+        event = DataProtectionEvent.objects.get(
+            event_type=DataProtectionEvent.EventType.RECTIFICATION, subject_user_id=target.pk
+        )
+        self.assertEqual(event.actioned_by, self.staff_user)
+        self.assertIn("First name", event.notes)
+
+    def test_edit_user_post_no_event_recorded_when_unchanged(self):
+        """Submitting unchanged values does not create a spurious audit event."""
+        target = UserFactory()
+        self.login_staff()
+        response = self.client.post(
+            f"/console/users/{target.pk}/edit/",
+            {"first_name": target.first_name, "last_name": target.last_name, "email": target.email},
+        )
+        self.assertRedirects(response, f"/console/users/{target.pk}/")
+        self.assertFalse(
+            DataProtectionEvent.objects.filter(
+                event_type=DataProtectionEvent.EventType.RECTIFICATION, subject_user_id=target.pk
+            ).exists()
+        )
+
+    def test_console_analytics_accessible_to_staff(self):
+        """Staff users can view usage analytics."""
+        survey = SurveyFactory()
+        SurveyResponse.objects.create(survey=survey, answers=[])
+        self.login_staff()
+        response = self.client.get("/console/analytics/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(response, survey.organisation.name)
+        self.assertEqual(response.context["analytics"]["active_days"], 90)
+
+    def test_console_analytics_redirects_anonymous(self):
+        response = self.client.get("/console/analytics/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_analytics_forbidden_for_regular_users(self):
+        self.login()
+        response = self.client.get("/console/analytics/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_analytics_days_parameter(self):
+        """The activity window is read from ?days=, and invalid values fall back to the default."""
+        self.login_staff()
+        for value, expected in (("30", 30), ("abc", 90), ("0", 1), ("999999", 3650)):
+            with self.subTest(days=value):
+                response = self.client.get("/console/analytics/", {"days": value})
+                self.assertEqual(response.context["analytics"]["active_days"], expected)
+
+    def test_console_analytics_export_csv(self):
+        """Staff can download each analytics table as CSV."""
+        self.login_staff()
+        for report in ("surveys", "trends", "organisations"):
+            with self.subTest(report=report):
+                response = self.client.get("/console/analytics/export/", {"report": report})
+                self.assertEqual(response.status_code, HTTPStatus.OK)
+                self.assertEqual(response["Content-Type"], "text/csv")
+                self.assertIn(f"sort_usage_{report}.csv", response["Content-Disposition"])
+
+    def test_console_analytics_export_unknown_report(self):
+        self.login_staff()
+        response = self.client.get("/console/analytics/export/", {"report": "nonsense"})
+        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
+
+    def test_console_analytics_export_forbidden_for_regular_users(self):
+        self.login()
+        response = self.client.get("/console/analytics/export/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_research_export_page_accessible_to_staff(self):
+        """Staff can open the research data export page."""
+        self.login_staff()
+        response = self.client.get("/console/research-export/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_research_export_download(self):
+        """Staff download the research data as an Excel workbook that is not cached."""
+        self.login_staff()
+        response = self.client.post("/console/research-export/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(
+            response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        self.assertIn("attachment; filename=\"sort_research_data_", response["Content-Disposition"])
+        self.assertEqual(response["Cache-Control"], "no-store")
+        self.assertTrue(b"".join(response.streaming_content).startswith(b"PK"))
+        response.close()
+
+    def test_console_research_export_download_is_logged(self):
+        """Each download leaves an audit record, even when the root log level is WARNING."""
+        # assertLogs overrides the logger level, so check the configured level separately
+        self.assertTrue(logging.getLogger("home.views.console").isEnabledFor(logging.INFO))
+        self.login_staff()
+        with self.assertLogs("home.views.console", level="INFO") as logs:
+            self.client.post("/console/research-export/")
+        self.assertIn(
+            f"Research data export downloaded by user {self.staff_user.pk}",
+            logs.output[0],
+        )
+
+    def test_console_research_export_redirects_anonymous(self):
+        for method in (self.client.get, self.client.post):
+            with self.subTest(method=method.__name__):
+                response = method("/console/research-export/")
+                self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_research_export_forbidden_for_regular_users(self):
+        self.login()
+        for method in (self.client.get, self.client.post):
+            with self.subTest(method=method.__name__):
+                response = method("/console/research-export/")
+                self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_research_export_forbidden_for_non_staff_superusers(self):
+        self.login_superuser()
+        response = self.client.post("/console/research-export/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)

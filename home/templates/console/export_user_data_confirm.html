@@ -1,0 +1,44 @@
+{% extends "base_console.html" %}
+{% block title %}| Admin — Export user data{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_users' %}">Users</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_user_detail' viewed_user.pk %}">{{ viewed_user }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Export data</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h1 class="h5 mb-0">Export personal data</h1>
+                </div>
+                <div class="card-body">
+                    <p>Generate a UK GDPR Article 15 subject access export for <strong>{{ viewed_user }}</strong> (<code>{{ viewed_user.email }}</code>).</p>
+                    <p>The export (JSON) includes:</p>
+                    <ul>
+                        <li>Profile details (name, email, account dates)</li>
+                        <li>Organisation memberships and roles</li>
+                        <li>Projects created by this user</li>
+                        <li>Data protection history for this account</li>
+                    </ul>
+                    <p class="text-muted small mb-0">This action is recorded in the data protection log. Data belonging to other users (e.g. fellow organisation members) is not included.</p>
+                </div>
+                <div class="card-footer bg-white d-flex gap-2 justify-content-end">
+                    <a href="{% url 'admin_user_detail' viewed_user.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">Download export (JSON)</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

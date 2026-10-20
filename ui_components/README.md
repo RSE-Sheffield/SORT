@@ -4,7 +4,7 @@ UI Components for the SORT application
 
 ## Dependencies
 
-- nodejs (20.x)
+- nodejs (22.x)
 - vite
 - svelte
 - bootstrap

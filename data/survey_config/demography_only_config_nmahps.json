@@ -75,6 +75,9 @@
           "required": true,
           "sublabels": [],
           "options": [
+            "Registered Nurse",
+            "Registered Midwife",
+            "Pharmacist",
             "Art Therapist",
             "Dietitian",
             "Dramatherapist",
@@ -89,8 +92,6 @@
             "Prosthetist or Orthotist",
             "Radiographer",
             "Speech and Language Therapist",
-            "Registered Nurse",
-            "Registered Midwife",
             "Other"
           ],
           "disabled": false,

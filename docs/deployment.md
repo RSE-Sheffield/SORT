@@ -101,6 +101,30 @@ You can generate a secret key using the Python [secrets library](https://docs.py
 python -c "import secrets; print(secrets.token_urlsafe(37))"
 ```
 
+## Email settings
+
+SORT sends email (account verification, password resets, survey invitations and join-request notifications) over SMTP using a Google account. Google no longer accepts an account's normal password for SMTP sign-in, and Django's SMTP backend doesn't support OAuth2, so we authenticate with a [Google App Password](https://support.google.com/accounts/answer/185833): a 16-character password that only grants access to this one app and can be revoked on its own.
+
+Add the following to the `.env` file:
+
+```ini
+# Email settings
+DJANGO_EMAIL_HOST=smtp.gmail.com
+DJANGO_EMAIL_PORT=465
+DJANGO_EMAIL_USE_SSL=True
+DJANGO_EMAIL_HOST_USER=sending-account@example.com
+DJANGO_EMAIL_HOST_PASSWORD=********
+DJANGO_DEFAULT_FROM_EMAIL=sending-account@example.com
+```
+
+`DJANGO_EMAIL_HOST_PASSWORD` is the App Password, **not** the Google account password. To create one:
+
+1. Sign in to the sending Google account. 2-Step Verification must be turned on.
+2. Go to [App passwords](https://myaccount.google.com/apppasswords), create one named e.g. "SORT", and copy the generated password (without spaces) into `.env`. Store it in the password manager.
+3. Restart the service: `sudo systemctl restart gunicorn.service`
+
+The App Password stops working if the Google account's password is changed, 2-Step Verification is turned off, or the password is revoked. If emails stop sending, check the logs for an SMTP authentication error, then generate a new App Password and update `.env`.
+
 ## Service settings
 
 If needed, you can add environment variables to the `systemd` service like so:
@@ -291,20 +315,6 @@ python="$venv_dir/bin/python"
 django_admin="$python $sort_dir/manage.py"
 
 cd "$sort_dir"
-# Check the Django management tool works
-sudo $django_admin version
-```
-
-View available commands
-
-```bash
-sudo $django_admin help
-```
-
-Migrate the database
-
-```bash
-sudo $django_admin migrate
 ```
 
 Create a super-user
@@ -313,56 +323,15 @@ Create a super-user
 sudo $django_admin createsuperuser
 ```
 
-Load data
+Load initial seed data
 
 ```bash
 sudo $python manage.py loaddata data/*.json
 ```
 
-# Monitoring
+For the full management command reference, see [operations.md](operations.md#running-management-commands).
 
-## View service status
+# Managing the running service
 
-```bash
-sudo systemctl status gunicorn
-sudo systemctl status nginx
-sudo systemctl status postgresql
-```
-
-# View logs
-
-View [nginx logs](https://docs.nginx.com/nginx/admin-guide/monitoring/logging/)
-
-```bash
-sudo tail --follow /var/log/nginx/access.log
-sudo tail --follow /var/log/nginx/error.log
-```
-
-View [Gunicorn logs](https://docs.gunicorn.org/en/stable/settings.html#logging)
-
-```bash
- sudo journalctl -u gunicorn.service --follow
-```
-
-nginx service logs
-
-```bash
-sudo journalctl -u nginx.service
-```
-
-# Control
-
-The services are controlled using [`systemd`](https://systemd.io/), which is the service management system on Ubuntu 24. To launch services:
-
-```bash
-sudo systemctl start gunicorn
-sudo systemctl start nginx
-```
-
-To stop services:
-
-```bash
-sudo systemctl stop gunicorn
-sudo systemctl stop nginx
-```
+For restarting/reloading services, checking status, and viewing logs day-to-day, see [operations.md](operations.md).
 

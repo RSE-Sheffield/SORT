@@ -1,0 +1,21 @@
+{% autoescape off %}Hello,
+
+{{ join_request.user }} ({{ join_request.user.email }}) has asked to join
+{{ join_request.organisation.name }} on SORT.
+{% if join_request.message %}
+They said:
+
+{{ join_request.message }}
+{% endif %}
+You are receiving this because you are an administrator of
+{{ join_request.organisation.name }}. Review the request and choose whether to
+approve or reject it here:
+
+{{ review_url }}
+
+Approving the request adds them to your organisation with the role you choose.
+
+Thanks,
+
+The SORT Team
+{% endautoescape %}

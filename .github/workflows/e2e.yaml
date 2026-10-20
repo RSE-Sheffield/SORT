@@ -1,0 +1,72 @@
+name: Run end-to-end tests
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - SORT/**
+      - home/**
+      - survey/**
+      - e2e/**
+      - ui_components/**
+      - static/**
+      - data/**
+      - requirements*.txt
+      - package*.json
+      - vite.config.ts
+      - .github/workflows/e2e.yaml
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - SORT/**
+      - home/**
+      - survey/**
+      - e2e/**
+      - ui_components/**
+      - static/**
+      - data/**
+      - requirements*.txt
+      - package*.json
+      - vite.config.ts
+      - .github/workflows/e2e.yaml
+permissions:
+  contents: read
+jobs:
+  e2e-test:
+    name: Run browser tests
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: .python-version
+          cache: "pip"
+      - name: Install Python dependencies
+        run: pip install --requirement requirements.txt --requirement requirements-dev.txt
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+      - name: Build front-end assets
+        run: |
+          npm ci
+          npm run build
+      # https://playwright.dev/python/docs/ci
+      - name: Install Playwright browser
+        run: playwright install --with-deps chromium
+      - name: Run end-to-end tests
+        run: |
+          export DJANGO_SECRET_KEY="$(python -c "import secrets; print(secrets.token_urlsafe())")"
+          python manage.py test e2e --tag=e2e --verbosity=2
+      - name: Upload screenshots of failed tests
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-screenshots
+          path: test-results/
+          if-no-files-found: ignore

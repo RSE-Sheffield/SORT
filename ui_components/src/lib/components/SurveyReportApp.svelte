@@ -18,26 +18,23 @@
     }
 
     let {config, responses}: SurveyReportAppProps = $props();
-    let filteredResponses = $state(responses);
+    // Null until the filter component reports a selection; until then the report shows
+    // every response. Deriving avoids capturing only the initial value of `responses`.
+    let filterSelection = $state<SurveyResponseBatch | null>(null);
+    let filteredResponses = $derived(filterSelection ?? responses ?? []);
     let activeFilters = $state<ActiveFilter[]>([]);
     let clearFiltersCallback = $state<(() => void) | null>(null);
 
     // Calculate section stats based on filtered responses
-    let surveyStats: SurveyStats | null = $derived.by(() => {
-        if (config === null ||
-            responses === null ||
-            responses === undefined ||
-            responses.length < 1)
-            return null;
-
-        return generateStatsFromSurveyResponses(config, filteredResponses);
-    });
+    let surveyStats: SurveyStats | null = $derived(
+        generateStatsFromSurveyResponses(config, filteredResponses)
+    );
 
     // Check if any filters are active
-    let hasActiveFilters = $derived(filteredResponses.length < responses.length || activeFilters.length > 0);
+    let hasActiveFilters = $derived(filteredResponses.length < (responses?.length ?? 0) || activeFilters.length > 0);
 
     function handleFilterChange(changedFilteredResponses: SurveyResponseBatch, filters?: ActiveFilter[]) {
-        filteredResponses = changedFilteredResponses;
+        filterSelection = changedFilteredResponses;
         if (filters) {
             activeFilters = filters;
         }
@@ -76,7 +73,7 @@
         {#if hasActiveFilters}
             <FilterAlert
                 filteredCount={filteredResponses.length}
-                totalCount={responses.length}
+                totalCount={responses?.length ?? 0}
                 activeFilters={activeFilters}
                 onClearFilters={clearFilters}
                 variant="info"
@@ -92,12 +89,12 @@
             </div>
         </div>
 
-        {#each config.sections as sectionConfig, si (si)}
+        {#each config.sections ?? [] as sectionConfig, si (si)}
             {#if sectionConfig.type !== "consent"}
                 {#if hasActiveFilters}
                     <FilterAlert
                         filteredCount={filteredResponses.length}
-                        totalCount={responses.length}
+                        totalCount={responses?.length ?? 0}
                         activeFilters={activeFilters}
                         onClearFilters={clearFilters}
                         variant="warning"

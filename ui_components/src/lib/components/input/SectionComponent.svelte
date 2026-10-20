@@ -1,27 +1,15 @@
 <script lang="ts" module>
-    import DOMPurify from "dompurify";
-    import type {SectionConfig} from "../../interfaces.ts";
-    import type {MoveRequestHandler} from "./InputComponent.svelte";
-    export type {MoveRequestHandler};
+  import DOMPurify from "dompurify";
+  import {type SectionConfig, getDefaultSectionConfig} from "../../interfaces.ts";
+  import type {MoveRequestHandler} from "./InputComponent.svelte";
 
-    export function getDefaultSectionConfig() {
-        return {
-            title: "New section",
-            description: "Section description",
-            type: "consent",
-            fields: []
-        } as SectionConfig;
-    }
+  export type {MoveRequestHandler};
 
-    export const sectionTypes = [
-        {label: "Consent", value: "consent"},
-        {label: "SORT", value: "sort"},
-        {label: "Demographic", value: "demographic"}
-    ];
-</script>
+    </script>
 <script lang="ts">
     import * as _ from "lodash-es"
-    import InputComponent, {getDefaultFieldConfig} from "./InputComponent.svelte";
+    import {getDefaultFieldConfig, SectionTypes} from "../../interfaces.ts";
+    import InputComponent from "./InputComponent.svelte";
     import EditableText from "./EditableText.svelte";
     import EditableTextArea from "./EditableTextArea.svelte";
     import type {SurveyResponse} from "../../interfaces.ts";
@@ -157,7 +145,7 @@
                 {#if displaySectionType}
                     {#if editable && sectionTypeEditable}
                         <select class="form-select" bind:value={config.type}>
-                            {#each sectionTypes as sectionType (sectionType.value)}
+                            {#each SectionTypes as sectionType (sectionType.value)}
                                 <option value={sectionType.value}>{sectionType.label}</option>
                             {/each}
                         </select>

@@ -1,5 +1,5 @@
 {% extends "base_manager.html" %}
-{% load project_filters %}
+{% load crispy_forms_tags %}
 {% block content %}
 <div class="container mt-3">
     <div>
@@ -10,33 +10,10 @@
         <div class="card-body">
             <form method="post">
                 {% csrf_token %}
-                {% for field in form %}
-                <div class="mb-3">
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                    {% if field.field.widget.input_type == "textarea" %}
-                        <textarea name="{{ field.name }}"
-                                id="{{ field.id_for_label }}"
-                                class="form-control"
-                                placeholder="Enter {{ field.label|lower }}"
-                                {% if field.field.required %}required{% endif %}
-                                rows="3">{% if field.value %}{{ field.value }}{% endif %}</textarea>
-                    {% else %}
-                        <input type="{{ field.field.widget.input_type }}"
-                               name="{{ field.name }}"
-                               id="{{ field.id_for_label }}"
-                               class="form-control"
-                               placeholder="Enter {{ field.label|lower }}"
-                               {% if field.value %}value="{{ field.value }}"{% endif %}
-                               {% if field.field.required %}required{% endif %}>
-                    {% endif %}
-                    {% if field.help_text %}
-                    <div class="form-text">{{ field.help_text }}</div>
-                    {% endif %}
-                </div>
-                {% endfor %}
+                {{ form | crispy }}
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary" style="background-color: #6933AD; border: none;">
-                         Save
+                        Save
                     </button>
                 </div>
             </form>

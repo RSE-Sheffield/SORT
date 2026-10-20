@@ -1,7 +1,12 @@
+{% load static %}
 <header>
     <div class="px-3 py-2 bg-light">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}"><img src="/static/images/sort_logo_placeholder.png" alt="Self-assessment of organisational readiness tool logo" height="30rem" /></a>
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="{% static 'images/UOSLogo_Primary_Violet_RGB.png' %}" alt="University of Sheffield" height="30rem" />&nbsp;&nbsp;
+                <img src="/static/images/sort_logo_placeholder.png" alt="Self-assessment of organisational readiness tool logo" height="30rem" />
+            </a>
+            
         </div>
     </div>
     <div class="px-3 py-2 subheader">

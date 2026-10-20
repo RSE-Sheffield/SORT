@@ -36,15 +36,13 @@ There are two main environments:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python.exe -m pip install --upgrade pip
-pip install --editable .
+python -m pip install --upgrade pip
 pip install -r requirements.txt -r requirements-dev.txt
 ```
 
 When you check out a new development branch, it's a good idea to ensure your environment is up-to-date by running the commands below:
 
 ```bash
-pip install -e .[dev]
 pip install -r requirements.txt -r requirements-dev.txt
 python manage.py migrate
 npm install
@@ -89,6 +87,10 @@ We expect all contributors to follow the SORT [Code of Conduct](CODE_OF_CONDUCT.
 # Testing
 
 Please read the [testing documentation](docs/testing.md).
+
+# Security scans
+
+CI runs [Bandit](https://bandit.readthedocs.io/) (Python code) and [pip-audit](https://pypi.org/project/pip-audit/) (Python dependencies). Run both locally with `make security`. Suppress a Bandit false positive inline with `# nosec Bxxx` and explain why in a comment on the line above.
 
 # Documentation
 
