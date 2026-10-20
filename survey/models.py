@@ -395,7 +395,8 @@ class Survey(models.Model):
         path = Path(tempfile.mkdtemp()).joinpath("survey_responses.xlsx")
 
         # Create spreadsheet data
-        workbook = xlsxwriter.Workbook(filename=path)
+        # Participants' answers must never be interpreted as Excel formulas (formula injection)
+        workbook = xlsxwriter.Workbook(path, {"strings_to_formulas": False})
         sheet = workbook.add_worksheet(name=self._excel_sheet_name())
         # Iterate over responses (one row per response)
         for i, row in enumerate(self.responses_iter()):
