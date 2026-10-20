@@ -4,14 +4,14 @@ Staff management console.
 This interface provides a dashboard overview of the app status. It's different from the /admin/ dashboard.
 """
 
-import io
 import logging
+import tempfile
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Count
-from django.http import HttpResponse, JsonResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.views.generic import TemplateView, View
@@ -119,16 +119,26 @@ class ConsoleResearchExportView(StaffRequiredMixin, TemplateResponseMixin, View)
         return self.render_to_response({})
 
     def post(self, request):
-        buffer = io.BytesIO()
-        row_count = ResearchExport().write_xlsx(buffer)
+        # Build on disk and stream it out; the anonymous temp file is deleted when
+        # FileResponse closes it after sending
+        file = tempfile.TemporaryFile()
+        try:
+            row_count = ResearchExport().write_xlsx(file)
+        except BaseException:
+            file.close()
+            raise
+        file.seek(0)
         logger.info(
             "Research data export downloaded by user %s (%d responses)",
             request.user.pk,
             row_count,
         )
-        response = HttpResponse(buffer.getvalue(), content_type=XLSX_CONTENT_TYPE)
-        filename = f"sort_research_data_{timezone.localdate().isoformat()}.xlsx"
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response = FileResponse(
+            file,
+            as_attachment=True,
+            filename=f"sort_research_data_{timezone.localdate().isoformat()}.xlsx",
+            content_type=XLSX_CONTENT_TYPE,
+        )
         response["Cache-Control"] = "no-store"
         return response
 

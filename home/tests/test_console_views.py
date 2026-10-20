@@ -645,7 +645,8 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         )
         self.assertIn("attachment; filename=\"sort_research_data_", response["Content-Disposition"])
         self.assertEqual(response["Cache-Control"], "no-store")
-        self.assertTrue(response.content.startswith(b"PK"))
+        self.assertTrue(b"".join(response.streaming_content).startswith(b"PK"))
+        response.close()
 
     def test_console_research_export_download_is_logged(self):
         """Each download leaves an audit record, even when the root log level is WARNING."""

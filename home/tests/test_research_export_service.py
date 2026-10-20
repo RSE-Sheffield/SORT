@@ -107,6 +107,15 @@ class ResearchExportTestCase(TestCase):
         self.assertIsNone(plain_row[extra_col])
         self.assertEqual(extended_row[extra_col], "Hello")
 
+    def test_surveys_without_consented_responses_add_no_columns(self):
+        plain = make_survey()
+        extended = make_survey(extra_question=True)
+        make_response(plain, research_consent=True)
+        make_response(extended, research_consent=False, extra_answer="Hello")
+
+        header, _ = read_sheet(ResearchExport())
+        self.assertNotIn(EXTRA_QUESTION, header)
+
     def test_answers_are_not_written_as_formulas(self):
         survey = make_survey(extra_question=True)
         make_response(survey, research_consent=True, extra_answer="=1+1")

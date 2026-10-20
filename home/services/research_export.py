@@ -69,44 +69,32 @@ class ResearchExport:
         # Participant consent lives inside the answers JSON, so filter in Python
         return (response for response in responses.iterator() if response.has_research_consent)
 
-    def _rows(self) -> tuple[list[str], list[dict]]:
+    def _questions(self) -> tuple[dict[int, tuple[str]], list[str]]:
         """
-        Build the question columns (in order of first appearance) and one dict per response.
+        Each survey's question labels, and the union of them as columns (in survey order,
+        matching the order responses are written in).
         """
         questions: dict[str, None] = {}
-        rows = []
         fields_cache: dict[int, tuple[str]] = {}
-        for response in self.consented_responses():
-            survey: Survey = response.survey
-            project = survey.project  # Shared surveys need not belong to a project
-            if survey.pk not in fields_cache:
-                fields_cache[survey.pk] = survey.fields
-                questions.update(dict.fromkeys(fields_cache[survey.pk]))
-            row = {
-                "Organisation": project.organisation.name if project else "",
-                "Project": project.name if project else "",
-                "Survey ID": survey.pk,
-                "Survey": survey.name,
-                "Response ID": response.pk,
-                "Submitted at": timezone.make_naive(response.created_at),
-            }
-            # TODO: answers are keyed by question label, so duplicate labels (e.g. two
-            # "Other (please specify)" fields, or likert sublabels) collide: dict(zip(...))
-            # keeps only the last answer and the header dedup leaves one column. Key by
-            # field id instead. See https://github.com/RSE-Sheffield/SORT/pull/748#discussion_r4325196098
-            row["answers"] = dict(zip(fields_cache[survey.pk], response.answers_values))
-            rows.append(row)
-        return list(questions), rows
+        # Only surveys with a consented response contribute columns, so find them first
+        survey_ids = {response.survey_id for response in self.consented_responses()}
+        for survey in Survey.objects.filter(pk__in=survey_ids).order_by("pk"):
+            fields_cache[survey.pk] = survey.fields
+            questions.update(dict.fromkeys(fields_cache[survey.pk]))
+        return fields_cache, list(questions)
 
     def write_xlsx(self, file: IO[bytes] | str) -> int:
         """
-        Write the export as an Excel workbook.
+        Write the export as an Excel workbook. Rows are streamed from the database to
+        disk-backed temporary files one at a time, so memory use doesn't grow with the export.
 
         :param file: A file path or binary file-like object
         :returns: The number of responses written
         """
-        questions, rows = self._rows()
-        workbook = xlsxwriter.Workbook(file, {"in_memory": True})
+        # The header needs every column up front, before any row is written
+        fields_cache, questions = self._questions()
+
+        workbook = xlsxwriter.Workbook(file, {"constant_memory": True})
         bold = workbook.add_format({"bold": True})
         datetime_format = workbook.add_format({"num_format": DATETIME_FORMAT})
         sheet = workbook.add_worksheet(SHEET_NAME)
@@ -115,14 +103,31 @@ class ResearchExport:
             sheet.write_string(0, col_index, heading, bold)
         sheet.freeze_panes(1, 0)
         submitted_col = METADATA_COLUMNS.index("Submitted at")
-        for row_index, row in enumerate(rows, start=1):
-            for col_index, column in enumerate(METADATA_COLUMNS):
-                if col_index == submitted_col:
-                    sheet.write_datetime(row_index, col_index, row[column], datetime_format)
-                else:
-                    _write_cell(sheet, row_index, col_index, row[column])
-            answers = row["answers"]
+        row_count = 0
+        for row_index, response in enumerate(self.consented_responses(), start=1):
+            survey: Survey = response.survey
+            project = survey.project  # Shared surveys need not belong to a project
+            metadata = (
+                project.organisation.name if project else "",
+                project.name if project else "",
+                survey.pk,
+                survey.name,
+                response.pk,
+            )
+            for col_index, value in enumerate(metadata):
+                _write_cell(sheet, row_index, col_index, value)
+            sheet.write_datetime(row_index, submitted_col, timezone.make_naive(response.created_at), datetime_format)
+            # TODO: answers are keyed by question label, so duplicate labels (e.g. two
+            # "Other (please specify)" fields, or likert sublabels) collide: dict(zip(...))
+            # keeps only the last answer and the header dedup leaves one column. Key by
+            # field id instead. See https://github.com/RSE-Sheffield/SORT/pull/748#discussion_r4325196098
+            if survey.pk not in fields_cache:
+                # First consented response arrived after the header was written; its
+                # survey's new questions (if any) have no column and are left out
+                fields_cache[survey.pk] = survey.fields
+            answers = dict(zip(fields_cache[survey.pk], response.answers_values))
             for offset, question in enumerate(questions):
                 _write_cell(sheet, row_index, len(METADATA_COLUMNS) + offset, answers.get(question, ""))
+            row_count = row_index
         workbook.close()
-        return len(rows)
+        return row_count
