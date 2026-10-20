@@ -50,13 +50,9 @@ class Command(BaseCommand):
                 continue
 
             if template_field is None:
-                template_field = find_research_consent_field(
-                    survey.consent_config_default
-                )
+                template_field = find_research_consent_field(survey.consent_config_default)
             updated += 1
-            self.stdout.write(
-                f"{'Would update' if dry_run else 'Updating'} survey {survey.pk}"
-            )
+            self.stdout.write(f"{'Would update' if dry_run else 'Updating'} survey {survey.pk}")
             if not dry_run:
                 field["required"] = False
                 # Replace the old "you must agree" wording so it doesn't contradict

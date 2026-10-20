@@ -85,9 +85,7 @@ class OrganisationJoinRequestService(BasePermissionService):
             return False
         if join_request.user_id == user.pk:
             return True
-        return organisation_service.can_manage_members(
-            user, join_request.organisation
-        )
+        return organisation_service.can_manage_members(user, join_request.organisation)
 
     def can_edit(self, user: User, join_request: OrganisationJoinRequest) -> bool:
         """Deciding a request (approve/reject) is member management."""
@@ -110,9 +108,7 @@ class OrganisationJoinRequestService(BasePermissionService):
     # --- commands --------------------------------------------------------------
 
     @requires_permission("create", obj_param="organisation")
-    def create_join_request(
-        self, user: User, organisation: Organisation, message: str = ""
-    ) -> OrganisationJoinRequest:
+    def create_join_request(self, user: User, organisation: Organisation, message: str = "") -> OrganisationJoinRequest:
         """
         Submit a request for `user` to join `organisation`.
 
@@ -120,12 +116,8 @@ class OrganisationJoinRequestService(BasePermissionService):
         @param organisation: the organisation they want to join
         @param message: optional note shown to the organisation's administrators
         """
-        if OrganisationMembership.objects.filter(
-            user=user, organisation=organisation
-        ).exists():
-            raise AlreadyMemberError(
-                f"User '{user}' is already a member of '{organisation}'"
-            )
+        if OrganisationMembership.objects.filter(user=user, organisation=organisation).exists():
+            raise AlreadyMemberError(f"User '{user}' is already a member of '{organisation}'")
 
         try:
             # The savepoint is required, not cosmetic: catching IntegrityError
@@ -162,9 +154,7 @@ class OrganisationJoinRequestService(BasePermissionService):
         @return: the requester's organisation membership
         """
         if role not in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]:
-            raise ValueError(
-                f"Role must be either {ROLE_ADMIN} or {ROLE_PROJECT_MANAGER}"
-            )
+            raise ValueError(f"Role must be either {ROLE_ADMIN} or {ROLE_PROJECT_MANAGER}")
 
         with transaction.atomic():
             # Re-read under a row lock so two administrators clicking Approve at
@@ -192,17 +182,13 @@ class OrganisationJoinRequestService(BasePermissionService):
             locked_request.granted_role = membership.role
             locked_request.decided_by = user
             locked_request.decided_at = timezone.now()
-            locked_request.save(
-                update_fields=["status", "granted_role", "decided_by", "decided_at"]
-            )
+            locked_request.save(update_fields=["status", "granted_role", "decided_by", "decided_at"])
 
         join_request.refresh_from_db()
         return membership
 
     @requires_permission("edit", obj_param="join_request")
-    def reject(
-        self, user: User, join_request: OrganisationJoinRequest, note: str = ""
-    ) -> OrganisationJoinRequest:
+    def reject(self, user: User, join_request: OrganisationJoinRequest, note: str = "") -> OrganisationJoinRequest:
         """
         Reject `join_request`. The requester may submit a new request later.
 
@@ -216,17 +202,13 @@ class OrganisationJoinRequestService(BasePermissionService):
             locked_request.decision_note = (note or "").strip()
             locked_request.decided_by = user
             locked_request.decided_at = timezone.now()
-            locked_request.save(
-                update_fields=["status", "decision_note", "decided_by", "decided_at"]
-            )
+            locked_request.save(update_fields=["status", "decision_note", "decided_by", "decided_at"])
 
         join_request.refresh_from_db()
         return join_request
 
     @requires_permission("delete", obj_param="join_request")
-    def withdraw(
-        self, user: User, join_request: OrganisationJoinRequest
-    ) -> OrganisationJoinRequest:
+    def withdraw(self, user: User, join_request: OrganisationJoinRequest) -> OrganisationJoinRequest:
         """
         Withdraw `join_request` on the requester's own behalf, freeing them to
         request a different organisation (or the same one again).
@@ -236,9 +218,7 @@ class OrganisationJoinRequestService(BasePermissionService):
             locked_request.status = OrganisationJoinRequest.Status.WITHDRAWN
             locked_request.decided_by = user
             locked_request.decided_at = timezone.now()
-            locked_request.save(
-                update_fields=["status", "decided_by", "decided_at"]
-            )
+            locked_request.save(update_fields=["status", "decided_by", "decided_at"])
 
         join_request.refresh_from_db()
         return join_request
@@ -257,9 +237,9 @@ class OrganisationJoinRequestService(BasePermissionService):
 
         @param status: filter to this status, or pass None for the full history
         """
-        queryset = OrganisationJoinRequest.objects.filter(
-            organisation=organisation
-        ).select_related("user", "decided_by")
+        queryset = OrganisationJoinRequest.objects.filter(organisation=organisation).select_related(
+            "user", "decided_by"
+        )
         if status:
             queryset = queryset.filter(status=status)
         return queryset
@@ -268,9 +248,7 @@ class OrganisationJoinRequestService(BasePermissionService):
         """All of `user`'s own requests, whatever their status."""
         if not user or not user.is_authenticated:
             return OrganisationJoinRequest.objects.none()
-        return OrganisationJoinRequest.objects.filter(user=user).select_related(
-            "organisation"
-        )
+        return OrganisationJoinRequest.objects.filter(user=user).select_related("organisation")
 
     def get_pending_organisation_ids(self, user: User) -> Set[int]:
         """IDs of organisations `user` has an outstanding request for, so the
@@ -300,9 +278,7 @@ class OrganisationJoinRequestService(BasePermissionService):
         if not organisation:
             return 0
         can_manage = (
-            user.is_superuser or role == ROLE_ADMIN
-            if role is not None
-            else self.can_manage_members(user, organisation)
+            user.is_superuser or role == ROLE_ADMIN if role is not None else self.can_manage_members(user, organisation)
         )
         if not can_manage:
             return 0
@@ -323,8 +299,7 @@ class OrganisationJoinRequestService(BasePermissionService):
         )
         if not locked_request.is_pending:
             raise JoinRequestAlreadyDecidedError(
-                f"Join request {join_request.pk} is already "
-                f"{locked_request.get_status_display().lower()}"
+                f"Join request {join_request.pk} is already " f"{locked_request.get_status_display().lower()}"
             )
         return locked_request
 

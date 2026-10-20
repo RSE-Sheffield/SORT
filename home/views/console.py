@@ -185,9 +185,9 @@ class ConsoleOrganisationDetailView(StaffRequiredMixin, TemplateView):
         # that service's get_requests() requires manage_members permission on
         # the organisation, which staff viewing the console may not hold —
         # StaffRequiredMixin above is the only gate this page needs.
-        context["join_requests"] = OrganisationJoinRequest.objects.filter(
-            organisation=org
-        ).select_related("user", "decided_by")
+        context["join_requests"] = OrganisationJoinRequest.objects.filter(organisation=org).select_related(
+            "user", "decided_by"
+        )
         return context
 
 
@@ -291,9 +291,7 @@ class ConsoleSurveyDetailView(StaffRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        survey = get_object_or_404(
-            Survey.objects.select_related("project__organisation"), pk=self.kwargs["pk"]
-        )
+        survey = get_object_or_404(Survey.objects.select_related("project__organisation"), pk=self.kwargs["pk"])
         context["survey"] = survey
         context["responses"] = survey.survey_response.order_by("-created_at")
         return context
@@ -395,9 +393,7 @@ class ConsoleExportUserDataView(StaffRequiredMixin, TemplateResponseMixin, View)
                 "actioned_at": event.actioned_at,
                 "requested_at": event.requested_at,
             }
-            for event in data_protection_service.list_events(
-                request.user, subject_user_id=target_user.pk
-            )
+            for event in data_protection_service.list_events(request.user, subject_user_id=target_user.pk)
         ]
 
         data_protection_service.record_event(
@@ -430,9 +426,7 @@ class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
         org_name = org.name
         try:
             remove_membership_and_record_event(
-                OrganisationMembership.objects.filter(
-                    pk=membership_pk, organisation=org
-                ),
+                OrganisationMembership.objects.filter(pk=membership_pk, organisation=org),
                 actioned_by=request.user,
                 notes=f"Removed from organisation '{org_name}'",
             )

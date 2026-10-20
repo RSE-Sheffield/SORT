@@ -20,9 +20,7 @@ class ProjectService(BasePermissionService):
         """Get user's role in the project's organisation"""
         try:
             return project.organisation.get_user_role(user)
-        except (
-            AttributeError
-        ):  # In case user is AnonymousUser or organisation method fails
+        except AttributeError:  # In case user is AnonymousUser or organisation method fails
             return None
 
     def can_view(self, user: User, project: Project) -> bool:
@@ -58,9 +56,7 @@ class ProjectService(BasePermissionService):
         return project
 
     @requires_permission("create", obj_param="organisation")
-    def create_project(
-        self, user: User, name: str, organisation: Organisation, description: str = None
-    ) -> Project:
+    def create_project(self, user: User, name: str, organisation: Organisation, description: str = None) -> Project:
         """Create a new project"""
         if not self.can_create(user, organisation):
             raise PermissionDenied("User cannot create projects")

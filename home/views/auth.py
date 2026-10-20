@@ -43,9 +43,7 @@ class SignupView(CreateView):
         """
         if self._invitation is None:
             try:
-                self._invitation = invitations.models.Invitation.objects.get(
-                    key=self.kwargs["key"]
-                )
+                self._invitation = invitations.models.Invitation.objects.get(key=self.kwargs["key"])
             # This signup must have an invitation
             except invitations.models.Invitation.DoesNotExist:
                 raise PermissionDenied("You must be invited to sign up.")
@@ -56,9 +54,7 @@ class SignupView(CreateView):
 
         # The invited user will be invited to the same organisation
         # as the manager who invited them.
-        context["organisation"] = organisation_service.get_user_organisation(
-            self.invitation.inviter
-        )
+        context["organisation"] = organisation_service.get_user_organisation(self.invitation.inviter)
         context["email"] = self.invitation.email
 
         return context
@@ -140,9 +136,7 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(
-            self.request, "There was an error updating your profile. Please try again."
-        )
+        messages.error(self.request, "There was an error updating your profile. Please try again.")
         return super().form_invalid(form)
 
 

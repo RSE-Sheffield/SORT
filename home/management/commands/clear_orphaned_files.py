@@ -19,8 +19,7 @@ class Command(BaseCommand):
                 file_path = dirpath / file_name
                 relative_path = file_path.relative_to(upload_root)
                 if (
-                    SurveyEvidenceFile.objects.filter(file=str(relative_path)).count()
-                    < 1
+                    SurveyEvidenceFile.objects.filter(file=str(relative_path)).count() < 1
                     and SurveyFile.objects.filter(file=str(relative_path)).count() < 1
                 ):
                     print(f"Deleting {file_path}")

@@ -105,9 +105,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Organisation(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-    members = models.ManyToManyField(
-        User, through="OrganisationMembership", through_fields=("organisation", "user")
-    )
+    members = models.ManyToManyField(User, through="OrganisationMembership", through_fields=("organisation", "user"))
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -136,9 +134,7 @@ class OrganisationMembership(models.Model):
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLES, default=ROLE_PROJECT_MANAGER)
     joined_at = models.DateTimeField(auto_now_add=True)
-    added_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="members_added", null=True
-    )
+    added_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="members_added", null=True)
 
 
 class OrganisationJoinRequest(models.Model):
@@ -163,15 +159,9 @@ class OrganisationJoinRequest(models.Model):
         REJECTED = "REJECTED", "Rejected"
         WITHDRAWN = "WITHDRAWN", "Withdrawn by requester"
 
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="join_requests"
-    )
-    organisation = models.ForeignKey(
-        Organisation, on_delete=models.CASCADE, related_name="join_requests"
-    )
-    status = models.CharField(
-        max_length=16, choices=Status.choices, default=Status.PENDING
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="join_requests")
+    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE, related_name="join_requests")
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.PENDING)
     message = models.TextField(
         blank=True,
         default="",
@@ -189,9 +179,7 @@ class OrganisationJoinRequest(models.Model):
     # The role granted at approval time. Recorded separately from the resulting
     # membership because that membership's role may be edited later, and the
     # approval email needs to state what was granted.
-    granted_role = models.CharField(
-        max_length=20, choices=ROLES, blank=True, default=""
-    )
+    granted_role = models.CharField(max_length=20, choices=ROLES, blank=True, default="")
     decision_note = models.TextField(blank=True, default="")
 
     class Meta:
@@ -223,9 +211,7 @@ class Project(models.Model):
 
     name = models.CharField(max_length=100, help_text="Project title")
     description = models.TextField(blank=True, null=True)
-    organisation = models.ForeignKey(
-        Organisation, on_delete=models.CASCADE, related_name="projects"
-    )
+    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE, related_name="projects")
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

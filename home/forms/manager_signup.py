@@ -26,9 +26,7 @@ class ManagerSignupForm(UserCreationForm):
         fields = ("password1", "password2")
 
     # Secret key for the invitation (hidden form field)
-    key = forms.CharField(
-        required=False, disabled=True, widget=forms.HiddenInput, label=""
-    )
+    key = forms.CharField(required=False, disabled=True, widget=forms.HiddenInput, label="")
 
     @property
     def invitation(self) -> Invitation:

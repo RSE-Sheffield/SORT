@@ -45,9 +45,7 @@ class SurveyConfigureTestCase(PlaywrightTestCase):
 
         # Respondents see the new question on the final page
         page.get_by_role("button", name="Generate invitation").click()
-        expect(page.locator("#invitation_link")).to_have_value(
-            re.compile(r"/survey_response/")
-        )
+        expect(page.locator("#invitation_link")).to_have_value(re.compile(r"/survey_response/"))
         token = Invitation.objects.get(survey=self.survey, used=False).token
         respondent = self.new_anonymous_page()
         self.visit("survey_response", page=respondent, token=token)

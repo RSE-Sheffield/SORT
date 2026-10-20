@@ -24,8 +24,6 @@ class SurveyAdminTestCase(TestCase):
         self.assertNotIn("survey_config", readonly)
 
     def test_config_readonly_with_responses(self):
-        SurveyResponse.objects.create(
-            survey=self.survey, answers=self.survey._generate_mock_response()
-        )
+        SurveyResponse.objects.create(survey=self.survey, answers=self.survey._generate_mock_response())
         readonly = self.model_admin.get_readonly_fields(self.request, self.survey)
         self.assertIn("survey_config", readonly)

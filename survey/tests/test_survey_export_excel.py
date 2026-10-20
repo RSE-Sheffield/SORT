@@ -2,7 +2,6 @@ import io
 from unittest import mock
 
 import openpyxl
-
 from django.test import TestCase
 
 from SORT.test.model_factory import SurveyFactory

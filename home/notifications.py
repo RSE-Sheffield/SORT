@@ -40,9 +40,7 @@ DECISION_SUBJECT_TEMPLATE = "home/email/join_request_decision_subject.txt"
 DECISION_BODY_TEMPLATE = "home/email/join_request_decision_body.txt"
 
 
-def render_email(
-    subject_template: str, body_template: str, context: dict
-) -> Tuple[str, str]:
+def render_email(subject_template: str, body_template: str, context: dict) -> Tuple[str, str]:
     """
     Render an email's subject and body from templates.
 
@@ -83,9 +81,7 @@ def send_templated_mail(
                 fail_silently=False,
             )
         except (smtplib.SMTPException, OSError):
-            logger.exception(
-                "Failed to send email (subject=%s, to=%s)", subject, recipient
-            )
+            logger.exception("Failed to send email (subject=%s, to=%s)", subject, recipient)
     return sent
 
 
@@ -117,23 +113,19 @@ def _absolute_url(view_name: str, request: Optional[HttpRequest]) -> str:
     path = reverse(view_name)
     if request is None:
         logger.warning(
-            "No request available to build an absolute URL for %s; "
-            "sending a relative link instead",
+            "No request available to build an absolute URL for %s; " "sending a relative link instead",
             view_name,
         )
         return path
     return request.build_absolute_uri(path)
 
 
-def notify_admins_of_join_request(
-    join_request: OrganisationJoinRequest, request: Optional[HttpRequest] = None
-) -> int:
+def notify_admins_of_join_request(join_request: OrganisationJoinRequest, request: Optional[HttpRequest] = None) -> int:
     """Tell an organisation's administrators that someone wants to join."""
     recipient_list = get_organisation_admin_emails(join_request.organisation)
     if not recipient_list:
         logger.warning(
-            "Organisation %s has no active administrators to notify about "
-            "join request %s",
+            "Organisation %s has no active administrators to notify about " "join request %s",
             join_request.organisation_id,
             join_request.pk,
         )
@@ -159,8 +151,7 @@ def notify_requester_of_join_decision(
         body_template=DECISION_BODY_TEMPLATE,
         context={
             "join_request": join_request,
-            "is_approved": join_request.status
-            == OrganisationJoinRequest.Status.APPROVED,
+            "is_approved": join_request.status == OrganisationJoinRequest.Status.APPROVED,
             "dashboard_url": _absolute_url("dashboard", request),
             "requests_url": _absolute_url("join_requests_mine", request),
         },

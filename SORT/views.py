@@ -21,8 +21,7 @@ def csrf_failure(request, reason=""):
     poor practice.
     """
     logger.warning(
-        "CSRF verification failed: reason=%r path=%s method=%s "
-        "csrf_cookie_present=%s referer=%r user_agent=%r",
+        "CSRF verification failed: reason=%r path=%s method=%s " "csrf_cookie_present=%s referer=%r user_agent=%r",
         reason,
         request.path,
         request.method,

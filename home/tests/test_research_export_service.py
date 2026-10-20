@@ -102,7 +102,7 @@ class ResearchExportTestCase(TestCase):
 
         header, plain_row, extended_row = read_sheet(ResearchExport())
         self.assertEqual(header.count(EXTRA_QUESTION), 1)
-        self.assertEqual(header[len(METADATA_COLUMNS):], (*plain.fields, EXTRA_QUESTION))
+        self.assertEqual(header[len(METADATA_COLUMNS) :], (*plain.fields, EXTRA_QUESTION))
         extra_col = header.index(EXTRA_QUESTION)
         self.assertIsNone(plain_row[extra_col])
         self.assertEqual(extended_row[extra_col], "Hello")

@@ -118,12 +118,8 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.service.get_user_organisation(user=user)
 
         # Check member exists in that organisation
-        self.assertEqual(
-            {organisation.pk}, self.service.get_user_organisation_ids(user=user)
-        )
-        org_membership = OrganisationMembership.objects.filter(
-            user=user, organisation=organisation
-        ).first()
+        self.assertEqual({organisation.pk}, self.service.get_user_organisation_ids(user=user))
+        org_membership = OrganisationMembership.objects.filter(user=user, organisation=organisation).first()
         self.assertEqual(org_membership.user.pk, user.pk)
         self.assertEqual(org_membership.organisation.pk, organisation.pk)
 
@@ -153,9 +149,7 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
         """
         organisation = OrganisationFactory()
         # The first manager is an administrator
-        OrganisationMembership.objects.create(
-            user=self.manager, organisation=organisation, role=ROLE_ADMIN
-        )
+        OrganisationMembership.objects.create(user=self.manager, organisation=organisation, role=ROLE_ADMIN)
 
         # Add the second user
         self.service.add_user_to_organisation(
@@ -166,9 +160,7 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
         )
 
         # Check organisation membership
-        membership = OrganisationMembership.objects.filter(
-            user=self.user, organisation=organisation
-        ).first()
+        membership = OrganisationMembership.objects.filter(user=self.user, organisation=organisation).first()
         self.assertEqual(membership.user, self.user)
         self.assertEqual(membership.organisation, organisation)
         self.assertEqual(membership.role, ROLE_ADMIN)
@@ -185,39 +177,27 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
 
     def test_remove_user_from_organisation(self):
         self.assertEqual(
-            OrganisationMembership.objects.filter(
-                user=self.manager, organisation=self.organisation
-            ).count(),
+            OrganisationMembership.objects.filter(user=self.manager, organisation=self.organisation).count(),
             1,
         )
 
         # Remove manager then check
-        self.service.remove_user_from_organisation(
-            self.manager, self.organisation, self.manager
-        )
+        self.service.remove_user_from_organisation(self.manager, self.organisation, self.manager)
         self.assertEqual(
-            OrganisationMembership.objects.filter(
-                user=self.manager, organisation=self.organisation
-            ).count(),
+            OrganisationMembership.objects.filter(user=self.manager, organisation=self.organisation).count(),
             0,
         )
 
         with self.assertRaises(PermissionDenied):
-            self.service.remove_user_from_organisation(
-                self.manager, self.organisation, removed_user=self.user
-            )
+            self.service.remove_user_from_organisation(self.manager, self.organisation, removed_user=self.user)
 
         # Attempt "hostile takeover" by non-authorised user
         with self.assertRaises(PermissionDenied):
-            self.service.remove_user_from_organisation(
-                self.user, self.organisation, removed_user=self.manager
-            )
+            self.service.remove_user_from_organisation(self.user, self.organisation, removed_user=self.manager)
 
     def test_get_organisation_members(self):
         members = self.service.get_organisation_members(self.manager, self.organisation)
-        self.assertEqual(
-            members.count(), 1, "Unexpected number of organisation members"
-        )
+        self.assertEqual(members.count(), 1, "Unexpected number of organisation members")
 
         self.service.add_user_to_organisation(
             user=self.manager,
@@ -227,9 +207,7 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
         )
 
         self.assertEqual(
-            self.service.get_organisation_members(
-                self.manager, self.organisation
-            ).count(),
+            self.service.get_organisation_members(self.manager, self.organisation).count(),
             2,
             "Unexpected number of organisation members",
         )
@@ -266,40 +244,28 @@ class ActiveOrganisationTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertNotIn("active_organisation_id", request.session)
 
     def test_user_with_one_organisation_is_auto_selected(self):
-        membership = OrganisationMembershipFactory(
-            user=self.user, organisation=OrganisationFactory()
-        )
+        membership = OrganisationMembershipFactory(user=self.user, organisation=OrganisationFactory())
         request = self._make_request(self.user)
 
         organisation = self.service.get_active_organisation(request)
 
         self.assertEqual(membership.organisation, organisation)
-        self.assertEqual(
-            membership.organisation.id, request.session["active_organisation_id"]
-        )
+        self.assertEqual(membership.organisation.id, request.session["active_organisation_id"])
 
     def test_user_with_multiple_organisations_defaults_to_earliest_joined(self):
-        first = OrganisationMembershipFactory(
-            user=self.user, organisation=OrganisationFactory()
-        )
-        second = OrganisationMembershipFactory(
-            user=self.user, organisation=OrganisationFactory()
-        )
+        first = OrganisationMembershipFactory(user=self.user, organisation=OrganisationFactory())
+        second = OrganisationMembershipFactory(user=self.user, organisation=OrganisationFactory())
         request = self._make_request(self.user)
 
         organisation = self.service.get_active_organisation(request)
 
         self.assertEqual(first.organisation, organisation)
-        self.assertEqual(
-            first.organisation.id, request.session["active_organisation_id"]
-        )
+        self.assertEqual(first.organisation.id, request.session["active_organisation_id"])
         self.assertNotEqual(second.organisation, organisation)
 
     def test_active_organisation_choice_persists_via_session(self):
         OrganisationMembershipFactory(user=self.user, organisation=OrganisationFactory())
-        second = OrganisationMembershipFactory(
-            user=self.user, organisation=OrganisationFactory()
-        )
+        second = OrganisationMembershipFactory(user=self.user, organisation=OrganisationFactory())
         request = self._make_request(self.user)
         request.session["active_organisation_id"] = second.organisation.id
 
@@ -308,12 +274,8 @@ class ActiveOrganisationTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertEqual(second.organisation, organisation)
 
     def test_stale_active_organisation_falls_back_to_valid_membership(self):
-        first = OrganisationMembershipFactory(
-            user=self.user, organisation=OrganisationFactory()
-        )
-        removed = OrganisationMembershipFactory(
-            user=self.user, organisation=OrganisationFactory()
-        )
+        first = OrganisationMembershipFactory(user=self.user, organisation=OrganisationFactory())
+        removed = OrganisationMembershipFactory(user=self.user, organisation=OrganisationFactory())
         request = self._make_request(self.user)
         request.session["active_organisation_id"] = removed.organisation.id
 
@@ -323,30 +285,20 @@ class ActiveOrganisationTestCase(SORT.test.test_case.ServiceTestCase):
         organisation = self.service.get_active_organisation(request)
 
         self.assertEqual(first.organisation, organisation)
-        self.assertEqual(
-            first.organisation.id, request.session["active_organisation_id"]
-        )
+        self.assertEqual(first.organisation.id, request.session["active_organisation_id"])
 
     def test_set_active_organisation(self):
         OrganisationMembershipFactory(user=self.user, organisation=OrganisationFactory())
-        second = OrganisationMembershipFactory(
-            user=self.user, organisation=OrganisationFactory()
-        )
+        second = OrganisationMembershipFactory(user=self.user, organisation=OrganisationFactory())
         request = self._make_request(self.user)
 
         self.service.set_active_organisation(request, second.organisation)
 
-        self.assertEqual(
-            second.organisation, self.service.get_active_organisation(request)
-        )
+        self.assertEqual(second.organisation, self.service.get_active_organisation(request))
 
     def test_get_user_organisations(self):
-        first = OrganisationMembershipFactory(
-            user=self.user, organisation=OrganisationFactory()
-        )
-        second = OrganisationMembershipFactory(
-            user=self.user, organisation=OrganisationFactory()
-        )
+        first = OrganisationMembershipFactory(user=self.user, organisation=OrganisationFactory())
+        second = OrganisationMembershipFactory(user=self.user, organisation=OrganisationFactory())
 
         organisations = self.service.get_user_organisations(self.user)
 
@@ -377,9 +329,7 @@ class OrganisationMergeTestCase(SORT.test.test_case.ServiceTestCase):
         plan = plan_organisation_merge(self.source, self.target)
 
         self.assertEqual([project], plan.projects)
-        self.assertEqual(
-            [self.source_admin.pk], [m.user.pk for m in plan.memberships_to_move]
-        )
+        self.assertEqual([self.source_admin.pk], [m.user.pk for m in plan.memberships_to_move])
         self.assertEqual([], plan.memberships_to_drop)
 
     def test_plan_drops_duplicate_membership_keeping_target_role(self):
@@ -393,9 +343,7 @@ class OrganisationMergeTestCase(SORT.test.test_case.ServiceTestCase):
         plan = plan_organisation_merge(self.source, self.target)
 
         self.assertEqual([], plan.memberships_to_move)
-        self.assertEqual(
-            [self.source_admin.pk], [m.user.pk for m in plan.memberships_to_drop]
-        )
+        self.assertEqual([self.source_admin.pk], [m.user.pk for m in plan.memberships_to_drop])
 
     def test_merge_requires_staff(self):
         with self.assertRaises(PermissionDenied):
@@ -409,9 +357,7 @@ class OrganisationMergeTestCase(SORT.test.test_case.ServiceTestCase):
         project.refresh_from_db()
         self.assertEqual(self.target, project.organisation)
         self.assertTrue(
-            OrganisationMembership.objects.filter(
-                user=self.source_admin, organisation=self.target
-            ).exists()
+            OrganisationMembership.objects.filter(user=self.source_admin, organisation=self.target).exists()
         )
         self.assertFalse(Organisation.objects.filter(pk=self.source.pk).exists())
 
@@ -424,15 +370,11 @@ class OrganisationMergeTestCase(SORT.test.test_case.ServiceTestCase):
 
         self.service.merge_organisations(self.superuser, self.source, self.target)
 
-        membership = OrganisationMembership.objects.get(
-            user=self.source_admin, organisation=self.target
-        )
+        membership = OrganisationMembership.objects.get(user=self.source_admin, organisation=self.target)
         self.assertEqual(ROLE_PROJECT_MANAGER, membership.role)
         self.assertEqual(
             1,
-            OrganisationMembership.objects.filter(
-                user=self.source_admin, organisation=self.target
-            ).count(),
+            OrganisationMembership.objects.filter(user=self.source_admin, organisation=self.target).count(),
         )
 
     def test_merge_records_audit_events(self):
