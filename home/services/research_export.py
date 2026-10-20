@@ -97,6 +97,10 @@ class ResearchExport:
                 "Response ID": response.pk,
                 "Submitted at": timezone.make_naive(response.created_at),
             }
+            # TODO: answers are keyed by question label, so duplicate labels (e.g. two
+            # "Other (please specify)" fields, or likert sublabels) collide: dict(zip(...))
+            # keeps only the last answer and the header dedup leaves one column. Key by
+            # field id instead. See https://github.com/RSE-Sheffield/SORT/pull/748#discussion_r4325196098
             row["answers"] = dict(zip(fields_cache[survey.pk], response.answers_values))
             rows.append(row)
         return list(questions), rows
