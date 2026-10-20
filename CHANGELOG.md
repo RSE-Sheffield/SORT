@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.29.0](https://github.com/RSE-Sheffield/SORT/compare/v0.28.0...v0.29.0) (2026-10-20)
+
+
+### Features
+
+* add bulk research data Excel export to staff console ([#748](https://github.com/RSE-Sheffield/SORT/issues/748)) ([adbf9f8](https://github.com/RSE-Sheffield/SORT/commit/adbf9f83affabde5645ac15fc4b865061d98deeb))
+* link participant information from survey detail page ([#767](https://github.com/RSE-Sheffield/SORT/issues/767)) ([40221a7](https://github.com/RSE-Sheffield/SORT/commit/40221a76df8dd24d67785cc99d89f75feeae6393))
+
+
+### Bug Fixes
+
+* remove account manager checkbox from allauth signup page ([#766](https://github.com/RSE-Sheffield/SORT/issues/766)) ([9ee07ce](https://github.com/RSE-Sheffield/SORT/commit/9ee07cea6d9e8e21bc4570a71b20a29508ad1a18))
+* separate internal and research data use in participant information sheet ([#761](https://github.com/RSE-Sheffield/SORT/issues/761)) ([203d8de](https://github.com/RSE-Sheffield/SORT/commit/203d8dea34d502fdaa6d1a6cb769b8bc069d7432)), closes [#760](https://github.com/RSE-Sheffield/SORT/issues/760)
+
+
+### Performance Improvements
+
+* Idempotent virtual environment creation ([#505](https://github.com/RSE-Sheffield/SORT/issues/505)) ([a0eb3b0](https://github.com/RSE-Sheffield/SORT/commit/a0eb3b087039382b89f83cfffa46368b33960ad7))
+
 ## [0.28.0](https://github.com/RSE-Sheffield/SORT/compare/v0.27.0...v0.28.0) (2026-10-02)
 
 
