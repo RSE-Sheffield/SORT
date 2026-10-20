@@ -14,7 +14,8 @@ the staff console (`StaffRequiredMixin`) and the `research_export` management
 command (server shell access).
 """
 
-from typing import IO, Iterator
+from collections.abc import Iterator
+from typing import IO
 
 import xlsxwriter
 from django.utils import timezone
