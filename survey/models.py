@@ -395,7 +395,8 @@ class Survey(models.Model):
         path = Path(tempfile.mkdtemp()).joinpath("survey_responses.xlsx")
 
         # Create spreadsheet data
-        workbook = xlsxwriter.Workbook(filename=path)
+        # Participants' answers must never be interpreted as Excel formulas (formula injection)
+        workbook = xlsxwriter.Workbook(path, {"strings_to_formulas": False})
         sheet = workbook.add_worksheet(name=self._excel_sheet_name())
         # Iterate over responses (one row per response)
         for i, row in enumerate(self.responses_iter()):
@@ -578,6 +579,10 @@ class SurveyResponse(models.Model):
         """
         Whether the participant ticked the optional research consent box in the
         consent (first) section. Only these responses may be shared for research.
+
+        The answer is found by its position in the survey's current configuration,
+        which is safe because a survey's configuration is frozen once it has responses
+        (enforced by the survey service, the configure view and the Django admin).
         """
         fields = self.survey.sections[0].get("fields", []) if self.survey.sections else []
         for field_index, field in enumerate(fields):
