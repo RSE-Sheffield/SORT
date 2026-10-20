@@ -116,7 +116,7 @@ class ConsoleResearchExportView(StaffRequiredMixin, TemplateResponseMixin, View)
     template_name = "console/research_export.html"
 
     def get(self, request):
-        return self.render_to_response({"summary": ResearchExport().summary()})
+        return self.render_to_response({})
 
     def post(self, request):
         buffer = io.BytesIO()

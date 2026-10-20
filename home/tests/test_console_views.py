@@ -624,11 +624,10 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
 
     def test_console_research_export_page_accessible_to_staff(self):
-        """Staff see how much consented research data the export contains."""
+        """Staff can open the research data export page."""
         self.login_staff()
         response = self.client.get("/console/research-export/")
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertEqual(response.context["summary"], {"surveys": 0, "responses": 0})
 
     def test_console_research_export_download(self):
         """Staff download the research data as an Excel workbook that is not cached."""

@@ -69,17 +69,6 @@ class ResearchExport:
         # Participant consent lives inside the answers JSON, so filter in Python
         return (response for response in responses.iterator() if response.has_research_consent)
 
-    def summary(self) -> dict[str, int]:
-        """
-        How many surveys and responses the export would contain.
-        """
-        survey_ids = set()
-        responses = 0
-        for response in self.consented_responses():
-            survey_ids.add(response.survey_id)
-            responses += 1
-        return {"surveys": len(survey_ids), "responses": responses}
-
     def _rows(self) -> tuple[list[str], list[dict]]:
         """
         Build the question columns (in order of first appearance) and one dict per response.

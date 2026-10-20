@@ -62,7 +62,6 @@ class ResearchExportTestCase(TestCase):
         rows = read_sheet(ResearchExport())
         response_id_col = METADATA_COLUMNS.index("Response ID")
         self.assertEqual([row[response_id_col] for row in rows[1:]], [consented.pk])
-        self.assertEqual(ResearchExport().summary(), {"surveys": 1, "responses": 1})
 
     def test_metadata_columns(self):
         survey = make_survey()
@@ -84,7 +83,6 @@ class ResearchExportTestCase(TestCase):
 
         _, row = read_sheet(ResearchExport())
         self.assertEqual(row[:5], (None, None, survey.pk, survey.name, response.pk))
-        self.assertEqual(ResearchExport().summary(), {"surveys": 1, "responses": 1})
 
     def test_skips_shared_survey_without_config(self):
         uninitialised = make_survey()
@@ -95,7 +93,6 @@ class ResearchExportTestCase(TestCase):
 
         rows = read_sheet(ResearchExport())
         self.assertEqual(len(rows), 2)
-        self.assertEqual(ResearchExport().summary(), {"surveys": 1, "responses": 1})
 
     def test_columns_are_union_of_survey_questions(self):
         plain = make_survey()
@@ -124,7 +121,6 @@ class ResearchExportTestCase(TestCase):
     def test_empty_export_has_header_only(self):
         rows = read_sheet(ResearchExport())
         self.assertEqual(rows, [METADATA_COLUMNS])
-        self.assertEqual(ResearchExport().summary(), {"surveys": 0, "responses": 0})
 
 
 class ResearchExportCommandTestCase(TestCase):
