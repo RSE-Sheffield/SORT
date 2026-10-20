@@ -578,6 +578,10 @@ class SurveyResponse(models.Model):
         """
         Whether the participant ticked the optional research consent box in the
         consent (first) section. Only these responses may be shared for research.
+
+        The answer is found by its position in the survey's current configuration,
+        which is safe because a survey's configuration is frozen once it has responses
+        (enforced by the survey service, the configure view and the Django admin).
         """
         fields = self.survey.sections[0].get("fields", []) if self.survey.sections else []
         for field_index, field in enumerate(fields):
