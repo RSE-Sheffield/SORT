@@ -76,6 +76,27 @@ class ResearchExportTestCase(TestCase):
         )
         self.assertIsNotNone(row[5])
 
+    def test_shared_survey_without_project(self):
+        survey = make_survey()
+        survey.project = None
+        survey.save()
+        response = make_response(survey, research_consent=True)
+
+        _, row = read_sheet(ResearchExport())
+        self.assertEqual(row[:5], (None, None, survey.pk, survey.name, response.pk))
+        self.assertEqual(ResearchExport().summary(), {"surveys": 1, "responses": 1})
+
+    def test_skips_shared_survey_without_config(self):
+        uninitialised = make_survey()
+        make_response(uninitialised, research_consent=True)
+        Survey.objects.filter(pk=uninitialised.pk).update(survey_config=None)
+        valid = make_survey()
+        make_response(valid, research_consent=True)
+
+        rows = read_sheet(ResearchExport())
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(ResearchExport().summary(), {"surveys": 1, "responses": 1})
+
     def test_columns_are_union_of_survey_questions(self):
         plain = make_survey()
         extended = make_survey(extra_question=True)

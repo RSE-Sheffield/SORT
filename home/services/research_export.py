@@ -57,9 +57,11 @@ class ResearchExport:
     def consented_responses(self) -> Iterator[SurveyResponse]:
         """
         Responses on shared surveys whose participant gave research consent.
+
+        Surveys that were never initialised have no consent question, so they are skipped.
         """
         responses = (
-            SurveyResponse.objects.filter(survey__is_shared=True)
+            SurveyResponse.objects.filter(survey__is_shared=True, survey__survey_config__isnull=False)
             .select_related("survey__project__organisation")
             .order_by("survey_id", "pk")
         )
@@ -86,12 +88,13 @@ class ResearchExport:
         fields_cache: dict[int, tuple[str]] = {}
         for response in self.consented_responses():
             survey: Survey = response.survey
+            project = survey.project  # Shared surveys need not belong to a project
             if survey.pk not in fields_cache:
                 fields_cache[survey.pk] = survey.fields
                 questions.update(dict.fromkeys(fields_cache[survey.pk]))
             row = {
-                "Organisation": survey.project.organisation.name,
-                "Project": survey.project.name,
+                "Organisation": project.organisation.name if project else "",
+                "Project": project.name if project else "",
                 "Survey ID": survey.pk,
                 "Survey": survey.name,
                 "Response ID": response.pk,
