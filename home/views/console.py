@@ -13,8 +13,8 @@ from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.views.generic import TemplateView, View
 from django.utils import timezone
+from django.views.generic import TemplateView, View
 from django.views.generic.base import TemplateResponseMixin
 
 from home.constants import DELETED_ACCOUNT_EMAIL_DOMAIN

@@ -1,13 +1,18 @@
-import logging
 import json
+import logging
 from http import HTTPStatus
 
 import SORT.test.test_case
-from SORT.test.model_factory import OrganisationFactory, OrganisationMembershipFactory, ProjectFactory, SurveyFactory, \
-    SuperUserFactory, UserFactory
-from SORT.test.model_factory.user.constants import PASSWORD
-
 from home.models import DataProtectionEvent
+from SORT.test.model_factory import (
+    OrganisationFactory,
+    OrganisationMembershipFactory,
+    ProjectFactory,
+    SuperUserFactory,
+    SurveyFactory,
+    UserFactory,
+)
+from SORT.test.model_factory.user.constants import PASSWORD
 from survey.models import SurveyResponse
 
 
