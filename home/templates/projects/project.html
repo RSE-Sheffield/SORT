@@ -72,18 +72,6 @@
                             <span><strong>Responses:</strong> {{ survey.responses_count }}</span>
                         </div>
                         <div class="mt-2 w-100 d-flex flex-wrap justify-content-end gap-2">
-                            {% if survey.is_shared %}
-                                <a href="{% url 'participant_information' %}"
-                                   title="View the participant information sheet"
-                                   class="btn btn-light border" role="button">
-                                    <i class="bx bxs-info-circle"></i>&nbsp;Participant information
-                                </a>
-                                <a href="{% url 'data_sharing_agreement' %}"
-                                   title="View the data sharing agreement between your organisation and the University"
-                                   class="btn btn-light border" role="button">
-                                    <i class="bx bxs-note"></i>&nbsp;Data sharing agreement
-                                </a>
-                            {% endif %}
                             <a href="{% url 'survey' survey.id %}" class="btn btn-primary" role="button"
                                aria-pressed="true">
                                 <i class="bx bxs-chart"></i>&nbsp;View
