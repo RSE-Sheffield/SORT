@@ -2,6 +2,7 @@
 Project service with integrated permissions
 """
 
+import logging
 from typing import Dict, Optional
 
 from django.core.exceptions import PermissionDenied
@@ -11,6 +12,8 @@ from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from ..models import Organisation, Project, User
 from .base import BasePermissionService, requires_permission
 from .organisation import organisation_service
+
+audit_logger = logging.getLogger("sort.audit")
 
 
 class ProjectService(BasePermissionService):
@@ -67,6 +70,13 @@ class ProjectService(BasePermissionService):
             created_by=user,
             organisation=organisation,
         )
+        audit_logger.info(
+            "project created: project_id=%s organisation_id=%s user_id=%s user_email=%s",
+            project.pk,
+            organisation.pk,
+            user.pk,
+            user.email,
+        )
         return project
 
     def delete_project(self, user: User, project: Project):
@@ -75,7 +85,15 @@ class ProjectService(BasePermissionService):
             raise PermissionDenied("User cannot delete projects")
 
         organisation = project.organisation
+        project_id = project.pk
         project.delete()
+        audit_logger.info(
+            "project deleted: project_id=%s organisation_id=%s user_id=%s user_email=%s",
+            project_id,
+            organisation.pk,
+            user.pk,
+            user.email,
+        )
         return organisation
 
     def get_user_projects(self, user: User) -> QuerySet[Project]:

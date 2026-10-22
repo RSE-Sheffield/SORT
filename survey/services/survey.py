@@ -23,6 +23,7 @@ from survey.models import (
 )
 
 logger = logging.getLogger(__name__)
+audit_logger = logging.getLogger("sort.audit")
 
 
 class InvalidInviteTokenException(Exception):
@@ -70,6 +71,23 @@ class SurveyService(BasePermissionService):
         survey.project = project
         survey.initialise()
         survey.save()
+        self.audit("created", user, survey)
+
+    def audit(self, action: str, user: User, survey: Survey, survey_id=None):
+        audit_logger.info(
+            "survey %s: survey_id=%s project_id=%s user_id=%s user_email=%s",
+            action,
+            survey_id or survey.pk,
+            survey.project_id,
+            user.pk,
+            user.email,
+        )
+
+    @requires_permission("delete", obj_param="survey")
+    def delete_survey(self, user: User, survey: Survey):
+        survey_id = survey.pk
+        survey.delete()
+        self.audit("deleted", user, survey, survey_id=survey_id)
 
     @requires_permission("edit", obj_param="survey")
     def update_consent_demography_config(

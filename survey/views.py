@@ -92,7 +92,11 @@ class SurveyEditView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         if survey_service.can_edit(self.request.user, self.object):
             messages.info(self.request, f"Survey {self.object.name} updated")
-            return super().form_valid(form)
+            renamed = "name" in form.changed_data
+            result = super().form_valid(form)
+            if renamed:
+                survey_service.audit("renamed", self.request.user, self.object)
+            return result
         else:
             messages.error(self.request, "You do not have permission to edit this survey.")
             return redirect("survey", pk=self.object.pk)
@@ -110,7 +114,9 @@ class SurveyDeleteView(LoginRequiredMixin, DeleteView):
     def form_valid(self, form):
         if survey_service.can_delete(self.request.user, self.object):
             messages.info(self.request, f"Survey {self.object.name} deleted")
-            return super().form_valid(form)
+            success_url = self.get_success_url()
+            survey_service.delete_survey(self.request.user, self.object)
+            return redirect(success_url)
         else:
             messages.error(self.request, "You do not have permission to delete this survey.")
             return redirect("survey", pk=self.object.pk)

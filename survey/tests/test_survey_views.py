@@ -24,6 +24,20 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
     def test_survey_get(self):
         self.get("survey", pk=self.survey.pk)
 
+    def test_sharing_links_shown_for_shared_survey(self):
+        self.survey.is_shared = True
+        self.survey.save()
+        response = self.get("survey", pk=self.survey.pk)
+        self.assertContains(response, django.urls.reverse("participant_information"))
+        self.assertContains(response, django.urls.reverse("data_sharing_agreement"))
+
+    def test_sharing_links_hidden_for_unshared_survey(self):
+        self.survey.is_shared = False
+        self.survey.save()
+        response = self.get("survey", pk=self.survey.pk)
+        self.assertNotContains(response, django.urls.reverse("participant_information"))
+        self.assertNotContains(response, django.urls.reverse("data_sharing_agreement"))
+
     def test_survey_get_unauthorised(self):
         # Redirect to login page (302)
         self.get(
