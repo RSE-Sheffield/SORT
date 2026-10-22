@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.30.0](https://github.com/RSE-Sheffield/SORT/compare/v0.29.0...v0.30.0) (2026-10-22)
+
+
+### Features
+
+* add /healthz/ health-check endpoint ([#779](https://github.com/RSE-Sheffield/SORT/issues/779)) ([bfb1557](https://github.com/RSE-Sheffield/SORT/commit/bfb155797446af2ddde3e8b468709b7d295dee81))
+* configure logging and audit events ([#784](https://github.com/RSE-Sheffield/SORT/issues/784)) ([2eb4ce3](https://github.com/RSE-Sheffield/SORT/commit/2eb4ce3e5aa0825865196b7c28c65a9d60d6d430))
+* email admins on production errors ([#782](https://github.com/RSE-Sheffield/SORT/issues/782)) ([aa86180](https://github.com/RSE-Sheffield/SORT/commit/aa8618074a585c47ae7e28a488db2e25633455d0))
+
+
+### Bug Fixes
+
+* require pip 26.2.2 and certifi 2026.10.19 ([#785](https://github.com/RSE-Sheffield/SORT/issues/785)) ([#786](https://github.com/RSE-Sheffield/SORT/issues/786)) ([0a9a5fa](https://github.com/RSE-Sheffield/SORT/commit/0a9a5fa77097d83478d49e9ae65cec3d77a19b90))
+* serve /server-status over HTTP without redirect for collectd ([#781](https://github.com/RSE-Sheffield/SORT/issues/781)) ([01b1b02](https://github.com/RSE-Sheffield/SORT/commit/01b1b02b235216fb26dc595f0e4876f5b58e572c))
+
 ## [0.29.0](https://github.com/RSE-Sheffield/SORT/compare/v0.28.0...v0.29.0) (2026-10-20)
 
 
