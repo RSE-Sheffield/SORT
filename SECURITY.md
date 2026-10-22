@@ -80,6 +80,8 @@ We are committed to working with security researchers and will not take legal ac
 ### Code Security
 
 - **CodeQL Analysis**: Weekly automated security scanning
+- **Bandit**: Static analysis of Python code on every pull request and weekly
+- **pip-audit**: Scans Python dependencies for known vulnerabilities on every pull request and weekly
 - **Dependency Updates**: Regular patching of Python and JavaScript dependencies
 - **Linting**: Automated code quality checks on all pull requests
 - **Code Review**: All changes require review before merging to main branch

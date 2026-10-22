@@ -1,0 +1,71 @@
+{% extends "base_manager.html" %}
+{% block title %}My organisations{% endblock %}
+{% block content %}
+    <div class="container mx-auto px-4 py-8 mt-4">
+        <h1><i class="bx bxs-buildings"></i> My organisations</h1>
+        <p>
+            These are the organisations you belong to and your role in each. Your <strong>active</strong>
+            organisation is the one shown on the Organisation pages and used when you invite members or create
+            projects.
+        </p>
+        {% if memberships %}
+            <table class="table align-middle" id="my-organisations">
+                <caption class="visually-hidden">Organisations you are a member of, with your role in each.</caption>
+                <thead>
+                <tr>
+                    <th scope="col">Organisation</th>
+                    <th scope="col">Your role</th>
+                    <th scope="col">Joined</th>
+                    <th scope="col"><span class="visually-hidden">Actions</span></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for membership in memberships %}
+                    <tr>
+                        <th scope="row">
+                            {{ membership.organisation.name }}
+                            {% if membership.organisation_id == active_organisation.id %}
+                                <span class="badge bg-success ms-1">Active</span>
+                            {% endif %}
+                        </th>
+                        <td>{{ membership.get_role_display }}</td>
+                        <td>
+                            <time datetime="{{ membership.joined_at.isoformat }}">{{ membership.joined_at|date }}</time>
+                        </td>
+                        <td class="text-end">
+                            {% if membership.organisation_id != active_organisation.id %}
+                                <form method="post" action="{% url 'organisation_switch' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="organisation_id" value="{{ membership.organisation_id }}">
+                                    <input type="hidden" name="next" value="{% url 'myorganisation' %}">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                        <i class="bx bx-transfer"></i> Switch to<span class="visually-hidden"> {{ membership.organisation.name }}</span>
+                                    </button>
+                                </form>
+                            {% endif %}
+                            <a href="{% url 'organisation_leave' membership.organisation_id %}"
+                               class="btn btn-sm btn-outline-danger">
+                                <i class="bx bx-log-out"></i> Leave<span class="visually-hidden"> {{ membership.organisation.name }}</span>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info">
+                You are not a member of any organisation yet.
+                <a href="{% url 'organisation_get_started' %}" class="alert-link">Get started</a>
+                by joining or creating one.
+            </div>
+        {% endif %}
+        <p>
+            <a href="{% url 'organisation_create' %}" class="btn btn-primary">
+                <i class="bx bxs-plus-circle"></i> Create organisation
+            </a>
+            <a href="{% url 'organisation_browse' %}" class="btn btn-light border">
+                <i class="bx bx-search"></i> Find an organisation to join
+            </a>
+        </p>
+    </div>
+{% endblock %}

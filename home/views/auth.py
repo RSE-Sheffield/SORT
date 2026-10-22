@@ -44,9 +44,7 @@ class SignupView(CreateView):
         """
         if self._invitation is None:
             try:
-                self._invitation = invitations.models.Invitation.objects.get(
-                    key=self.kwargs["key"]
-                )
+                self._invitation = invitations.models.Invitation.objects.get(key=self.kwargs["key"])
             # This signup must have an invitation
             except invitations.models.Invitation.DoesNotExist:
                 raise PermissionDenied("You must be invited to sign up.")
@@ -55,11 +53,8 @@ class SignupView(CreateView):
     def get_context_data(self, **context):
         context = super().get_context_data(**context)
 
-        # The invited user will be invited to the same organisation
-        # as the manager who invited them.
-        context["organisation"] = organisation_service.get_user_organisation(
-            self.invitation.inviter
-        )
+        # The organisation the invitation was sent for
+        context["organisation"] = organisation_service.get_invitation_organisation(self.invitation)
         context["email"] = self.invitation.email
 
         return context
@@ -141,9 +136,7 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(
-            self.request, "There was an error updating your profile. Please try again."
-        )
+        messages.error(self.request, "There was an error updating your profile. Please try again.")
         return super().form_invalid(form)
 
 
@@ -155,6 +148,13 @@ class AccountDeletionView(LoginRequiredMixin, TemplateResponseMixin, View):
     """
 
     template_name = "home/delete_account_confirm.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        # Mirrors the console's "Delete user" guard: staff accounts are
+        # removed by another staff member, never self-service.
+        if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request):
         return self.render_to_response({})

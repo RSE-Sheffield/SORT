@@ -101,6 +101,45 @@ You can generate a secret key using the Python [secrets library](https://docs.py
 python -c "import secrets; print(secrets.token_urlsafe(37))"
 ```
 
+## Email settings
+
+SORT sends email (account verification, password resets, survey invitations and join-request notifications) over SMTP using a Google account. Google no longer accepts an account's normal password for SMTP sign-in, and Django's SMTP backend doesn't support OAuth2, so we authenticate with a [Google App Password](https://support.google.com/accounts/answer/185833): a 16-character password that only grants access to this one app and can be revoked on its own.
+
+Add the following to the `.env` file:
+
+```ini
+# Email settings
+DJANGO_EMAIL_HOST=smtp.gmail.com
+DJANGO_EMAIL_PORT=465
+DJANGO_EMAIL_USE_SSL=True
+DJANGO_EMAIL_HOST_USER=sending-account@example.com
+DJANGO_EMAIL_HOST_PASSWORD=********
+DJANGO_DEFAULT_FROM_EMAIL=sending-account@example.com
+```
+
+`DJANGO_EMAIL_HOST_PASSWORD` is the App Password, **not** the Google account password. To create one:
+
+1. Sign in to the sending Google account. 2-Step Verification must be turned on.
+2. Go to [App passwords](https://myaccount.google.com/apppasswords), create one named e.g. "SORT", and copy the generated password (without spaces) into `.env`. Store it in the password manager.
+3. Restart the service: `sudo systemctl restart gunicorn.service`
+
+The App Password stops working if the Google account's password is changed, 2-Step Verification is turned off, or the password is revoked. If emails stop sending, check the logs for an SMTP authentication error, then generate a new App Password and update `.env`.
+
+### Error notification emails
+
+Unhandled errors (HTTP 500) are emailed to the addresses in `DJANGO_ADMINS` (comma-separated). Leave it unset to disable.
+
+```ini
+DJANGO_ADMINS=dev1@example.com,dev2@example.com
+DJANGO_SERVER_EMAIL=sending-account@example.com  # optional, defaults to DJANGO_DEFAULT_FROM_EMAIL
+```
+
+Emails are rate limited to one per distinct error per 10 minutes per process (`SORT/logging.py`). Test the configuration with:
+
+```bash
+python manage.py sendtestemail --admins
+```
+
 ## Service settings
 
 If needed, you can add environment variables to the `systemd` service like so:
@@ -253,6 +292,16 @@ DROP TABLE IF EXISTS table_name CASCADE;
 ```
 
 # Security
+
+## pip and certifi (eMudhra emSign CA incident)
+
+pip older than 26.2.2 always loads its vendored certifi bundle, so updating OS certificates alone does not protect `pip install`. Upgrade pip and certifi in each venv, update the OS `ca-certificates` package, and rebuild any container images:
+
+```bash
+sudo apt-get update && sudo apt-get install --only-upgrade ca-certificates
+"$venv_dir/bin/python" -m pip install --upgrade "pip>=26.2.2" "certifi>=2026.10.19"
+"$venv_dir/bin/python" -m pip list | grep -iE "^(pip|certifi) "
+```
 
 ## SSL Certificates
 

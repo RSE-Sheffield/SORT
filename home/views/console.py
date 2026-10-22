@@ -4,11 +4,14 @@ Staff management console.
 This interface provides a dashboard overview of the app status. It's different from the /admin/ dashboard.
 """
 
+import logging
+import tempfile
+
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Count
-from django.http import JsonResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.views.generic import TemplateView, View
@@ -27,8 +30,20 @@ from home.models import (
     User,
 )
 from home.services import data_protection_service, user_service
+from home.services.analytics import (
+    CSV_REPORTS,
+    DEFAULT_ACTIVE_DAYS,
+    MAX_ACTIVE_DAYS,
+    UsageAnalytics,
+)
 from home.services.organisation import remove_membership_and_record_event
+from home.services.research_export import ResearchExport
+from home.views.sorting import SortableMixin
 from survey.models import Survey, SurveyResponse
+
+logger = logging.getLogger(__name__)
+
+XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 class ConsoleView(StaffRequiredMixin, TemplateView):
@@ -56,17 +71,103 @@ class ConsoleView(StaffRequiredMixin, TemplateView):
         return context
 
 
-class ConsoleOrganisationListView(StaffRequiredMixin, TemplateView):
-    template_name = "console/organisations.html"
+def get_active_days(request) -> int:
+    """Parse the ?days= query parameter, falling back to the default when missing or invalid."""
+    try:
+        days = int(request.GET.get("days", DEFAULT_ACTIVE_DAYS))
+    except ValueError:
+        return DEFAULT_ACTIVE_DAYS
+    return min(max(days, 1), MAX_ACTIVE_DAYS)
+
+
+class ConsoleAnalyticsView(StaffRequiredMixin, TemplateView):
+    """
+    Usage analytics for impact reporting: headline figures, leaderboards and trends over time.
+    """
+
+    template_name = "console/analytics.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["organisations"] = Organisation.objects.annotate(
+        analytics = UsageAnalytics(active_days=get_active_days(self.request))
+        context["analytics"] = analytics.as_dict()
+        context["csv_reports"] = CSV_REPORTS
+        return context
+
+
+class ConsoleAnalyticsExportView(StaffRequiredMixin, View):
+    """
+    Download one of the usage analytics tables as CSV.
+    """
+
+    def get(self, request):
+        report = request.GET.get("report", "surveys")
+        if report not in CSV_REPORTS:
+            return HttpResponse(f"Unknown report '{report}'", status=400, content_type="text/plain")
+        analytics = UsageAnalytics(active_days=get_active_days(request))
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f"attachment; filename=sort_usage_{report}.csv"
+        analytics.write_csv(report, response)
+        return response
+
+
+class ConsoleResearchExportView(StaffRequiredMixin, TemplateResponseMixin, View):
+    """
+    Download all consented research data (shared surveys, participants who gave
+    research consent) across every organisation as one Excel workbook.
+    """
+
+    template_name = "console/research_export.html"
+
+    def get(self, request):
+        return self.render_to_response({})
+
+    def post(self, request):
+        # Build on disk and stream it out; the anonymous temp file is deleted when
+        # FileResponse closes it after sending
+        file = tempfile.TemporaryFile()
+        try:
+            row_count = ResearchExport().write_xlsx(file)
+        except BaseException:
+            file.close()
+            raise
+        file.seek(0)
+        logger.info(
+            "Research data export downloaded by user %s (%d responses)",
+            request.user.pk,
+            row_count,
+        )
+        response = FileResponse(
+            file,
+            as_attachment=True,
+            filename=f"sort_research_data_{timezone.localdate().isoformat()}.xlsx",
+            content_type=XLSX_CONTENT_TYPE,
+        )
+        response["Cache-Control"] = "no-store"
+        return response
+
+
+class ConsoleOrganisationListView(StaffRequiredMixin, SortableMixin, TemplateView):
+    template_name = "console/organisations.html"
+    sort_fields = {
+        "name": "name",
+        "members": "members_count",
+        "projects": "project_count",
+        "surveys": "survey_count",
+        "responses": "response_count",
+        "created": "created_at",
+    }
+    default_sort = "name"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        organisations = Organisation.objects.annotate(
             members_count=Count("organisationmembership", distinct=True),
             project_count=Count("projects", distinct=True),
             survey_count=Count("projects__survey", distinct=True),
             response_count=Count("projects__survey__survey_response", distinct=True),
-        ).order_by("name")
+        )
+        context["organisations"] = self.apply_sort(organisations, context)
         return context
 
 
@@ -88,19 +189,27 @@ class ConsoleOrganisationDetailView(StaffRequiredMixin, TemplateView):
         # that service's get_requests() requires manage_members permission on
         # the organisation, which staff viewing the console may not hold —
         # StaffRequiredMixin above is the only gate this page needs.
-        context["join_requests"] = OrganisationJoinRequest.objects.filter(
-            organisation=org
-        ).select_related("user", "decided_by")
+        context["join_requests"] = OrganisationJoinRequest.objects.filter(organisation=org).select_related(
+            "user", "decided_by"
+        )
         return context
 
 
-class ConsoleUserListView(StaffRequiredMixin, TemplateView):
+class ConsoleUserListView(StaffRequiredMixin, SortableMixin, TemplateView):
     template_name = "console/users.html"
+    sort_fields = {
+        "name": ("last_name", "first_name"),
+        "email": "email",
+        "status": "is_active",
+        "organisations": "organisation_count",
+        "joined": "date_joined",
+    }
+    default_sort = "name"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         status = self.request.GET.get("status", "active")
-        qs = User.objects.order_by("last_name", "first_name")
+        qs = User.objects.annotate(organisation_count=Count("organisationmembership"))
         deleted_filter = {"email__endswith": f"@{DELETED_ACCOUNT_EMAIL_DOMAIN}"}
         if status == "deleted":
             qs = qs.filter(**deleted_filter)
@@ -111,7 +220,7 @@ class ConsoleUserListView(StaffRequiredMixin, TemplateView):
         else:
             status = "active"
             qs = qs.exclude(**deleted_filter)
-        context["users"] = qs
+        context["users"] = self.apply_sort(qs, context)
         context["status_filter"] = status
         return context
 
@@ -139,19 +248,23 @@ class ConsoleUserDetailView(StaffRequiredMixin, TemplateView):
         return context
 
 
-class ConsoleProjectListView(StaffRequiredMixin, TemplateView):
+class ConsoleProjectListView(StaffRequiredMixin, SortableMixin, TemplateView):
     template_name = "console/projects.html"
+    sort_fields = {
+        "name": "name",
+        "organisation": ("organisation__name", "name"),
+        "surveys": "survey_count",
+        "responses": "response_count",
+        "created": "created_at",
+    }
+    default_sort = "organisation"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         org_id = self.request.GET.get("organisation")
-        projects = (
-            Project.objects.select_related("organisation")
-            .annotate(
-                survey_count=Count("survey", distinct=True),
-                response_count=Count("survey__survey_response", distinct=True),
-            )
-            .order_by("organisation__name", "name")
+        projects = Project.objects.select_related("organisation").annotate(
+            survey_count=Count("survey", distinct=True),
+            response_count=Count("survey__survey_response", distinct=True),
         )
         if org_id:
             projects = projects.filter(organisation_id=org_id)
@@ -164,7 +277,7 @@ class ConsoleProjectListView(StaffRequiredMixin, TemplateView):
                 )
             except Organisation.DoesNotExist:
                 pass
-        context["projects"] = projects
+        context["projects"] = self.apply_sort(projects, context)
         context["organisations"] = Organisation.objects.order_by("name")
         return context
 
@@ -185,23 +298,32 @@ class ConsoleSurveyDetailView(StaffRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        survey = get_object_or_404(
-            Survey.objects.select_related("project__organisation"), pk=self.kwargs["pk"]
-        )
+        survey = get_object_or_404(Survey.objects.select_related("project__organisation"), pk=self.kwargs["pk"])
         context["survey"] = survey
         context["responses"] = survey.survey_response.order_by("-created_at")
         return context
 
 
-class ConsoleSurveyListView(StaffRequiredMixin, TemplateView):
+class ConsoleSurveyListView(StaffRequiredMixin, SortableMixin, TemplateView):
     template_name = "console/surveys.html"
+    sort_fields = {
+        "name": "name",
+        "project": "project__name",
+        "organisation": "project__organisation__name",
+        "responses": "response_count",
+        "created": "created_at",
+    }
+    default_sort = "created"
+    default_dir = "desc"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         org_id = self.request.GET.get("organisation")
         project_id = self.request.GET.get("project")
 
-        surveys = Survey.objects.select_related("project__organisation").order_by("-created_at")
+        surveys = Survey.objects.select_related("project__organisation").annotate(
+            response_count=Count("survey_response")
+        )
 
         if org_id:
             surveys = surveys.filter(project__organisation_id=org_id)
@@ -217,7 +339,7 @@ class ConsoleSurveyListView(StaffRequiredMixin, TemplateView):
             except Project.DoesNotExist:
                 pass
 
-        context["surveys"] = surveys
+        context["surveys"] = self.apply_sort(surveys, context)
         context["organisations"] = Organisation.objects.order_by("name")
         # Projects dropdown: scoped to selected org if present, otherwise all
         projects = Project.objects.select_related("organisation").order_by("organisation__name", "name")
@@ -246,8 +368,12 @@ class ConsoleDeleteUserView(StaffRequiredMixin, TemplateResponseMixin, View):
         target_user = self._get_user(pk)
         self._check_safe(request, target_user)
         display_name = str(target_user)
-        user_service.anonymise(target_user, requested_by=target_user, actioned_by=request.user)
-        ErasureRequest.objects.filter(user=target_user, status=ErasureRequest.Status.PENDING).update(
+        pending_requests = ErasureRequest.objects.filter(user=target_user, status=ErasureRequest.Status.PENDING)
+        # Only attribute the request to the subject when they actually asked
+        # for erasure; otherwise it's a staff-initiated action.
+        requested_by = target_user if pending_requests.exists() else None
+        user_service.anonymise(target_user, requested_by=requested_by, actioned_by=request.user)
+        pending_requests.update(
             status=ErasureRequest.Status.COMPLETED,
             completed_at=timezone.now(),
             completed_by=request.user,
@@ -283,9 +409,7 @@ class ConsoleExportUserDataView(StaffRequiredMixin, TemplateResponseMixin, View)
                 "actioned_at": event.actioned_at,
                 "requested_at": event.requested_at,
             }
-            for event in data_protection_service.list_events(
-                request.user, subject_user_id=target_user.pk
-            )
+            for event in data_protection_service.list_events(request.user, subject_user_id=target_user.pk)
         ]
 
         data_protection_service.record_event(
@@ -318,9 +442,7 @@ class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
         org_name = org.name
         try:
             remove_membership_and_record_event(
-                OrganisationMembership.objects.filter(
-                    pk=membership_pk, organisation=org
-                ),
+                OrganisationMembership.objects.filter(pk=membership_pk, organisation=org),
                 actioned_by=request.user,
                 notes=f"Removed from organisation '{org_name}'",
             )
@@ -429,6 +551,7 @@ class ConsoleEditUserView(StaffRequiredMixin, TemplateResponseMixin, View):
         data_protection_service.record_event(
             event_type=DataProtectionEvent.EventType.RECTIFICATION,
             subject_user=target_user,
+            subject_email=old_values["email"],
             actioned_by=request.user,
             notes="Corrected by staff via console: " + "; ".join(changes),
         )
@@ -436,8 +559,17 @@ class ConsoleEditUserView(StaffRequiredMixin, TemplateResponseMixin, View):
         return redirect("admin_user_detail", pk=pk)
 
 
-class ConsoleDataProtectionLogView(StaffRequiredMixin, TemplateView):
+class ConsoleDataProtectionLogView(StaffRequiredMixin, SortableMixin, TemplateView):
     template_name = "console/data_protection_log.html"
+    sort_fields = {
+        "when": "actioned_at",
+        "event": "event_type",
+        "subject": "subject_identifier",
+        "actioned_by": "actioned_by__email",
+        "requested_by": "requested_by__email",
+    }
+    default_sort = "when"
+    default_dir = "desc"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -454,6 +586,7 @@ class ConsoleDataProtectionLogView(StaffRequiredMixin, TemplateView):
             subject_user_id=subject_user_id,
         )
 
+        events = self.apply_sort(events, context)
         paginator = Paginator(events, 25)
         page_number = self.request.GET.get("page") or 1
         page = paginator.get_page(page_number)

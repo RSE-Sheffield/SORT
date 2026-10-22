@@ -1,0 +1,248 @@
+{% extends "base_console.html" %}
+{% load vite_integration %}
+{% block title %}| Analytics{% endblock %}
+
+{% block content %}
+    {% with summary=analytics.summary days=analytics.active_days %}
+    <div class="container py-4">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+            <div>
+                <h1 class="h3 mb-1">Analytics</h1>
+                <p class="text-muted mb-0">How SORT Online is being used. Generated {{ analytics.generated_at|slice:":16" }}.</p>
+            </div>
+            <form method="get" class="d-flex align-items-end gap-2">
+                <div>
+                    <label for="days" class="form-label small mb-1">Activity window (days)</label>
+                    <input type="number" class="form-control form-control-sm" id="days" name="days" min="1" max="3650"
+                           value="{{ days }}">
+                </div>
+                <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+            </form>
+        </div>
+
+        {# --- Headline figures --- #}
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card text-center h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="fs-2 fw-bold text-primary">{{ summary.users.active }}</div>
+                        <div class="text-muted small">Active users</div>
+                        <div class="small">{{ summary.users.logged_in_recently }} logged in within {{ days }} days</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card text-center h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="fs-2 fw-bold text-primary">{{ summary.organisations.active }}</div>
+                        <div class="text-muted small">Active organisations</div>
+                        <div class="small">of {{ summary.organisations.total }}, with a response within {{ days }} days</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card text-center h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="fs-2 fw-bold text-primary">{{ summary.organisations.with_multiple_surveys }}</div>
+                        <div class="text-muted small">Organisations with multiple surveys</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card text-center h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="fs-2 fw-bold text-primary">{{ summary.surveys.completed }}</div>
+                        <div class="text-muted small">Completed surveys</div>
+                        <div class="small">of {{ summary.surveys.total }}, with more than {{ analytics.completed_survey_min_responses }} responses</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card text-center h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="fs-2 fw-bold text-primary">{{ summary.responses.total }}</div>
+                        <div class="text-muted small">Responses</div>
+                        <div class="small">{{ summary.responses.recent }} within {{ days }} days</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card text-center h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="fs-2 fw-bold text-primary">{{ summary.responses.shared }}</div>
+                        <div class="text-muted small">Shared responses</div>
+                        <div class="small">from {{ summary.surveys.shared }} surveys that share data</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <h2 class="h6 mb-0">Responses per survey</h2>
+                    </div>
+                    <div class="card-body">
+                        {% with rps=analytics.responses_per_survey %}
+                            <p class="small text-muted">Across the {{ rps.surveys }} surveys with at least one response.</p>
+                            <dl class="row mb-0">
+                                <dt class="col-6">Median</dt><dd class="col-6">{{ rps.median }}</dd>
+                                <dt class="col-6">Mean</dt><dd class="col-6">{{ rps.mean }}</dd>
+                                <dt class="col-6">Minimum</dt><dd class="col-6">{{ rps.min }}</dd>
+                                <dt class="col-6">Maximum</dt><dd class="col-6">{{ rps.max }}</dd>
+                            </dl>
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <h2 class="h6 mb-0">Accounts and surveys</h2>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-6">Suspended accounts</dt><dd class="col-sm-6">{{ summary.users.suspended }}</dd>
+                            <dt class="col-sm-6">Deleted accounts</dt><dd class="col-sm-6">{{ summary.users.deleted }}</dd>
+                            <dt class="col-sm-6">Projects</dt><dd class="col-sm-6">{{ summary.projects }}</dd>
+                            <dt class="col-sm-6">Surveys collecting responses</dt><dd class="col-sm-6">{{ summary.surveys.collecting }}</dd>
+                            <dt class="col-sm-6">Surveys with any responses</dt><dd class="col-sm-6">{{ summary.surveys.with_responses }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# --- Trends over time --- #}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom">
+                <h2 class="h6 mb-0">Trends over time</h2>
+            </div>
+            <div class="card-body">
+                {% if analytics.monthly_trends %}
+                    <div class="sort-usage-trends" data-json-id="usageTrends"></div>
+                    <details class="mt-3">
+                        <summary>Show data table</summary>
+                        <div class="table-responsive">
+                            <table class="table table-sm small mt-2">
+                                <caption>New per month (running total in brackets)</caption>
+                                <thead>
+                                <tr>
+                                    <th scope="col">Month</th>
+                                    <th scope="col">Users</th>
+                                    <th scope="col">Organisations</th>
+                                    <th scope="col">Surveys</th>
+                                    <th scope="col">Responses</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in analytics.monthly_trends %}
+                                    <tr>
+                                        <th scope="row">{{ row.month }}</th>
+                                        <td>{{ row.users }} ({{ row.users_total }})</td>
+                                        <td>{{ row.organisations }} ({{ row.organisations_total }})</td>
+                                        <td>{{ row.surveys }} ({{ row.surveys_total }})</td>
+                                        <td>{{ row.responses }} ({{ row.responses_total }})</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                {% else %}
+                    <p class="text-muted mb-0">No activity yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# --- Biggest users and organisations --- #}
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <h2 class="h6 mb-0"><i class="bx bxs-buildings text-primary me-1"></i> Top organisations by responses</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                            <tr>
+                                <th scope="col">Organisation</th>
+                                <th scope="col" class="text-end">Responses</th>
+                                <th scope="col" class="text-end">Surveys</th>
+                                <th scope="col" class="text-end">Members</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for org in analytics.top_organisations %}
+                                <tr>
+                                    <td><a href="{% url 'admin_organisation_detail' org.id %}">{{ org.name }}</a></td>
+                                    <td class="text-end">{{ org.responses }}</td>
+                                    <td class="text-end">{{ org.surveys }}</td>
+                                    <td class="text-end">{{ org.members }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4" class="text-muted">No responses yet</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <h2 class="h6 mb-0"><i class="bx bxs-group text-primary me-1"></i> Top users by responses to their projects</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                            <tr>
+                                <th scope="col">User</th>
+                                <th scope="col" class="text-end">Responses</th>
+                                <th scope="col" class="text-end">Surveys</th>
+                                <th scope="col" class="text-end">Projects</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for user in analytics.top_users %}
+                                <tr>
+                                    <td><a href="{% url 'admin_user_detail' user.id %}">{{ user.name|default:user.email }}</a></td>
+                                    <td class="text-end">{{ user.responses }}</td>
+                                    <td class="text-end">{{ user.surveys }}</td>
+                                    <td class="text-end">{{ user.projects }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4" class="text-muted">No responses yet</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# --- Downloads --- #}
+        <h2 class="h6">Download data (CSV)</h2>
+        <div class="d-flex flex-wrap gap-2">
+            {% for report in csv_reports %}
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'admin_analytics_export' %}?report={{ report }}&days={{ days }}">
+                    <i class="bx bx-download"></i> {{ report|capfirst }}
+                </a>
+            {% endfor %}
+        </div>
+        <p class="small text-muted mt-2">
+            The same figures are available on the server via <code>python manage.py usage</code>.
+        </p>
+
+    </div>
+    {% endwith %}
+{% endblock %}
+
+{% block end_content %}
+    {{ analytics.monthly_trends|json_script:"usageTrends" }}
+    {% vite_client %}
+    {% vite_asset "src/main.ts" %}
+{% endblock %}

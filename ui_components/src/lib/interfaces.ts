@@ -130,3 +130,12 @@ export type SurveyStats = {
 
 
 
+export type UsageTrendSeries = "users" | "organisations" | "surveys" | "responses";
+
+/**
+ * One month of platform usage (see home/services/analytics.py monthly_trends).
+ * Each series has a count of new items that month plus a running total.
+ */
+export type UsageTrendRow = { month: string }
+    & Record<UsageTrendSeries, number>
+    & Record<`${UsageTrendSeries}_total`, number>;

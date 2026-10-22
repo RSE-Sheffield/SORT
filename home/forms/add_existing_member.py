@@ -33,17 +33,14 @@ class AddExistingMemberForm(forms.Form):
             user = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
             raise ValidationError(
-                f"No user with email address '{email}' exists. "
-                "Please invite them to create an account first."
+                f"No user with email address '{email}' exists. " "Please invite them to create an account first."
             )
 
         # Store the user for later use in save()
         self.user_to_add = user
 
         # Check if user is already a member (but don't fail - idempotent)
-        if OrganisationMembership.objects.filter(
-                user=user, organisation=self.organisation
-        ).exists():
+        if OrganisationMembership.objects.filter(user=user, organisation=self.organisation).exists():
             # Store that this is a duplicate (we'll handle it gracefully)
             self.is_duplicate = True
         else:

@@ -5,6 +5,10 @@ Generate JSON Schema from survey configuration for validating response answers.
 
 def field_schema(field_config: dict) -> dict:
     """Return a JSON Schema for one field's answer value."""
+    # Disabled fields are not shown to respondents, so any value (including null) is accepted
+    if field_config.get("disabled"):
+        return {}
+
     field_type = field_config["type"]
 
     if field_type == "likert":

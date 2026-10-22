@@ -8,9 +8,7 @@ from . import views
 urlpatterns = [
     path("", views.LandingView.as_view(), name="landing"),
     path("dashboard/", views.HomeView.as_view(), name="dashboard"),
-    path(
-        "home/", views.HomeView.as_view(), name="home"
-    ),  # Backwards compatibility alias
+    path("home/", views.HomeView.as_view(), name="home"),  # Backwards compatibility alias
     path("login/", views.LoginInterfaceView.as_view(), name="login"),
     path("logout/", views.LogoutInterfaceView.as_view(), name="logout"),
     re_path(
@@ -124,6 +122,16 @@ urlpatterns = [
         name="organisation_join_request",
     ),
     path(
+        "myorganisations/",
+        views.MyOrganisationsListView.as_view(),
+        name="my_organisations",
+    ),
+    path(
+        "myorganisations/<int:pk>/leave/",
+        views.LeaveOrganisationView.as_view(),
+        name="organisation_leave",
+    ),
+    path(
         "myjoinrequests/",
         views.MyJoinRequestListView.as_view(),
         name="join_requests_mine",
@@ -178,6 +186,17 @@ urlpatterns = [
     ),
     # Management console (staff only)
     path("console/", views.ConsoleView.as_view(), name="admin_dashboard"),
+    path("console/analytics/", views.ConsoleAnalyticsView.as_view(), name="admin_analytics"),
+    path(
+        "console/analytics/export/",
+        views.ConsoleAnalyticsExportView.as_view(),
+        name="admin_analytics_export",
+    ),
+    path(
+        "console/research-export/",
+        views.ConsoleResearchExportView.as_view(),
+        name="admin_research_export",
+    ),
     path(
         "console/organisations/",
         views.ConsoleOrganisationListView.as_view(),
@@ -226,9 +245,7 @@ urlpatterns = [
         views.ConsoleEditUserView.as_view(),
         name="admin_edit_user",
     ),
-    path(
-        "console/surveys/", views.ConsoleSurveyListView.as_view(), name="admin_surveys"
-    ),
+    path("console/surveys/", views.ConsoleSurveyListView.as_view(), name="admin_surveys"),
     path(
         "console/surveys/<int:pk>/",
         views.ConsoleSurveyDetailView.as_view(),

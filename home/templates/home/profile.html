@@ -38,6 +38,18 @@
         </div>
         <div class="card custom-card shadow-sm my-4">
             <div class="card-body">
+                <h2>Organisations</h2>
+                <p>See the organisations you belong to and your role in each, switch between them, or leave one.</p>
+                <p>
+                    <a href="{% url 'my_organisations' %}" class="btn btn-primary">
+                        <i class="bx bxs-buildings"></i>
+                        My organisations
+                    </a>
+                </p>
+            </div>
+        </div>
+        <div class="card custom-card shadow-sm my-4">
+            <div class="card-body">
                 <h2>Security</h2>
                 <p>
                     <a href="{% url 'password_change' %}" class="btn btn-primary">
@@ -50,11 +62,15 @@
         <div class="card custom-card border-danger shadow-sm my-4">
             <div class="card-body">
                 <h2>Danger zone</h2>
-                <p>Withdraw your consent and permanently delete your SORT account and personal data.</p>
-                <a href="{% url 'delete_account' %}" class="btn btn-outline-danger">
-                    <i class="bx bxs-trash"></i>
-                    Delete my account
-                </a>
+                {% if user.is_staff or user.is_superuser %}
+                    <p class="mb-0">Staff accounts can't be deleted here. Ask another staff member to delete your account from the console.</p>
+                {% else %}
+                    <p>Withdraw your consent and permanently delete your SORT account and personal data.</p>
+                    <a href="{% url 'delete_account' %}" class="btn btn-outline-danger">
+                        <i class="bx bxs-trash"></i>
+                        Delete my account
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>

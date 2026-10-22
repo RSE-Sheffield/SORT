@@ -6,10 +6,7 @@ from home.services.organisation import plan_organisation_merge
 
 
 class Command(BaseCommand):
-    help = (
-        "Merge one organisation into another: move its projects and "
-        "memberships, then delete it."
-    )
+    help = "Merge one organisation into another: move its projects and " "memberships, then delete it."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -17,9 +14,7 @@ class Command(BaseCommand):
             type=int,
             help="ID of the organisation to merge (will be deleted)",
         )
-        parser.add_argument(
-            "target_id", type=int, help="ID of the organisation to merge into"
-        )
+        parser.add_argument("target_id", type=int, help="ID of the organisation to merge into")
         parser.add_argument(
             "--actioned-by",
             required=True,
@@ -54,10 +49,7 @@ class Command(BaseCommand):
             raise CommandError(f"No user found with email '{options['actioned_by']}'")
 
         if not (actioned_by.is_staff or actioned_by.is_superuser):
-            raise CommandError(
-                f"User '{actioned_by.email}' is not staff and cannot perform an "
-                f"organisation merge"
-            )
+            raise CommandError(f"User '{actioned_by.email}' is not staff and cannot perform an " f"organisation merge")
 
         try:
             plan = plan_organisation_merge(source, target)

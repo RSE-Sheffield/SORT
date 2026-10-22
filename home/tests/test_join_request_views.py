@@ -57,9 +57,7 @@ class JoinRequestViewTestCase(SORT.test.test_case.ViewTestCase):
         self.assertContains(response, reverse("join_requests_mine"))
 
     def test_get_started_redirects_a_user_who_has_an_organisation(self):
-        OrganisationMembershipFactory(
-            user=self.user, organisation=self.organisation, role=ROLE_ADMIN
-        )
+        OrganisationMembershipFactory(user=self.user, organisation=self.organisation, role=ROLE_ADMIN)
 
         response = self.get("organisation_get_started", HTTPStatus.FOUND)
 
@@ -84,9 +82,7 @@ class JoinRequestViewTestCase(SORT.test.test_case.ViewTestCase):
         response = self.get("organisation_browse")
 
         self.assertContains(response, self.organisation.name)
-        self.assertContains(
-            response, reverse("organisation_join_request", args=[self.organisation.pk])
-        )
+        self.assertContains(response, reverse("organisation_join_request", args=[self.organisation.pk]))
 
     def test_browse_is_reachable_by_a_user_with_no_organisation(self):
         """OrganisationRequiredMixin would bounce this user to
@@ -100,22 +96,16 @@ class JoinRequestViewTestCase(SORT.test.test_case.ViewTestCase):
         other = OrganisationFactory(name="Leeds Community Healthcare")
         self.login()
 
-        response = self.client.get(
-            reverse("organisation_browse"), data={"q": "Sheffield"}
-        )
+        response = self.client.get(reverse("organisation_browse"), data={"q": "Sheffield"})
 
         self.assertContains(response, matching.name)
         self.assertNotContains(response, other.name)
 
     def test_browse_shows_membership_and_pending_states(self):
         member_organisation = OrganisationFactory()
-        OrganisationMembershipFactory(
-            user=self.user, organisation=member_organisation, role=ROLE_ADMIN
-        )
+        OrganisationMembershipFactory(user=self.user, organisation=member_organisation, role=ROLE_ADMIN)
         pending_organisation = OrganisationFactory()
-        OrganisationJoinRequestFactory(
-            user=self.user, organisation=pending_organisation
-        )
+        OrganisationJoinRequestFactory(user=self.user, organisation=pending_organisation)
 
         response = self.get("organisation_browse")
 
@@ -141,9 +131,7 @@ class JoinRequestViewTestCase(SORT.test.test_case.ViewTestCase):
     # --- submit ---------------------------------------------------------------
 
     def test_confirmation_page(self):
-        response = self.get(
-            "organisation_join_request", pk=self.organisation.pk
-        )
+        response = self.get("organisation_join_request", pk=self.organisation.pk)
 
         self.assertContains(response, self.organisation.name)
         self.assertContains(response, "Send request")
@@ -187,14 +175,10 @@ class JoinRequestViewTestCase(SORT.test.test_case.ViewTestCase):
         self.assertRedirects(response, reverse("join_requests_mine"))
         self.assertEqual(OrganisationJoinRequest.objects.count(), 1)
         self.assertEqual(mail.outbox, [])
-        self.assertTrue(
-            any("waiting for a decision" in text for text in self.message_texts(response))
-        )
+        self.assertTrue(any("waiting for a decision" in text for text in self.message_texts(response)))
 
     def test_submit_join_request_for_own_organisation(self):
-        OrganisationMembershipFactory(
-            user=self.user, organisation=self.organisation, role=ROLE_PROJECT_MANAGER
-        )
+        OrganisationMembershipFactory(user=self.user, organisation=self.organisation, role=ROLE_PROJECT_MANAGER)
 
         response = self.post(
             "organisation_join_request",
@@ -204,21 +188,15 @@ class JoinRequestViewTestCase(SORT.test.test_case.ViewTestCase):
 
         self.assertRedirects(response, reverse("organisation_browse"))
         self.assertFalse(OrganisationJoinRequest.objects.exists())
-        self.assertTrue(
-            any("already a member" in text for text in self.message_texts(response))
-        )
+        self.assertTrue(any("already a member" in text for text in self.message_texts(response)))
 
     def test_submit_join_request_for_unknown_organisation(self):
-        self.post(
-            "organisation_join_request", HTTPStatus.NOT_FOUND, pk=999999
-        )
+        self.post("organisation_join_request", HTTPStatus.NOT_FOUND, pk=999999)
 
     # --- my requests ----------------------------------------------------------
 
     def test_my_requests_lists_own_requests_only(self):
-        own = OrganisationJoinRequestFactory(
-            user=self.user, organisation=self.organisation
-        )
+        own = OrganisationJoinRequestFactory(user=self.user, organisation=self.organisation)
         someone_else = OrganisationJoinRequestFactory()
 
         response = self.get("join_requests_mine")
@@ -228,19 +206,13 @@ class JoinRequestViewTestCase(SORT.test.test_case.ViewTestCase):
         self.assertNotContains(response, someone_else.organisation.name)
 
     def test_withdraw_own_request(self):
-        join_request = OrganisationJoinRequestFactory(
-            user=self.user, organisation=self.organisation
-        )
+        join_request = OrganisationJoinRequestFactory(user=self.user, organisation=self.organisation)
 
-        response = self.post(
-            "join_request_withdraw", HTTPStatus.FOUND, pk=join_request.pk
-        )
+        response = self.post("join_request_withdraw", HTTPStatus.FOUND, pk=join_request.pk)
 
         self.assertRedirects(response, reverse("join_requests_mine"))
         join_request.refresh_from_db()
-        self.assertEqual(
-            join_request.status, OrganisationJoinRequest.Status.WITHDRAWN
-        )
+        self.assertEqual(join_request.status, OrganisationJoinRequest.Status.WITHDRAWN)
 
     def test_cannot_withdraw_someone_elses_request(self):
         join_request = OrganisationJoinRequestFactory(organisation=self.organisation)
@@ -251,9 +223,7 @@ class JoinRequestViewTestCase(SORT.test.test_case.ViewTestCase):
         self.assertTrue(join_request.is_pending)
 
     def test_withdraw_rejects_get(self):
-        join_request = OrganisationJoinRequestFactory(
-            user=self.user, organisation=self.organisation
-        )
+        join_request = OrganisationJoinRequestFactory(user=self.user, organisation=self.organisation)
 
         self.get(
             "join_request_withdraw",
@@ -369,14 +339,10 @@ class JoinRequestReviewViewTestCase(SORT.test.test_case.ViewTestCase):
         )
 
         self.assertRedirects(response, reverse("join_requests"))
-        membership = OrganisationMembership.objects.get(
-            user=self.requester, organisation=self.organisation
-        )
+        membership = OrganisationMembership.objects.get(user=self.requester, organisation=self.organisation)
         self.assertEqual(membership.role, ROLE_PROJECT_MANAGER)
         self.join_request.refresh_from_db()
-        self.assertEqual(
-            self.join_request.status, OrganisationJoinRequest.Status.APPROVED
-        )
+        self.assertEqual(self.join_request.status, OrganisationJoinRequest.Status.APPROVED)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [self.requester.email])
 
@@ -388,9 +354,7 @@ class JoinRequestReviewViewTestCase(SORT.test.test_case.ViewTestCase):
             data={"role": ROLE_ADMIN},
         )
 
-        membership = OrganisationMembership.objects.get(
-            user=self.requester, organisation=self.organisation
-        )
+        membership = OrganisationMembership.objects.get(user=self.requester, organisation=self.organisation)
         self.assertEqual(membership.role, ROLE_ADMIN)
 
     def test_approve_with_invalid_role(self):
@@ -403,9 +367,7 @@ class JoinRequestReviewViewTestCase(SORT.test.test_case.ViewTestCase):
 
         self.assertRedirects(response, reverse("join_requests"))
         self.assertFalse(
-            OrganisationMembership.objects.filter(
-                user=self.requester, organisation=self.organisation
-            ).exists()
+            OrganisationMembership.objects.filter(user=self.requester, organisation=self.organisation).exists()
         )
         self.join_request.refresh_from_db()
         self.assertTrue(self.join_request.is_pending)
@@ -422,9 +384,9 @@ class JoinRequestReviewViewTestCase(SORT.test.test_case.ViewTestCase):
 
         self.assertRedirects(response, reverse("join_requests"))
         self.assertIn(message_levels.INFO, self.message_levels(response))
-        self.assertFalse(OrganisationMembership.objects.filter(
-            user=self.requester, organisation=self.organisation
-        ).exists())
+        self.assertFalse(
+            OrganisationMembership.objects.filter(user=self.requester, organisation=self.organisation).exists()
+        )
 
     def test_approve_denied_to_project_manager(self):
         self.login_as(self.project_manager)
@@ -436,9 +398,7 @@ class JoinRequestReviewViewTestCase(SORT.test.test_case.ViewTestCase):
 
         self.assertRedirects(response, reverse("members"))
         self.assertFalse(
-            OrganisationMembership.objects.filter(
-                user=self.requester, organisation=self.organisation
-            ).exists()
+            OrganisationMembership.objects.filter(user=self.requester, organisation=self.organisation).exists()
         )
 
     def test_cannot_approve_another_organisations_request(self):
@@ -465,9 +425,7 @@ class JoinRequestReviewViewTestCase(SORT.test.test_case.ViewTestCase):
     def test_approve_rejects_get(self):
         self.login_as(self.admin_user)
 
-        response = self.client.get(
-            reverse("join_request_approve", args=[self.join_request.pk])
-        )
+        response = self.client.get(reverse("join_request_approve", args=[self.join_request.pk]))
 
         self.assertEqual(response.status_code, HTTPStatus.METHOD_NOT_ALLOWED)
 
@@ -483,16 +441,10 @@ class JoinRequestReviewViewTestCase(SORT.test.test_case.ViewTestCase):
 
         self.assertRedirects(response, reverse("join_requests"))
         self.join_request.refresh_from_db()
-        self.assertEqual(
-            self.join_request.status, OrganisationJoinRequest.Status.REJECTED
-        )
-        self.assertEqual(
-            self.join_request.decision_note, "We can only add trust employees"
-        )
+        self.assertEqual(self.join_request.status, OrganisationJoinRequest.Status.REJECTED)
+        self.assertEqual(self.join_request.decision_note, "We can only add trust employees")
         self.assertFalse(
-            OrganisationMembership.objects.filter(
-                user=self.requester, organisation=self.organisation
-            ).exists()
+            OrganisationMembership.objects.filter(user=self.requester, organisation=self.organisation).exists()
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [self.requester.email])
@@ -500,9 +452,7 @@ class JoinRequestReviewViewTestCase(SORT.test.test_case.ViewTestCase):
     def test_reject_denied_to_project_manager(self):
         self.login_as(self.project_manager)
 
-        response = self.client.post(
-            reverse("join_request_reject", args=[self.join_request.pk])
-        )
+        response = self.client.post(reverse("join_request_reject", args=[self.join_request.pk]))
 
         self.assertRedirects(response, reverse("members"))
         self.join_request.refresh_from_db()
@@ -511,9 +461,7 @@ class JoinRequestReviewViewTestCase(SORT.test.test_case.ViewTestCase):
     def test_reject_rejects_get(self):
         self.login_as(self.admin_user)
 
-        response = self.client.get(
-            reverse("join_request_reject", args=[self.join_request.pk])
-        )
+        response = self.client.get(reverse("join_request_reject", args=[self.join_request.pk]))
 
         self.assertEqual(response.status_code, HTTPStatus.METHOD_NOT_ALLOWED)
 

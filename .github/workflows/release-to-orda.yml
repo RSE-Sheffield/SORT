@@ -18,11 +18,14 @@ jobs:
       - name: Download release archives
         run: |
           mkdir data
-          curl -sL "${{ github.event.release.zipball_url }}" -o "data/${ARCHIVE_NAME}.zip"
-          curl -sL "${{ github.event.release.tarball_url }}" -o "data/${ARCHIVE_NAME}.tar.gz"
+          curl -sL "${GITHUB_EVENT_RELEASE_ZIPBALL_URL}" -o "data/${ARCHIVE_NAME}.zip"
+          curl -sL "${GITHUB_EVENT_RELEASE_TARBALL_URL}" -o "data/${ARCHIVE_NAME}.tar.gz"
+        env:
+          GITHUB_EVENT_RELEASE_ZIPBALL_URL: ${{ github.event.release.zipball_url }}
+          GITHUB_EVENT_RELEASE_TARBALL_URL: ${{ github.event.release.tarball_url }}
 
       - name: Upload to ORDA via Figshare API
-        uses: figshare/github-upload-action@v1.1
+        uses: figshare/github-upload-action@b74304ee494c6cbc76136219193038844fe400c2 # v1.1-rc
         with:
           FIGSHARE_TOKEN: ${{ secrets.FIGSHARE_TOKEN }}
           FIGSHARE_ENDPOINT: 'https://api.figshare.com/v2'
@@ -30,4 +33,6 @@ jobs:
           DATA_DIR: data
 
       - name: Link to ORDA record
-        run: echo "📦 [View this release on ORDA](https://doi.org/10.15131/shef.data.${{ vars.FIGSHARE_ARTICLE_ID }})" >> "$GITHUB_STEP_SUMMARY"
+        run: echo "📦 [View this release on ORDA](https://doi.org/10.15131/shef.data.${VARS_FIGSHARE_ARTICLE_ID})" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          VARS_FIGSHARE_ARTICLE_ID: ${{ vars.FIGSHARE_ARTICLE_ID }}

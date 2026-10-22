@@ -1,7 +1,8 @@
 from pathlib import Path
-import django.core.checks
+
 import django.conf
 import django.contrib.staticfiles.finders
+import django.core.checks
 
 settings = django.conf.settings
 
@@ -18,7 +19,7 @@ def check_manifest(*args, **kwargs) -> list[django.core.checks.Error]:
     errors = list()
 
     # Check the settings is specified
-    if not getattr(settings, 'VITE_MANIFEST_FILE_PATH', None):
+    if not getattr(settings, "VITE_MANIFEST_FILE_PATH", None):
         errors.append(
             django.core.checks.Error(
                 "Setting not defined VITE_MANIFEST_FILE_PATH",

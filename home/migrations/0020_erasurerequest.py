@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("home", "0015_add_rectification_event_type"),
+        ("home", "0019_organisationinvitation"),
     ]
 
     operations = [

@@ -19,6 +19,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "SORT.settings")
 django.setup()
 
 from django.db import transaction  # noqa: E402
+
 from survey.models import Survey  # noqa: E402
 
 LIKERT_VALUES = {"1", "2", "3", "4", "5"}
@@ -39,8 +40,7 @@ def shift_answers(answers):
                         shifted += 1
                     elif v == "0":
                         raise ValueError(
-                            f"unexpected '{v}' value in list-typed field - "
-                            "survey may have been converted previously"
+                            f"unexpected '{v}' value in list-typed field - " "survey may have been converted previously"
                         )
                     else:
                         new_field.append(v)
@@ -101,10 +101,7 @@ def main():
                 f"(shifted {total_shifted} values); re-run with --commit to persist."
             )
         else:
-            print(
-                f"committed: modified {modified}/{len(responses)} responses "
-                f"(shifted {total_shifted} values)."
-            )
+            print(f"committed: modified {modified}/{len(responses)} responses " f"(shifted {total_shifted} values).")
 
 
 if __name__ == "__main__":

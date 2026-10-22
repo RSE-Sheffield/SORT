@@ -124,19 +124,14 @@ class AddExistingMemberViewTestCase(SORT.test.test_case.ViewTestCase):
 
         # Check that user was added
         self.assertTrue(
-            OrganisationMembership.objects.filter(
-                user=self.existing_user, organisation=self.organisation
-            ).exists(),
+            OrganisationMembership.objects.filter(user=self.existing_user, organisation=self.organisation).exists(),
             "User should be added to organisation",
         )
 
         # Check success message
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(
-            any(
-                self.existing_user.email in str(msg) and "has been added" in str(msg)
-                for msg in messages
-            ),
+            any(self.existing_user.email in str(msg) and "has been added" in str(msg) for msg in messages),
             "Success message should be displayed",
         )
 
@@ -228,9 +223,7 @@ class AddExistingMemberViewTestCase(SORT.test.test_case.ViewTestCase):
         # Check that user was NOT added (permission denied should prevent it)
         # Note: The service layer should prevent this, but the view should handle it gracefully
         self.assertFalse(
-            OrganisationMembership.objects.filter(
-                user=self.existing_user, organisation=self.organisation
-            ).exists(),
+            OrganisationMembership.objects.filter(user=self.existing_user, organisation=self.organisation).exists(),
             "Non-admin should not be able to add users",
         )
 
