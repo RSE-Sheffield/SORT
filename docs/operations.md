@@ -76,6 +76,18 @@ To watch everything at once while you restart or deploy:
 sudo journalctl -u gunicorn.service -u nginx.service --follow
 ```
 
+## Log levels and the audit log
+
+All application logs go to stdout in the format `timestamp LEVEL logger message` and are collected by journald via gunicorn.
+
+- The root level is set by `DJANGO_LOG_LEVEL` (default `WARNING`).
+- `django.request` and `django.security` always log at `WARNING` and above (4xx/5xx responses, suspicious requests).
+- `sort.audit` always logs at `INFO`, regardless of `DJANGO_LOG_LEVEL`. It records survey created/deleted/renamed and project created/deleted, with the acting user's id and email and the object id only. Survey answers and other personal data are never logged.
+
+```bash
+sudo journalctl -u gunicorn.service --since today | grep sort.audit
+```
+
 For the full breakdown of log locations per service, filtering by time/priority, and reading logs to diagnose a specific error, see [troubleshooting.md](troubleshooting.md#finding-logs).
 
 # Running management commands
