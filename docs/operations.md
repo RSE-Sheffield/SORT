@@ -163,6 +163,23 @@ Check `git diff <previous-tag>..<new-tag> --stat -- '*/migrations/*' requirement
 
 If anything goes wrong, see [troubleshooting.md](troubleshooting.md).
 
+# Uptime monitoring
+
+SORT exposes a public health-check endpoint at `/healthz/`. It runs `SELECT 1` against the database and returns `{"status": "ok"}` with HTTP 200, or `{"status": "error"}` with HTTP 503 if the database is unreachable (details are written to the application log only). Only `GET` and `HEAD` are accepted, and responses are never cached.
+
+To monitor the site with UptimeRobot, Better Stack, or IT Services monitoring, create an HTTPS monitor for:
+
+```
+https://<host>/healthz/
+```
+
+* Expect status `200` (optionally also match the keyword `ok`).
+* The `Host` header must match one of `DJANGO_ALLOWED_HOSTS`; otherwise Django returns `400 Bad Request`. Monitoring the public hostname does this automatically; if probing by IP or an internal name, set the Host header explicitly or add the name to `DJANGO_ALLOWED_HOSTS`.
+
+```bash
+curl -fsS -H "Host: <host>" https://<host>/healthz/
+```
+
 # See also
 
 * [deployment.md](deployment.md) — initial server setup, systemd unit installation, TLS certificates, database creation
