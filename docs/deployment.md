@@ -125,6 +125,21 @@ DJANGO_DEFAULT_FROM_EMAIL=sending-account@example.com
 
 The App Password stops working if the Google account's password is changed, 2-Step Verification is turned off, or the password is revoked. If emails stop sending, check the logs for an SMTP authentication error, then generate a new App Password and update `.env`.
 
+### Error notification emails
+
+Unhandled errors (HTTP 500) are emailed to the addresses in `DJANGO_ADMINS` (comma-separated). Leave it unset to disable.
+
+```ini
+DJANGO_ADMINS=dev1@example.com,dev2@example.com
+DJANGO_SERVER_EMAIL=sending-account@example.com  # optional, defaults to DJANGO_DEFAULT_FROM_EMAIL
+```
+
+Emails are rate limited to one per distinct error per 10 minutes per process (`SORT/logging.py`). Test the configuration with:
+
+```bash
+python manage.py sendtestemail --admins
+```
+
 ## Service settings
 
 If needed, you can add environment variables to the `systemd` service like so:
