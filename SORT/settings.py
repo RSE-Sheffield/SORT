@@ -214,6 +214,15 @@ EMAIL_SUBJECT_PREFIX = os.getenv("DJANGO_EMAIL_SUBJECT_PREFIX", "[SORT] ")
 EMAIL_USE_LOCALTIME = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_LOCALTIME", True))
 DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "noreply@noreply.com")
 
+# Error notifications: unhandled exceptions (HTTP 500) are emailed to these
+# addresses (comma-separated). Empty means disabled.
+ADMINS = [
+    ("SORT Admins", addr.strip())
+    for addr in os.getenv("DJANGO_ADMINS", "").split(",")
+    if addr.strip()
+]
+SERVER_EMAIL = os.getenv("DJANGO_SERVER_EMAIL", DEFAULT_FROM_EMAIL)
+
 AUTHENTICATION_BACKENDS = (
     # Allows authenticate() to succeed for inactive (suspended) users so that
     # AuthenticationForm.confirm_login_allowed() can reject them with a specific
@@ -280,6 +289,16 @@ LOGGING = {
         "console": {
             "class": "logging.StreamHandler",
         },
+        # Emails ADMINS on 500 errors (no-op when ADMINS is empty)
+        "mail_admins": {
+            "class": "django.utils.log.AdminEmailHandler",
+            "level": "ERROR",
+            "include_html": False,
+            "filters": ["throttle_errors"],
+        },
+    },
+    "filters": {
+        "throttle_errors": {"()": "SORT.logging.ThrottleFilter"},
     },
     "root": {
         "handlers": ["console"],
@@ -296,7 +315,7 @@ LOGGING = {
         },
         # Suppress 4xx WARNING tracebacks in test output (e.g. expected 403s from permission tests)
         "django.request": {
-            "handlers": ["console"],
+            "handlers": ["console", "mail_admins"],
             "level": "ERROR",
             "propagate": False,
         },
