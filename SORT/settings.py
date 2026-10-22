@@ -276,9 +276,16 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     # Send log messages to the standard output, which will be sent to the Gunicorn service logs
+    "formatters": {
+        "standard": {
+            "format": "{asctime} {levelname} {name} {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "standard",
         },
     },
     "root": {
@@ -294,10 +301,22 @@ LOGGING = {
             "level": "WARNING",
             "propagate": False,
         },
-        # Suppress 4xx WARNING tracebacks in test output (e.g. expected 403s from permission tests)
+        # Request problems (4xx/5xx) and security events (e.g. SuspiciousOperation)
         "django.request": {
             "handlers": ["console"],
-            "level": "ERROR",
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "django.security": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        # Audit trail of important actions (see docs/operations.md). Always INFO,
+        # regardless of DJANGO_LOG_LEVEL. Log user and object ids only, never PII.
+        "sort.audit": {
+            "handlers": ["console"],
+            "level": "INFO",
             "propagate": False,
         },
         # Staff console audit records (e.g. research data downloads) must be kept
