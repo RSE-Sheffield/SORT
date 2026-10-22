@@ -51,3 +51,9 @@ class ProjectServiceTestCase(SORT.test.test_case.ServiceTestCase):
         project = Project.objects.first()
 
         self.assertEqual(project.name, name, "Unexpected project name")
+
+    def test_project_without_organisation_has_no_role(self):
+        project = Project(name="Orphan project")
+
+        self.assertIsNone(self.service.get_user_role(self.admin, project))
+        self.assertFalse(self.service.can_view(self.admin, project))

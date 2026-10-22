@@ -212,11 +212,7 @@ DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "noreply@noreply.com
 
 # Error notifications: unhandled exceptions (HTTP 500) are emailed to these
 # addresses (comma-separated). Empty means disabled.
-ADMINS = [
-    ("SORT Admins", addr.strip())
-    for addr in os.getenv("DJANGO_ADMINS", "").split(",")
-    if addr.strip()
-]
+ADMINS = [("SORT Admins", addr.strip()) for addr in os.getenv("DJANGO_ADMINS", "").split(",") if addr.strip()]
 SERVER_EMAIL = os.getenv("DJANGO_SERVER_EMAIL", DEFAULT_FROM_EMAIL)
 
 AUTHENTICATION_BACKENDS = (
