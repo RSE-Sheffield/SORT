@@ -48,8 +48,13 @@ class DataProtectionService:
         requested_by: Optional[User] = None,
         requested_at: Optional[datetime] = None,
         notes: str = "",
+        subject_email: Optional[str] = None,
     ) -> DataProtectionEvent:
-        subject_email = getattr(subject_user, "email", None)
+        # Callers that change the subject's email before logging (erasure,
+        # rectification) pass the original here so the pseudonym still
+        # correlates with the subject's earlier events.
+        if subject_email is None:
+            subject_email = getattr(subject_user, "email", None)
         subject_identifier = (
             pseudonymise_identifier(subject_email) if subject_email else f"deleted-user-{subject_user.pk}"
         )

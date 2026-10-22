@@ -3,7 +3,8 @@ import logging
 from http import HTTPStatus
 
 import SORT.test.test_case
-from home.models import DataProtectionEvent
+from home.models import DataProtectionEvent, ErasureRequest
+from home.services.data_protection import pseudonymise_identifier
 from SORT.test.model_factory import (
     OrganisationFactory,
     OrganisationMembershipFactory,
@@ -391,6 +392,27 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         self.assertFalse(target.has_usable_password())
         self.assertFalse(OrganisationMembership.objects.filter(user_id=original_pk).exists())
 
+        event = DataProtectionEvent.objects.get(event_type=DataProtectionEvent.EventType.ERASURE)
+        self.assertEqual(event.actioned_by, self.staff_user)
+        # Staff-initiated with no pending request: the subject didn't ask for it.
+        self.assertIsNone(event.requested_by)
+
+    def test_delete_user_completes_pending_erasure_request(self):
+        """Deleting a user with a pending self-service erasure request marks it completed."""
+        target = UserFactory()
+        erasure_request = ErasureRequest.objects.create(user=target)
+        self.login_staff()
+
+        self.client.post(f"/console/users/{target.pk}/delete/")
+
+        erasure_request.refresh_from_db()
+        self.assertEqual(erasure_request.status, ErasureRequest.Status.COMPLETED)
+        self.assertEqual(erasure_request.completed_by, self.staff_user)
+        self.assertIsNotNone(erasure_request.completed_at)
+
+        event = DataProtectionEvent.objects.get(event_type=DataProtectionEvent.EventType.ERASURE)
+        self.assertEqual(event.requested_by, target)
+
     def test_delete_user_cannot_delete_self(self):
         """Staff users cannot delete their own account."""
         self.login_staff()
@@ -568,6 +590,21 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         )
         self.assertEqual(event.actioned_by, self.staff_user)
         self.assertIn("First name", event.notes)
+
+    def test_edit_user_rectification_event_pseudonymises_old_email(self):
+        """The RECTIFICATION pseudonym is of the pre-change email, so it correlates with earlier events."""
+        target = UserFactory()
+        original_email = target.email
+        self.login_staff()
+        self.client.post(
+            f"/console/users/{target.pk}/edit/",
+            {"first_name": target.first_name, "last_name": target.last_name, "email": "corrected@sort.com"},
+        )
+
+        event = DataProtectionEvent.objects.get(
+            event_type=DataProtectionEvent.EventType.RECTIFICATION, subject_user_id=target.pk
+        )
+        self.assertEqual(event.subject_identifier, pseudonymise_identifier(original_email))
 
     def test_edit_user_post_no_event_recorded_when_unchanged(self):
         """Submitting unchanged values does not create a spurious audit event."""
