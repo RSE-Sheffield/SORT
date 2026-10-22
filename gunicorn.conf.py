@@ -5,7 +5,7 @@
 import multiprocessing
 import os
 
-bind = os.getenv('GUNICORN_BIND', "127.0.0.1:8000")
+bind = os.getenv("GUNICORN_BIND", "127.0.0.1:8000")
 workers = int(os.getenv("GUNICORN_WORKERS", multiprocessing.cpu_count() * 2 + 1))
 capture_output = bool(os.getenv("GUNICORN_CAPTURE_OUTPUT", True))
 loglevel = os.getenv("GUNICORN_LOGLEVEL", "INFO")

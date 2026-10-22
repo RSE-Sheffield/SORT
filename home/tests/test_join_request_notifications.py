@@ -46,29 +46,19 @@ class JoinRequestNotificationTestCase(SORT.test.test_case.SORTTestCase):
     # --- recipient resolution -------------------------------------------------
 
     def test_only_admins_are_notified(self):
-        second_admin = OrganisationMembershipFactory(
-            organisation=self.organisation, role=ROLE_ADMIN
-        ).user
-        project_manager = OrganisationMembershipFactory(
-            organisation=self.organisation, role=ROLE_PROJECT_MANAGER
-        ).user
+        second_admin = OrganisationMembershipFactory(organisation=self.organisation, role=ROLE_ADMIN).user
+        project_manager = OrganisationMembershipFactory(organisation=self.organisation, role=ROLE_PROJECT_MANAGER).user
 
         emails = get_organisation_admin_emails(self.organisation)
 
-        self.assertCountEqual(
-            emails, [self.admin_user.email, second_admin.email]
-        )
+        self.assertCountEqual(emails, [self.admin_user.email, second_admin.email])
         self.assertNotIn(project_manager.email, emails)
 
     def test_suspended_and_erased_admins_are_excluded(self):
-        suspended = OrganisationMembershipFactory(
-            organisation=self.organisation, role=ROLE_ADMIN
-        ).user
+        suspended = OrganisationMembershipFactory(organisation=self.organisation, role=ROLE_ADMIN).user
         suspended.is_active = False
         suspended.save()
-        erased = OrganisationMembershipFactory(
-            organisation=self.organisation, role=ROLE_ADMIN
-        ).user
+        erased = OrganisationMembershipFactory(organisation=self.organisation, role=ROLE_ADMIN).user
         erased.email = "anon-1@deleted.invalid"
         erased.save()
 
@@ -79,16 +69,12 @@ class JoinRequestNotificationTestCase(SORT.test.test_case.SORTTestCase):
     def test_admins_of_other_organisations_are_excluded(self):
         other_admin = OrganisationFactory().members.first()
 
-        self.assertNotIn(
-            other_admin.email, get_organisation_admin_emails(self.organisation)
-        )
+        self.assertNotIn(other_admin.email, get_organisation_admin_emails(self.organisation))
 
     # --- submission email -----------------------------------------------------
 
     def test_notify_admins_sends_one_email_per_admin(self):
-        second_admin = OrganisationMembershipFactory(
-            organisation=self.organisation, role=ROLE_ADMIN
-        ).user
+        second_admin = OrganisationMembershipFactory(organisation=self.organisation, role=ROLE_ADMIN).user
 
         sent = notify_admins_of_join_request(self.join_request, self.request)
 
@@ -117,9 +103,7 @@ class JoinRequestNotificationTestCase(SORT.test.test_case.SORTTestCase):
         self.assertIn(self.organisation.name, message.subject)
         self.assertIn(self.requester.email, message.body)
         self.assertIn("I am a research nurse in Cardiology", message.body)
-        self.assertIn(
-            "http://testserver/myorganisation/join-requests/", message.body
-        )
+        self.assertIn("http://testserver/myorganisation/join-requests/", message.body)
 
     def test_notify_admins_without_a_request_uses_a_relative_link(self):
         with self.assertLogs("home.notifications", level="WARNING"):
@@ -138,9 +122,7 @@ class JoinRequestNotificationTestCase(SORT.test.test_case.SORTTestCase):
         self.assertEqual(mail.outbox, [])
 
     def test_send_failure_is_logged_and_does_not_raise(self):
-        with mock.patch(
-            "home.notifications.send_mail", side_effect=smtplib.SMTPException("nope")
-        ):
+        with mock.patch("home.notifications.send_mail", side_effect=smtplib.SMTPException("nope")):
             with self.assertLogs("home.notifications", level="ERROR"):
                 sent = notify_admins_of_join_request(self.join_request, self.request)
 

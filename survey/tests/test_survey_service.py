@@ -44,25 +44,19 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         """
         Check that a user that isn't part of the organisation can't view a survey
         """
-        self.assertFalse(
-            self.service.can_view(user=self.anonymous_user, survey=self.survey)
-        )
+        self.assertFalse(self.service.can_view(user=self.anonymous_user, survey=self.survey))
 
     def test_can_edit(self):
         self.assertTrue(self.service.can_edit(user=self.admin, survey=self.survey))
 
     def test_can_edit_unauthorised(self):
-        self.assertFalse(
-            self.service.can_edit(user=self.anonymous_user, survey=self.survey)
-        )
+        self.assertFalse(self.service.can_edit(user=self.anonymous_user, survey=self.survey))
 
     def test_can_delete(self):
         self.assertTrue(self.service.can_delete(user=self.admin, survey=self.survey))
 
     def test_can_delete_unauthorised(self):
-        self.assertFalse(
-            self.service.can_delete(user=self.anonymous_user, survey=self.survey)
-        )
+        self.assertFalse(self.service.can_delete(user=self.anonymous_user, survey=self.survey))
 
     def test_can_create(self):
         self.assertTrue(self.service.can_create(self.admin, self.project))
@@ -113,9 +107,7 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertEqual(len(django.core.mail.outbox), 0)
 
     def test_initialise_survey(self):
-        self.service.initialise_survey(
-            user=self.admin, project=self.project, survey=self.survey
-        )
+        self.service.initialise_survey(user=self.admin, project=self.project, survey=self.survey)
 
         self.assertIsInstance(self.survey.survey_config, dict)
         self.assertIsInstance(self.survey.consent_config_default, dict)
@@ -136,9 +128,7 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertIsInstance(self.survey.survey_config, dict)
 
         # There should be some SORT survey sections
-        self.assertGreater(
-            len(self.survey.survey_config["sections"]), 0, "No survey sections"
-        )
+        self.assertGreater(len(self.survey.survey_config["sections"]), 0, "No survey sections")
 
     def test_duplicate_survey(self):
         # Properly initialise the survey
@@ -151,27 +141,14 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
             consent_config=self.survey.consent_config_default,
         )
 
-        duplicated_survey = self.service.duplicate_survey(
-            user=self.admin, survey=self.survey
-        )
+        duplicated_survey = self.service.duplicate_survey(user=self.admin, survey=self.survey)
         self.assertTrue(duplicated_survey.name.startswith("Copy of"))
         self.assertEqual(duplicated_survey.project, self.survey.project)
         self.assertDictEqual(duplicated_survey.survey_config, self.survey.survey_config)
-        self.assertDictEqual(
-            duplicated_survey.consent_config_default, self.survey.consent_config_default
-        )
-        self.assertDictEqual(
-            duplicated_survey.demography_config_default, self.survey.demography_config_default
-        )
-        self.assertTrue(
-            SurveyEvidenceSection.objects.filter(survey=duplicated_survey).count() > 1
-        )
-        self.assertTrue(
-            SurveyImprovementPlanSection.objects.filter(
-                survey=duplicated_survey
-            ).count()
-            > 1
-        )
+        self.assertDictEqual(duplicated_survey.consent_config_default, self.survey.consent_config_default)
+        self.assertDictEqual(duplicated_survey.demography_config_default, self.survey.demography_config_default)
+        self.assertTrue(SurveyEvidenceSection.objects.filter(survey=duplicated_survey).count() > 1)
+        self.assertTrue(SurveyImprovementPlanSection.objects.filter(survey=duplicated_survey).count() > 1)
 
     def test_get_survey_from_token(self):
         token = self.survey.current_invite_token()
@@ -180,9 +157,7 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertIsInstance(survey, Survey)
 
     def test_accept_response(self):
-        self.service.accept_response(
-            survey=self.survey, responseValues=json.dumps("[]")
-        )
+        self.service.accept_response(survey=self.survey, responseValues=json.dumps("[]"))
         self.assertTrue(self.survey.survey_response.exists())
 
     def test_create_invitation(self):
@@ -199,22 +174,16 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertFalse(used_values[-1])
 
     def test_export_csv(self):
-        self.service.initialise_survey(
-            user=self.admin, project=self.project, survey=self.survey
-        )
+        self.service.initialise_survey(user=self.admin, project=self.project, survey=self.survey)
         csv_data = self.service.export_csv(user=self.admin, survey=self.survey)
         self.assertIsInstance(csv_data, str)
 
     def test_mock_responses(self):
         self.skipTest("Not yet implemented")
-        self.service.generate_mock_responses(
-            user=self.admin, survey=self.survey, num_responses=3
-        )
+        self.service.generate_mock_responses(user=self.admin, survey=self.survey, num_responses=3)
 
     def test_create_survey_evidence_sections(self):
-        self.service.initialise_survey(
-            user=self.admin, project=self.project, survey=self.survey
-        )
+        self.service.initialise_survey(user=self.admin, project=self.project, survey=self.survey)
         self.service.update_consent_demography_config(
             user=self.admin,
             survey=self.survey,
@@ -226,9 +195,5 @@ class SurveyServiceTestCase(SORT.test.test_case.ServiceTestCase):
         # evidence_sections = SurveyEvidenceSection.objects.filter(survey=self.survey).order_by("section_id")
         # self.assertEqual(evidence_sections.count(), len(self.survey.survey_config["sections"]))
         self.assertGreater(self.survey.evidence_sections.count(), 0)
-        sort_sections = [
-            section
-            for section in self.survey.survey_config["sections"]
-            if section["type"] == "sort"
-        ]
+        sort_sections = [section for section in self.survey.survey_config["sections"] if section["type"] == "sort"]
         self.assertEqual(self.survey.evidence_sections.count(), len(sort_sections))

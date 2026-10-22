@@ -280,6 +280,7 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         response = self.client.post(f"/console/organisations/{org.pk}/members/{membership_pk}/remove/")
         self.assertRedirects(response, f"/console/organisations/{org.pk}/")
         from home.models import OrganisationMembership
+
         self.assertFalse(OrganisationMembership.objects.filter(pk=membership_pk).exists())
 
     # -- Suspend / unsuspend user --------------------------------------------
@@ -316,6 +317,7 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         # No cascade: the user and their memberships still exist.
         self.assertTrue(UserFactory._meta.model.objects.filter(pk=user.pk).exists())
         from home.models import OrganisationMembership
+
         self.assertTrue(OrganisationMembership.objects.filter(pk=membership.pk).exists())
 
     def test_console_suspend_user_post_unsuspends(self):
@@ -373,6 +375,7 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
     def test_delete_user_post_anonymises_user(self):
         """POST anonymises PII, deactivates the account, and removes memberships."""
         from home.models import OrganisationMembership
+
         target = UserFactory()
         org = OrganisationFactory()
         OrganisationMembershipFactory(user=target, organisation=org)
@@ -643,7 +646,7 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
             response["Content-Type"],
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        self.assertIn("attachment; filename=\"sort_research_data_", response["Content-Disposition"])
+        self.assertIn('attachment; filename="sort_research_data_', response["Content-Disposition"])
         self.assertEqual(response["Cache-Control"], "no-store")
         self.assertTrue(b"".join(response.streaming_content).startswith(b"PK"))
         response.close()

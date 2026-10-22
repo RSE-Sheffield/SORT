@@ -15,11 +15,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("survey_id", type=int, help="Survey primary key (integer)")
         parser.add_argument(
-            "-o",
-            "--output",
-            type=str,
-            default=None,
-            help="Output filename (default: survey_<id>_responses.xlsx)"
+            "-o", "--output", type=str, default=None, help="Output filename (default: survey_<id>_responses.xlsx)"
         )
 
     def handle(self, *args, **options):
@@ -28,9 +24,7 @@ class Command(BaseCommand):
         try:
             survey = Survey.objects.get(pk=survey_id)
         except Survey.DoesNotExist:
-            self.stderr.write(
-                self.style.ERROR(f"Survey with ID {survey_id} does not exist")
-            )
+            self.stderr.write(self.style.ERROR(f"Survey with ID {survey_id} does not exist"))
             return
 
         # Determine output filename

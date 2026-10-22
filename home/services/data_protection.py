@@ -26,9 +26,7 @@ def pseudonymise_identifier(value: str) -> str:
     satisfies both. Salted with ``SECRET_KEY`` so the mapping is consistent
     within a deployment; rotating the key simply re-namespaces future hashes.
     """
-    digest = hashlib.sha256(
-        f"sort-dp:{settings.SECRET_KEY}:{value.strip().lower()}".encode()
-    ).hexdigest()
+    digest = hashlib.sha256(f"sort-dp:{settings.SECRET_KEY}:{value.strip().lower()}".encode()).hexdigest()
     return f"sha256:{digest[:32]}"
 
 
@@ -53,9 +51,7 @@ class DataProtectionService:
     ) -> DataProtectionEvent:
         subject_email = getattr(subject_user, "email", None)
         subject_identifier = (
-            pseudonymise_identifier(subject_email)
-            if subject_email
-            else f"deleted-user-{subject_user.pk}"
+            pseudonymise_identifier(subject_email) if subject_email else f"deleted-user-{subject_user.pk}"
         )
         return DataProtectionEvent.objects.create(
             event_type=event_type,
@@ -77,13 +73,9 @@ class DataProtectionService:
         date_to: Optional[datetime] = None,
     ) -> QuerySet[DataProtectionEvent]:
         if not (user.is_authenticated and user.is_active and user.is_staff):
-            raise PermissionDenied(
-                "Only active staff may read the data protection log"
-            )
+            raise PermissionDenied("Only active staff may read the data protection log")
 
-        qs = DataProtectionEvent.objects.select_related(
-            "actioned_by", "requested_by"
-        )
+        qs = DataProtectionEvent.objects.select_related("actioned_by", "requested_by")
         if event_type:
             qs = qs.filter(event_type=event_type)
         if subject_user_id is not None:

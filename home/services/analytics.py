@@ -86,9 +86,7 @@ class UsageAnalytics:
             active=Count("pk", filter=Q(is_active=True)),
             suspended=Count("pk", filter=Q(is_active=False) & ~deleted),
             deleted=Count("pk", filter=deleted),
-            logged_in_recently=Count(
-                "pk", filter=Q(is_active=True, last_login__gte=self.active_since)
-            ),
+            logged_in_recently=Count("pk", filter=Q(is_active=True, last_login__gte=self.active_since)),
         )
         surveys_with_counts = Survey.objects.annotate(n=Count("survey_response"))
         responses = SurveyResponse.objects.aggregate(
@@ -105,9 +103,7 @@ class UsageAnalytics:
                 )
                 .distinct()
                 .count(),
-                "with_multiple_surveys": Organisation.objects.annotate(
-                    n=Count("projects__survey", distinct=True)
-                )
+                "with_multiple_surveys": Organisation.objects.annotate(n=Count("projects__survey", distinct=True))
                 .filter(n__gte=2)
                 .count(),
             },
@@ -124,11 +120,7 @@ class UsageAnalytics:
 
     def responses_per_survey(self) -> dict:
         """Distribution of response counts, over surveys that have at least one response."""
-        counts = sorted(
-            Survey.objects.annotate(n=Count("survey_response"))
-            .filter(n__gt=0)
-            .values_list("n", flat=True)
-        )
+        counts = sorted(Survey.objects.annotate(n=Count("survey_response")).filter(n__gt=0).values_list("n", flat=True))
         if not counts:
             return {"surveys": 0, "min": 0, "median": 0, "mean": 0, "max": 0}
         return {
@@ -202,12 +194,7 @@ class UsageAnalytics:
         }
         counts: dict[str, dict[str, int]] = {}
         for series, (manager, field) in sources.items():
-            rows = (
-                manager.annotate(month=TruncMonth(field))
-                .values("month")
-                .annotate(n=Count("pk"))
-                .order_by()
-            )
+            rows = manager.annotate(month=TruncMonth(field)).values("month").annotate(n=Count("pk")).order_by()
             counts[series] = {_month_key(row["month"]): row["n"] for row in rows}
 
         months = sorted({key for series in counts.values() for key in series})

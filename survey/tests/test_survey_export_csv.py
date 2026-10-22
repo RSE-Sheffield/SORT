@@ -119,9 +119,7 @@ class TestSurveyCsvExport(TestCase):
 
         # Check row count
         self.assertGreater(len(rows), 0, "CSV should contain at least one row")
-        self.assertEqual(
-            len(rows), self.survey.responses_count, "Unexpected number of CSV data rows"
-        )
+        self.assertEqual(len(rows), self.survey.responses_count, "Unexpected number of CSV data rows")
 
         # Check there's some responses
         for row in rows:

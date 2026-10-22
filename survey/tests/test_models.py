@@ -2,7 +2,7 @@ from django.db import IntegrityError
 from django.test import TestCase
 
 from SORT.test.model_factory import SurveyFactory
-from survey.models import SurveyEvidenceSection, Profession
+from survey.models import Profession, SurveyEvidenceSection
 
 
 class TestSurveyEvidenceSection(TestCase):

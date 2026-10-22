@@ -19,27 +19,20 @@ def organisation_context(request):
         return {}
 
     memberships = organisation_service.get_user_memberships(request.user)
-    active_organisation = organisation_service.get_active_organisation(
-        request, memberships=memberships
-    )
+    active_organisation = organisation_service.get_active_organisation(request, memberships=memberships)
     active_role = next(
         (
             membership.role
             for membership in memberships
-            if membership.organisation_id
-            == getattr(active_organisation, "id", None)
+            if membership.organisation_id == getattr(active_organisation, "id", None)
         ),
         None,
     )
 
     return {
         "active_organisation": active_organisation,
-        "switchable_organisations": organisation_service.get_user_organisations(
-            request.user, memberships=memberships
-        ),
+        "switchable_organisations": organisation_service.get_user_organisations(request.user, memberships=memberships),
         "pending_join_request_count": (
-            organisation_join_request_service.get_pending_count(
-                request.user, active_organisation, role=active_role
-            )
+            organisation_join_request_service.get_pending_count(request.user, active_organisation, role=active_role)
         ),
     }

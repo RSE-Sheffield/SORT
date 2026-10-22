@@ -10,3 +10,4 @@ exclude =
     env,
     node_modules
 max-line-length = 120
+extend-ignore = E203

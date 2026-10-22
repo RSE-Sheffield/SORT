@@ -133,12 +133,10 @@ db_config = {
 # Add PostgreSQL-specific options only when using PostgreSQL
 if "postgresql" in db_engine:
     db_config["OPTIONS"] = {
-        'client_encoding': os.getenv("DJANGO_DATABASE_CLIENT_ENCODING", "UTF8"),
+        "client_encoding": os.getenv("DJANGO_DATABASE_CLIENT_ENCODING", "UTF8"),
     }
 
-DATABASES = {
-    "default": db_config
-}
+DATABASES = {"default": db_config}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -198,9 +196,7 @@ PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 # Email settings
 # https://docs.djangoproject.com/en/5.1/topics/email/#email-backends
 
-EMAIL_BACKEND = os.getenv(
-    "DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
-)
+EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("DJANGO_EMAIL_PORT", 465))
 EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER")
@@ -216,11 +212,7 @@ DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "noreply@noreply.com
 
 # Error notifications: unhandled exceptions (HTTP 500) are emailed to these
 # addresses (comma-separated). Empty means disabled.
-ADMINS = [
-    ("SORT Admins", addr.strip())
-    for addr in os.getenv("DJANGO_ADMINS", "").split(",")
-    if addr.strip()
-]
+ADMINS = [("SORT Admins", addr.strip()) for addr in os.getenv("DJANGO_ADMINS", "").split(",") if addr.strip()]
 SERVER_EMAIL = os.getenv("DJANGO_SERVER_EMAIL", DEFAULT_FROM_EMAIL)
 
 AUTHENTICATION_BACKENDS = (
@@ -270,9 +262,7 @@ MEDIA_SUPPORTED_EXTENSIONS = [
 ]
 
 # Security settings
-SESSION_COOKIE_SECURE = cast_to_boolean(
-    os.getenv("DJANGO_SESSION_COOKIE_SECURE", not DEBUG)
-)
+SESSION_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_SESSION_COOKIE_SECURE", not DEBUG))
 CSRF_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_CSRF_COOKIE_SECURE", not DEBUG))
 
 # Custom view rendered when CSRF verification fails (issue #623).

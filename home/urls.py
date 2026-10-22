@@ -8,9 +8,7 @@ from . import views
 urlpatterns = [
     path("", views.LandingView.as_view(), name="landing"),
     path("dashboard/", views.HomeView.as_view(), name="dashboard"),
-    path(
-        "home/", views.HomeView.as_view(), name="home"
-    ),  # Backwards compatibility alias
+    path("home/", views.HomeView.as_view(), name="home"),  # Backwards compatibility alias
     path("login/", views.LoginInterfaceView.as_view(), name="login"),
     path("logout/", views.LogoutInterfaceView.as_view(), name="logout"),
     re_path(
@@ -236,9 +234,7 @@ urlpatterns = [
         views.ConsoleEditUserView.as_view(),
         name="admin_edit_user",
     ),
-    path(
-        "console/surveys/", views.ConsoleSurveyListView.as_view(), name="admin_surveys"
-    ),
+    path("console/surveys/", views.ConsoleSurveyListView.as_view(), name="admin_surveys"),
     path(
         "console/surveys/<int:pk>/",
         views.ConsoleSurveyDetailView.as_view(),

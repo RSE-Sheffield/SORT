@@ -35,9 +35,7 @@ class SignupViewTestCase(ViewTestCase):
         super().setUp()
         # An administrator who owns an organisation.
         self.admin = UserFactory(email="admin@sort.com")
-        self.organisation = organisation_service.create_organisation(
-            user=self.admin, name="Test Organisation"
-        )
+        self.organisation = organisation_service.create_organisation(user=self.admin, name="Test Organisation")
         # A project manager within the same organisation.
         self.project_manager = UserFactory(email="manager@sort.com")
         organisation_service.add_user_to_organisation(
@@ -71,9 +69,7 @@ class SignupViewTestCase(ViewTestCase):
             fetch_redirect_response=False,
         )
         new_user = User.objects.get(email="newbie@sort.com")
-        membership = OrganisationMembership.objects.get(
-            user=new_user, organisation=self.organisation
-        )
+        membership = OrganisationMembership.objects.get(user=new_user, organisation=self.organisation)
         self.assertEqual(membership.role, ROLE_PROJECT_MANAGER)
 
     def test_signup_with_non_admin_invitation_fails_gracefully(self):
@@ -81,9 +77,7 @@ class SignupViewTestCase(ViewTestCase):
         Regression test for #597: an invitation sent by a project manager must
         not cause a 500 error, and must not leave an orphaned user account.
         """
-        invitation = Invitation.create(
-            email="newbie@sort.com", inviter=self.project_manager
-        )
+        invitation = Invitation.create(email="newbie@sort.com", inviter=self.project_manager)
 
         response = self.signup(invitation)
 
@@ -143,13 +137,9 @@ class SignupViewTestCase(ViewTestCase):
 
     def test_member_delete_forbidden_for_project_manager(self):
         """A project manager is redirected away from the member-remove page."""
-        membership = OrganisationMembership.objects.get(
-            user=self.project_manager, organisation=self.organisation
-        )
+        membership = OrganisationMembership.objects.get(user=self.project_manager, organisation=self.organisation)
         self.client.login(username=self.project_manager.email, password=PASSWORD)
-        response = self.client.get(
-            django.urls.reverse("member_delete", kwargs={"pk": membership.pk})
-        )
+        response = self.client.get(django.urls.reverse("member_delete", kwargs={"pk": membership.pk}))
         self.assertRedirects(
             response,
             django.urls.reverse("members"),
@@ -163,9 +153,7 @@ class InviteMemberSendFailureTestCase(ViewTestCase):
     def setUp(self):
         super().setUp()
         self.admin = UserFactory(email="admin0@sort.com")
-        self.organisation = organisation_service.create_organisation(
-            user=self.admin, name="Test Org"
-        )
+        self.organisation = organisation_service.create_organisation(user=self.admin, name="Test Org")
         self.client.login(username=self.admin.email, password=PASSWORD)
         self.url = django.urls.reverse("member_invite")
 
@@ -184,9 +172,7 @@ class InviteMemberSendFailureTestCase(ViewTestCase):
         ):
             self._post_invite("newmember@sort.com")
 
-        self.assertFalse(
-            Invitation.objects.filter(email="newmember@sort.com").exists()
-        )
+        self.assertFalse(Invitation.objects.filter(email="newmember@sort.com").exists())
 
     def test_retry_after_failed_send_is_accepted(self):
         """Admin can re-submit the invite form after a prior send failure."""
