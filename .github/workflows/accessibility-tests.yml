@@ -66,13 +66,17 @@ jobs:
       - name: Start Django server
         run: |
           # --insecure serves static files with DEBUG off
-          python manage.py runserver 8000 --insecure --noreload &
+          python manage.py runserver 8000 --insecure --noreload > server.log 2>&1 &
+          echo "SERVER_PID=$!" >> "$GITHUB_ENV"
           curl --silent --show-error --retry 15 --retry-connrefused --retry-delay 2 --output /dev/null http://localhost:8000/
       - name: Run Pa11y
         run: npx --yes pa11y-ci@4.0.1 --config .pa11yci.json
       - name: Run Lighthouse
         if: ${{ !cancelled() }}
         run: npx --yes @lhci/cli@0.15.1 autorun
+      - name: Stop Django server
+        if: always()
+        run: kill "$SERVER_PID" || true
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
