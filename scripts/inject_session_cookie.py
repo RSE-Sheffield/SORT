@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Add a Django session cookie to the authenticated URLs in a Pa11y CI config.
+Add a Django session cookie header to the authenticated URLs in a Pa11y CI config.
 
 URLs are treated as authenticated if they have `"authenticated": true`.
 
@@ -14,11 +14,11 @@ from pathlib import Path
 
 def inject_cookie(config_path: Path, session_key: str, cookie_name: str) -> None:
     config = json.loads(config_path.read_text())
-    cookie = {"name": cookie_name, "value": session_key, "domain": "localhost"}
+    cookie = f"{cookie_name}={session_key}"
 
     for url_config in config.get("urls", []):
         if isinstance(url_config, dict) and url_config.pop("authenticated", False):
-            url_config.setdefault("page", {}).setdefault("setCookie", []).append(cookie)
+            url_config.setdefault("headers", {})["Cookie"] = cookie
 
     config_path.write_text(json.dumps(config, indent=2))
 

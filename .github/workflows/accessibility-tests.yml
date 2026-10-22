@@ -71,6 +71,7 @@ jobs:
       - name: Run Pa11y
         run: npx --yes pa11y-ci@4.0.1 --config .pa11yci.json
       - name: Run Lighthouse
+        if: ${{ !cancelled() }}
         run: npx --yes @lhci/cli@0.15.1 autorun
       - name: Upload results
         if: always()
