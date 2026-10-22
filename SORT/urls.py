@@ -19,8 +19,11 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
+from SORT.views import healthz
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("healthz/", healthz, name="healthz"),
     path("", include("home.urls")),
     path("", include("survey.urls"), name="survey"),
     path("accounts/", include("allauth.urls")),
