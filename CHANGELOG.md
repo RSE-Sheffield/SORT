@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.31.0](https://github.com/RSE-Sheffield/SORT/compare/v0.30.0...v0.31.0) (2026-10-22)
+
+
+### Features
+
+* improve multi-organisation visibility and control ([#690](https://github.com/RSE-Sheffield/SORT/issues/690)) ([#789](https://github.com/RSE-Sheffield/SORT/issues/789)) ([65ac2ea](https://github.com/RSE-Sheffield/SORT/commit/65ac2eab44bf0da841080d53e60dfe17db06a032))
+
+
+### Bug Fixes
+
+* add invitees to the organisation they were invited to ([#690](https://github.com/RSE-Sheffield/SORT/issues/690)) ([#791](https://github.com/RSE-Sheffield/SORT/issues/791)) ([6647f69](https://github.com/RSE-Sheffield/SORT/commit/6647f69f85019c9fed6644e441d58308b3138260))
+* bump follow-redirects to 1.16.1 ([#787](https://github.com/RSE-Sheffield/SORT/issues/787)) ([e9cd719](https://github.com/RSE-Sheffield/SORT/commit/e9cd7190b934add5f9563a413bdca646b85aae4f))
+
 ## [0.30.0](https://github.com/RSE-Sheffield/SORT/compare/v0.29.0...v0.30.0) (2026-10-22)
 
 
