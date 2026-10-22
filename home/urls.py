@@ -121,6 +121,16 @@ urlpatterns = [
         name="organisation_join_request",
     ),
     path(
+        "myorganisations/",
+        views.MyOrganisationsListView.as_view(),
+        name="my_organisations",
+    ),
+    path(
+        "myorganisations/<int:pk>/leave/",
+        views.LeaveOrganisationView.as_view(),
+        name="organisation_leave",
+    ),
+    path(
         "myjoinrequests/",
         views.MyJoinRequestListView.as_view(),
         name="join_requests_mine",

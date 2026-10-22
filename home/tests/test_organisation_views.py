@@ -219,11 +219,21 @@ class SetActiveOrganisationViewTestCase(ViewTestCase):
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         self.assertIn(django.urls.reverse("login"), response.url)
 
-    def test_switcher_not_shown_for_single_organisation_user(self):
+    def test_switcher_shown_for_single_organisation_user(self):
+        """Single-org users still get the menu, so they can reach My organisations (issue #690)."""
         OrganisationMembership.objects.filter(user=self.user, organisation=self.second_organisation).delete()
         self.login()
 
         response = self.client.get(django.urls.reverse("myorganisation"))
+
+        self.assertContains(response, "orgSwitcherDropdown")
+        self.assertContains(response, django.urls.reverse("my_organisations"))
+
+    def test_switcher_not_shown_without_organisation(self):
+        OrganisationMembership.objects.filter(user=self.user).delete()
+        self.login()
+
+        response = self.client.get(django.urls.reverse("profile"))
 
         self.assertNotContains(response, "orgSwitcherDropdown")
 

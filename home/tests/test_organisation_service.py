@@ -4,8 +4,9 @@ Test the organisation service
 
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.backends.db import SessionStore
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import RequestFactory
+from invitations.models import Invitation
 
 import SORT.test.test_case
 from home.constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER, ROLES
@@ -194,6 +195,57 @@ class OrganisationServiceTestCase(SORT.test.test_case.ServiceTestCase):
         # Attempt "hostile takeover" by non-authorised user
         with self.assertRaises(PermissionDenied):
             self.service.remove_user_from_organisation(self.user, self.organisation, removed_user=self.manager)
+
+    def test_remove_last_admin_blocked(self):
+        """An admin can't remove the only administrator while other members remain (issue #690)."""
+        OrganisationMembershipFactory(user=self.another_user, organisation=self.organisation, role=ROLE_PROJECT_MANAGER)
+
+        with self.assertRaises(ValidationError):
+            self.service.remove_user_from_organisation(self.manager, self.organisation, removed_user=self.manager)
+
+    def test_is_sole_admin(self):
+        self.assertTrue(self.service.is_sole_admin(self.manager, self.organisation))
+        OrganisationMembershipFactory(user=self.another_user, organisation=self.organisation, role=ROLE_ADMIN)
+        self.assertFalse(self.service.is_sole_admin(self.manager, self.organisation))
+        self.assertFalse(self.service.is_sole_admin(self.user, self.organisation))
+
+    def test_leave_organisation(self):
+        OrganisationMembershipFactory(user=self.another_user, organisation=self.organisation, role=ROLE_PROJECT_MANAGER)
+
+        self.service.leave_organisation(self.another_user, self.organisation)
+
+        self.assertFalse(
+            OrganisationMembership.objects.filter(user=self.another_user, organisation=self.organisation).exists()
+        )
+        event = DataProtectionEvent.objects.get(
+            event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED, subject_user_id=self.another_user.pk
+        )
+        self.assertEqual(event.actioned_by, self.another_user)
+
+    def test_leave_organisation_sole_admin_blocked(self):
+        OrganisationMembershipFactory(user=self.another_user, organisation=self.organisation, role=ROLE_PROJECT_MANAGER)
+
+        with self.assertRaises(ValidationError):
+            self.service.leave_organisation(self.manager, self.organisation)
+
+    def test_leave_organisation_last_member_allowed(self):
+        self.service.leave_organisation(self.manager, self.organisation)
+
+        self.assertFalse(self.organisation.members.exists())
+
+    def test_leave_organisation_non_member_denied(self):
+        with self.assertRaises(PermissionDenied):
+            self.service.leave_organisation(self.another_user, self.organisation)
+
+    def test_get_invitation_organisation(self):
+        other_organisation = self.service.create_organisation(user=self.manager, name="Second Org")
+        linked = Invitation.create(email="linked@sort.com", inviter=self.manager)
+        self.service.link_invitation_to_organisation(linked, other_organisation)
+        unlinked = Invitation.create(email="unlinked@sort.com", inviter=self.manager)
+
+        self.assertEqual(self.service.get_invitation_organisation(linked), other_organisation)
+        # Invitations sent before #690 fall back to the inviter's primary organisation
+        self.assertEqual(self.service.get_invitation_organisation(unlinked), self.organisation)
 
     def test_get_organisation_members(self):
         members = self.service.get_organisation_members(self.manager, self.organisation)

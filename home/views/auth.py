@@ -52,9 +52,8 @@ class SignupView(CreateView):
     def get_context_data(self, **context):
         context = super().get_context_data(**context)
 
-        # The invited user will be invited to the same organisation
-        # as the manager who invited them.
-        context["organisation"] = organisation_service.get_user_organisation(self.invitation.inviter)
+        # The organisation the invitation was sent for
+        context["organisation"] = organisation_service.get_invitation_organisation(self.invitation)
         context["email"] = self.invitation.email
 
         return context
