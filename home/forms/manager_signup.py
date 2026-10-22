@@ -47,7 +47,7 @@ class ManagerSignupForm(UserCreationForm):
         """
         The organisation that the new user was invited to join.
         """
-        organisation = organisation_service.get_user_organisation(user=self.inviter)
+        organisation = organisation_service.get_invitation_organisation(self.invitation)
         if organisation is None:
             raise forms.ValidationError("This user is not a manager of an organisation")
         return organisation

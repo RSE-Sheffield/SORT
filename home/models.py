@@ -137,6 +137,24 @@ class OrganisationMembership(models.Model):
     added_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="members_added", null=True)
 
 
+class OrganisationInvitation(models.Model):
+    """
+    Records which organisation a django-invitations Invitation was sent for.
+
+    The third-party Invitation model has no organisation field, so without this
+    link a new user would join whichever organisation their inviter happened to
+    belong to first, rather than the one the inviter was managing at the time.
+    """
+
+    invitation = models.OneToOneField(
+        "invitations.Invitation", on_delete=models.CASCADE, related_name="organisation_link"
+    )
+    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE, related_name="invitations")
+
+    def __str__(self):
+        return f"{self.invitation} ({self.organisation})"
+
+
 class OrganisationJoinRequest(models.Model):
     """
     A user's self-service request to join an existing organisation.

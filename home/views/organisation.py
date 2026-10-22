@@ -246,6 +246,7 @@ class MyOrganisationInviteView(
                     invite.inviter = request.user
                     invite.save()
                     try:
+                        organisation_service.link_invitation_to_organisation(invite, self.organisation)
                         invite.send_invitation(request)
                     except Exception:
                         invite.delete()

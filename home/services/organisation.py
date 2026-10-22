@@ -15,6 +15,7 @@ from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from ..models import (
     DataProtectionEvent,
     Organisation,
+    OrganisationInvitation,
     OrganisationMembership,
     Project,
     User,
@@ -294,6 +295,22 @@ class OrganisationService(BasePermissionService):
             actioned_by=user,
             notes=f"Removed from organisation '{organisation.name}'",
         )
+
+    def get_invitation_organisation(self, invitation) -> Optional[Organisation]:
+        """
+        The organisation a django-invitations Invitation was sent for.
+
+        Invitations sent before OrganisationInvitation existed have no link, so
+        fall back to the inviter's primary organisation as before.
+        """
+        try:
+            return invitation.organisation_link.organisation
+        except OrganisationInvitation.DoesNotExist:
+            return self.get_user_organisation(invitation.inviter)
+
+    def link_invitation_to_organisation(self, invitation, organisation: Organisation) -> OrganisationInvitation:
+        """Record that `invitation` was sent to join `organisation`."""
+        return OrganisationInvitation.objects.create(invitation=invitation, organisation=organisation)
 
     def get_organisation_projects(
         self, organisation: Organisation, user: User = None, with_metrics: bool = True
