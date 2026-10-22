@@ -187,3 +187,44 @@ class InviteMemberSendFailureTestCase(ViewTestCase):
 
         msgs = [str(m) for m in get_messages(response.wsgi_request)]
         self.assertTrue(any("has been invited" in m for m in msgs))
+
+
+class InviteTargetOrganisationTestCase(ViewTestCase):
+    """
+    Issue #690: an admin of several organisations invites someone from the
+    active organisation, and the new user must join that organisation rather
+    than whichever one the admin happened to join first.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.admin = UserFactory(email="multiadmin@sort.com")
+        self.first_organisation = organisation_service.create_organisation(user=self.admin, name="First Org")
+        self.second_organisation = organisation_service.create_organisation(user=self.admin, name="Second Org")
+        self.client.login(username=self.admin.email, password=PASSWORD)
+        self.client.post(
+            django.urls.reverse("organisation_switch"),
+            data={"organisation_id": self.second_organisation.pk},
+        )
+
+    def test_new_user_joins_active_organisation(self):
+        self.client.post(
+            django.urls.reverse("member_invite"),
+            data={"email": "newbie@sort.com", "invite_submit": "1"},
+        )
+        invitation = Invitation.objects.get(email="newbie@sort.com")
+        self.assertEqual(invitation.organisation_link.organisation, self.second_organisation)
+
+        self.client.logout()
+        self.client.post(
+            django.urls.reverse("signup", kwargs={"key": invitation.key}),
+            data={"key": invitation.key, "password1": SIGNUP_PASSWORD, "password2": SIGNUP_PASSWORD},
+        )
+
+        new_user = User.objects.get(email="newbie@sort.com")
+        self.assertTrue(
+            OrganisationMembership.objects.filter(user=new_user, organisation=self.second_organisation).exists()
+        )
+        self.assertFalse(
+            OrganisationMembership.objects.filter(user=new_user, organisation=self.first_organisation).exists()
+        )
