@@ -106,6 +106,16 @@ Please read the [testing documentation](docs/testing.md).
 
 CI runs [Bandit](https://bandit.readthedocs.io/) (Python code) and [pip-audit](https://pypi.org/project/pip-audit/) (Python dependencies). Run both locally with `make security`. Suppress a Bandit false positive inline with `# nosec Bxxx` and explain why in a comment on the line above.
 
+# Accessibility
+
+## Manual checks
+
+Use the [WAVE extension](https://wave.webaim.org/extension/) for your web browser to check the production website for errors. It doesn't work as well in development because of the Django debug toolbar.
+
+## Automatic checks
+
+The [accessibility workflow](.github/workflows/accessibility-tests.yml) runs [Pa11y CI](https://github.com/pa11y/pa11y-ci) (`.pa11yci.json`) and [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) (`lighthouserc.json`) against a running copy of the site, including some pages that need a login. It is currently advisory, so it reports problems without failing the pull request. Download the `accessibility-results` artifact from the workflow run for the full reports.
+
 # Documentation
 
 Developer documentation is available in the [docs/](docs/) directory. See [docs/README.md](docs/README.md) for a guide to navigating the documentation.
