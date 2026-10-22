@@ -52,8 +52,10 @@ from .join_request import (
 )
 from .organisation import (
     DataSharingAgreementView,
+    LeaveOrganisationView,
     MyOrganisationAcceptInviteView,
     MyOrganisationInviteView,
+    MyOrganisationsListView,
     MyOrganisationView,
     OrganisationCreateView,
     OrganisationEditView,
@@ -99,6 +101,8 @@ __all__ = [
     "MyOrganisationAcceptInviteView",
     "MyOrganisationInviteView",
     "MyOrganisationView",
+    "MyOrganisationsListView",
+    "LeaveOrganisationView",
     "OrganisationCreateView",
     "OrganisationEditView",
     "OrganisationMembershipDeleteView",

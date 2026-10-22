@@ -5,7 +5,7 @@ Organisation service with integrated permissions
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Set, Union
 
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Count
 from django.db.models.query import QuerySet
@@ -289,11 +289,53 @@ class OrganisationService(BasePermissionService):
             raise PermissionError(
                 f"User '{user}' does not have permission to remove users from organisation '{organisation}'"
             )
+        if self.would_leave_without_admin(removed_user, organisation):
+            raise ValidationError(
+                f"{removed_user.email} is the only administrator of {organisation.name}. "
+                "Make another member an administrator before removing them."
+            )
 
         remove_membership_and_record_event(
             OrganisationMembership.objects.filter(user=removed_user, organisation=organisation),
             actioned_by=user,
             notes=f"Removed from organisation '{organisation.name}'",
+        )
+
+    def is_sole_admin(self, user: User, organisation: Organisation) -> bool:
+        """True if `user` is an ADMIN of `organisation` and no other member is."""
+        admins = OrganisationMembership.objects.filter(organisation=organisation, role=ROLE_ADMIN)
+        return admins.filter(user=user).exists() and not admins.exclude(user=user).exists()
+
+    def would_leave_without_admin(self, user: User, organisation: Organisation) -> bool:
+        """
+        True if removing `user` would leave `organisation` with members but no
+        administrator to manage them. The last remaining member may still go,
+        since nobody would be left without an admin.
+        """
+        if not self.is_sole_admin(user, organisation):
+            return False
+        return OrganisationMembership.objects.filter(organisation=organisation).exclude(user=user).exists()
+
+    def leave_organisation(self, user: User, organisation: Organisation) -> None:
+        """
+        Self-service removal of `user`'s own membership of `organisation`.
+
+        Refused if the user is the only administrator of an organisation that
+        still has other members; they must promote someone else first.
+        """
+        membership_qs = OrganisationMembership.objects.filter(user=user, organisation=organisation)
+        if not membership_qs.exists():
+            raise PermissionDenied(f"You are not a member of {organisation.name}.")
+        if self.would_leave_without_admin(user, organisation):
+            raise ValidationError(
+                f"You are the only administrator of {organisation.name}. "
+                "Make another member an administrator before leaving."
+            )
+
+        remove_membership_and_record_event(
+            membership_qs,
+            actioned_by=user,
+            notes=f"Left organisation '{organisation.name}'",
         )
 
     def get_invitation_organisation(self, invitation) -> Optional[Organisation]:

@@ -13,6 +13,7 @@ from unittest.mock import patch
 import django.urls
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
+from django.core import mail
 from invitations.models import Invitation
 
 from home.constants import ROLE_PROJECT_MANAGER
@@ -206,6 +207,22 @@ class InviteTargetOrganisationTestCase(ViewTestCase):
             django.urls.reverse("organisation_switch"),
             data={"organisation_id": self.second_organisation.pk},
         )
+
+    def test_invite_page_names_active_organisation(self):
+        response = self.client.get(django.urls.reverse("member_invite"))
+
+        self.assertContains(response, "Add members to Second Org")
+        self.assertContains(response, "invite-target-organisation")
+
+    def test_invitation_email_names_organisation(self):
+        self.client.post(
+            django.urls.reverse("member_invite"),
+            data={"email": "newbie@sort.com", "invite_submit": "1"},
+        )
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Second Org", mail.outbox[0].subject)
+        self.assertIn("Second Org", mail.outbox[0].body)
 
     def test_new_user_joins_active_organisation(self):
         self.client.post(

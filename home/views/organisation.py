@@ -5,7 +5,7 @@ import invitations.views
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -128,6 +128,65 @@ class SetActiveOrganisationView(LoginRequiredMixin, View):
         return redirect("myorganisation")
 
 
+class MyOrganisationsListView(LoginRequiredMixin, TemplateView):
+    """
+    List every organisation the current user belongs to, with their role in
+    each, so users with several memberships can see and manage them (issue #690).
+    """
+
+    template_name = "organisation/my_organisations.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["memberships"] = sorted(
+            organisation_service.get_user_memberships(self.request.user),
+            key=lambda membership: membership.organisation.name,
+        )
+        return context
+
+
+class LeaveOrganisationView(LoginRequiredMixin, TemplateView):
+    """
+    Let a user remove their own membership of an organisation (issue #690),
+    unless they are the only administrator of an organisation with other members.
+    """
+
+    template_name = "organisation/leave.html"
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.organisation = None
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            self.organisation = get_object_or_404(Organisation, pk=kwargs["pk"], members=request.user)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context["organisation"] = self.organisation
+        context["membership"] = OrganisationMembership.objects.get(user=user, organisation=self.organisation)
+        context["blocked"] = organisation_service.would_leave_without_admin(user, self.organisation)
+        context["last_member"] = not self.organisation.members.exclude(pk=user.pk).exists()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        try:
+            organisation_service.leave_organisation(request.user, self.organisation)
+        except ValidationError as error:
+            messages.error(request, error.message)
+            return redirect("organisation_leave", pk=self.organisation.pk)
+
+        if request.session.get("active_organisation_id") == self.organisation.pk:
+            request.session.pop("active_organisation_id")
+        messages.success(request, f"You have left {self.organisation.name}.")
+
+        if not organisation_service.get_user_memberships(request.user):
+            return redirect("organisation_get_started")
+        return redirect("my_organisations")
+
+
 class OrganisationEditView(LoginRequiredMixin, OrganisationRequiredMixin, UpdateView):
     """
     Edit the current user's organisation (rename and modify the description).
@@ -219,6 +278,7 @@ class MyOrganisationInviteView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["organisation"] = self.organisation
 
         # Initialize both forms
         if "invite_form" not in context:
@@ -247,13 +307,14 @@ class MyOrganisationInviteView(
                     invite.save()
                     try:
                         organisation_service.link_invitation_to_organisation(invite, self.organisation)
-                        invite.send_invitation(request)
+                        invite.send_invitation(request, organisation=self.organisation)
                     except Exception:
+                        # Cascades to the organisation link
                         invite.delete()
                         raise
                     messages.success(
                         request,
-                        f"{email} has been invited to join the organisation. "
+                        f"{email} has been invited to join {self.organisation.name}. "
                         "They will receive an email with instructions.",
                     )
                     return redirect("member_invite")
@@ -278,7 +339,7 @@ class MyOrganisationInviteView(
                 if hasattr(add_existing_form, "is_duplicate") and add_existing_form.is_duplicate:
                     messages.info(
                         request,
-                        f"{user_to_add.email} is already a member of this organisation.",
+                        f"{user_to_add.email} is already a member of {self.organisation.name}.",
                     )
                 else:
                     # Add user to organisation
@@ -291,7 +352,7 @@ class MyOrganisationInviteView(
                         )
                         messages.success(
                             request,
-                            f"{user_to_add.email} has been added to the organisation as a {role}.",
+                            f"{user_to_add.email} has been added to {self.organisation.name} as a {role}.",
                         )
                     except Exception as e:
                         messages.error(request, f"Failed to add user: {str(e)}")
@@ -355,11 +416,15 @@ class OrganisationMembershipDeleteView(
         After the confirmation form has been submitted successfully, remove the user from the organisation.
         """
         # Override this function so we can use the appropriate service
-        organisation_service.remove_user_from_organisation(
-            user=self.request.user,
-            organisation=self.object.organisation,
-            removed_user=self.object.user,
-        )
+        try:
+            organisation_service.remove_user_from_organisation(
+                user=self.request.user,
+                organisation=self.object.organisation,
+                removed_user=self.object.user,
+            )
+        except ValidationError as error:
+            messages.error(self.request, error.message)
+            return django.http.HttpResponseRedirect(self.get_success_url())
         messages.success(
             self.request,
             message=f"The user {self.object.user} was removed from {self.object.organisation}.",
