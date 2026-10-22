@@ -293,6 +293,16 @@ DROP TABLE IF EXISTS table_name CASCADE;
 
 # Security
 
+## pip and certifi (eMudhra emSign CA incident)
+
+pip older than 26.2.2 always loads its vendored certifi bundle, so updating OS certificates alone does not protect `pip install`. Upgrade pip and certifi in each venv, update the OS `ca-certificates` package, and rebuild any container images:
+
+```bash
+sudo apt-get update && sudo apt-get install --only-upgrade ca-certificates
+"$venv_dir/bin/python" -m pip install --upgrade "pip>=26.2.2" "certifi>=2026.10.19"
+"$venv_dir/bin/python" -m pip list | grep -iE "^(pip|certifi) "
+```
+
 ## SSL Certificates
 
 See: ITS Wiki [SSL Certificates/Howto](https://itswiki.shef.ac.uk/wiki/SSL_Certificates/Howto) for the commands to generate a Certificate Signing Request (CSR) using [OpenSSL](https://docs.openssl.org/3.3/man1/openssl-req/#options) with an unencrypted private key.
