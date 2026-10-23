@@ -62,6 +62,7 @@ class SurveyView(LoginRequiredMixin, View):
             SurveyImprovementPlanSection.objects.filter(survey=survey).order_by("section_id").first()
         )
         context["invite_link"] = survey.get_invite_link(request)
+        context["short_invite_link"] = survey.get_short_invite_link(request)
         context["responses_count"] = SurveyResponse.objects.filter(survey=survey).count()
         context["can_edit"] = {survey.id: survey_service.can_edit(request.user, survey)}
         context["request"] = request
@@ -523,6 +524,19 @@ class SurveyResponseView(View):
             return redirect("survey_response_inactive")
 
 
+class SurveyShortLinkView(View):
+    """
+    Redirect a shortened invitation link to the full survey response link.
+    """
+
+    def get(self, request: HttpRequest, code: str):
+        try:
+            token = survey_service.get_token_from_short_code(code)
+        except InvalidInviteTokenException:
+            return redirect("survey_link_invalid")
+        return redirect("survey_response", token=token)
+
+
 class SurveyLinkInvalidView(View):
     """
     Shown when a participant is trying to access the SurveyResponseView using an
@@ -572,7 +586,9 @@ class InvitationView(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         recipient_list = Invitation.recipient_list(form.cleaned_data["email"])
         # Generate the survey link with the token
-        survey_link = self.survey.get_invite_link(request=self.request)
+        survey_link = self.survey.get_short_invite_link(
+            request=self.request
+        ) or self.survey.get_invite_link(request=self.request)
         if survey_link is None:
             form.add_error(
                 None,
