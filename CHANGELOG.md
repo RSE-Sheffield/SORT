@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.32.0](https://github.com/RSE-Sheffield/SORT/compare/v0.31.0...v0.32.0) (2026-10-23)
+
+
+### Features
+
+* add advisory accessibility checks to CI ([#419](https://github.com/RSE-Sheffield/SORT/issues/419)) ([d9c7a75](https://github.com/RSE-Sheffield/SORT/commit/d9c7a751bf25e75c6afecea95d26eeb80a0db1cc))
+
+
+### Bug Fixes
+
+* clarify deactivate survey button as conclude survey ([#734](https://github.com/RSE-Sheffield/SORT/issues/734)) ([bf07c59](https://github.com/RSE-Sheffield/SORT/commit/bf07c5978f3bbd1328adfe9fbcac14a83a531062))
+* correct grammar in Part C survey question sublabels ([#633](https://github.com/RSE-Sheffield/SORT/issues/633)) ([30bb704](https://github.com/RSE-Sheffield/SORT/commit/30bb70407dc5460982a9d3934aa90bb3a3758182))
+* **survey-config:** correct wording for E3/E4 sublabels across all configs ([#563](https://github.com/RSE-Sheffield/SORT/issues/563)) ([0508809](https://github.com/RSE-Sheffield/SORT/commit/05088092f0bcf8b75e1e4463a84bbc8ce8b55449))
+
 ## [0.31.0](https://github.com/RSE-Sheffield/SORT/compare/v0.30.0...v0.31.0) (2026-10-22)
 
 
