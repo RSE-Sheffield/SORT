@@ -1,0 +1,98 @@
+{% extends "base_console.html" %}
+{% block title %}| Admin — Merge organisation{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_organisations' %}">Organisations</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_organisation_detail' source.pk %}">{{ source.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Merge</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger shadow-sm">
+                <div class="card-header bg-white text-danger">
+                    <h1 class="h5 mb-0">Merge organisation</h1>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="mb-4">
+                        <label for="target-select" class="form-label small">Merge <strong>{{ source.name }}</strong> into:</label>
+                        <div class="d-flex gap-2">
+                            <select name="target" id="target-select" class="form-select">
+                                <option value="">Choose an organisation…</option>
+                                {% for organisation in organisations %}
+                                <option value="{{ organisation.pk }}" {% if target.pk == organisation.pk %}selected{% endif %}>
+                                    {{ organisation.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-outline-secondary">Preview</button>
+                        </div>
+                    </form>
+
+                    {% if target and plan %}
+                    <div class="border rounded p-3 mb-3">
+                        <p class="mb-2">
+                            Merging <strong>{{ source.name }}</strong> into <strong>{{ target.name }}</strong> will:
+                        </p>
+                        <ul class="small">
+                            <li>
+                                Move {{ plan.projects|length }} project{{ plan.projects|length|pluralize }}
+                                {% for project in plan.projects %}
+                                    {% if not forloop.first %}, {% endif %}<em>{{ project.name }}</em>
+                                {% endfor %}
+                            </li>
+                            <li>
+                                Transfer {{ plan.memberships_to_move|length }} membership{{ plan.memberships_to_move|length|pluralize }}
+                                {% for membership in plan.memberships_to_move %}
+                                    {% if not forloop.first %}, {% endif %}{{ membership.user.email }} ({{ membership.get_role_display }})
+                                {% endfor %}
+                            </li>
+                            <li>
+                                Drop {{ plan.memberships_to_drop|length }} duplicate membership{{ plan.memberships_to_drop|length|pluralize }} (target's existing role wins)
+                                {% for membership in plan.memberships_to_drop %}
+                                    {% if not forloop.first %}, {% endif %}{{ membership.user.email }}
+                                {% endfor %}
+                            </li>
+                        </ul>
+                        <p class="text-danger small mb-0">
+                            <strong>{{ source.name }}</strong> will be deleted after the merge. This cannot be undone.
+                        </p>
+                    </div>
+
+                    <div class="mt-3">
+                        <label for="confirm-input" class="form-label small">
+                            To confirm, type <strong>{{ source.name }}</strong> below:
+                        </label>
+                        <input type="text" id="confirm-input" class="form-control form-control-sm" autocomplete="off">
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white d-flex gap-2 justify-content-end">
+                    <a href="{% url 'admin_organisation_detail' source.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                    {% if target and plan %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="target_id" value="{{ target.pk }}">
+                        <button type="submit" id="confirm-submit" class="btn btn-danger" disabled>Merge organisation</button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% if target and plan %}
+                <script>
+                document.getElementById('confirm-input').addEventListener('input', function () {
+                    document.getElementById('confirm-submit').disabled =
+                        this.value !== '{{ source.name|escapejs }}';
+                });
+                </script>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

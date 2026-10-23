@@ -28,8 +28,10 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--yes",
+            "--force",
+            dest="yes",
             action="store_true",
-            help="Skip the confirmation prompt",
+            help="Skip the confirmation prompt (--force is an alias for --yes)",
         )
 
     def handle(self, *args, **options):
