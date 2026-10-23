@@ -2,9 +2,8 @@ from django import forms
 from django.forms import BaseFormSet, formset_factory
 from strenum import StrEnum
 
+from .models import Profession, Survey
 from .validators.email_list_validator import EmailListValidator
-
-from .models import Survey, Profession
 
 
 class InvitationForm(forms.Form):
@@ -72,9 +71,7 @@ def create_dynamic_formset(field_configs: list):
         def add_fields(self, form, index):
             super().add_fields(form, index)
             for field_config in field_configs:
-                form.fields[field_config["name"]] = create_field_from_config(
-                    field_config
-                )
+                form.fields[field_config["name"]] = create_field_from_config(field_config)
 
     return formset_factory(BlankDynamicForm, BaseTestFormSet, min_num=1, max_num=1)
 

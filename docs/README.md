@@ -107,7 +107,7 @@ make check             # Django system checks + migration verification
 - **Restarting/reloading services**: See [operations.md](operations.md#controlling-services)
 - **Viewing logs**: See [operations.md](operations.md#viewing-logs) (quick reference) or [troubleshooting.md](troubleshooting.md#finding-logs) (full guide)
 - **Running management commands**: See [operations.md](operations.md#running-management-commands)
-- **Deploying a code update**: See [operations.md](operations.md#deploying-an-update-to-running-code)
+- **Deploying a code update** (development VM first, then production): See [operations.md](operations.md#deploying-an-update-to-running-code)
 - **Exporting data**: Use commands in [operations.md](operations.md#running-management-commands) and [data-management.md](data-management.md)
 - **Managing invitations**: Follow workflows in [invitations.md](invitations.md)
 - **Troubleshooting issues**: Start with [troubleshooting.md](troubleshooting.md)
@@ -115,7 +115,7 @@ make check             # Django system checks + migration verification
 **Release process:**
 - [../RELEASING.md](../RELEASING.md) - Automated semantic versioning
 - Merges to `main` with `feat:` or `fix:` commits update an open release PR
-- Merging that release PR (e.g. alongside a VM deployment) cuts the actual release — no manual version bumping needed
+- Merging that release PR (e.g. alongside a deployment to the development and production VMs) cuts the actual release — no manual version bumping needed
 
 ### 📋 Feature-Specific Documentation
 

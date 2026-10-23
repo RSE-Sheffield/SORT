@@ -19,9 +19,7 @@ class InvitationViewTestCase(SORT.test.test_case.ViewTestCase):
         self.project = self.survey.project
         self.organisation = self.project.organisation
         self.user = self.organisation.members.first()
-        self.service.initialise_survey(
-            user=self.user, project=self.project, survey=self.survey
-        )
+        self.service.initialise_survey(user=self.user, project=self.project, survey=self.survey)
         self.service.update_consent_demography_config(
             user=self.user,
             survey=self.survey,
@@ -29,9 +27,7 @@ class InvitationViewTestCase(SORT.test.test_case.ViewTestCase):
             demography_config=self.survey.demography_config_default,
             survey_body_path="Nurses",
         )
-        self.invitation = self.service.create_invitation(
-            user=self.user, survey=self.survey
-        )
+        self.invitation = self.service.create_invitation(user=self.user, survey=self.survey)
 
     def login_non_member(self):
         """

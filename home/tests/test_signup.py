@@ -13,6 +13,7 @@ from unittest.mock import patch
 import django.urls
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
+from django.core import mail
 from invitations.models import Invitation
 
 from home.constants import ROLE_PROJECT_MANAGER
@@ -35,9 +36,7 @@ class SignupViewTestCase(ViewTestCase):
         super().setUp()
         # An administrator who owns an organisation.
         self.admin = UserFactory(email="admin@sort.com")
-        self.organisation = organisation_service.create_organisation(
-            user=self.admin, name="Test Organisation"
-        )
+        self.organisation = organisation_service.create_organisation(user=self.admin, name="Test Organisation")
         # A project manager within the same organisation.
         self.project_manager = UserFactory(email="manager@sort.com")
         organisation_service.add_user_to_organisation(
@@ -71,9 +70,7 @@ class SignupViewTestCase(ViewTestCase):
             fetch_redirect_response=False,
         )
         new_user = User.objects.get(email="newbie@sort.com")
-        membership = OrganisationMembership.objects.get(
-            user=new_user, organisation=self.organisation
-        )
+        membership = OrganisationMembership.objects.get(user=new_user, organisation=self.organisation)
         self.assertEqual(membership.role, ROLE_PROJECT_MANAGER)
 
     def test_signup_with_non_admin_invitation_fails_gracefully(self):
@@ -81,9 +78,7 @@ class SignupViewTestCase(ViewTestCase):
         Regression test for #597: an invitation sent by a project manager must
         not cause a 500 error, and must not leave an orphaned user account.
         """
-        invitation = Invitation.create(
-            email="newbie@sort.com", inviter=self.project_manager
-        )
+        invitation = Invitation.create(email="newbie@sort.com", inviter=self.project_manager)
 
         response = self.signup(invitation)
 
@@ -143,13 +138,9 @@ class SignupViewTestCase(ViewTestCase):
 
     def test_member_delete_forbidden_for_project_manager(self):
         """A project manager is redirected away from the member-remove page."""
-        membership = OrganisationMembership.objects.get(
-            user=self.project_manager, organisation=self.organisation
-        )
+        membership = OrganisationMembership.objects.get(user=self.project_manager, organisation=self.organisation)
         self.client.login(username=self.project_manager.email, password=PASSWORD)
-        response = self.client.get(
-            django.urls.reverse("member_delete", kwargs={"pk": membership.pk})
-        )
+        response = self.client.get(django.urls.reverse("member_delete", kwargs={"pk": membership.pk}))
         self.assertRedirects(
             response,
             django.urls.reverse("members"),
@@ -163,9 +154,7 @@ class InviteMemberSendFailureTestCase(ViewTestCase):
     def setUp(self):
         super().setUp()
         self.admin = UserFactory(email="admin0@sort.com")
-        self.organisation = organisation_service.create_organisation(
-            user=self.admin, name="Test Org"
-        )
+        self.organisation = organisation_service.create_organisation(user=self.admin, name="Test Org")
         self.client.login(username=self.admin.email, password=PASSWORD)
         self.url = django.urls.reverse("member_invite")
 
@@ -184,9 +173,7 @@ class InviteMemberSendFailureTestCase(ViewTestCase):
         ):
             self._post_invite("newmember@sort.com")
 
-        self.assertFalse(
-            Invitation.objects.filter(email="newmember@sort.com").exists()
-        )
+        self.assertFalse(Invitation.objects.filter(email="newmember@sort.com").exists())
 
     def test_retry_after_failed_send_is_accepted(self):
         """Admin can re-submit the invite form after a prior send failure."""
@@ -201,3 +188,60 @@ class InviteMemberSendFailureTestCase(ViewTestCase):
 
         msgs = [str(m) for m in get_messages(response.wsgi_request)]
         self.assertTrue(any("has been invited" in m for m in msgs))
+
+
+class InviteTargetOrganisationTestCase(ViewTestCase):
+    """
+    Issue #690: an admin of several organisations invites someone from the
+    active organisation, and the new user must join that organisation rather
+    than whichever one the admin happened to join first.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.admin = UserFactory(email="multiadmin@sort.com")
+        self.first_organisation = organisation_service.create_organisation(user=self.admin, name="First Org")
+        self.second_organisation = organisation_service.create_organisation(user=self.admin, name="Second Org")
+        self.client.login(username=self.admin.email, password=PASSWORD)
+        self.client.post(
+            django.urls.reverse("organisation_switch"),
+            data={"organisation_id": self.second_organisation.pk},
+        )
+
+    def test_invite_page_names_active_organisation(self):
+        response = self.client.get(django.urls.reverse("member_invite"))
+
+        self.assertContains(response, "Add members to Second Org")
+        self.assertContains(response, "invite-target-organisation")
+
+    def test_invitation_email_names_organisation(self):
+        self.client.post(
+            django.urls.reverse("member_invite"),
+            data={"email": "newbie@sort.com", "invite_submit": "1"},
+        )
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Second Org", mail.outbox[0].subject)
+        self.assertIn("Second Org", mail.outbox[0].body)
+
+    def test_new_user_joins_active_organisation(self):
+        self.client.post(
+            django.urls.reverse("member_invite"),
+            data={"email": "newbie@sort.com", "invite_submit": "1"},
+        )
+        invitation = Invitation.objects.get(email="newbie@sort.com")
+        self.assertEqual(invitation.organisation_link.organisation, self.second_organisation)
+
+        self.client.logout()
+        self.client.post(
+            django.urls.reverse("signup", kwargs={"key": invitation.key}),
+            data={"key": invitation.key, "password1": SIGNUP_PASSWORD, "password2": SIGNUP_PASSWORD},
+        )
+
+        new_user = User.objects.get(email="newbie@sort.com")
+        self.assertTrue(
+            OrganisationMembership.objects.filter(user=new_user, organisation=self.second_organisation).exists()
+        )
+        self.assertFalse(
+            OrganisationMembership.objects.filter(user=new_user, organisation=self.first_organisation).exists()
+        )

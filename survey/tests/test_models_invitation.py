@@ -55,7 +55,7 @@ class TestInvitationModel(TestCase):
 
     def test_token_not_editable(self):
         """Test that token field is not editable (field property)."""
-        field = Invitation._meta.get_field('token')
+        field = Invitation._meta.get_field("token")
         self.assertFalse(field.editable)
 
     def test_used_defaults_to_false(self):
@@ -130,7 +130,8 @@ class TestInvitationModel(TestCase):
     def test_recipient_list_mixed_delimiters(self):
         """Test parsing email addresses with mixed delimiters."""
         result = Invitation.recipient_list(
-            "test1@example.com, test2@example.com; test3@example.com | test4@example.com")
+            "test1@example.com, test2@example.com; test3@example.com | test4@example.com"
+        )
         self.assertEqual(result, {"test1@example.com", "test2@example.com", "test3@example.com", "test4@example.com"})
 
     def test_recipient_list_newline_separated(self):
@@ -171,7 +172,7 @@ class TestInvitationModel(TestCase):
 
     def test_token_max_length(self):
         """Test that the token field respects max_length constraint."""
-        field = Invitation._meta.get_field('token')
+        field = Invitation._meta.get_field("token")
         self.assertEqual(field.max_length, 64)
 
     def test_short_code_auto_generation(self):

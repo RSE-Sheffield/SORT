@@ -1,6 +1,6 @@
 # Release Process
 
-SORT uses **semantic versioning** (MAJOR.MINOR.PATCH) with releases proposed automatically via [release-please](https://github.com/googleapis/release-please), but cut only when you choose to merge the release PR — typically when rolling out a deployment to the VM.
+SORT uses **semantic versioning** (MAJOR.MINOR.PATCH) with releases proposed automatically via [release-please](https://github.com/googleapis/release-please), but cut only when you choose to merge the release PR — typically when rolling out a deployment. Deploy to the development VM (`sort-web-dev.sheffield.ac.uk`) first, then to production; see [docs/operations.md](docs/operations.md#deploying-an-update-to-running-code).
 
 ## How it works
 

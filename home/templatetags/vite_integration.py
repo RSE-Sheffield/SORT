@@ -1,8 +1,8 @@
 import json
 import logging
 from enum import Enum
-from pathlib import Path
 from os import path
+from pathlib import Path
 from typing import LiteralString
 from urllib.parse import urljoin
 
@@ -27,9 +27,7 @@ def vite_client():
     if settings.DEBUG:
         vite_client_path = urljoin(settings.VITE_BASE_URL, "/@vite/client")
         # built from trusted settings only
-        return mark_safe(  # nosec B703, B308
-            f"<script type = 'module' src = '{vite_client_path}'> </script>"
-        )
+        return mark_safe(f"<script type = 'module' src = '{vite_client_path}'> </script>")  # nosec B703, B308
 
     return ""
 
@@ -48,9 +46,7 @@ def vite_asset(asset_path: str) -> str:
     if settings.DEBUG:
         vite_asset_path = urljoin(settings.VITE_BASE_URL, asset_path)
         # built from trusted settings only
-        return mark_safe(  # nosec B703, B308
-            f"<script type = 'module' src = '{vite_asset_path}' > </script>"
-        )
+        return mark_safe(f"<script type = 'module' src = '{vite_asset_path}' > </script>")  # nosec B703, B308
     else:
         global VITE_MANIFEST
         if VITE_MANIFEST is None:
@@ -60,9 +56,7 @@ def vite_asset(asset_path: str) -> str:
                     VITE_MANIFEST = json.load(file)
             else:
                 logger.error("File not found: %s", vite_manifest_path)
-                raise FileNotFoundError(
-                    f"Vite manifest file ({settings.VITE_MANIFEST_FILE_PATH}) cannot be found."
-                )
+                raise FileNotFoundError(f"Vite manifest file ({settings.VITE_MANIFEST_FILE_PATH}) cannot be found.")
 
         if asset_path in VITE_MANIFEST:
             manifest_asset = VITE_MANIFEST[asset_path]
@@ -70,9 +64,7 @@ def vite_asset(asset_path: str) -> str:
             if "css" in manifest_asset:
                 for css_path in manifest_asset["css"]:
                     import_tags.append(
-                        get_asset_import_tag(
-                            path.join(settings.VITE_STATIC_DIR, css_path), AssetType.CSS
-                        )
+                        get_asset_import_tag(path.join(settings.VITE_STATIC_DIR, css_path), AssetType.CSS)
                     )
 
             if "file" in manifest_asset:
@@ -89,9 +81,7 @@ def vite_asset(asset_path: str) -> str:
     return ""
 
 
-def get_asset_import_tag(
-        asset_static_path: str | LiteralString | bytes, type: AssetType
-):
+def get_asset_import_tag(asset_static_path: str | LiteralString | bytes, type: AssetType):
     asset_static_path_found = finders.find(asset_static_path)
     if asset_static_path_found:
         if type == AssetType.SCRIPT:
@@ -101,6 +91,4 @@ def get_asset_import_tag(
         else:
             return ""
     else:
-        raise FileNotFoundError(
-            f"Specified vite asset file {asset_static_path} cannot found."
-        )
+        raise FileNotFoundError(f"Specified vite asset file {asset_static_path} cannot found.")

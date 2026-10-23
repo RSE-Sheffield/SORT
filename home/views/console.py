@@ -4,12 +4,16 @@ Staff management console.
 This interface provides a dashboard overview of the app status. It's different from the /admin/ dashboard.
 """
 
+import logging
+import tempfile
+
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Count
-from django.http import HttpResponse, JsonResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.utils import timezone
 from django.views.generic import TemplateView, View
 from django.views.generic.base import TemplateResponseMixin
 
@@ -32,8 +36,13 @@ from home.services.analytics import (
     UsageAnalytics,
 )
 from home.services.organisation import remove_membership_and_record_event
+from home.services.research_export import ResearchExport
 from home.views.sorting import SortableMixin
 from survey.models import Survey, SurveyResponse
+
+logger = logging.getLogger(__name__)
+
+XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 class ConsoleView(StaffRequiredMixin, TemplateView):
@@ -98,6 +107,42 @@ class ConsoleAnalyticsExportView(StaffRequiredMixin, View):
         return response
 
 
+class ConsoleResearchExportView(StaffRequiredMixin, TemplateResponseMixin, View):
+    """
+    Download all consented research data (shared surveys, participants who gave
+    research consent) across every organisation as one Excel workbook.
+    """
+
+    template_name = "console/research_export.html"
+
+    def get(self, request):
+        return self.render_to_response({})
+
+    def post(self, request):
+        # Build on disk and stream it out; the anonymous temp file is deleted when
+        # FileResponse closes it after sending
+        file = tempfile.TemporaryFile()
+        try:
+            row_count = ResearchExport().write_xlsx(file)
+        except BaseException:
+            file.close()
+            raise
+        file.seek(0)
+        logger.info(
+            "Research data export downloaded by user %s (%d responses)",
+            request.user.pk,
+            row_count,
+        )
+        response = FileResponse(
+            file,
+            as_attachment=True,
+            filename=f"sort_research_data_{timezone.localdate().isoformat()}.xlsx",
+            content_type=XLSX_CONTENT_TYPE,
+        )
+        response["Cache-Control"] = "no-store"
+        return response
+
+
 class ConsoleOrganisationListView(StaffRequiredMixin, SortableMixin, TemplateView):
     template_name = "console/organisations.html"
     sort_fields = {
@@ -140,9 +185,9 @@ class ConsoleOrganisationDetailView(StaffRequiredMixin, TemplateView):
         # that service's get_requests() requires manage_members permission on
         # the organisation, which staff viewing the console may not hold —
         # StaffRequiredMixin above is the only gate this page needs.
-        context["join_requests"] = OrganisationJoinRequest.objects.filter(
-            organisation=org
-        ).select_related("user", "decided_by")
+        context["join_requests"] = OrganisationJoinRequest.objects.filter(organisation=org).select_related(
+            "user", "decided_by"
+        )
         return context
 
 
@@ -246,9 +291,7 @@ class ConsoleSurveyDetailView(StaffRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        survey = get_object_or_404(
-            Survey.objects.select_related("project__organisation"), pk=self.kwargs["pk"]
-        )
+        survey = get_object_or_404(Survey.objects.select_related("project__organisation"), pk=self.kwargs["pk"])
         context["survey"] = survey
         context["responses"] = survey.survey_response.order_by("-created_at")
         return context
@@ -350,9 +393,7 @@ class ConsoleExportUserDataView(StaffRequiredMixin, TemplateResponseMixin, View)
                 "actioned_at": event.actioned_at,
                 "requested_at": event.requested_at,
             }
-            for event in data_protection_service.list_events(
-                request.user, subject_user_id=target_user.pk
-            )
+            for event in data_protection_service.list_events(request.user, subject_user_id=target_user.pk)
         ]
 
         data_protection_service.record_event(
@@ -385,9 +426,7 @@ class ConsoleRemoveMemberView(StaffRequiredMixin, TemplateResponseMixin, View):
         org_name = org.name
         try:
             remove_membership_and_record_event(
-                OrganisationMembership.objects.filter(
-                    pk=membership_pk, organisation=org
-                ),
+                OrganisationMembership.objects.filter(pk=membership_pk, organisation=org),
                 actioned_by=request.user,
                 notes=f"Removed from organisation '{org_name}'",
             )

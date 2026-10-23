@@ -24,9 +24,7 @@ class TestResponseSchema(TestCase):
     def test_schema_generated(self):
         schema = self.survey.response_schema
         self.assertEqual(schema["type"], "array")
-        self.assertEqual(
-            schema["minItems"], len(self.survey.sections)
-        )
+        self.assertEqual(schema["minItems"], len(self.survey.sections))
 
     def test_valid_mock_response_passes(self):
         answers = self.survey._generate_mock_response()
@@ -58,7 +56,8 @@ class TestResponseSchema(TestCase):
         answers = self.survey._generate_mock_response()
         # Find the first section whose first field is a likert
         likert_section_index = next(
-            i for i, section in enumerate(self.survey.sections)
+            i
+            for i, section in enumerate(self.survey.sections)
             if section.get("fields") and section["fields"][0]["type"] == "likert"
         )
         answers[likert_section_index][0] = copy.deepcopy(answers[likert_section_index][0])
@@ -70,7 +69,8 @@ class TestResponseSchema(TestCase):
     def test_wrong_likert_sublabel_count(self):
         answers = self.survey._generate_mock_response()
         likert_section_index = next(
-            i for i, section in enumerate(self.survey.sections)
+            i
+            for i, section in enumerate(self.survey.sections)
             if section.get("fields") and section["fields"][0]["type"] == "likert"
         )
         answers[likert_section_index][0] = ["0"]  # Only 1 instead of expected count
@@ -224,50 +224,50 @@ class TestSurveyResponseValidate(TestCase):
     # --- radio ---
 
     def test_radio_valid_answer_passes(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "radio", "options": ["Yes", "No"]}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "radio", "options": ["Yes", "No"]}]}])
         self._response(survey, [["Yes"]]).validate()  # Should not raise
 
     def test_radio_invalid_answer_raises(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "radio", "options": ["Yes", "No"]}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "radio", "options": ["Yes", "No"]}]}])
         with self.assertRaises(ValidationError):
             self._response(survey, [["Maybe"]]).validate()
 
     # --- disabled fields ---
 
     def test_disabled_required_field_accepts_null(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "text", "required": True, "disabled": True}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "text", "required": True, "disabled": True}]}])
         self._response(survey, [[None]]).validate()
 
     def test_enabled_required_field_rejects_null(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "text", "required": True}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "text", "required": True}]}])
         with self.assertRaises(ValidationError):
             self._response(survey, [[None]]).validate()
 
     def test_disabled_choice_and_likert_fields_accept_null(self):
-        survey = self._make_survey([
-            {"fields": [
-                {"type": "likert", "options": ["1", "2"], "sublabels": ["a", "b"], "disabled": True},
-                {"type": "radio", "options": ["Yes", "No"], "required": True, "disabled": True},
-                {"type": "checkbox", "options": ["A", "B"], "required": True, "disabled": True},
-            ]}
-        ])
+        survey = self._make_survey(
+            [
+                {
+                    "fields": [
+                        {"type": "likert", "options": ["1", "2"], "sublabels": ["a", "b"], "disabled": True},
+                        {"type": "radio", "options": ["Yes", "No"], "required": True, "disabled": True},
+                        {"type": "checkbox", "options": ["A", "B"], "required": True, "disabled": True},
+                    ]
+                }
+            ]
+        )
         self._response(survey, [[None, None, None]]).validate()
 
     def test_mixed_disabled_and_enabled_fields(self):
-        survey = self._make_survey([
-            {"fields": [
-                {"type": "text", "required": True},
-                {"type": "text", "required": True, "disabled": True},
-            ]}
-        ])
+        survey = self._make_survey(
+            [
+                {
+                    "fields": [
+                        {"type": "text", "required": True},
+                        {"type": "text", "required": True, "disabled": True},
+                    ]
+                }
+            ]
+        )
         self._response(survey, [["Answer", None]]).validate()
         with self.assertRaises(ValidationError):
             self._response(survey, [[None, None]]).validate()
@@ -275,209 +275,199 @@ class TestSurveyResponseValidate(TestCase):
     # --- required text ---
 
     def test_required_text_empty_raises(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "text", "required": True}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "text", "required": True}]}])
         with self.assertRaises(ValidationError):
             self._response(survey, [[""]]).validate()
 
     def test_required_text_valid_passes(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "text", "required": True}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "text", "required": True}]}])
         self._response(survey, [["some text"]]).validate()  # Should not raise
 
     # --- checkbox ---
 
     def test_radio_wrong_json_type_rejected(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "radio", "options": ["Yes", "No"]}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "radio", "options": ["Yes", "No"]}]}])
         for bad in (["Yes"], 1, None):
             with self.subTest(bad=bad):
                 with self.assertRaises(ValidationError):
                     self._response(survey, [[bad]]).validate()
 
     def test_required_radio_empty_string_rejected(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "radio", "options": ["Yes", "No"], "required": True}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "radio", "options": ["Yes", "No"], "required": True}]}])
         with self.assertRaises(ValidationError):
             self._response(survey, [[""]]).validate()
 
     def test_radio_without_options_accepts_any_string(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "radio"}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "radio"}]}])
         self._response(survey, [["anything"]]).validate()  # Should not raise
 
     # --- select ---
 
     def test_select_valid_answer_passes(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "select", "options": ["A", "B"]}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "select", "options": ["A", "B"]}]}])
         self._response(survey, [["A"]]).validate()  # Should not raise
 
     def test_select_invalid_answer_raises(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "select", "options": ["A", "B"]}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "select", "options": ["A", "B"]}]}])
         with self.assertRaises(ValidationError):
             self._response(survey, [["C"]]).validate()
 
     # --- checkbox ---
 
     def test_checkbox_invalid_option_raises(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "checkbox", "options": ["A", "B"]}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "checkbox", "options": ["A", "B"]}]}])
         with self.assertRaises(ValidationError):
             self._response(survey, [[["Z"]]]).validate()
 
     def test_checkbox_wrong_json_type_rejected(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "checkbox", "options": ["A", "B"]}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "checkbox", "options": ["A", "B"]}]}])
         for bad in ("A", None):
             with self.subTest(bad=bad):
                 with self.assertRaises(ValidationError):
                     self._response(survey, [[bad]]).validate()
 
     def test_checkbox_non_string_item_rejected(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "checkbox", "options": ["A", "B"]}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "checkbox", "options": ["A", "B"]}]}])
         with self.assertRaises(ValidationError):
             self._response(survey, [[[1]]]).validate()
 
     def test_required_checkbox_empty_array_rejected(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "checkbox", "options": ["A", "B"], "required": True}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "checkbox", "options": ["A", "B"], "required": True}]}])
         with self.assertRaises(ValidationError):
             self._response(survey, [[[]]]).validate()
 
     def test_optional_checkbox_empty_array_accepted(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "checkbox", "options": ["A", "B"]}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "checkbox", "options": ["A", "B"]}]}])
         self._response(survey, [[[]]]).validate()  # Should not raise
 
     def test_checkbox_without_options_accepts_any_strings(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "checkbox"}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "checkbox"}]}])
         self._response(survey, [[["anything", "else"]]]).validate()  # Should not raise
 
     # --- text ---
 
     def test_text_wrong_json_type_rejected(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "text"}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "text"}]}])
         for bad in (1, None, []):
             with self.subTest(bad=bad):
                 with self.assertRaises(ValidationError):
                     self._response(survey, [[bad]]).validate()
 
     def test_optional_text_empty_string_accepted(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "text"}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "text"}]}])
         self._response(survey, [[""]]).validate()  # Should not raise
 
     def test_text_long_string_accepted(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "text"}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "text"}]}])
         self._response(survey, [["x" * 10_000]]).validate()  # Should not raise
 
     # --- textarea ---
 
     def test_textarea_valid_answer_passes(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "textarea"}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "textarea"}]}])
         self._response(survey, [["multi\nline\nvalue"]]).validate()  # Should not raise
 
     def test_required_textarea_empty_string_rejected(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "textarea", "required": True}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "textarea", "required": True}]}])
         with self.assertRaises(ValidationError):
             self._response(survey, [[""]]).validate()
 
     def test_textarea_wrong_json_type_rejected(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "textarea"}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "textarea"}]}])
         with self.assertRaises(ValidationError):
             self._response(survey, [[42]]).validate()
 
     # --- likert ---
 
     def test_likert_valid_answer_passes(self):
-        survey = self._make_survey([
-            {"fields": [{
-                "type": "likert",
-                "sublabels": ["Q1", "Q2"],
-                "options": ["0", "1", "2"],
-            }]}
-        ])
+        survey = self._make_survey(
+            [
+                {
+                    "fields": [
+                        {
+                            "type": "likert",
+                            "sublabels": ["Q1", "Q2"],
+                            "options": ["0", "1", "2"],
+                        }
+                    ]
+                }
+            ]
+        )
         self._response(survey, [[["0", "2"]]]).validate()  # Should not raise
 
     def test_likert_wrong_json_type_rejected(self):
-        survey = self._make_survey([
-            {"fields": [{
-                "type": "likert",
-                "sublabels": ["Q1", "Q2"],
-                "options": ["0", "1", "2"],
-            }]}
-        ])
+        survey = self._make_survey(
+            [
+                {
+                    "fields": [
+                        {
+                            "type": "likert",
+                            "sublabels": ["Q1", "Q2"],
+                            "options": ["0", "1", "2"],
+                        }
+                    ]
+                }
+            ]
+        )
         for bad in ("0", None, {"0": "1"}):
             with self.subTest(bad=bad):
                 with self.assertRaises(ValidationError):
                     self._response(survey, [[bad]]).validate()
 
     def test_likert_non_string_item_rejected(self):
-        survey = self._make_survey([
-            {"fields": [{
-                "type": "likert",
-                "sublabels": ["Q1", "Q2"],
-                "options": ["0", "1", "2"],
-            }]}
-        ])
+        survey = self._make_survey(
+            [
+                {
+                    "fields": [
+                        {
+                            "type": "likert",
+                            "sublabels": ["Q1", "Q2"],
+                            "options": ["0", "1", "2"],
+                        }
+                    ]
+                }
+            ]
+        )
         with self.assertRaises(ValidationError):
             self._response(survey, [[[0, 1]]]).validate()
 
     def test_likert_too_many_items_rejected(self):
-        survey = self._make_survey([
-            {"fields": [{
-                "type": "likert",
-                "sublabels": ["Q1", "Q2"],
-                "options": ["0", "1", "2"],
-            }]}
-        ])
+        survey = self._make_survey(
+            [
+                {
+                    "fields": [
+                        {
+                            "type": "likert",
+                            "sublabels": ["Q1", "Q2"],
+                            "options": ["0", "1", "2"],
+                        }
+                    ]
+                }
+            ]
+        )
         with self.assertRaises(ValidationError):
             self._response(survey, [[["0", "1", "2"]]]).validate()
 
     def test_likert_empty_sublabels_accepts_empty_array(self):
-        survey = self._make_survey([
-            {"fields": [{
-                "type": "likert",
-                "sublabels": [],
-                "options": ["0", "1"],
-            }]}
-        ])
+        survey = self._make_survey(
+            [
+                {
+                    "fields": [
+                        {
+                            "type": "likert",
+                            "sublabels": [],
+                            "options": ["0", "1"],
+                        }
+                    ]
+                }
+            ]
+        )
         self._response(survey, [[[]]]).validate()  # Should not raise
 
     # --- unknown / fallback type ---
 
     def test_unknown_type_accepts_any_value(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "mystery_widget"}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "mystery_widget"}]}])
         for value in ("string", 42, None, ["x"], {"k": "v"}):
             with self.subTest(value=value):
                 self._response(survey, [[value]]).validate()  # Should not raise
@@ -485,25 +475,27 @@ class TestSurveyResponseValidate(TestCase):
     # --- cross-cutting structural ---
 
     def test_mixed_type_section_valid_answer(self):
-        survey = self._make_survey([{
-            "fields": [
-                {"type": "text"},
-                {"type": "textarea"},
-                {"type": "radio", "options": ["Y", "N"]},
-                {"type": "select", "options": ["A", "B"]},
-                {"type": "checkbox", "options": ["X", "Z"]},
-                {"type": "likert", "sublabels": ["R1", "R2"], "options": ["0", "1"]},
-            ],
-        }])
+        survey = self._make_survey(
+            [
+                {
+                    "fields": [
+                        {"type": "text"},
+                        {"type": "textarea"},
+                        {"type": "radio", "options": ["Y", "N"]},
+                        {"type": "select", "options": ["A", "B"]},
+                        {"type": "checkbox", "options": ["X", "Z"]},
+                        {"type": "likert", "sublabels": ["R1", "R2"], "options": ["0", "1"]},
+                    ],
+                }
+            ]
+        )
         self._response(
             survey,
             [["hello", "multi\nline", "Y", "A", ["X"], ["0", "1"]]],
         ).validate()  # Should not raise
 
     def test_validate_reraises_as_django_validation_error(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "radio", "options": ["Yes", "No"]}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "radio", "options": ["Yes", "No"]}]}])
         response = self._response(survey, [["Maybe"]])
         # Must be Django's ValidationError (not jsonschema's) — the management
         # command and model .clean() callers rely on this contract.
@@ -517,26 +509,30 @@ class TestSurveyResponseValidate(TestCase):
     # --- multiple errors and friendly labels ---
 
     def test_validate_reports_every_failing_field(self):
-        survey = self._make_survey([
-            {
-                "fields": [
-                    {"type": "radio", "options": ["Yes", "No"]},
-                    {"type": "radio", "options": ["Yes", "No"]},
-                ]
-            }
-        ])
+        survey = self._make_survey(
+            [
+                {
+                    "fields": [
+                        {"type": "radio", "options": ["Yes", "No"]},
+                        {"type": "radio", "options": ["Yes", "No"]},
+                    ]
+                }
+            ]
+        )
         response = self._response(survey, [["Maybe", "Nope"]])
         with self.assertRaises(ValidationError) as context:
             response.validate()
         self.assertEqual(len(context.exception.messages), 2)
 
     def test_validate_error_message_includes_section_and_field_label(self):
-        survey = self._make_survey([
-            {
-                "title": "Consent",
-                "fields": [{"type": "radio", "label": "Do you agree?", "options": ["Yes", "No"]}],
-            }
-        ])
+        survey = self._make_survey(
+            [
+                {
+                    "title": "Consent",
+                    "fields": [{"type": "radio", "label": "Do you agree?", "options": ["Yes", "No"]}],
+                }
+            ]
+        )
         response = self._response(survey, [["Maybe"]])
         with self.assertRaises(ValidationError) as context:
             response.validate()
@@ -545,19 +541,21 @@ class TestSurveyResponseValidate(TestCase):
         self.assertIn("Do you agree?", message)
 
     def test_validate_error_message_includes_likert_sublabel(self):
-        survey = self._make_survey([
-            {
-                "title": "Ratings",
-                "fields": [
-                    {
-                        "type": "likert",
-                        "label": "Rate these",
-                        "sublabels": ["First statement", "Second statement"],
-                        "options": ["0", "1"],
-                    }
-                ],
-            }
-        ])
+        survey = self._make_survey(
+            [
+                {
+                    "title": "Ratings",
+                    "fields": [
+                        {
+                            "type": "likert",
+                            "label": "Rate these",
+                            "sublabels": ["First statement", "Second statement"],
+                            "options": ["0", "1"],
+                        }
+                    ],
+                }
+            ]
+        )
         response = self._response(survey, [[["0", "invalid"]]])
         with self.assertRaises(ValidationError) as context:
             response.validate()
@@ -565,9 +563,7 @@ class TestSurveyResponseValidate(TestCase):
         self.assertIn("Second statement", message)
 
     def test_validate_error_falls_back_when_title_and_label_missing(self):
-        survey = self._make_survey([
-            {"fields": [{"type": "radio", "options": ["Yes", "No"]}]}
-        ])
+        survey = self._make_survey([{"fields": [{"type": "radio", "options": ["Yes", "No"]}]}])
         response = self._response(survey, [["Maybe"]])
         with self.assertRaises(ValidationError) as context:
             response.validate()  # Should not raise KeyError

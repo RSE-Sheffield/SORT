@@ -49,11 +49,13 @@ clean:
 
 # Dependencies
 requirements:
+	python -m pip install --upgrade "pip>=26.2.2"
 	pip install -r requirements.txt
 
 # Code quality - only check project source files
 lint:
 	flake8
+	.venv/bin/djlint --lint .
 
 # Security scans: Bandit (code) and pip-audit (dependencies)
 security:

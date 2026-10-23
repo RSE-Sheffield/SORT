@@ -47,9 +47,7 @@ class ProjectView(LoginRequiredMixin, ListView):
         # Add search if query exists
         search_query = self.request.GET.get("q")
         if search_query:
-            queryset = queryset.filter(
-                Q(name__icontains=search_query)  # Only search by survey name
-            )
+            queryset = queryset.filter(Q(name__icontains=search_query))  # Only search by survey name
 
         # Django requires consistent ordering for pagination
         return queryset.order_by("-id")
@@ -127,9 +125,7 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
         )
 
         if not project_service.can_edit(self.request.user, project):
-            messages.error(
-                self.request, "You don't have permission to edit this project."
-            )
+            messages.error(self.request, "You don't have permission to edit this project.")
             return redirect("myorganisation")
 
         return project
@@ -154,9 +150,7 @@ class ProjectEditView(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         try:
-            project_service.update_project(
-                user=self.request.user, project=self.object, data=form.cleaned_data
-            )
+            project_service.update_project(user=self.request.user, project=self.object, data=form.cleaned_data)
             messages.success(
                 self.request,
                 f"Saved changes to {self.object}.",
@@ -177,9 +171,7 @@ class ProjectDeleteView(LoginRequiredMixin, DeleteView):
             messages.info(self.request, f"Project {self.object.name} has been deleted.")
             return super().form_valid(form)
         else:
-            messages.error(
-                self.request, "You don't have permission to delete this project."
-            )
+            messages.error(self.request, "You don't have permission to delete this project.")
             return redirect("project", project_id=self.object.id)
 
     def get_success_url(self):

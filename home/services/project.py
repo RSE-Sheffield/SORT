@@ -2,6 +2,7 @@
 Project service with integrated permissions
 """
 
+import logging
 from typing import Dict, Optional
 
 from django.core.exceptions import PermissionDenied
@@ -12,6 +13,8 @@ from ..models import Organisation, Project, User
 from .base import BasePermissionService, requires_permission
 from .organisation import organisation_service
 
+audit_logger = logging.getLogger("sort.audit")
+
 
 class ProjectService(BasePermissionService):
     """Service for managing projects with integrated permissions"""
@@ -20,9 +23,7 @@ class ProjectService(BasePermissionService):
         """Get user's role in the project's organisation"""
         try:
             return project.organisation.get_user_role(user)
-        except (
-            AttributeError
-        ):  # In case user is AnonymousUser or organisation method fails
+        except AttributeError:  # In case user is AnonymousUser or organisation method fails
             return None
 
     def can_view(self, user: User, project: Project) -> bool:
@@ -58,9 +59,7 @@ class ProjectService(BasePermissionService):
         return project
 
     @requires_permission("create", obj_param="organisation")
-    def create_project(
-        self, user: User, name: str, organisation: Organisation, description: str = None
-    ) -> Project:
+    def create_project(self, user: User, name: str, organisation: Organisation, description: str = None) -> Project:
         """Create a new project"""
         if not self.can_create(user, organisation):
             raise PermissionDenied("User cannot create projects")
@@ -71,6 +70,13 @@ class ProjectService(BasePermissionService):
             created_by=user,
             organisation=organisation,
         )
+        audit_logger.info(
+            "project created: project_id=%s organisation_id=%s user_id=%s user_email=%s",
+            project.pk,
+            organisation.pk,
+            user.pk,
+            user.email,
+        )
         return project
 
     def delete_project(self, user: User, project: Project):
@@ -79,7 +85,15 @@ class ProjectService(BasePermissionService):
             raise PermissionDenied("User cannot delete projects")
 
         organisation = project.organisation
+        project_id = project.pk
         project.delete()
+        audit_logger.info(
+            "project deleted: project_id=%s organisation_id=%s user_id=%s user_email=%s",
+            project_id,
+            organisation.pk,
+            user.pk,
+            user.email,
+        )
         return organisation
 
     def get_user_projects(self, user: User) -> QuerySet[Project]:

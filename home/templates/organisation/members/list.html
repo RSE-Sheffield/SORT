@@ -99,15 +99,29 @@
                     <td>{{ membership.added_by }}</td>
                     {% if can_manage_members %}
                     <td>
+                        {% if membership.user == user %}
+                        <a href="{% url 'organisation_leave' organisation.pk %}" class="btn btn-outline-danger"
+                           title="Leave this organisation">
+                            <i class='bx bx-log-out'></i> Leave
+                        </a>
+                        {% else %}
                         <a href="{% url 'member_delete' membership.pk %}" class="btn btn-danger"
                            title="Remove this user from the organisation">
                             <i class='bx bxs-user-minus'></i> Remove
                         </a>
+                        {% endif %}
                     </td>
                     {% endif %}
                 </tr>
                 {% endfor %}
             </table>
         </div>
+        {% if not can_manage_members %}
+        <p>
+            <a href="{% url 'organisation_leave' organisation.pk %}" class="btn btn-outline-danger">
+                <i class='bx bx-log-out'></i> Leave this organisation
+            </a>
+        </p>
+        {% endif %}
     </div>
 {% endblock %}
