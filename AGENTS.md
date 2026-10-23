@@ -1,4 +1,4 @@
-# CLAUDE.md
+# Agents
 
 SORT is a Django 5.1 + Svelte/Vite web app for NHS organisations to assess research readiness.
 
