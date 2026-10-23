@@ -20,9 +20,17 @@
         </div>
     </div>
     <div class="container">
-        <h1><i class='bx bxs-user-plus'></i> Add members to organisation</h1>
+        <h1><i class='bx bxs-user-plus'></i> Add members to {{ organisation.name }}</h1>
+        <div class="alert alert-info" role="status" id="invite-target-organisation">
+            <i class="bx bxs-info-circle"></i>
+            You are adding members to <strong>{{ organisation.name }}</strong>.
+            {% if switchable_organisations|length > 1 %}
+                Wrong organisation? Switch using the organisation menu in the top bar, or from
+                <a href="{% url 'my_organisations' %}" class="alert-link">My organisations</a>.
+            {% endif %}
+        </div>
         <p>
-            Add colleagues to your organisation either by inviting new users or adding existing users.
+            Add colleagues to {{ organisation.name }} either by inviting new users or adding existing users.
         </p>
 
         <div class="row">
@@ -34,7 +42,7 @@
                     </div>
                     <div class="card-body">
                         <p class="card-text">
-                            Add a user who <strong>already has an account</strong> to your organisation.
+                            Add a user who <strong>already has an account</strong> to {{ organisation.name }}.
                         </p>
                         <form method="post">
                             {% csrf_token %}
@@ -55,7 +63,8 @@
                     </div>
                     <div class="card-body">
                         <p class="card-text">
-                            Send an email invitation to someone who <strong>doesn't have an account yet</strong>.
+                            Send an email invitation to join {{ organisation.name }} to someone who
+                            <strong>doesn't have an account yet</strong>.
                         </p>
                         <form method="post">
                             {% csrf_token %}

@@ -5,7 +5,7 @@ Organisation service with integrated permissions
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Set, Union
 
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Count
 from django.db.models.query import QuerySet
@@ -15,6 +15,7 @@ from ..constants import ROLE_ADMIN, ROLE_PROJECT_MANAGER
 from ..models import (
     DataProtectionEvent,
     Organisation,
+    OrganisationInvitation,
     OrganisationMembership,
     Project,
     User,
@@ -69,26 +70,19 @@ class OrganisationMergePlan:
 
     def describe(self) -> str:
         lines = [
-            f"Merge '{self.source.name}' (id={self.source.pk}) into "
-            f"'{self.target.name}' (id={self.target.pk})",
+            f"Merge '{self.source.name}' (id={self.source.pk}) into " f"'{self.target.name}' (id={self.target.pk})",
             f"  Projects to move: {len(self.projects)}",
             *(f"    - {p.name} (id={p.pk})" for p in self.projects),
             f"  Memberships to transfer: {len(self.memberships_to_move)}",
             *(f"    - {m.user.email} as {m.role}" for m in self.memberships_to_move),
-            f"  Duplicate memberships to drop (keeping target's role): "
-            f"{len(self.memberships_to_drop)}",
-            *(
-                f"    - {m.user.email} (was {m.role} in source)"
-                for m in self.memberships_to_drop
-            ),
+            f"  Duplicate memberships to drop (keeping target's role): " f"{len(self.memberships_to_drop)}",
+            *(f"    - {m.user.email} (was {m.role} in source)" for m in self.memberships_to_drop),
             f"  '{self.source.name}' will be deleted after the merge.",
         ]
         return "\n".join(lines)
 
 
-def plan_organisation_merge(
-    source: Organisation, target: Organisation
-) -> OrganisationMergePlan:
+def plan_organisation_merge(source: Organisation, target: Organisation) -> OrganisationMergePlan:
     """
     Read-only: work out which projects and memberships a merge of `source`
     into `target` would move, and which duplicate memberships it would drop.
@@ -100,27 +94,13 @@ def plan_organisation_merge(
     if source.pk == target.pk:
         raise ValueError("Cannot merge an organisation into itself")
 
-    target_user_ids = set(
-        OrganisationMembership.objects.filter(organisation=target).values_list(
-            "user_id", flat=True
-        )
-    )
-    source_memberships = list(
-        OrganisationMembership.objects.filter(organisation=source).select_related(
-            "user"
-        )
-    )
-    memberships_to_drop = [
-        m for m in source_memberships if m.user_id in target_user_ids
-    ]
-    memberships_to_move = [
-        m for m in source_memberships if m.user_id not in target_user_ids
-    ]
+    target_user_ids = set(OrganisationMembership.objects.filter(organisation=target).values_list("user_id", flat=True))
+    source_memberships = list(OrganisationMembership.objects.filter(organisation=source).select_related("user"))
+    memberships_to_drop = [m for m in source_memberships if m.user_id in target_user_ids]
+    memberships_to_move = [m for m in source_memberships if m.user_id not in target_user_ids]
     projects = list(Project.objects.filter(organisation=source))
 
-    return OrganisationMergePlan(
-        source, target, projects, memberships_to_move, memberships_to_drop
-    )
+    return OrganisationMergePlan(source, target, projects, memberships_to_move, memberships_to_drop)
 
 
 class OrganisationService(BasePermissionService):
@@ -128,9 +108,7 @@ class OrganisationService(BasePermissionService):
 
     def get_user_role(self, user: User, organisation: Organisation) -> Optional[str]:
         try:
-            membership = organisation.organisationmembership_set.filter(
-                user=user
-            ).first()
+            membership = organisation.organisationmembership_set.filter(user=user).first()
             return membership.role if membership else None
         except AttributeError:  # In case user is AnonymousUser
             return None
@@ -183,9 +161,7 @@ class OrganisationService(BasePermissionService):
         to avoid re-querying membership data for each.
         """
         return list(
-            OrganisationMembership.objects.filter(user=user)
-            .select_related("organisation")
-            .order_by("joined_at")
+            OrganisationMembership.objects.filter(user=user).select_related("organisation").order_by("joined_at")
         )
 
     def get_active_organisation(
@@ -231,9 +207,7 @@ class OrganisationService(BasePermissionService):
         request.session["active_organisation_id"] = organisation.id
         return organisation
 
-    def set_active_organisation(
-        self, request: HttpRequest, organisation: Organisation
-    ) -> None:
+    def set_active_organisation(self, request: HttpRequest, organisation: Organisation) -> None:
         """
         Switch the session's active organisation. Caller must have already
         verified the user is a member of ``organisation``.
@@ -259,34 +233,24 @@ class OrganisationService(BasePermissionService):
 
     def get_user_organisation_ids(self, user: User) -> Set[int]:
         """Get IDs of organisations user belongs to"""
-        return set(
-            OrganisationMembership.objects.filter(user=user).values_list(
-                "organisation_id", flat=True
-            )
-        )
+        return set(OrganisationMembership.objects.filter(user=user).values_list("organisation_id", flat=True))
 
     @requires_permission("edit", obj_param="organisation")
-    def update_organisation(
-        self, user: User, organisation: Organisation, data: Dict
-    ) -> Organisation:
+    def update_organisation(self, user: User, organisation: Organisation, data: Dict) -> Organisation:
         """Update organisation with provided data"""
         for key, value in data.items():
             setattr(organisation, key, value)
         organisation.save()
         return organisation
 
-    def create_organisation(
-        self, user: User, name: str, description: str = None
-    ) -> Organisation:
+    def create_organisation(self, user: User, name: str, description: str = None) -> Organisation:
         """
         Create a new organisation, and add the creator to it.
         Anyone who has a login should be able to create an organisation
         """
 
         org = Organisation.objects.create(name=name, description=description or "")
-        OrganisationMembership.objects.create(
-            user=user, organisation=org, role=ROLE_ADMIN, added_by=user
-        )
+        OrganisationMembership.objects.create(user=user, organisation=org, role=ROLE_ADMIN, added_by=user)
         return org
 
     @requires_permission("edit", obj_param="organisation")
@@ -306,18 +270,14 @@ class OrganisationService(BasePermissionService):
         @param role: The role that the user has in the organisation
         """
         if role not in [ROLE_ADMIN, ROLE_PROJECT_MANAGER]:
-            raise ValueError(
-                f"Role must be either {ROLE_ADMIN} or {ROLE_PROJECT_MANAGER}"
-            )
+            raise ValueError(f"Role must be either {ROLE_ADMIN} or {ROLE_PROJECT_MANAGER}")
 
         return OrganisationMembership.objects.create(
             user=user_to_add, organisation=organisation, role=role, added_by=user
         )
 
     @requires_permission("edit", obj_param="organisation")
-    def remove_user_from_organisation(
-        self, user: User, organisation: Organisation, removed_user: User
-    ) -> None:
+    def remove_user_from_organisation(self, user: User, organisation: Organisation, removed_user: User) -> None:
         """
         Remove a user from organisation
 
@@ -329,14 +289,70 @@ class OrganisationService(BasePermissionService):
             raise PermissionError(
                 f"User '{user}' does not have permission to remove users from organisation '{organisation}'"
             )
+        if self.would_leave_without_admin(removed_user, organisation):
+            raise ValidationError(
+                f"{removed_user.email} is the only administrator of {organisation.name}. "
+                "Make another member an administrator before removing them."
+            )
 
         remove_membership_and_record_event(
-            OrganisationMembership.objects.filter(
-                user=removed_user, organisation=organisation
-            ),
+            OrganisationMembership.objects.filter(user=removed_user, organisation=organisation),
             actioned_by=user,
             notes=f"Removed from organisation '{organisation.name}'",
         )
+
+    def is_sole_admin(self, user: User, organisation: Organisation) -> bool:
+        """True if `user` is an ADMIN of `organisation` and no other member is."""
+        admins = OrganisationMembership.objects.filter(organisation=organisation, role=ROLE_ADMIN)
+        return admins.filter(user=user).exists() and not admins.exclude(user=user).exists()
+
+    def would_leave_without_admin(self, user: User, organisation: Organisation) -> bool:
+        """
+        True if removing `user` would leave `organisation` with members but no
+        administrator to manage them. The last remaining member may still go,
+        since nobody would be left without an admin.
+        """
+        if not self.is_sole_admin(user, organisation):
+            return False
+        return OrganisationMembership.objects.filter(organisation=organisation).exclude(user=user).exists()
+
+    def leave_organisation(self, user: User, organisation: Organisation) -> None:
+        """
+        Self-service removal of `user`'s own membership of `organisation`.
+
+        Refused if the user is the only administrator of an organisation that
+        still has other members; they must promote someone else first.
+        """
+        membership_qs = OrganisationMembership.objects.filter(user=user, organisation=organisation)
+        if not membership_qs.exists():
+            raise PermissionDenied(f"You are not a member of {organisation.name}.")
+        if self.would_leave_without_admin(user, organisation):
+            raise ValidationError(
+                f"You are the only administrator of {organisation.name}. "
+                "Make another member an administrator before leaving."
+            )
+
+        remove_membership_and_record_event(
+            membership_qs,
+            actioned_by=user,
+            notes=f"Left organisation '{organisation.name}'",
+        )
+
+    def get_invitation_organisation(self, invitation) -> Optional[Organisation]:
+        """
+        The organisation a django-invitations Invitation was sent for.
+
+        Invitations sent before OrganisationInvitation existed have no link, so
+        fall back to the inviter's primary organisation as before.
+        """
+        try:
+            return invitation.organisation_link.organisation
+        except OrganisationInvitation.DoesNotExist:
+            return self.get_user_organisation(invitation.inviter)
+
+    def link_invitation_to_organisation(self, invitation, organisation: Organisation) -> OrganisationInvitation:
+        """Record that `invitation` was sent to join `organisation`."""
+        return OrganisationInvitation.objects.create(invitation=invitation, organisation=organisation)
 
     def get_organisation_projects(
         self, organisation: Organisation, user: User = None, with_metrics: bool = True
@@ -356,26 +372,18 @@ class OrganisationService(BasePermissionService):
         return base_query.order_by("-created_at")
 
     @requires_permission("view", obj_param="organisation")
-    def get_organisation_members(
-        self, user: User, organisation: Organisation
-    ) -> QuerySet[OrganisationMembership]:
+    def get_organisation_members(self, user: User, organisation: Organisation) -> QuerySet[OrganisationMembership]:
         """Get all members of an organisation with their roles"""
-        return OrganisationMembership.objects.filter(
-            organisation=organisation
-        ).select_related("user")
+        return OrganisationMembership.objects.filter(organisation=organisation).select_related("user")
 
     def can_merge(self, user: User) -> bool:
         """
         Merging spans two organisations, so this is a staff-level action
         rather than something scoped to a role within either org.
         """
-        return bool(
-            user and user.is_authenticated and (user.is_staff or user.is_superuser)
-        )
+        return bool(user and user.is_authenticated and (user.is_staff or user.is_superuser))
 
-    def merge_organisations(
-        self, user: User, source: Organisation, target: Organisation
-    ) -> OrganisationMergePlan:
+    def merge_organisations(self, user: User, source: Organisation, target: Organisation) -> OrganisationMergePlan:
         """
         Move source's projects and memberships into target, then delete
         source. Where a user belongs to both orgs, target's existing role
@@ -388,9 +396,7 @@ class OrganisationService(BasePermissionService):
         half-merged.
         """
         if not self.can_merge(user):
-            raise PermissionDenied(
-                f"User '{user}' does not have permission to merge organisations"
-            )
+            raise PermissionDenied(f"User '{user}' does not have permission to merge organisations")
 
         with transaction.atomic():
             source = Organisation.objects.select_for_update().get(pk=source.pk)
@@ -409,9 +415,9 @@ class OrganisationService(BasePermissionService):
                     ),
                 )
 
-            OrganisationMembership.objects.filter(
-                pk__in=[m.pk for m in plan.memberships_to_move]
-            ).update(organisation=target)
+            OrganisationMembership.objects.filter(pk__in=[m.pk for m in plan.memberships_to_move]).update(
+                organisation=target
+            )
 
             Project.objects.filter(organisation=source).update(organisation=target)
 

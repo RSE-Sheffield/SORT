@@ -1,0 +1,45 @@
+name: GitHub Actions security scan
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - ".github/**"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - ".github/**"
+  schedule:
+    # New audits are added to zizmor without any code change, so also scan weekly
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+permissions: {}
+jobs:
+  zizmor:
+    name: zizmor (workflow security)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      security-events: write  # upload SARIF to code scanning
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482 # v0.6.4
+  actionlint:
+    name: actionlint (workflow correctness)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run actionlint
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
+        with:
+          # Inline `run:` scripts predate this check and only raise shellcheck style notes;
+          # actionlint still validates syntax, expressions, runners and action inputs.
+          shellcheck: false

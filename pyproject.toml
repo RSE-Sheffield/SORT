@@ -28,6 +28,7 @@ omit = [
     "SORT/*",
     "*/admin.py",
     "*/tests/*",
+    "e2e/*",
     "home/management/*",
     "survey/management/*",
 ]
@@ -36,3 +37,16 @@ omit = [
 format = "markdown"
 skip_empty = true
 sort = "Cover"
+
+[tool.bandit]
+# Tests use asserts and hardcoded passwords, which are noise for a security scan.
+exclude_dirs = ["node_modules", ".venv", "e2e", "home/tests", "survey/tests", "SORT/test"]
+
+[tool.djlint]
+profile = "django"
+extension = "html"
+# Rules ignored to keep the baseline green; remove from this list as templates are fixed.
+# H030/H031: meta description/keywords. H021: inline styles. H023: entity references.
+# H008, H014, H016, H020, H025, H029, H043, H054, T001, T002: existing findings to fix gradually.
+ignore = "H030,H031,H021,H023,H008,H014,H016,H020,H025,H029,H043,H054,T001,T002"
+exclude = "node_modules,.venv,venv,static,staticfiles"

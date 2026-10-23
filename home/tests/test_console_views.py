@@ -1,12 +1,19 @@
 import json
+import logging
 from http import HTTPStatus
 
 import SORT.test.test_case
-from SORT.test.model_factory import OrganisationFactory, OrganisationMembershipFactory, ProjectFactory, SurveyFactory, \
-    SuperUserFactory, UserFactory
-from SORT.test.model_factory.user.constants import PASSWORD
-
 from home.models import DataProtectionEvent
+from SORT.test.model_factory import (
+    OrganisationFactory,
+    OrganisationMembershipFactory,
+    ProjectFactory,
+    SuperUserFactory,
+    SurveyFactory,
+    UserFactory,
+)
+from SORT.test.model_factory.user.constants import PASSWORD
+from survey.models import SurveyResponse
 
 
 class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
@@ -273,6 +280,7 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         response = self.client.post(f"/console/organisations/{org.pk}/members/{membership_pk}/remove/")
         self.assertRedirects(response, f"/console/organisations/{org.pk}/")
         from home.models import OrganisationMembership
+
         self.assertFalse(OrganisationMembership.objects.filter(pk=membership_pk).exists())
 
     # -- Suspend / unsuspend user --------------------------------------------
@@ -309,6 +317,7 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
         # No cascade: the user and their memberships still exist.
         self.assertTrue(UserFactory._meta.model.objects.filter(pk=user.pk).exists())
         from home.models import OrganisationMembership
+
         self.assertTrue(OrganisationMembership.objects.filter(pk=membership.pk).exists())
 
     def test_console_suspend_user_post_unsuspends(self):
@@ -366,6 +375,7 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
     def test_delete_user_post_anonymises_user(self):
         """POST anonymises PII, deactivates the account, and removes memberships."""
         from home.models import OrganisationMembership
+
         target = UserFactory()
         org = OrganisationFactory()
         OrganisationMembershipFactory(user=target, organisation=org)
@@ -573,3 +583,100 @@ class ConsoleViewTestCase(SORT.test.test_case.ViewTestCase):
                 event_type=DataProtectionEvent.EventType.RECTIFICATION, subject_user_id=target.pk
             ).exists()
         )
+
+    def test_console_analytics_accessible_to_staff(self):
+        """Staff users can view usage analytics."""
+        survey = SurveyFactory()
+        SurveyResponse.objects.create(survey=survey, answers=[])
+        self.login_staff()
+        response = self.client.get("/console/analytics/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertContains(response, survey.organisation.name)
+        self.assertEqual(response.context["analytics"]["active_days"], 90)
+
+    def test_console_analytics_redirects_anonymous(self):
+        response = self.client.get("/console/analytics/")
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_analytics_forbidden_for_regular_users(self):
+        self.login()
+        response = self.client.get("/console/analytics/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_analytics_days_parameter(self):
+        """The activity window is read from ?days=, and invalid values fall back to the default."""
+        self.login_staff()
+        for value, expected in (("30", 30), ("abc", 90), ("0", 1), ("999999", 3650)):
+            with self.subTest(days=value):
+                response = self.client.get("/console/analytics/", {"days": value})
+                self.assertEqual(response.context["analytics"]["active_days"], expected)
+
+    def test_console_analytics_export_csv(self):
+        """Staff can download each analytics table as CSV."""
+        self.login_staff()
+        for report in ("surveys", "trends", "organisations"):
+            with self.subTest(report=report):
+                response = self.client.get("/console/analytics/export/", {"report": report})
+                self.assertEqual(response.status_code, HTTPStatus.OK)
+                self.assertEqual(response["Content-Type"], "text/csv")
+                self.assertIn(f"sort_usage_{report}.csv", response["Content-Disposition"])
+
+    def test_console_analytics_export_unknown_report(self):
+        self.login_staff()
+        response = self.client.get("/console/analytics/export/", {"report": "nonsense"})
+        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
+
+    def test_console_analytics_export_forbidden_for_regular_users(self):
+        self.login()
+        response = self.client.get("/console/analytics/export/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_research_export_page_accessible_to_staff(self):
+        """Staff can open the research data export page."""
+        self.login_staff()
+        response = self.client.get("/console/research-export/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_console_research_export_download(self):
+        """Staff download the research data as an Excel workbook that is not cached."""
+        self.login_staff()
+        response = self.client.post("/console/research-export/")
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(
+            response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        self.assertIn('attachment; filename="sort_research_data_', response["Content-Disposition"])
+        self.assertEqual(response["Cache-Control"], "no-store")
+        self.assertTrue(b"".join(response.streaming_content).startswith(b"PK"))
+        response.close()
+
+    def test_console_research_export_download_is_logged(self):
+        """Each download leaves an audit record, even when the root log level is WARNING."""
+        # assertLogs overrides the logger level, so check the configured level separately
+        self.assertTrue(logging.getLogger("home.views.console").isEnabledFor(logging.INFO))
+        self.login_staff()
+        with self.assertLogs("home.views.console", level="INFO") as logs:
+            self.client.post("/console/research-export/")
+        self.assertIn(
+            f"Research data export downloaded by user {self.staff_user.pk}",
+            logs.output[0],
+        )
+
+    def test_console_research_export_redirects_anonymous(self):
+        for method in (self.client.get, self.client.post):
+            with self.subTest(method=method.__name__):
+                response = method("/console/research-export/")
+                self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_console_research_export_forbidden_for_regular_users(self):
+        self.login()
+        for method in (self.client.get, self.client.post):
+            with self.subTest(method=method.__name__):
+                response = method("/console/research-export/")
+                self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
+
+    def test_console_research_export_forbidden_for_non_staff_superusers(self):
+        self.login_superuser()
+        response = self.client.post("/console/research-export/")
+        self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)

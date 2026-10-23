@@ -2,18 +2,17 @@ from http import HTTPStatus
 from unittest.mock import patch
 
 import SORT.test.test_case
+from home.constants import ROLE_ADMIN
+from home.models import DataProtectionEvent, OrganisationMembership
+from home.services import data_protection_service, organisation_service
+from home.services.data_protection import pseudonymise_identifier
+from home.services.organisation import remove_membership_and_record_event
 from SORT.test.model_factory import (
     OrganisationFactory,
     OrganisationMembershipFactory,
     UserFactory,
 )
 from SORT.test.model_factory.user.constants import PASSWORD
-
-from home.constants import ROLE_ADMIN
-from home.models import DataProtectionEvent, OrganisationMembership
-from home.services import data_protection_service, organisation_service
-from home.services.data_protection import pseudonymise_identifier
-from home.services.organisation import remove_membership_and_record_event
 
 
 class DataProtectionEventModelTests(SORT.test.test_case.ViewTestCase):
@@ -55,9 +54,7 @@ class DataProtectionServiceTests(SORT.test.test_case.ViewTestCase):
         )
         self.assertEqual(event.subject_user_id, self.user.pk)
         # Identifier is a pseudonym, never the plaintext email.
-        self.assertEqual(
-            event.subject_identifier, pseudonymise_identifier(self.user.email)
-        )
+        self.assertEqual(event.subject_identifier, pseudonymise_identifier(self.user.email))
         self.assertNotEqual(event.subject_identifier, self.user.email)
         self.assertEqual(event.actioned_by, self.staff_user)
         self.assertEqual(event.event_type, "export")
@@ -86,6 +83,7 @@ class DataProtectionServiceTests(SORT.test.test_case.ViewTestCase):
 
     def test_list_events_denies_non_staff(self):
         from django.core.exceptions import PermissionDenied
+
         with self.assertRaises(PermissionDenied):
             data_protection_service.list_events(self.user)
 
@@ -100,9 +98,7 @@ class DataProtectionServiceTests(SORT.test.test_case.ViewTestCase):
             subject_user=self.user,
             actioned_by=self.staff_user,
         )
-        events = data_protection_service.list_events(
-            self.staff_user, event_type="erasure"
-        )
+        events = data_protection_service.list_events(self.staff_user, event_type="erasure")
         self.assertEqual(events.count(), 1)
         self.assertEqual(events.first().event_type, "erasure")
 
@@ -113,9 +109,7 @@ class DataProtectionLogViewTests(SORT.test.test_case.ViewTestCase):
         self.staff_user = UserFactory(is_staff=True)
 
     def _login_staff(self):
-        self.assertTrue(
-            self.client.login(username=self.staff_user.email, password=PASSWORD)
-        )
+        self.assertTrue(self.client.login(username=self.staff_user.email, password=PASSWORD))
 
     def test_anonymous_is_redirected(self):
         response = self.client.get("/console/data-protection/")
@@ -144,9 +138,7 @@ class DataProtectionLogViewTests(SORT.test.test_case.ViewTestCase):
 
     def test_invalid_subject_user_param_does_not_500(self):
         self._login_staff()
-        response = self.client.get(
-            "/console/data-protection/", {"subject_user": "abc"}
-        )
+        response = self.client.get("/console/data-protection/", {"subject_user": "abc"})
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
 
@@ -155,19 +147,11 @@ class RemoveMemberRecordsEventTests(SORT.test.test_case.ViewTestCase):
         super().setUp()
         self.staff_user = UserFactory(is_staff=True)
         self.org = OrganisationFactory()
-        self.membership = OrganisationMembershipFactory(
-            organisation=self.org, user=self.user
-        )
+        self.membership = OrganisationMembershipFactory(organisation=self.org, user=self.user)
 
     def test_remove_member_records_membership_removed_event(self):
-        self.assertTrue(
-            self.client.login(
-                username=self.staff_user.email, password=PASSWORD
-            )
-        )
-        response = self.client.post(
-            f"/console/organisations/{self.org.pk}/members/{self.membership.pk}/remove/"
-        )
+        self.assertTrue(self.client.login(username=self.staff_user.email, password=PASSWORD))
+        response = self.client.post(f"/console/organisations/{self.org.pk}/members/{self.membership.pk}/remove/")
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         events = DataProtectionEvent.objects.filter(
             event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
@@ -179,9 +163,7 @@ class RemoveMemberRecordsEventTests(SORT.test.test_case.ViewTestCase):
         self.assertIn(self.org.name, event.notes)
 
 
-class OrganisationServiceRemovalRecordsEventTests(
-    SORT.test.test_case.ViewTestCase
-):
+class OrganisationServiceRemovalRecordsEventTests(SORT.test.test_case.ViewTestCase):
     """The user-facing removal path (service + OrganisationMembershipDeleteView)
     must also write an audit event, not just the staff console path."""
 
@@ -192,9 +174,7 @@ class OrganisationServiceRemovalRecordsEventTests(
         self.admin = self.org.members.first()
         # A separate member to remove.
         self.member = UserFactory()
-        OrganisationMembership.objects.create(
-            user=self.member, organisation=self.org, role=ROLE_ADMIN
-        )
+        OrganisationMembership.objects.create(user=self.member, organisation=self.org, role=ROLE_ADMIN)
 
     def test_service_remove_records_membership_removed_event(self):
         organisation_service.remove_user_from_organisation(
@@ -212,15 +192,9 @@ class OrganisationServiceRemovalRecordsEventTests(
         self.assertIn(self.org.name, event.notes)
 
     def test_member_delete_view_records_event(self):
-        self.assertTrue(
-            self.client.login(username=self.admin.email, password=PASSWORD)
-        )
-        membership = OrganisationMembership.objects.get(
-            user=self.member, organisation=self.org
-        )
-        response = self.client.post(
-            f"/myorganisation/members/delete/{membership.pk}/"
-        )
+        self.assertTrue(self.client.login(username=self.admin.email, password=PASSWORD))
+        membership = OrganisationMembership.objects.get(user=self.member, organisation=self.org)
+        response = self.client.post(f"/myorganisation/members/delete/{membership.pk}/")
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         events = DataProtectionEvent.objects.filter(
             event_type=DataProtectionEvent.EventType.MEMBERSHIP_REMOVED,
@@ -250,12 +224,8 @@ class RemoveMembershipAndRecordEventAtomicityTests(SORT.test.test_case.ViewTestC
             side_effect=RuntimeError("boom"),
         ):
             with self.assertRaises(RuntimeError):
-                remove_membership_and_record_event(
-                    qs, actioned_by=self.admin, notes="test"
-                )
-        self.assertTrue(
-            OrganisationMembership.objects.filter(pk=self.membership.pk).exists()
-        )
+                remove_membership_and_record_event(qs, actioned_by=self.admin, notes="test")
+        self.assertTrue(OrganisationMembership.objects.filter(pk=self.membership.pk).exists())
 
     def test_second_removal_of_same_membership_does_not_duplicate_event(self):
         qs = OrganisationMembership.objects.filter(pk=self.membership.pk)

@@ -74,7 +74,7 @@ The app will be available at http://127.0.0.1:8000.
 
 # Deployment
 
-Please read [`docs/deployment.md`](docs/deployment.md).
+Please read the [deployment guide](docs/deployment.md) and [operations instructions](docs/operations.md) for information on how this application runs in the development and production environments and how to roll out changes. The [release procedure](RELEASING.md) covers minting a new version of the code.
 
 # Vite integration
 The SORT app uses some JavaScript components such as the survey configurator and the survey response form. This is

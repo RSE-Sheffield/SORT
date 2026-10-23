@@ -131,9 +131,7 @@ class OrganisationViewTestCase(ViewTestCase):
         organisation stays active, and they're told how to switch to the
         new one.
         """
-        OrganisationMembershipFactory(
-            user=self.user, organisation=self.organisation, role=ROLE_ADMIN
-        )
+        OrganisationMembershipFactory(user=self.user, organisation=self.organisation, role=ROLE_ADMIN)
         self.login()
 
         response = self.client.post(
@@ -184,12 +182,8 @@ class SetActiveOrganisationViewTestCase(ViewTestCase):
         super().setUp()
         self.first_organisation = OrganisationFactory()
         self.second_organisation = OrganisationFactory()
-        OrganisationMembershipFactory(
-            user=self.user, organisation=self.first_organisation, role=ROLE_ADMIN
-        )
-        OrganisationMembershipFactory(
-            user=self.user, organisation=self.second_organisation, role=ROLE_ADMIN
-        )
+        OrganisationMembershipFactory(user=self.user, organisation=self.first_organisation, role=ROLE_ADMIN)
+        OrganisationMembershipFactory(user=self.user, organisation=self.second_organisation, role=ROLE_ADMIN)
 
     def test_switch_to_a_member_organisation(self):
         self.login()
@@ -202,12 +196,8 @@ class SetActiveOrganisationViewTestCase(ViewTestCase):
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
         dashboard_response = self.client.get(django.urls.reverse("myorganisation"))
-        self.assertContains(
-            dashboard_response, f"<h1>{self.second_organisation.name}</h1>"
-        )
-        self.assertNotContains(
-            dashboard_response, f"<h1>{self.first_organisation.name}</h1>"
-        )
+        self.assertContains(dashboard_response, f"<h1>{self.second_organisation.name}</h1>")
+        self.assertNotContains(dashboard_response, f"<h1>{self.first_organisation.name}</h1>")
 
     def test_cannot_switch_to_an_organisation_not_a_member_of(self):
         other_organisation = OrganisationFactory()
@@ -229,13 +219,21 @@ class SetActiveOrganisationViewTestCase(ViewTestCase):
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         self.assertIn(django.urls.reverse("login"), response.url)
 
-    def test_switcher_not_shown_for_single_organisation_user(self):
-        OrganisationMembership.objects.filter(
-            user=self.user, organisation=self.second_organisation
-        ).delete()
+    def test_switcher_shown_for_single_organisation_user(self):
+        """Single-org users still get the menu, so they can reach My organisations (issue #690)."""
+        OrganisationMembership.objects.filter(user=self.user, organisation=self.second_organisation).delete()
         self.login()
 
         response = self.client.get(django.urls.reverse("myorganisation"))
+
+        self.assertContains(response, "orgSwitcherDropdown")
+        self.assertContains(response, django.urls.reverse("my_organisations"))
+
+    def test_switcher_not_shown_without_organisation(self):
+        OrganisationMembership.objects.filter(user=self.user).delete()
+        self.login()
+
+        response = self.client.get(django.urls.reverse("profile"))
 
         self.assertNotContains(response, "orgSwitcherDropdown")
 
@@ -259,9 +257,7 @@ class SetActiveOrganisationViewTestCase(ViewTestCase):
             },
         )
 
-        self.assertRedirects(
-            response, "/projects/", fetch_redirect_response=False
-        )
+        self.assertRedirects(response, "/projects/", fetch_redirect_response=False)
 
     def test_switch_ignores_unsafe_next_url(self):
         """An off-site `next` value must not be used as a redirect target (CWE-601)."""
