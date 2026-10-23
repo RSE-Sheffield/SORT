@@ -6,6 +6,7 @@ django-crispy-forms==2.4
 crispy-bootstrap5==2025.4
 django-invitations==2.1.0
 django-allauth==65.14.1
+django-gmailapi-backend==0.3.4
 psycopg[binary]==3.2.*
 python-dotenv==1.2.2
 gunicorn==23.*

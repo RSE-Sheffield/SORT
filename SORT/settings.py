@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "invitations",
+    "gmailapi_backend",
     # SORT apps
     "home",
     "survey",
@@ -210,6 +211,13 @@ EMAIL_SUBJECT_PREFIX = os.getenv("DJANGO_EMAIL_SUBJECT_PREFIX", "[SORT] ")
 EMAIL_USE_LOCALTIME = cast_to_boolean(os.getenv("DJANGO_EMAIL_USE_LOCALTIME", True))
 DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "noreply@noreply.com")
 
+# Gmail API backend, used when DJANGO_EMAIL_BACKEND=gmailapi_backend.mail.GmailBackend
+# https://github.com/dolfim/django-gmailapi-backend
+# See docs/deployment.md for how to create these OAuth2 credentials.
+GMAIL_API_CLIENT_ID = os.getenv("DJANGO_GMAIL_API_CLIENT_ID")
+GMAIL_API_CLIENT_SECRET = os.getenv("DJANGO_GMAIL_API_CLIENT_SECRET")
+GMAIL_API_REFRESH_TOKEN = os.getenv("DJANGO_GMAIL_API_REFRESH_TOKEN")
+GMAIL_API_USER_ID = os.getenv("DJANGO_GMAIL_API_USER_ID", "me")
 # Error notifications: unhandled exceptions (HTTP 500) are emailed to these
 # addresses (comma-separated). Empty means disabled.
 ADMINS = [("SORT Admins", addr.strip()) for addr in os.getenv("DJANGO_ADMINS", "").split(",") if addr.strip()]

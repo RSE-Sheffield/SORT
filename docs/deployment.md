@@ -103,7 +103,85 @@ python -c "import secrets; print(secrets.token_urlsafe(37))"
 
 ## Email settings
 
-SORT sends email (account verification, password resets, survey invitations and join-request notifications) over SMTP using a Google account. Google no longer accepts an account's normal password for SMTP sign-in, and Django's SMTP backend doesn't support OAuth2, so we authenticate with a [Google App Password](https://support.google.com/accounts/answer/185833): a 16-character password that only grants access to this one app and can be revoked on its own.
+SORT sends email (account verification, password resets, survey invitations and join-request notifications) from a Google Workspace account. There are two ways to authenticate:
+
+* **Gmail API with OAuth2 (recommended)**: SORT sends through the [Gmail API](https://developers.google.com/workspace/gmail/api/guides/sending) using [django-gmailapi-backend](https://github.com/dolfim/django-gmailapi-backend). SORT may only *send* email (the `gmail.send` scope); it can't read or delete the account's mail. This doesn't depend on 2-Step Verification or on App Passwords staying enabled for the Workspace.
+* **SMTP with an App Password**: the fallback. Django's SMTP backend doesn't support OAuth2, so this uses a [Google App Password](https://support.google.com/accounts/answer/185833) instead.
+
+SMTP is the default. The Gmail API backend is switched on by setting `DJANGO_EMAIL_BACKEND` in `.env`.
+
+### Gmail API with OAuth2
+
+#### One-time Google Cloud setup
+
+Sign in to the [Google Cloud console](https://console.cloud.google.com/) with a University account. You may need IT Services to create the project for you.
+
+1. Create a project if it doesn't already exist, e.g. "SORT Online".
+2. Go to **APIs & Services > Library** and enable the **Gmail API**.
+3. Go to **Google Auth Platform** (the OAuth consent screen), fill in **Branding**, and set **Audience** (user type) to **Internal**. Internal apps can only be used by accounts in the University's Workspace. They don't need Google's verification, and their refresh tokens don't expire after 7 days the way they do for external apps in "Testing" mode.
+4. Go to **Google Auth Platform > Clients** and create an OAuth client with application type **Desktop app**. Download its JSON file, e.g. `client_secret.json`. Treat this file as a secret.
+
+#### Get a refresh token
+
+The refresh token is created by signing in to Google as the sending account in a web browser, so run this on your own computer (in a SORT development environment), not on the server:
+
+```bash
+python manage.py gmail_refresh_token --client-secrets client_secret.json
+```
+
+A browser window opens. Sign in as the **sending account** (the address in `DJANGO_DEFAULT_FROM_EMAIL`) and allow SORT to "Send email on your behalf". The command then prints the settings to add to `.env`:
+
+```ini
+DJANGO_EMAIL_BACKEND=gmailapi_backend.mail.GmailBackend
+DJANGO_GMAIL_API_CLIENT_ID=********.apps.googleusercontent.com
+DJANGO_GMAIL_API_CLIENT_SECRET=********
+DJANGO_GMAIL_API_REFRESH_TOKEN=********
+```
+
+If the browser can't be opened automatically, add `--no-browser` and open the printed URL yourself, on the same machine. Google redirects back to a temporary local web server; use `--port` to choose its port.
+
+Store these values in the password manager, then delete `client_secret.json`.
+
+#### Configure the server
+
+Add the printed lines to `/opt/sort/.env` together with the sender address:
+
+```ini
+# Email settings
+DJANGO_EMAIL_BACKEND=gmailapi_backend.mail.GmailBackend
+DJANGO_GMAIL_API_CLIENT_ID=********.apps.googleusercontent.com
+DJANGO_GMAIL_API_CLIENT_SECRET=********
+DJANGO_GMAIL_API_REFRESH_TOKEN=********
+DJANGO_DEFAULT_FROM_EMAIL=sending-account@example.com
+```
+
+`DJANGO_DEFAULT_FROM_EMAIL` must be the sending account's address, or one of its verified ["Send mail as" aliases](https://support.google.com/mail/answer/22370). Otherwise Gmail replaces the From address with the account's own. The `DJANGO_EMAIL_HOST*` settings aren't used by this backend.
+
+Then check the configuration, send a test email and restart the service:
+
+```bash
+cd /opt/sort
+sudo venv/bin/python manage.py check
+sudo venv/bin/python manage.py sendtestemail your-email@sheffield.ac.uk
+sudo systemctl restart gunicorn.service
+```
+
+`manage.py check` reports error `home.E004` if any of the `DJANGO_GMAIL_API_*` settings are missing.
+
+To go back to SMTP, remove the `DJANGO_EMAIL_BACKEND` line (and set up the App Password settings below), then restart the service.
+
+#### When the refresh token stops working
+
+Google revokes the refresh token if:
+
+* the sending account's password is changed (this applies to tokens with Gmail scopes);
+* someone removes SORT's access at [Third-party apps & services](https://myaccount.google.com/connections);
+* it hasn't been used for 6 months;
+* the OAuth client is deleted.
+
+If that happens, sending fails and the logs show `RefreshError: ('invalid_grant: ...')`. Run `gmail_refresh_token` again, update `DJANGO_GMAIL_API_REFRESH_TOKEN` in `.env`, and restart the service. See [troubleshooting.md](troubleshooting.md#email-isnt-being-sent).
+
+### SMTP with an App Password
 
 Add the following to the `.env` file:
 
@@ -123,7 +201,7 @@ DJANGO_DEFAULT_FROM_EMAIL=sending-account@example.com
 2. Go to [App passwords](https://myaccount.google.com/apppasswords), create one named e.g. "SORT", and copy the generated password (without spaces) into `.env`. Store it in the password manager.
 3. Restart the service: `sudo systemctl restart gunicorn.service`
 
-The App Password stops working if the Google account's password is changed, 2-Step Verification is turned off, or the password is revoked. If emails stop sending, check the logs for an SMTP authentication error, then generate a new App Password and update `.env`.
+The App Password stops working if the Google account's password is changed, 2-Step Verification is turned off, the password is revoked, or a Workspace administrator disables App Passwords. If emails stop sending, check the logs for an SMTP authentication error, then generate a new App Password and update `.env`.
 
 ### Error notification emails
 
