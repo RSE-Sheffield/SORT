@@ -5,7 +5,7 @@ These checks verify database connectivity during deployment and development.
 Run with: python manage.py check
 """
 
-from django.core.checks import Error, register, Tags
+from django.core.checks import Error, Tags, register
 from django.db import connection
 from django.db.utils import OperationalError
 

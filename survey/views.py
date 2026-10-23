@@ -3,8 +3,6 @@ import logging
 import mimetypes
 import os.path
 
-import django.core.mail
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -16,16 +14,17 @@ from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import (
     DeleteView,
-    FormView,
-    UpdateView,
     DetailView,
+    FormView,
     TemplateView,
+    UpdateView,
 )
 from django.views.generic.edit import CreateView
 
 from home.models import Project
 from survey.services import survey_service
 
+from .exceptions import SurveyInactiveError
 from .forms import InvitationForm, SurveyCreateForm
 from .models import (
     Invitation,
@@ -36,7 +35,6 @@ from .models import (
     SurveyResponse,
 )
 from .services.survey import InvalidInviteTokenException
-from .exceptions import SurveyInactiveError
 
 logger = logging.getLogger(__name__)
 
@@ -55,24 +53,16 @@ class SurveyView(LoginRequiredMixin, View):
 
     def render_survey_page(self, request: HttpRequest, pk: int, is_post=False):
         context = {}
-        survey = survey_service.get_survey(
-            request.user, pk
-        )  # Check that we're allowed to get the survey
+        survey = survey_service.get_survey(request.user, pk)  # Check that we're allowed to get the survey
         context["survey"] = survey
         context["first_evidence_section"] = (
-            SurveyEvidenceSection.objects.filter(survey=survey)
-            .order_by("section_id")
-            .first()
+            SurveyEvidenceSection.objects.filter(survey=survey).order_by("section_id").first()
         )
         context["first_improve_section"] = (
-            SurveyImprovementPlanSection.objects.filter(survey=survey)
-            .order_by("section_id")
-            .first()
+            SurveyImprovementPlanSection.objects.filter(survey=survey).order_by("section_id").first()
         )
         context["invite_link"] = survey.get_invite_link(request)
-        context["responses_count"] = SurveyResponse.objects.filter(
-            survey=survey
-        ).count()
+        context["responses_count"] = SurveyResponse.objects.filter(survey=survey).count()
         context["can_edit"] = {survey.id: survey_service.can_edit(request.user, survey)}
         context["request"] = request
         return render(request, "survey/survey.html", context)
@@ -102,11 +92,13 @@ class SurveyEditView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         if survey_service.can_edit(self.request.user, self.object):
             messages.info(self.request, f"Survey {self.object.name} updated")
-            return super().form_valid(form)
+            renamed = "name" in form.changed_data
+            result = super().form_valid(form)
+            if renamed:
+                survey_service.audit("renamed", self.request.user, self.object)
+            return result
         else:
-            messages.error(
-                self.request, "You do not have permission to edit this survey."
-            )
+            messages.error(self.request, "You do not have permission to edit this survey.")
             return redirect("survey", pk=self.object.pk)
 
     def get_success_url(self):
@@ -122,11 +114,11 @@ class SurveyDeleteView(LoginRequiredMixin, DeleteView):
     def form_valid(self, form):
         if survey_service.can_delete(self.request.user, self.object):
             messages.info(self.request, f"Survey {self.object.name} deleted")
-            return super().form_valid(form)
+            success_url = self.get_success_url()
+            survey_service.delete_survey(self.request.user, self.object)
+            return redirect(success_url)
         else:
-            messages.error(
-                self.request, "You do not have permission to delete this survey."
-            )
+            messages.error(self.request, "You do not have permission to delete this survey.")
             return redirect("survey", pk=self.object.pk)
 
     def get_success_url(self):
@@ -150,9 +142,7 @@ class SurveyConfigureView(LoginRequiredMixin, View):
         # TODO: Error handling when object not found
         survey = get_object_or_404(Survey, pk=pk)
         if survey.has_responses:
-            raise PermissionDenied(
-                "Surveys cannot be modified after receiving responses."
-            )
+            raise PermissionDenied("Surveys cannot be modified after receiving responses.")
         context["survey"] = survey
         context["csrf"] = str(csrf(self.request)["csrf_token"])
         context["can_edit"] = {survey.id: survey_service.can_edit(request.user, survey)}
@@ -228,10 +218,7 @@ class SurveyResponseDataView(LoginRequiredMixin, View):
         survey = survey_service.get_survey(request.user, pk)
         context = {
             "survey": survey,
-            "responses": [
-                response.answers
-                for response in SurveyResponse.objects.filter(survey=survey)
-            ],
+            "responses": [response.answers for response in SurveyResponse.objects.filter(survey=survey)],
         }
 
         return render(request, "survey/survey_response_data.html", context)
@@ -240,12 +227,8 @@ class SurveyResponseDataView(LoginRequiredMixin, View):
 class SurveyEvidenceGatheringView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int, section_id: int):
         survey = survey_service.get_survey(request.user, pk)
-        evidence_section = SurveyEvidenceSection.objects.get(
-            survey=survey, section_id=section_id
-        )
-        sections = SurveyEvidenceSection.objects.filter(survey=survey).order_by(
-            "section_id"
-        )
+        evidence_section = SurveyEvidenceSection.objects.get(survey=survey, section_id=section_id)
+        sections = SurveyEvidenceSection.objects.filter(survey=survey).order_by("section_id")
 
         files_list = []
         for file in evidence_section.files.all():
@@ -261,14 +244,9 @@ class SurveyEvidenceGatheringView(LoginRequiredMixin, View):
 
         context = {
             "survey": survey,
-            "responses": [
-                response.answers
-                for response in SurveyResponse.objects.filter(survey=survey)
-            ],
+            "responses": [response.answers for response in SurveyResponse.objects.filter(survey=survey)],
             "evidence_section": evidence_section,
-            "section_config": survey.survey_config["sections"][
-                evidence_section.section_id
-            ],
+            "section_config": survey.survey_config["sections"][evidence_section.section_id],
             "sections": sections,
             "files_list": files_list,
             "csrf": str(csrf(self.request)["csrf_token"]),
@@ -284,13 +262,9 @@ class SurveyEvidenceGatheringView(LoginRequiredMixin, View):
 class SurveyEvidenceUpdateView(LoginRequiredMixin, View):
     def post(self, request: HttpRequest, pk: int, section_id: int):
         survey = survey_service.get_survey(request.user, pk)
-        evidence_section = SurveyEvidenceSection.objects.get(
-            survey=survey, section_id=section_id
-        )
+        evidence_section = SurveyEvidenceSection.objects.get(survey=survey, section_id=section_id)
         if "text" in request.POST:
-            survey_service.update_evidence_section(
-                request.user, survey, evidence_section, text=request.POST["text"]
-            )
+            survey_service.update_evidence_section(request.user, survey, evidence_section, text=request.POST["text"])
 
         return redirect("survey_evidence_gathering", pk=pk, section_id=section_id)
 
@@ -310,9 +284,7 @@ class SurveyEvidenceFileUploadView(LoginRequiredMixin, View):
     def post(self, request: HttpRequest, pk: int, section_id: int):
 
         try:
-            evidence_section = SurveyEvidenceSection.objects.get(
-                survey_id=pk, section_id=section_id
-            )
+            evidence_section = SurveyEvidenceSection.objects.get(survey_id=pk, section_id=section_id)
             survey_service.add_uploaded_files_to_evidence_section(
                 request.user, evidence_section.survey, evidence_section, request.FILES
             )
@@ -327,18 +299,14 @@ class SurveyEvidenceFileUploadView(LoginRequiredMixin, View):
 class SurveyEvidenceFileDeleteView(LoginRequiredMixin, View):
     def post(self, request: HttpRequest, pk: int):
         evidence_file = SurveyEvidenceFile.objects.get(pk=pk)
-        survey_service.remove_evidence_file(
-            request.user, evidence_file.evidence_section.survey, evidence_file
-        )
+        survey_service.remove_evidence_file(request.user, evidence_file.evidence_section.survey, evidence_file)
         return redirect(reverse_lazy("survey_evidence_gathering", kwargs={"pk": pk, "section_id": 0}))
 
 
 class SurveyEvidenceFileView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int):
         evidence_file = SurveyEvidenceFile.objects.get(pk=pk)
-        if not survey_service.can_view(
-                request.user, evidence_file.evidence_section.survey
-        ):
+        if not survey_service.can_view(request.user, evidence_file.evidence_section.survey):
             raise PermissionDenied("You do not have permission to view this survey.")
         file_path = evidence_file.file.path
         file = open(file_path, "rb")
@@ -354,15 +322,9 @@ class SurveyEvidenceFileView(LoginRequiredMixin, View):
 class SurveyImprovementPlanView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, pk: int, section_id: int):
         survey = survey_service.get_survey(request.user, pk)
-        evidence_section = SurveyEvidenceSection.objects.get(
-            survey=survey, section_id=section_id
-        )
-        improve_section = SurveyImprovementPlanSection.objects.get(
-            survey=survey, section_id=section_id
-        )
-        improve_sections = SurveyImprovementPlanSection.objects.filter(
-            survey=survey
-        ).order_by("section_id")
+        evidence_section = SurveyEvidenceSection.objects.get(survey=survey, section_id=section_id)
+        improve_section = SurveyImprovementPlanSection.objects.get(survey=survey, section_id=section_id)
+        improve_sections = SurveyImprovementPlanSection.objects.filter(survey=survey).order_by("section_id")
 
         files_list = []
         for file in evidence_section.files.all():
@@ -378,10 +340,7 @@ class SurveyImprovementPlanView(LoginRequiredMixin, View):
 
         context = {
             "survey": survey,
-            "responses": [
-                response.answers
-                for response in SurveyResponse.objects.filter(survey=survey)
-            ],
+            "responses": [response.answers for response in SurveyResponse.objects.filter(survey=survey)],
             "evidence_section": evidence_section,
             "improve_section": improve_section,
             "sections": improve_sections,
@@ -403,13 +362,9 @@ class SurveyImprovementPlanView(LoginRequiredMixin, View):
 class SurveyImprovementPlanUpdateView(LoginRequiredMixin, View):
     def post(self, request: HttpRequest, pk: int, section_id: int):
         survey = survey_service.get_survey(request.user, pk)
-        improve_section = SurveyImprovementPlanSection.objects.get(
-            survey=survey, section_id=section_id
-        )
+        improve_section = SurveyImprovementPlanSection.objects.get(survey=survey, section_id=section_id)
         data = request.POST["data"]
-        survey_service.update_improvement_section(
-            request.user, survey, improve_section, data
-        )
+        survey_service.update_improvement_section(request.user, survey, improve_section, data)
 
         return redirect(
             reverse_lazy(
@@ -425,15 +380,11 @@ class SurveyReportView(LoginRequiredMixin, View):
 
         evidence_sections = {
             e_section.section_id: e_section
-            for e_section in SurveyEvidenceSection.objects.filter(
-                survey=survey
-            ).order_by("section_id")
+            for e_section in SurveyEvidenceSection.objects.filter(survey=survey).order_by("section_id")
         }
         improve_sections = {
             i_section.section_id: i_section
-            for i_section in SurveyImprovementPlanSection.objects.filter(
-                survey=survey
-            ).order_by("section_id")
+            for i_section in SurveyImprovementPlanSection.objects.filter(survey=survey).order_by("section_id")
         }
 
         sections = []
@@ -503,9 +454,7 @@ class SurveyResponseView(View):
     def post(self, request: HttpRequest, token: str):
         return self.render_survey_response_page(request, token, is_post=True)
 
-    def render_survey_response_page(
-            self, request: HttpRequest, token: str, is_post: bool
-    ):
+    def render_survey_response_page(self, request: HttpRequest, token: str, is_post: bool):
 
         try:
             survey = survey_service.get_survey_from_token(token)
@@ -519,7 +468,8 @@ class SurveyResponseView(View):
                 if "value" not in request.POST:
                     logger.error(
                         "Survey submission missing 'value' field: token=%s survey_id=%s",
-                        token, survey.pk,
+                        token,
+                        survey.pk,
                     )
                     return render(
                         request,
@@ -532,7 +482,8 @@ class SurveyResponseView(View):
                 except json.JSONDecodeError:
                     logger.error(
                         "Survey submission contained invalid JSON: token=%s survey_id=%s",
-                        token, survey.pk,
+                        token,
+                        survey.pk,
                     )
                     return render(
                         request,
@@ -545,7 +496,8 @@ class SurveyResponseView(View):
                 except Exception:
                     logger.exception(
                         "Failed to save survey response: token=%s survey_id=%s",
-                        token, survey.pk,
+                        token,
+                        survey.pk,
                     )
                     return render(
                         request,
@@ -598,32 +550,46 @@ class SurveyCreateInviteView(LoginRequiredMixin, View):
         return redirect("survey", pk=pk)
 
 
-class InvitationView(FormView):
-    model = Survey
+class InvitationView(LoginRequiredMixin, FormView):
+    """
+    Send the survey invitation link to participants by email.
+    """
+
     template_name = "invitations/send_invitation.html"
     form_class = InvitationForm
 
+    def get(self, request, *args, **kwargs):
+        self.survey = survey_service.get_survey(request.user, kwargs["pk"])
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.survey = survey_service.get_survey(request.user, kwargs["pk"])
+        return super().post(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(survey=self.survey, **kwargs)
+
     def form_valid(self, form):
         recipient_list = Invitation.recipient_list(form.cleaned_data["email"])
-        message = form.data["message"]
-        survey = Survey.objects.get(pk=self.kwargs["pk"])
         # Generate the survey link with the token
-        survey_link = survey.get_invite_link(request=self.request)
+        survey_link = self.survey.get_invite_link(request=self.request)
+        if survey_link is None:
+            form.add_error(
+                None,
+                "This survey has no active invitation link. " "Generate one on the survey page first.",
+            )
+            return self.form_invalid(form)
 
-        # Send the email
-        # https://docs.djangoproject.com/en/5.1/topics/email/
-        django.core.mail.send_mail(
-            subject="Your SORT Survey Invitation",
-            message=f"Click here to start the SORT survey:\n{survey_link}\n\n{message}",
-            from_email=settings.DEFAULT_FROM_EMAIL,
+        survey_service.send_invitation(
+            self.request.user,
+            self.survey,
             recipient_list=recipient_list,
-            fail_silently=False,
+            survey_link=survey_link,
+            message=form.cleaned_data["message"],
         )
 
         # Show success message
-        messages.success(
-            self.request, f"Invitation sent to {len(recipient_list)} recipients."
-        )
+        messages.success(self.request, f"Invitation sent to {len(recipient_list)} recipients.")
         return super().form_valid(form)
 
     def get_success_url(self):

@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import django.contrib.messages
 import django.urls
+
 import SORT.test.model_factory
 import SORT.test.test_case
 from survey.models import Invitation
@@ -23,6 +24,20 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
 
     def test_survey_get(self):
         self.get("survey", pk=self.survey.pk)
+
+    def test_sharing_links_shown_for_shared_survey(self):
+        self.survey.is_shared = True
+        self.survey.save()
+        response = self.get("survey", pk=self.survey.pk)
+        self.assertContains(response, django.urls.reverse("participant_information"))
+        self.assertContains(response, django.urls.reverse("data_sharing_agreement"))
+
+    def test_sharing_links_hidden_for_unshared_survey(self):
+        self.survey.is_shared = False
+        self.survey.save()
+        response = self.get("survey", pk=self.survey.pk)
+        self.assertNotContains(response, django.urls.reverse("participant_information"))
+        self.assertNotContains(response, django.urls.reverse("data_sharing_agreement"))
 
     def test_survey_get_unauthorised(self):
         # Redirect to login page (302)
@@ -47,9 +62,7 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
 
     def test_survey_delete_post(self):
         # We expect a 302 redirect after deletion
-        self.post(
-            "survey_delete", pk=self.survey.pk, expected_status_code=HTTPStatus.FOUND
-        )
+        self.post("survey_delete", pk=self.survey.pk, expected_status_code=HTTPStatus.FOUND)
 
     def test_survey_configure_get(self):
         self.get("survey_configure", pk=self.survey.pk)
@@ -166,14 +179,12 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
         self.get("survey_link_invalid")
 
     def test_success_invitation(self):
-        self.skipTest(
-            "https://github.com/RSE-Sheffield/SORT/pull/170#issuecomment-2740200064"
-        )
+        self.skipTest("https://github.com/RSE-Sheffield/SORT/pull/170#issuecomment-2740200064")
         self.get("success_invitation")
 
     def test_survey_create_with_research_consent(self):
         """Test creating a survey with research data consent enabled"""
-        from survey.models import Survey, Profession
+        from survey.models import Profession, Survey
 
         self.post(
             view_name="survey_create",
@@ -196,7 +207,7 @@ class SurveyViewTestCase(SORT.test.test_case.ViewTestCase):
 
     def test_survey_create_without_research_consent(self):
         """Test creating a survey without research data consent (default)"""
-        from survey.models import Survey, Profession
+        from survey.models import Profession, Survey
 
         self.post(
             view_name="survey_create",

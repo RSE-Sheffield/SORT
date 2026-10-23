@@ -1,4 +1,5 @@
 {% extends "base_console.html" %}
+{% load console_tags %}
 {% block title %}| Admin — Data protection log{% endblock %}
 
 {% block content %}
@@ -10,6 +11,7 @@
         </p>
 
         <form method="get" class="row g-2 mb-3">
+            {% if request.GET.sort %}<input type="hidden" name="sort" value="{{ sort }}"><input type="hidden" name="dir" value="{{ dir }}">{% endif %}
             <div class="col-auto">
                 <label for="event_type" class="form-label small mb-0">Event type</label>
                 <select name="event_type" id="event_type" class="form-select form-select-sm">
@@ -36,11 +38,11 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                     <tr>
-                        <th>When</th>
-                        <th>Event</th>
-                        <th>Subject</th>
-                        <th>Actioned by</th>
-                        <th>Requested by</th>
+                        {% sort_header "when" "When" %}
+                        {% sort_header "event" "Event" %}
+                        {% sort_header "subject" "Subject" %}
+                        {% sort_header "actioned_by" "Actioned by" %}
+                        {% sort_header "requested_by" "Requested by" %}
                         <th>Notes</th>
                     </tr>
                     </thead>

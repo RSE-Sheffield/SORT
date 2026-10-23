@@ -37,6 +37,15 @@ class SurveyAdmin(admin.ModelAdmin):
         "project__organisation",
     )
 
+    def get_readonly_fields(self, request, obj=None):
+        """
+        Answers are stored by position, so the questions can't change once responses exist.
+        """
+        readonly = super().get_readonly_fields(request, obj)
+        if obj is not None and obj.has_responses:
+            return (*readonly, "survey_config")
+        return readonly
+
 
 @admin.register(SurveyResponse)
 class SurveyResponseAdmin(admin.ModelAdmin):

@@ -6,6 +6,7 @@ class HelpView(TemplateView):
     """
     User guide
     """
+
     template_name = "help/index.html"
 
 
@@ -13,6 +14,7 @@ class VideoTutorialView(TemplateView):
     """
     Beginner's intro video.
     """
+
     template_name = "help/video-tutorial.html"
 
 
@@ -24,6 +26,7 @@ class FAQView(TemplateView):
     """
     Frequently asked questions (FAQs)
     """
+
     template_name = "help/faq.html"
 
 

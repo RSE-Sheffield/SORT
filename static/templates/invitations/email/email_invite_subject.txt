@@ -1,0 +1,1 @@
+{% autoescape off %}{% if organisation %}Invitation to join {{ organisation.name }} on {{ site_name }}{% else %}Invitation to join {{ site_name }}{% endif %}{% endautoescape %}

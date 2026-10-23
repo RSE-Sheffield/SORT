@@ -30,8 +30,7 @@ ORGANISATIONS = [
     ),
     (
         "Newcastle upon Tyne Hospitals NHS Foundation Trust",
-        "Provider of acute and specialist hospital services across the North East "
-        "of England.",
+        "Provider of acute and specialist hospital services across the North East " "of England.",
     ),
     (
         "Nottingham University Hospitals NHS Trust",
@@ -40,18 +39,15 @@ ORGANISATIONS = [
     ),
     (
         "Birmingham Women's and Children's NHS Foundation Trust",
-        "A specialist trust dedicated to the health of women, babies, children "
-        "and young people.",
+        "A specialist trust dedicated to the health of women, babies, children " "and young people.",
     ),
     (
         "South London and Maudsley NHS Foundation Trust",
-        "A specialist mental health trust providing care for children, adults "
-        "and older people.",
+        "A specialist mental health trust providing care for children, adults " "and older people.",
     ),
     (
         "Yorkshire Ambulance Service NHS Trust",
-        "Provider of emergency, urgent and patient transport services across "
-        "Yorkshire and the Humber.",
+        "Provider of emergency, urgent and patient transport services across " "Yorkshire and the Humber.",
     ),
 ]
 
@@ -73,8 +69,6 @@ class Command(BaseCommand):
             self.stdout.write(f"Deleted {deleted} existing organisation(s).")
 
         for name, description in ORGANISATIONS:
-            organisation, created = Organisation.objects.get_or_create(
-                name=name, defaults={"description": description}
-            )
+            organisation, created = Organisation.objects.get_or_create(name=name, defaults={"description": description})
             status = "Created" if created else "Already exists"
             self.stdout.write(f"{status}: {organisation.name}")

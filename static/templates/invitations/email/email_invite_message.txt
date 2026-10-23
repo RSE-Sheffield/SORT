@@ -1,0 +1,7 @@
+{% autoescape off %}
+Hello,
+
+{% if organisation %}{{ inviter }} has invited you ({{ email }}) to join {{ organisation.name }} on {{ site_name }}.{% else %}You ({{ email }}) have been invited to join {{ site_name }}.{% endif %}
+
+If you'd like to join, please go to {{ invite_url }}
+{% endautoescape %}

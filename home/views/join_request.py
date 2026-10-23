@@ -40,9 +40,7 @@ from ..services import (
 
 logger = logging.getLogger(__name__)
 
-EMAIL_FAILED_MESSAGE = (
-    "We could not send an email notification, but the request itself was saved."
-)
+EMAIL_FAILED_MESSAGE = "We could not send an email notification, but the request itself was saved."
 
 
 class OrganisationGetStartedView(LoginRequiredMixin, TemplateView):
@@ -94,10 +92,7 @@ class OrganisationBrowseView(LoginRequiredMixin, ListView):
 
         search_query = self.request.GET.get("q")
         if search_query:
-            queryset = queryset.filter(
-                Q(name__icontains=search_query)
-                | Q(description__icontains=search_query)
-            )
+            queryset = queryset.filter(Q(name__icontains=search_query) | Q(description__icontains=search_query))
 
         return queryset
 
@@ -105,13 +100,9 @@ class OrganisationBrowseView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context.update(
             {
-                "member_organisation_ids": (
-                    organisation_service.get_user_organisation_ids(self.request.user)
-                ),
+                "member_organisation_ids": (organisation_service.get_user_organisation_ids(self.request.user)),
                 "pending_organisation_ids": (
-                    organisation_join_request_service.get_pending_organisation_ids(
-                        self.request.user
-                    )
+                    organisation_join_request_service.get_pending_organisation_ids(self.request.user)
                 ),
                 "current_search": self.request.GET.get("q", ""),
             }
@@ -139,22 +130,15 @@ class JoinRequestCreateView(LoginRequiredMixin, FormView):
 
         # Report the states that make a request impossible before showing the
         # form, rather than letting the service raise on submission.
-        if self.organisation.pk in organisation_service.get_user_organisation_ids(
-            request.user
-        ):
-            messages.info(
-                request, f"You are already a member of {self.organisation.name}."
-            )
+        if self.organisation.pk in organisation_service.get_user_organisation_ids(request.user):
+            messages.info(request, f"You are already a member of {self.organisation.name}.")
             return redirect("organisation_browse")
 
-        pending_ids = organisation_join_request_service.get_pending_organisation_ids(
-            request.user
-        )
+        pending_ids = organisation_join_request_service.get_pending_organisation_ids(request.user)
         if self.organisation.pk in pending_ids:
             messages.info(
                 request,
-                f"You already have a request to join {self.organisation.name} "
-                "waiting for a decision.",
+                f"You already have a request to join {self.organisation.name} " "waiting for a decision.",
             )
             return redirect("join_requests_mine")
 
@@ -187,9 +171,7 @@ class JoinRequestCreateView(LoginRequiredMixin, FormView):
         try:
             notify_admins_of_join_request(join_request, self.request)
         except Exception:
-            logger.exception(
-                "Failed to notify administrators of join request %s", join_request.pk
-            )
+            logger.exception("Failed to notify administrators of join request %s", join_request.pk)
             messages.warning(
                 self.request,
                 "Your request was submitted, but we could not email the "
@@ -198,8 +180,7 @@ class JoinRequestCreateView(LoginRequiredMixin, FormView):
 
         messages.success(
             self.request,
-            f"Your request to join {self.organisation.name} has been sent to its "
-            "administrators.",
+            f"Your request to join {self.organisation.name} has been sent to its " "administrators.",
         )
         return redirect("join_requests_mine")
 
@@ -231,16 +212,13 @@ class JoinRequestWithdrawView(LoginRequiredMixin, View):
         )
 
         try:
-            organisation_join_request_service.withdraw(
-                user=request.user, join_request=join_request
-            )
+            organisation_join_request_service.withdraw(user=request.user, join_request=join_request)
         except JoinRequestAlreadyDecidedError:
             messages.info(request, "That request has already been decided.")
         else:
             messages.success(
                 request,
-                f"Your request to join {join_request.organisation.name} was "
-                "withdrawn.",
+                f"Your request to join {join_request.organisation.name} was " "withdrawn.",
             )
 
         return redirect("join_requests_mine")
@@ -259,9 +237,7 @@ class OrganisationJoinRequestListView(
     template_name = "organisation/members/join_requests.html"
     context_object_name = "join_requests"
     paginate_by = 20
-    member_management_error_message = (
-        "Only organisation administrators can review join requests."
-    )
+    member_management_error_message = "Only organisation administrators can review join requests."
 
     @property
     def organisation(self) -> Organisation:
@@ -294,9 +270,7 @@ class OrganisationJoinRequestListView(
         return context
 
 
-class JoinRequestDecisionView(
-    LoginRequiredMixin, MemberManagementRequiredMixin, View
-):
+class JoinRequestDecisionView(LoginRequiredMixin, MemberManagementRequiredMixin, View):
     """
     Base class for the approve and reject actions. POST only.
     """
@@ -375,15 +349,11 @@ class JoinRequestRejectView(JoinRequestDecisionView):
         note = form.cleaned_data["note"] if form.is_valid() else ""
 
         try:
-            organisation_join_request_service.reject(
-                user=request.user, join_request=join_request, note=note
-            )
+            organisation_join_request_service.reject(user=request.user, join_request=join_request, note=note)
         except JoinRequestAlreadyDecidedError:
             messages.info(request, "That request has already been decided.")
             return self.redirect_to_queue()
 
         self.notify(join_request)
-        messages.success(
-            request, f"The request from {join_request.user} was rejected."
-        )
+        messages.success(request, f"The request from {join_request.user} was rejected.")
         return self.redirect_to_queue()

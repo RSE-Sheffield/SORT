@@ -11,7 +11,5 @@ class AccountAdapter(DefaultAccountAdapter):
         try:
             super().send_mail(template_prefix, email, context)
         except (smtplib.SMTPException, OSError):
-            logger.exception(
-                "Failed to send email (template=%s, to=%s)", template_prefix, email
-            )
+            logger.exception("Failed to send email (template=%s, to=%s)", template_prefix, email)
             raise

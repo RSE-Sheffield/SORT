@@ -5,6 +5,7 @@ class OrganisationMembershipRole:
     """
     The permissions that a user may have within an organisation.
     """
+
     ADMIN = "ADMIN"
     "Full control over organisation and all projects"
     PROJECT_MANAGER = "PROJECT_MANAGER"
