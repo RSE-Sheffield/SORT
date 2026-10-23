@@ -116,7 +116,7 @@ SMTP is the default. The Gmail API backend is switched on by setting `DJANGO_EMA
 
 Sign in to the [Google Cloud console](https://console.cloud.google.com/) with a University account. You may need IT Services to create the project for you.
 
-1. Create a project, e.g. "SORT email".
+1. Create a project if it doesn't already exist, e.g. "SORT Online".
 2. Go to **APIs & Services > Library** and enable the **Gmail API**.
 3. Go to **Google Auth Platform** (the OAuth consent screen), fill in **Branding**, and set **Audience** (user type) to **Internal**. Internal apps can only be used by accounts in the University's Workspace. They don't need Google's verification, and their refresh tokens don't expire after 7 days the way they do for external apps in "Testing" mode.
 4. Go to **Google Auth Platform > Clients** and create an OAuth client with application type **Desktop app**. Download its JSON file, e.g. `client_secret.json`. Treat this file as a secret.
