@@ -14,10 +14,13 @@ the staff console (`StaffRequiredMixin`) and the `research_export` management
 command (server shell access).
 """
 
+from collections import Counter, defaultdict
 from collections.abc import Iterator
+from dataclasses import dataclass, field
 from typing import IO
 
 import xlsxwriter
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from survey.models import Survey, SurveyResponse
@@ -34,6 +37,38 @@ METADATA_COLUMNS = (
 )
 # Excel date-time display format for the "Submitted at" column
 DATETIME_FORMAT = "yyyy-mm-dd hh:mm:ss"
+
+
+@dataclass
+class ExportDiagnosis:
+    """
+    Why the export's cells are blank, to tell malformed response data apart from
+    the column layout. Every blank answer cell is counted under exactly one cause.
+    See https://github.com/RSE-Sheffield/SORT/issues/799
+    """
+
+    row_count: int = 0
+    column_count: int = 0
+    # Blank because the column is a question label from another survey's config
+    blank_other_survey: int = 0
+    # Blank because the stored answers JSON is shorter than the survey config (malformed data)
+    blank_not_stored: int = 0
+    # Blank because the answer was stored empty (e.g. an optional field left unanswered)
+    blank_empty: int = 0
+    # Answers lost because a later field in the same survey has the same label
+    overwritten_answers: int = 0
+    # Survey ID -> number of consented responses
+    rows_per_survey: Counter = field(default_factory=Counter)
+    # Survey ID -> number of responses with answers missing from the stored JSON
+    short_responses: Counter = field(default_factory=Counter)
+    # Survey ID -> [(response ID, validation messages)] for responses failing the JSON Schema
+    invalid_responses: dict = field(default_factory=lambda: defaultdict(list))
+    # Survey ID -> {label: number of fields with that label}, for labels used more than once
+    duplicate_labels: dict = field(default_factory=dict)
+
+    @property
+    def blank_count(self) -> int:
+        return self.blank_other_survey + self.blank_not_stored + self.blank_empty
 
 
 def _write_cell(sheet, row: int, col: int, value) -> None:
@@ -82,6 +117,50 @@ class ResearchExport:
             fields_cache[survey.pk] = survey.fields
             questions.update(dict.fromkeys(fields_cache[survey.pk]))
         return fields_cache, list(questions)
+
+    def diagnose(self) -> ExportDiagnosis:
+        """
+        Attribute every blank answer cell of the export to its cause, and check each
+        consented response against its survey's JSON Schema. Reads only; writes nothing.
+        """
+        fields_cache, questions = self._questions()
+        diagnosis = ExportDiagnosis(column_count=len(questions))
+        for survey_id, labels in fields_cache.items():
+            duplicates = {label: count for label, count in Counter(labels).items() if count > 1}
+            if duplicates:
+                diagnosis.duplicate_labels[survey_id] = duplicates
+
+        for response in self.consented_responses():
+            survey_id = response.survey_id
+            diagnosis.row_count += 1
+            diagnosis.rows_per_survey[survey_id] += 1
+            try:
+                response.validate()
+            except ValidationError as exc:
+                diagnosis.invalid_responses[survey_id].append((response.pk, exc.messages))
+
+            labels = fields_cache.get(survey_id) or response.survey.fields
+            # Match answers to labels as write_xlsx does: for duplicate labels, the last wins
+            cells: dict[str, tuple] = {}
+            for label, value, is_stored in zip(labels, response.answers_values, response.answers_stored):
+                if label in cells and cells[label][0] not in (None, ""):
+                    diagnosis.overwritten_answers += 1
+                cells[label] = (value, is_stored)
+            if not all(response.answers_stored):
+                diagnosis.short_responses[survey_id] += 1
+
+            for question in questions:
+                if question not in cells:
+                    diagnosis.blank_other_survey += 1
+                    continue
+                value, is_stored = cells[question]
+                if value not in (None, ""):
+                    continue
+                if is_stored:
+                    diagnosis.blank_empty += 1
+                else:
+                    diagnosis.blank_not_stored += 1
+        return diagnosis
 
     def write_xlsx(self, file: IO[bytes] | str) -> int:
         """
