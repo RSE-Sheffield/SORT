@@ -93,3 +93,4 @@ lerna-debug.log*
 
 # Playwright end-to-end test screenshots
 /test-results/
+/.lighthouseci/

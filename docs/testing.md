@@ -74,6 +74,17 @@ There are test case classes defined in the [`SORT.test.test_case`](SORT/test/tes
 
 There are factory utilities that are used to create mock objects of our Django models for testing in the [`SORT.test.model_factory`](SORT/test/model_factory) module. This uses the [Factory Boy](https://factoryboy.readthedocs.io/en/stable/index.html) library, which [supports the Django ORM](https://factoryboy.readthedocs.io/en/stable/orms.html#module-factory.django).
 
+# Template linting
+
+Django templates are linted with [djLint](https://djlint.com/) (`profile = "django"`, configured under `[tool.djlint]` in `pyproject.toml`):
+
+```bash
+make lint            # flake8 and djlint
+djlint --lint .      # templates only
+```
+
+Rules with existing findings are listed in the `ignore` setting; remove a code from that list once its findings are fixed. Formatting (`djlint --reformat`) is not enforced.
+
 # End-to-end testing
 
 The end-to-end tests in the [`e2e`](../e2e) directory run the real Django app, with the built Svelte front end, in a headless Chromium browser using [Playwright for Python](https://playwright.dev/python/). They focus on the key user journeys, especially survey capture, rather than aiming for full coverage:

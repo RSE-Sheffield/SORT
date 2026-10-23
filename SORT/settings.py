@@ -134,12 +134,10 @@ db_config = {
 # Add PostgreSQL-specific options only when using PostgreSQL
 if "postgresql" in db_engine:
     db_config["OPTIONS"] = {
-        'client_encoding': os.getenv("DJANGO_DATABASE_CLIENT_ENCODING", "UTF8"),
+        "client_encoding": os.getenv("DJANGO_DATABASE_CLIENT_ENCODING", "UTF8"),
     }
 
-DATABASES = {
-    "default": db_config
-}
+DATABASES = {"default": db_config}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -199,9 +197,7 @@ PASSWORD_RESET_TIMEOUT = 1800  # FA: default to expire after 30 minutes
 # Email settings
 # https://docs.djangoproject.com/en/5.1/topics/email/#email-backends
 
-EMAIL_BACKEND = os.getenv(
-    "DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
-)
+EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("DJANGO_EMAIL_PORT", 465))
 EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER")
@@ -222,6 +218,10 @@ GMAIL_API_CLIENT_ID = os.getenv("DJANGO_GMAIL_API_CLIENT_ID")
 GMAIL_API_CLIENT_SECRET = os.getenv("DJANGO_GMAIL_API_CLIENT_SECRET")
 GMAIL_API_REFRESH_TOKEN = os.getenv("DJANGO_GMAIL_API_REFRESH_TOKEN")
 GMAIL_API_USER_ID = os.getenv("DJANGO_GMAIL_API_USER_ID", "me")
+# Error notifications: unhandled exceptions (HTTP 500) are emailed to these
+# addresses (comma-separated). Empty means disabled.
+ADMINS = [("SORT Admins", addr.strip()) for addr in os.getenv("DJANGO_ADMINS", "").split(",") if addr.strip()]
+SERVER_EMAIL = os.getenv("DJANGO_SERVER_EMAIL", DEFAULT_FROM_EMAIL)
 
 AUTHENTICATION_BACKENDS = (
     # Allows authenticate() to succeed for inactive (suspended) users so that
@@ -270,9 +270,7 @@ MEDIA_SUPPORTED_EXTENSIONS = [
 ]
 
 # Security settings
-SESSION_COOKIE_SECURE = cast_to_boolean(
-    os.getenv("DJANGO_SESSION_COOKIE_SECURE", not DEBUG)
-)
+SESSION_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_SESSION_COOKIE_SECURE", not DEBUG))
 CSRF_COOKIE_SECURE = cast_to_boolean(os.getenv("DJANGO_CSRF_COOKIE_SECURE", not DEBUG))
 
 # Custom view rendered when CSRF verification fails (issue #623).
@@ -285,10 +283,27 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     # Send log messages to the standard output, which will be sent to the Gunicorn service logs
+    "formatters": {
+        "standard": {
+            "format": "{asctime} {levelname} {name} {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "standard",
         },
+        # Emails ADMINS on 500 errors (no-op when ADMINS is empty)
+        "mail_admins": {
+            "class": "django.utils.log.AdminEmailHandler",
+            "level": "ERROR",
+            "include_html": False,
+            "filters": ["throttle_errors"],
+        },
+    },
+    "filters": {
+        "throttle_errors": {"()": "SORT.logging.ThrottleFilter"},
     },
     "root": {
         "handlers": ["console"],
@@ -303,10 +318,29 @@ LOGGING = {
             "level": "WARNING",
             "propagate": False,
         },
-        # Suppress 4xx WARNING tracebacks in test output (e.g. expected 403s from permission tests)
+        # Request problems (4xx/5xx) and security events (e.g. SuspiciousOperation)
         "django.request": {
-            "handlers": ["console"],
+            "handlers": ["console", "mail_admins"],
             "level": "ERROR",
+            "propagate": False,
+        },
+        "django.security": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        # Audit trail of important actions (see docs/operations.md). Always INFO,
+        # regardless of DJANGO_LOG_LEVEL. Log user and object ids only, never PII.
+        "sort.audit": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        # Staff console audit records (e.g. research data downloads) must be kept
+        # regardless of DJANGO_LOG_LEVEL, so pin this logger to INFO.
+        "home.views.console": {
+            "handlers": ["console"],
+            "level": "INFO",
             "propagate": False,
         },
     },

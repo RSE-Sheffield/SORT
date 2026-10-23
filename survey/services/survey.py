@@ -23,6 +23,7 @@ from survey.models import (
 )
 
 logger = logging.getLogger(__name__)
+audit_logger = logging.getLogger("sort.audit")
 
 
 class InvalidInviteTokenException(Exception):
@@ -35,9 +36,7 @@ class SurveyService(BasePermissionService):
         """Get user's role in the project's organisation"""
         try:
             return survey.project.organisation.get_user_role(user)
-        except (
-                AttributeError
-        ):  # In case user is AnonymousUser or organisation method fails
+        except AttributeError:  # In case user is AnonymousUser or organisation method fails
             return None
 
     def can_view(self, user: User, survey: Survey) -> bool:
@@ -72,15 +71,32 @@ class SurveyService(BasePermissionService):
         survey.project = project
         survey.initialise()
         survey.save()
+        self.audit("created", user, survey)
+
+    def audit(self, action: str, user: User, survey: Survey, survey_id=None):
+        audit_logger.info(
+            "survey %s: survey_id=%s project_id=%s user_id=%s user_email=%s",
+            action,
+            survey_id or survey.pk,
+            survey.project_id,
+            user.pk,
+            user.email,
+        )
+
+    @requires_permission("delete", obj_param="survey")
+    def delete_survey(self, user: User, survey: Survey):
+        survey_id = survey.pk
+        survey.delete()
+        self.audit("deleted", user, survey, survey_id=survey_id)
 
     @requires_permission("edit", obj_param="survey")
     def update_consent_demography_config(
-            self,
-            user: User,
-            survey: Survey,
-            consent_config,
-            demography_config,
-            survey_body_path,
+        self,
+        user: User,
+        survey: Survey,
+        consent_config,
+        demography_config,
+        survey_body_path,
     ) -> Survey:
         """
         Modify demographics fields on this survey
@@ -117,9 +133,7 @@ class SurveyService(BasePermissionService):
 
         return new_survey
 
-    def _create_survey_evidence_sections(
-            self, survey: Survey, clear_existing_sections: bool = True
-    ):
+    def _create_survey_evidence_sections(self, survey: Survey, clear_existing_sections: bool = True):
         if not survey.survey_config["sections"]:
             raise ValueError("No sections available")
 
@@ -134,38 +148,30 @@ class SurveyService(BasePermissionService):
                 )
                 survey_evidence_section.save()
 
-    def _create_survey_improvement_sections(
-            self, survey: Survey, clear_existing_sections: bool = True
-    ):
+    def _create_survey_improvement_sections(self, survey: Survey, clear_existing_sections: bool = True):
         if clear_existing_sections:
-            for improve_section in SurveyImprovementPlanSection.objects.filter(
-                    survey=survey
-            ):
+            for improve_section in SurveyImprovementPlanSection.objects.filter(survey=survey):
                 improve_section.delete()  # Delete all previous section first
 
         for section_index, section in enumerate(survey.survey_config["sections"]):
             if section["type"] == "sort":
-                survey_improvement_plan_section = (
-                    SurveyImprovementPlanSection.objects.create(
-                        survey=survey, section_id=section_index, title=section["title"]
-                    )
+                survey_improvement_plan_section = SurveyImprovementPlanSection.objects.create(
+                    survey=survey, section_id=section_index, title=section["title"]
                 )
                 survey_improvement_plan_section.save()
 
     @requires_permission("edit", obj_param="survey")
-    def update_evidence_section(
-            self, user: User, survey: Survey, evidence_section: SurveyEvidenceSection, text
-    ):
+    def update_evidence_section(self, user: User, survey: Survey, evidence_section: SurveyEvidenceSection, text):
         evidence_section.text = text
         evidence_section.save()
 
     @requires_permission("edit", obj_param="survey")
     def update_improvement_section(
-            self,
-            user: User,
-            survey: Survey,
-            improve_section: SurveyImprovementPlanSection,
-            text,
+        self,
+        user: User,
+        survey: Survey,
+        improve_section: SurveyImprovementPlanSection,
+        text,
     ):
         improve_section.plan = text
         improve_section.save()
@@ -201,12 +207,12 @@ class SurveyService(BasePermissionService):
 
     @requires_permission("edit", obj_param="survey")
     def send_invitation(
-            self,
-            user: User,
-            survey: Survey,
-            recipient_list: Iterable[str],
-            survey_link: str,
-            message: str = "",
+        self,
+        user: User,
+        survey: Survey,
+        recipient_list: Iterable[str],
+        survey_link: str,
+        message: str = "",
     ) -> int:
         """
         Email the survey invitation link to participants.
@@ -238,15 +244,12 @@ class SurveyService(BasePermissionService):
         return False
 
     @requires_permission("edit", obj_param="survey")
-    def add_uploaded_files(
-            self, user: User, survey: Survey, files: Dict[str, UploadedFile]
-    ):
+    def add_uploaded_files(self, user: User, survey: Survey, files: Dict[str, UploadedFile]):
 
         for field_name, uploaded_file in files.items():
             if not self._is_extension_supported(uploaded_file.name):
                 raise UploadFileException(
-                    "File extension not supported, must be one of "
-                    + ",".join(settings.MEDIA_SUPPORTED_EXTENSIONS)
+                    "File extension not supported, must be one of " + ",".join(settings.MEDIA_SUPPORTED_EXTENSIONS)
                 )
 
         for field_name, uploaded_file in files.items():
@@ -256,24 +259,21 @@ class SurveyService(BasePermissionService):
 
     @requires_permission("edit", obj_param="survey")
     def add_uploaded_files_to_evidence_section(
-            self,
-            user: User,
-            survey: Survey,
-            evidence_section: SurveyEvidenceSection,
-            files: Dict[str, UploadedFile],
+        self,
+        user: User,
+        survey: Survey,
+        evidence_section: SurveyEvidenceSection,
+        files: Dict[str, UploadedFile],
     ):
 
         for field_name, uploaded_file in files.items():
             if not self._is_extension_supported(uploaded_file.name):
                 raise UploadFileException(
-                    "File extension not supported, must be one of "
-                    + " ,".join(settings.MEDIA_SUPPORTED_EXTENSIONS)
+                    "File extension not supported, must be one of " + " ,".join(settings.MEDIA_SUPPORTED_EXTENSIONS)
                 )
 
         for field_name, uploaded_file in files.items():
-            evidence_file = SurveyEvidenceFile.objects.create(
-                evidence_section=evidence_section
-            )
+            evidence_file = SurveyEvidenceFile.objects.create(evidence_section=evidence_section)
             evidence_file.file = uploaded_file
             evidence_file.save()
 
@@ -282,9 +282,7 @@ class SurveyService(BasePermissionService):
         file.delete()
 
     @requires_permission("edit", obj_param="survey")
-    def remove_evidence_file(
-            self, user: User, survey: Survey, file: SurveyEvidenceFile
-    ):
+    def remove_evidence_file(self, user: User, survey: Survey, file: SurveyEvidenceFile):
         file.delete()
 
     @staticmethod

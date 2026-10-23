@@ -1,5 +1,52 @@
 # Changelog
 
+## [0.31.0](https://github.com/RSE-Sheffield/SORT/compare/v0.30.0...v0.31.0) (2026-10-22)
+
+
+### Features
+
+* improve multi-organisation visibility and control ([#690](https://github.com/RSE-Sheffield/SORT/issues/690)) ([#789](https://github.com/RSE-Sheffield/SORT/issues/789)) ([65ac2ea](https://github.com/RSE-Sheffield/SORT/commit/65ac2eab44bf0da841080d53e60dfe17db06a032))
+
+
+### Bug Fixes
+
+* add invitees to the organisation they were invited to ([#690](https://github.com/RSE-Sheffield/SORT/issues/690)) ([#791](https://github.com/RSE-Sheffield/SORT/issues/791)) ([6647f69](https://github.com/RSE-Sheffield/SORT/commit/6647f69f85019c9fed6644e441d58308b3138260))
+* bump follow-redirects to 1.16.1 ([#787](https://github.com/RSE-Sheffield/SORT/issues/787)) ([e9cd719](https://github.com/RSE-Sheffield/SORT/commit/e9cd7190b934add5f9563a413bdca646b85aae4f))
+
+## [0.30.0](https://github.com/RSE-Sheffield/SORT/compare/v0.29.0...v0.30.0) (2026-10-22)
+
+
+### Features
+
+* add /healthz/ health-check endpoint ([#779](https://github.com/RSE-Sheffield/SORT/issues/779)) ([bfb1557](https://github.com/RSE-Sheffield/SORT/commit/bfb155797446af2ddde3e8b468709b7d295dee81))
+* configure logging and audit events ([#784](https://github.com/RSE-Sheffield/SORT/issues/784)) ([2eb4ce3](https://github.com/RSE-Sheffield/SORT/commit/2eb4ce3e5aa0825865196b7c28c65a9d60d6d430))
+* email admins on production errors ([#782](https://github.com/RSE-Sheffield/SORT/issues/782)) ([aa86180](https://github.com/RSE-Sheffield/SORT/commit/aa8618074a585c47ae7e28a488db2e25633455d0))
+
+
+### Bug Fixes
+
+* require pip 26.2.2 and certifi 2026.10.19 ([#785](https://github.com/RSE-Sheffield/SORT/issues/785)) ([#786](https://github.com/RSE-Sheffield/SORT/issues/786)) ([0a9a5fa](https://github.com/RSE-Sheffield/SORT/commit/0a9a5fa77097d83478d49e9ae65cec3d77a19b90))
+* serve /server-status over HTTP without redirect for collectd ([#781](https://github.com/RSE-Sheffield/SORT/issues/781)) ([01b1b02](https://github.com/RSE-Sheffield/SORT/commit/01b1b02b235216fb26dc595f0e4876f5b58e572c))
+
+## [0.29.0](https://github.com/RSE-Sheffield/SORT/compare/v0.28.0...v0.29.0) (2026-10-20)
+
+
+### Features
+
+* add bulk research data Excel export to staff console ([#748](https://github.com/RSE-Sheffield/SORT/issues/748)) ([adbf9f8](https://github.com/RSE-Sheffield/SORT/commit/adbf9f83affabde5645ac15fc4b865061d98deeb))
+* link participant information from survey detail page ([#767](https://github.com/RSE-Sheffield/SORT/issues/767)) ([40221a7](https://github.com/RSE-Sheffield/SORT/commit/40221a76df8dd24d67785cc99d89f75feeae6393))
+
+
+### Bug Fixes
+
+* remove account manager checkbox from allauth signup page ([#766](https://github.com/RSE-Sheffield/SORT/issues/766)) ([9ee07ce](https://github.com/RSE-Sheffield/SORT/commit/9ee07cea6d9e8e21bc4570a71b20a29508ad1a18))
+* separate internal and research data use in participant information sheet ([#761](https://github.com/RSE-Sheffield/SORT/issues/761)) ([203d8de](https://github.com/RSE-Sheffield/SORT/commit/203d8dea34d502fdaa6d1a6cb769b8bc069d7432)), closes [#760](https://github.com/RSE-Sheffield/SORT/issues/760)
+
+
+### Performance Improvements
+
+* Idempotent virtual environment creation ([#505](https://github.com/RSE-Sheffield/SORT/issues/505)) ([a0eb3b0](https://github.com/RSE-Sheffield/SORT/commit/a0eb3b087039382b89f83cfffa46368b33960ad7))
+
 ## [0.28.0](https://github.com/RSE-Sheffield/SORT/compare/v0.27.0...v0.28.0) (2026-10-02)
 
 

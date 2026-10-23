@@ -1,26 +1,25 @@
 import csv
 import io
+import itertools
 import json
 import logging
 import random
 import re
-import itertools
 import secrets
 import tempfile
+from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import Generator, ContextManager
-from contextlib import contextmanager
+from typing import ContextManager, Generator
 
+import django.core.validators
 import jsonschema
 import xlsxwriter
-
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.http import HttpRequest
 from django.urls import reverse
-import django.core.validators
 
 from home.models import Project
 from survey.schema import field_schema
@@ -52,9 +51,7 @@ class Survey(models.Model):
     name = models.CharField(max_length=200, help_text="Survey title")
     description = models.TextField(blank=True, null=True)
     survey_config = models.JSONField(null=True)
-    project = models.ForeignKey(
-        Project, on_delete=models.CASCADE, null=True, related_name="survey"
-    )
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="survey")
     created_at = models.DateTimeField(auto_now_add=True)
     survey_body_path = models.TextField(
         blank=False,
@@ -269,28 +266,12 @@ class Survey(models.Model):
         elif field_type == "text":
             if "textType" in field_config:
                 if field_config["textType"] == "INTEGER_TEXT":
-                    min_value = (
-                        field_config["minNumValue"]
-                        if "minNumValue" in field_config
-                        else 0
-                    )
-                    max_value = (
-                        field_config["maxNumValue"]
-                        if "maxNumValue" in field_config
-                        else 100
-                    )
+                    min_value = field_config["minNumValue"] if "minNumValue" in field_config else 0
+                    max_value = field_config["maxNumValue"] if "maxNumValue" in field_config else 100
                     return str(random.randint(min_value, max_value))
                 elif field_config["textType"] == "DECIMALS_TEXT":
-                    min_value = (
-                        field_config["minNumValue"]
-                        if "minNumValue" in field_config
-                        else 0
-                    )
-                    max_value = (
-                        field_config["maxNumValue"]
-                        if "maxNumValue" in field_config
-                        else 100
-                    )
+                    min_value = field_config["minNumValue"] if "minNumValue" in field_config else 0
+                    max_value = field_config["maxNumValue"] if "maxNumValue" in field_config else 100
                     return str(random.uniform(min_value, max_value))
                 elif field_config["textType"] == "EMAIL_TEXT":
                     return "test@test.com"
@@ -395,7 +376,8 @@ class Survey(models.Model):
         path = Path(tempfile.mkdtemp()).joinpath("survey_responses.xlsx")
 
         # Create spreadsheet data
-        workbook = xlsxwriter.Workbook(filename=path)
+        # Participants' answers must never be interpreted as Excel formulas (formula injection)
+        workbook = xlsxwriter.Workbook(path, {"strings_to_formulas": False})
         sheet = workbook.add_worksheet(name=self._excel_sheet_name())
         # Iterate over responses (one row per response)
         for i, row in enumerate(self.responses_iter()):
@@ -471,9 +453,7 @@ class SurveyEvidenceSection(models.Model):
     """
 
     section_id = models.IntegerField(default=0)
-    survey = models.ForeignKey(
-        Survey, on_delete=models.CASCADE, related_name="evidence_sections"
-    )
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name="evidence_sections")
     title = models.TextField(blank=True, null=True)
     text = models.TextField(blank=True, null=True, default="No evidence provided.")
 
@@ -490,9 +470,7 @@ class SurveyImprovementPlanSection(models.Model):
     """
 
     section_id = models.IntegerField(default=0, db_index=True)
-    survey = models.ForeignKey(
-        Survey, on_delete=models.CASCADE, related_name="improvement_sections"
-    )
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name="improvement_sections")
     title = models.TextField(blank=True, null=True)
     plan = models.TextField(blank=True, null=True)
 
@@ -520,9 +498,7 @@ class SurveyEvidenceFile(models.Model):
     """
 
     file = models.FileField(upload_to=evidence_file_upload_path, blank=True, null=True)
-    evidence_section = models.ForeignKey(
-        SurveyEvidenceSection, on_delete=models.CASCADE, related_name="files"
-    )
+    evidence_section = models.ForeignKey(SurveyEvidenceSection, on_delete=models.CASCADE, related_name="files")
 
 
 class SurveyResponse(models.Model):
@@ -557,10 +533,7 @@ class SurveyResponse(models.Model):
         )
         if errors:
             raise ValidationError(
-                [
-                    f"{self.survey.describe_error_path(exc.absolute_path)}: {exc.message}"
-                    for exc in errors
-                ]
+                [f"{self.survey.describe_error_path(exc.absolute_path)}: {exc.message}" for exc in errors]
             )
 
     def clean(self):
@@ -578,6 +551,10 @@ class SurveyResponse(models.Model):
         """
         Whether the participant ticked the optional research consent box in the
         consent (first) section. Only these responses may be shared for research.
+
+        The answer is found by its position in the survey's current configuration,
+        which is safe because a survey's configuration is frozen once it has responses
+        (enforced by the survey service, the configure view and the Django admin).
         """
         fields = self.survey.sections[0].get("fields", []) if self.survey.sections else []
         for field_index, field in enumerate(fields):
@@ -607,20 +584,12 @@ class SurveyResponse(models.Model):
         for section_index, section in enumerate(self.survey.sections):
             section_answers = self._section_answers(section_index)
             for field_index, field in enumerate(section["fields"]):
-                answer = (
-                    section_answers[field_index]
-                    if field_index < len(section_answers)
-                    else None
-                )
+                answer = section_answers[field_index] if field_index < len(section_answers) else None
                 if field["type"] == "likert":
                     sublabels = field.get("sublabels", [])
                     selected = self._as_list(answer)
                     for sublabel_index in range(len(sublabels)):
-                        yield (
-                            selected[sublabel_index]
-                            if sublabel_index < len(selected)
-                            else ""
-                        )
+                        yield (selected[sublabel_index] if sublabel_index < len(selected) else "")
                 elif field["type"] == "checkbox":
                     yield ", ".join(self._as_list(answer))
                 else:

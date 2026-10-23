@@ -101,10 +101,10 @@
           "description": "Rate the following statements from 0 to 4 (0 Not yet planned; 1 Planned; 2 Early progress; 3 Substantial Progress; 4 Established). Answer 0 if you don't know or the question is irrelevant. There is a comment box at the bottom for detailed responses.",
           "required": true,
           "sublabels": [
-            "C1. Our organisation take part in research leadership and advisory activities outside our organisation (for example, sitting on ethics committees; funding committees; editorial boards and reviewing papers)",
-            "C2. Our organisation take part in research leadership and advisory activities outside organisations",
-            "C3. Our organisation work with professional bodies and national and regional policy structures to influence the research agenda",
-            "C4. Our organisation are members of forums outside our organisation which support research activity"
+            "C1. Our organisation takes part in research leadership and advisory activities outside our organisation (for example, sitting on ethics committees; funding committees; editorial boards and reviewing papers)",
+            "C2. Our organisation takes part in the research leadership and advisory activities of outside organisations",
+            "C3. Our organisation works with professional bodies and national and regional policy structures to influence the research agenda",
+            "C4. Our colleagues are members of forums outside our organisation which support research activity"
           ],
           "options": [
             "0",
@@ -173,8 +173,8 @@
           "sublabels": [
             "E1. Our organisation provides training to practise effectively in a digitally enabled environment",
             "E2. Our organisation trains staff to use and interpret data to make improvements to care (using audit, service evaluation or research)",
-            "E3. Our organisation has digital leaders in place who can provide advice and guidance in the use of digital technology in service development",
-            "E4. Our organisation has digital leaders in place who can provide advice and guidance in the use of digital technology in research",
+            "E3. Our organisation has digital leaders in place who can provide advice and guidance on the use of digital technology to support service development",
+            "E4. Our organisation has digital leaders in place who can provide advice and guidance on the use of digital technology to support research",
             "E5. Our organisation has the infrastructure to support visualisation of data using business intelligence tools",
             "E6. Our organisation has the internal structures that facilitate, support and enable staff-led digital innovation",
             "E7. Our organisation has effective partnerships with technology suppliers to support digital developments and innovation that meet the needs of staff",

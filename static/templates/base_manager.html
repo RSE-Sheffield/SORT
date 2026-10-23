@@ -69,7 +69,7 @@
                         {% endif %}
                     </ol>
                     <ul class="navbar-nav">
-                        {% if user.is_authenticated and switchable_organisations|length > 1 %}
+                        {% if user.is_authenticated and active_organisation %}
                             <li class="nav-item dropdown org-switcher">
                                 <a class="nav-link dropdown-toggle" href="#" id="orgSwitcherDropdown"
                                    role="button" data-bs-toggle="dropdown" aria-expanded="false"
@@ -91,6 +91,12 @@
                                             </form>
                                         </li>
                                     {% endfor %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'my_organisations' %}">
+                                            <i class="bx bx-list-ul"></i>&nbsp;Manage my organisations
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
                         {% endif %}

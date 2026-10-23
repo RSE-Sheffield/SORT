@@ -1,7 +1,8 @@
 import factory.django
 
-from SORT.test.model_factory import ProjectFactory
 from survey.models import Survey
+
+from .project import ProjectFactory
 
 
 class SurveyFactory(factory.django.DjangoModelFactory):

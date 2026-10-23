@@ -76,6 +76,18 @@ To watch everything at once while you restart or deploy:
 sudo journalctl -u gunicorn.service -u nginx.service --follow
 ```
 
+## Log levels and the audit log
+
+All application logs go to stdout in the format `timestamp LEVEL logger message` and are collected by journald via gunicorn.
+
+- The root level is set by `DJANGO_LOG_LEVEL` (default `WARNING`).
+- `django.request` and `django.security` always log at `WARNING` and above (4xx/5xx responses, suspicious requests).
+- `sort.audit` always logs at `INFO`, regardless of `DJANGO_LOG_LEVEL`. It records survey created/deleted/renamed and project created/deleted, with the acting user's id and email and the object id only. Survey answers and other personal data are never logged.
+
+```bash
+sudo journalctl -u gunicorn.service --since today | grep sort.audit
+```
+
 For the full breakdown of log locations per service, filtering by time/priority, and reading logs to diagnose a specific error, see [troubleshooting.md](troubleshooting.md#finding-logs).
 
 # Running management commands
@@ -131,10 +143,29 @@ No timer unit currently ships with this repo — set one up if you want this aut
 
 # Deploying an update to running code
 
-To ship a code change to an already-provisioned server:
+SORT runs on two virtual machines:
+
+| Environment | Host | Deploy from |
+|---|---|---|
+| Development | `sort-web-dev.sheffield.ac.uk` | A release tag (or `main` to try unreleased changes) |
+| Production | The production VM | A release tag only |
+
+Both are provisioned with [`scripts/deploy.sh`](../scripts/deploy.sh) and updated with the same steps below.
+
+## Rollout order
+
+1. Merge the changes to `main` and check CI is green.
+2. Deploy to the **development VM** (from `main`, or from the tag once the release PR is merged) and smoke-test the changes, especially anything touching survey submission or exports.
+3. Merge the [release PR](../RELEASING.md) to cut the tag, if you haven't already.
+4. Deploy the release tag to **production**.
+
+## Update steps
+
+Run on each VM in turn:
 
 ```bash
-git pull
+git fetch --tags
+git checkout vX.Y.Z                              # the release tag; use `git pull` on main for dev only
 sudo $python -m pip install -r requirements.txt   # if dependencies changed
 npm ci && npm run build                           # if frontend changed
 sudo $django_admin migrate
@@ -142,7 +173,26 @@ sudo $django_admin collectstatic --no-input
 sudo systemctl restart gunicorn
 ```
 
+Check `git diff <previous-tag>..<new-tag> --stat -- '*/migrations/*' requirements.txt package.json` to see which of the optional steps apply.
+
 If anything goes wrong, see [troubleshooting.md](troubleshooting.md).
+
+# Uptime monitoring
+
+SORT exposes a public health-check endpoint at `/healthz/`. It runs `SELECT 1` against the database and returns `{"status": "ok"}` with HTTP 200, or `{"status": "error"}` with HTTP 503 if the database is unreachable (details are written to the application log only). Only `GET` and `HEAD` are accepted, and responses are never cached.
+
+To monitor the site with UptimeRobot, Better Stack, or IT Services monitoring, create an HTTPS monitor for:
+
+```
+https://<host>/healthz/
+```
+
+* Expect status `200` (optionally also match the keyword `ok`).
+* The `Host` header must match one of `DJANGO_ALLOWED_HOSTS`; otherwise Django returns `400 Bad Request`. Monitoring the public hostname does this automatically; if probing by IP or an internal name, set the Host header explicitly or add the name to `DJANGO_ALLOWED_HOSTS`.
+
+```bash
+curl -fsS -H "Host: <host>" https://<host>/healthz/
+```
 
 # See also
 

@@ -23,9 +23,7 @@ class OrganisationJoinRequestModelTestCase(SORT.test.test_case.SORTTestCase):
         self.requester = UserFactory()
 
     def test_defaults(self):
-        join_request = OrganisationJoinRequest.objects.create(
-            user=self.requester, organisation=self.organisation
-        )
+        join_request = OrganisationJoinRequest.objects.create(user=self.requester, organisation=self.organisation)
 
         self.assertEqual(join_request.status, OrganisationJoinRequest.Status.PENDING)
         self.assertTrue(join_request.is_pending)
@@ -36,29 +34,21 @@ class OrganisationJoinRequestModelTestCase(SORT.test.test_case.SORTTestCase):
         self.assertIsNone(join_request.decided_at)
 
     def test_str(self):
-        join_request = OrganisationJoinRequestFactory(
-            user=self.requester, organisation=self.organisation
-        )
+        join_request = OrganisationJoinRequestFactory(user=self.requester, organisation=self.organisation)
 
         self.assertIn(str(self.requester), str(join_request))
         self.assertIn(self.organisation.name, str(join_request))
         self.assertIn("Pending", str(join_request))
 
     def test_duplicate_pending_request_is_rejected(self):
-        OrganisationJoinRequestFactory(
-            user=self.requester, organisation=self.organisation
-        )
+        OrganisationJoinRequestFactory(user=self.requester, organisation=self.organisation)
 
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
-                OrganisationJoinRequestFactory(
-                    user=self.requester, organisation=self.organisation
-                )
+                OrganisationJoinRequestFactory(user=self.requester, organisation=self.organisation)
 
         self.assertEqual(
-            OrganisationJoinRequest.objects.filter(
-                user=self.requester, organisation=self.organisation
-            ).count(),
+            OrganisationJoinRequest.objects.filter(user=self.requester, organisation=self.organisation).count(),
             1,
         )
 
@@ -73,18 +63,14 @@ class OrganisationJoinRequestModelTestCase(SORT.test.test_case.SORTTestCase):
 
         for status in decided_statuses:
             with self.subTest(status=status):
-                OrganisationJoinRequest.objects.filter(
-                    user=self.requester, organisation=self.organisation
-                ).delete()
+                OrganisationJoinRequest.objects.filter(user=self.requester, organisation=self.organisation).delete()
                 OrganisationJoinRequestFactory(
                     user=self.requester,
                     organisation=self.organisation,
                     status=status,
                 )
 
-                join_request = OrganisationJoinRequestFactory(
-                    user=self.requester, organisation=self.organisation
-                )
+                join_request = OrganisationJoinRequestFactory(user=self.requester, organisation=self.organisation)
 
                 self.assertTrue(join_request.is_pending)
 
@@ -94,31 +80,21 @@ class OrganisationJoinRequestModelTestCase(SORT.test.test_case.SORTTestCase):
         OrganisationJoinRequestFactory(user=self.requester, organisation=first)
         OrganisationJoinRequestFactory(user=self.requester, organisation=second)
 
-        self.assertEqual(
-            OrganisationJoinRequest.objects.filter(user=self.requester).count(), 2
-        )
+        self.assertEqual(OrganisationJoinRequest.objects.filter(user=self.requester).count(), 2)
 
     def test_pending_requests_from_different_users_allowed(self):
         other_requester = UserFactory()
 
-        OrganisationJoinRequestFactory(
-            user=self.requester, organisation=self.organisation
-        )
-        OrganisationJoinRequestFactory(
-            user=other_requester, organisation=self.organisation
-        )
+        OrganisationJoinRequestFactory(user=self.requester, organisation=self.organisation)
+        OrganisationJoinRequestFactory(user=other_requester, organisation=self.organisation)
 
         self.assertEqual(
-            OrganisationJoinRequest.objects.filter(
-                organisation=self.organisation
-            ).count(),
+            OrganisationJoinRequest.objects.filter(organisation=self.organisation).count(),
             2,
         )
 
     def test_ordering_is_newest_first(self):
-        older = OrganisationJoinRequestFactory(
-            user=self.requester, organisation=self.organisation
-        )
+        older = OrganisationJoinRequestFactory(user=self.requester, organisation=self.organisation)
         newer = OrganisationJoinRequestFactory(user=UserFactory())
 
         self.assertEqual(

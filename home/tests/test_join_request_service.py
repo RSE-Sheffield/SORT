@@ -34,9 +34,7 @@ class OrganisationJoinRequestServiceTestCase(SORT.test.test_case.ServiceTestCase
         ).user
 
     def _pending_request(self):
-        return OrganisationJoinRequestFactory(
-            user=self.requester, organisation=self.organisation
-        )
+        return OrganisationJoinRequestFactory(user=self.requester, organisation=self.organisation)
 
     # --- create ---------------------------------------------------------------
 
@@ -51,9 +49,7 @@ class OrganisationJoinRequestServiceTestCase(SORT.test.test_case.ServiceTestCase
         self.assertEqual(join_request.message, "I am a research nurse")
 
     def test_create_join_request_without_message(self):
-        join_request = self.service.create_join_request(
-            self.requester, self.organisation
-        )
+        join_request = self.service.create_join_request(self.requester, self.organisation)
 
         self.assertEqual(join_request.message, "")
 
@@ -78,9 +74,7 @@ class OrganisationJoinRequestServiceTestCase(SORT.test.test_case.ServiceTestCase
         join_request = self._pending_request()
         self.service.reject(self.admin_user, join_request)
 
-        new_request = self.service.create_join_request(
-            self.requester, self.organisation
-        )
+        new_request = self.service.create_join_request(self.requester, self.organisation)
 
         self.assertTrue(new_request.is_pending)
         self.assertEqual(OrganisationJoinRequest.objects.count(), 2)
@@ -89,9 +83,7 @@ class OrganisationJoinRequestServiceTestCase(SORT.test.test_case.ServiceTestCase
         other_organisation = OrganisationFactory()
         self._pending_request()
 
-        join_request = self.service.create_join_request(
-            self.requester, other_organisation
-        )
+        join_request = self.service.create_join_request(self.requester, other_organisation)
 
         self.assertEqual(join_request.organisation, other_organisation)
 
@@ -117,9 +109,7 @@ class OrganisationJoinRequestServiceTestCase(SORT.test.test_case.ServiceTestCase
         self.assertEqual(membership.added_by, self.admin_user)
 
         join_request.refresh_from_db()
-        self.assertEqual(
-            join_request.status, OrganisationJoinRequest.Status.APPROVED
-        )
+        self.assertEqual(join_request.status, OrganisationJoinRequest.Status.APPROVED)
         self.assertEqual(join_request.granted_role, ROLE_PROJECT_MANAGER)
         self.assertEqual(join_request.decided_by, self.admin_user)
         self.assertIsNotNone(join_request.decided_at)
@@ -127,9 +117,7 @@ class OrganisationJoinRequestServiceTestCase(SORT.test.test_case.ServiceTestCase
     def test_approve_with_admin_role(self):
         join_request = self._pending_request()
 
-        membership = self.service.approve(
-            self.admin_user, join_request, role=ROLE_ADMIN
-        )
+        membership = self.service.approve(self.admin_user, join_request, role=ROLE_ADMIN)
 
         self.assertEqual(membership.role, ROLE_ADMIN)
         join_request.refresh_from_db()
@@ -158,9 +146,7 @@ class OrganisationJoinRequestServiceTestCase(SORT.test.test_case.ServiceTestCase
             self.service.approve(self.project_manager, join_request)
 
         self.assertFalse(
-            OrganisationMembership.objects.filter(
-                user=self.requester, organisation=self.organisation
-            ).exists()
+            OrganisationMembership.objects.filter(user=self.requester, organisation=self.organisation).exists()
         )
         join_request.refresh_from_db()
         self.assertTrue(join_request.is_pending)
@@ -180,9 +166,7 @@ class OrganisationJoinRequestServiceTestCase(SORT.test.test_case.ServiceTestCase
             self.service.approve(self.admin_user, join_request)
 
         self.assertEqual(
-            OrganisationMembership.objects.filter(
-                user=self.requester, organisation=self.organisation
-            ).count(),
+            OrganisationMembership.objects.filter(user=self.requester, organisation=self.organisation).count(),
             1,
         )
 
@@ -197,22 +181,16 @@ class OrganisationJoinRequestServiceTestCase(SORT.test.test_case.ServiceTestCase
             role=ROLE_ADMIN,
         )
 
-        membership = self.service.approve(
-            self.admin_user, join_request, role=ROLE_PROJECT_MANAGER
-        )
+        membership = self.service.approve(self.admin_user, join_request, role=ROLE_PROJECT_MANAGER)
 
         self.assertEqual(membership.pk, existing.pk)
         self.assertEqual(membership.role, ROLE_ADMIN)
         self.assertEqual(
-            OrganisationMembership.objects.filter(
-                user=self.requester, organisation=self.organisation
-            ).count(),
+            OrganisationMembership.objects.filter(user=self.requester, organisation=self.organisation).count(),
             1,
         )
         join_request.refresh_from_db()
-        self.assertEqual(
-            join_request.status, OrganisationJoinRequest.Status.APPROVED
-        )
+        self.assertEqual(join_request.status, OrganisationJoinRequest.Status.APPROVED)
         self.assertEqual(join_request.granted_role, ROLE_ADMIN)
 
     # --- reject ---------------------------------------------------------------
@@ -223,16 +201,12 @@ class OrganisationJoinRequestServiceTestCase(SORT.test.test_case.ServiceTestCase
         self.service.reject(self.admin_user, join_request, note="  Not our trust  ")
 
         join_request.refresh_from_db()
-        self.assertEqual(
-            join_request.status, OrganisationJoinRequest.Status.REJECTED
-        )
+        self.assertEqual(join_request.status, OrganisationJoinRequest.Status.REJECTED)
         self.assertEqual(join_request.decision_note, "Not our trust")
         self.assertEqual(join_request.decided_by, self.admin_user)
         self.assertIsNotNone(join_request.decided_at)
         self.assertFalse(
-            OrganisationMembership.objects.filter(
-                user=self.requester, organisation=self.organisation
-            ).exists()
+            OrganisationMembership.objects.filter(user=self.requester, organisation=self.organisation).exists()
         )
 
     def test_reject_by_project_manager_denied(self):
@@ -256,9 +230,7 @@ class OrganisationJoinRequestServiceTestCase(SORT.test.test_case.ServiceTestCase
         self.service.withdraw(self.requester, join_request)
 
         join_request.refresh_from_db()
-        self.assertEqual(
-            join_request.status, OrganisationJoinRequest.Status.WITHDRAWN
-        )
+        self.assertEqual(join_request.status, OrganisationJoinRequest.Status.WITHDRAWN)
         self.assertEqual(join_request.decided_by, self.requester)
 
     def test_withdraw_by_other_user_denied(self):
@@ -294,9 +266,7 @@ class OrganisationJoinRequestServiceTestCase(SORT.test.test_case.ServiceTestCase
             status=OrganisationJoinRequest.Status.REJECTED,
         )
 
-        requests = self.service.get_requests(
-            self.admin_user, self.organisation, status=None
-        )
+        requests = self.service.get_requests(self.admin_user, self.organisation, status=None)
 
         self.assertEqual(requests.count(), 2)
 
@@ -340,16 +310,12 @@ class OrganisationJoinRequestServiceTestCase(SORT.test.test_case.ServiceTestCase
             status=OrganisationJoinRequest.Status.APPROVED,
         )
 
-        self.assertEqual(
-            self.service.get_pending_count(self.admin_user, self.organisation), 2
-        )
+        self.assertEqual(self.service.get_pending_count(self.admin_user, self.organisation), 2)
 
     def test_get_pending_count_is_zero_for_non_admin(self):
         self._pending_request()
 
-        self.assertEqual(
-            self.service.get_pending_count(self.project_manager, self.organisation), 0
-        )
+        self.assertEqual(self.service.get_pending_count(self.project_manager, self.organisation), 0)
         self.assertEqual(self.service.get_pending_count(self.admin_user, None), 0)
 
     # --- permission predicates ------------------------------------------------

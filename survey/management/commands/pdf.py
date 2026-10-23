@@ -74,9 +74,7 @@ class Command(BaseCommand):
         try:
             survey = Survey.objects.get(pk=survey_id)
         except Survey.DoesNotExist:
-            self.stderr.write(
-                self.style.ERROR(f"Survey with ID {survey_id} not found.")
-            )
+            self.stderr.write(self.style.ERROR(f"Survey with ID {survey_id} not found."))
             return
 
         # Create output directory
@@ -86,19 +84,13 @@ class Command(BaseCommand):
         base_url = options["base_url"]
         headless = options["headless"]
 
-        self.stdout.write(
-            f"Exporting survey report for Survey {survey.pk}: {survey.name}"
-        )
+        self.stdout.write(f"Exporting survey report for Survey {survey.pk}: {survey.name}")
         self.stdout.write(f"Output directory: {output_dir.absolute()}")
 
         # Get a superuser for authentication
         superuser = User.objects.filter(is_superuser=True).first()
         if not superuser:
-            self.stderr.write(
-                self.style.ERROR(
-                    "No superuser found. Please create a superuser to authenticate."
-                )
-            )
+            self.stderr.write(self.style.ERROR("No superuser found. Please create a superuser to authenticate."))
             return
 
         # Create Django session with superuser authentication
@@ -135,21 +127,12 @@ class Command(BaseCommand):
                 self.stdout.write(f"Processing Survey {survey.pk}: {survey.name}...")
 
                 # Navigate to report page
-                report_url = (
-                    f"{base_url}{reverse('survey_report', kwargs={'pk': survey.pk})}"
-                )
+                report_url = f"{base_url}{reverse('survey_report', kwargs={'pk': survey.pk})}"
                 page.goto(report_url, wait_until="networkidle")
 
                 # Check for errors
-                if (
-                    page.locator("text=/error|not found|permission denied/i").count()
-                    > 0
-                ):
-                    self.stderr.write(
-                        self.style.WARNING(
-                            f"Warning: Possible error on page for Survey {survey.pk}"
-                        )
-                    )
+                if page.locator("text=/error|not found|permission denied/i").count() > 0:
+                    self.stderr.write(self.style.WARNING(f"Warning: Possible error on page for Survey {survey.pk}"))
 
                 # Generate PDF filename
                 filename = f"survey_{survey.pk}_{survey.reference_number}.pdf"
@@ -171,14 +154,8 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f"Exported: {output_path}"))
 
             except Exception as e:
-                self.stderr.write(
-                    self.style.ERROR(f"Failed to export Survey {survey.pk}: {str(e)}")
-                )
+                self.stderr.write(self.style.ERROR(f"Failed to export Survey {survey.pk}: {str(e)}"))
             finally:
                 browser.close()
 
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"\nCompleted! Exported report to {output_dir.absolute()}"
-            )
-        )
+        self.stdout.write(self.style.SUCCESS(f"\nCompleted! Exported report to {output_dir.absolute()}"))

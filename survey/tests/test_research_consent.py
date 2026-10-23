@@ -82,9 +82,7 @@ class MakeResearchConsentOptionalCommandTestCase(TestCase):
 
         # Nothing else changed
         before["sections"][0]["fields"][self.index]["required"] = False
-        before["sections"][0]["fields"][self.index][
-            "description"
-        ] = self.template_description
+        before["sections"][0]["fields"][self.index]["description"] = self.template_description
         self.assertEqual(self.survey.survey_config, before)
 
     def test_description_updated_to_template(self):
@@ -95,15 +93,11 @@ class MakeResearchConsentOptionalCommandTestCase(TestCase):
 
     def test_dry_run_leaves_description(self):
         call_command("make_research_consent_optional", "--dry-run", stdout=StringIO())
-        self.assertEqual(
-            self.research_field()["description"], "You must agree before proceeding."
-        )
+        self.assertEqual(self.research_field()["description"], "You must agree before proceeding.")
 
     def test_internal_consent_left_required(self):
         call_command("make_research_consent_optional", stdout=StringIO())
-        consent = self.survey.survey_config["sections"][0]["fields"][
-            field_index(self.survey, "consent")
-        ]
+        consent = self.survey.survey_config["sections"][0]["fields"][field_index(self.survey, "consent")]
         self.assertTrue(consent["required"])
 
     def test_already_optional_is_skipped(self):

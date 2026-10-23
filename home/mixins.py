@@ -28,9 +28,7 @@ class MemberManagementRequiredMixin:
     permission check raises PermissionDenied and surfaces as a 500.
     """
 
-    member_management_error_message = (
-        "Only organisation administrators can manage members."
-    )
+    member_management_error_message = "Only organisation administrators can manage members."
 
     def get_member_management_organisation(self, request):
         # Default: the user's active organisation.

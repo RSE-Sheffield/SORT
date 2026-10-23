@@ -1,8 +1,9 @@
 from http import HTTPStatus
 
-import SORT.test.test_case
 from django.template import Context, Template
 from django.test import RequestFactory
+
+import SORT.test.test_case
 from SORT.test.model_factory import OrganisationFactory, ProjectFactory, SurveyFactory, UserFactory
 from SORT.test.model_factory.user.constants import PASSWORD
 
