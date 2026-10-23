@@ -1,11 +1,6 @@
 from django.core.management import BaseCommand, CommandError
 
-from home.services.research_export import ExportDiagnosis, ResearchExport
-
-# Example responses listed per survey, unless --verbosity 2 or more asks for all of them
-EXAMPLES_PER_SURVEY = 3
-# Validation messages can quote the participant's whole answers JSON, so cut them short
-MAX_MESSAGE_LENGTH = 200
+from home.services.research_export import EXAMPLES_PER_SURVEY, ExportDiagnosis, ResearchExport
 
 
 class Command(BaseCommand):
@@ -26,18 +21,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, output=None, diagnose=False, verbosity=1, **options):
         if diagnose:
-            self.report(ResearchExport().diagnose(), show_all=verbosity >= 2)
+            # List every invalid response only if --verbosity 2 or more asks for them
+            self.report(ResearchExport().diagnose(max_examples=None if verbosity >= 2 else EXAMPLES_PER_SURVEY))
             return
         if not output:
             raise CommandError("Provide an output file with -o/--output, or use --diagnose")
         row_count = ResearchExport().write_xlsx(output)
         self.stdout.write(f"Wrote {row_count} responses to {output}")
 
-    def report(self, diagnosis: ExportDiagnosis, show_all: bool) -> None:
+    def report(self, diagnosis: ExportDiagnosis) -> None:
         def share(count: int) -> str:
             return f"{count / diagnosis.blank_count:.1%}" if diagnosis.blank_count else "0.0%"
 
-        limit = None if show_all else EXAMPLES_PER_SURVEY
         write = self.stdout.write
         write(
             f"Rows: {diagnosis.row_count} from {len(diagnosis.rows_per_survey)} surveys  "
@@ -57,14 +52,11 @@ class Command(BaseCommand):
         for survey_id, count in sorted(diagnosis.short_responses.items()):
             write(f"  Survey {survey_id}: {count} of {diagnosis.rows_per_survey[survey_id]} responses")
 
-        invalid_count = sum(len(items) for items in diagnosis.invalid_responses.values())
-        write(f"\nResponses failing JSON Schema validation: {invalid_count}")
-        for survey_id, items in sorted(diagnosis.invalid_responses.items()):
-            write(f"  Survey {survey_id}: {len(items)} of {diagnosis.rows_per_survey[survey_id]} responses")
-            for response_id, messages in items[:limit]:
+        write(f"\nResponses failing JSON Schema validation: {sum(diagnosis.invalid_responses.values())}")
+        for survey_id, count in sorted(diagnosis.invalid_responses.items()):
+            write(f"  Survey {survey_id}: {count} of {diagnosis.rows_per_survey[survey_id]} responses")
+            for response_id, messages in diagnosis.invalid_examples[survey_id]:
                 for message in messages:
-                    if len(message) > MAX_MESSAGE_LENGTH:
-                        message = message[:MAX_MESSAGE_LENGTH] + "..."
                     write(f"    Response {response_id}: {message}")
 
         write(f"\nSurveys with duplicate question labels: {len(diagnosis.duplicate_labels)}")

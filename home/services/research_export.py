@@ -37,6 +37,10 @@ METADATA_COLUMNS = (
 )
 # Excel date-time display format for the "Submitted at" column
 DATETIME_FORMAT = "yyyy-mm-dd hh:mm:ss"
+# Invalid responses kept as examples per survey by `diagnose`, so memory doesn't grow with the export
+EXAMPLES_PER_SURVEY = 3
+# Validation messages can quote the participant's whole answers JSON, so cut them short
+MAX_MESSAGE_LENGTH = 200
 
 
 @dataclass
@@ -61,8 +65,10 @@ class ExportDiagnosis:
     rows_per_survey: Counter = field(default_factory=Counter)
     # Survey ID -> number of responses with answers missing from the stored JSON
     short_responses: Counter = field(default_factory=Counter)
-    # Survey ID -> [(response ID, validation messages)] for responses failing the JSON Schema
-    invalid_responses: dict = field(default_factory=lambda: defaultdict(list))
+    # Survey ID -> number of responses failing the JSON Schema
+    invalid_responses: Counter = field(default_factory=Counter)
+    # Survey ID -> [(response ID, truncated validation messages)] for the first few invalid responses
+    invalid_examples: dict = field(default_factory=lambda: defaultdict(list))
     # Survey ID -> {label: number of fields with that label}, for labels used more than once
     duplicate_labels: dict = field(default_factory=dict)
 
@@ -118,10 +124,12 @@ class ResearchExport:
             questions.update(dict.fromkeys(fields_cache[survey.pk]))
         return fields_cache, list(questions)
 
-    def diagnose(self) -> ExportDiagnosis:
+    def diagnose(self, max_examples: int | None = EXAMPLES_PER_SURVEY) -> ExportDiagnosis:
         """
         Attribute every blank answer cell of the export to its cause, and check each
         consented response against its survey's JSON Schema. Reads only; writes nothing.
+
+        :param max_examples: Invalid responses to keep as examples per survey (None keeps all)
         """
         fields_cache, questions = self._questions()
         diagnosis = ExportDiagnosis(column_count=len(questions))
@@ -137,7 +145,14 @@ class ResearchExport:
             try:
                 response.validate()
             except ValidationError as exc:
-                diagnosis.invalid_responses[survey_id].append((response.pk, exc.messages))
+                diagnosis.invalid_responses[survey_id] += 1
+                examples = diagnosis.invalid_examples[survey_id]
+                if max_examples is None or len(examples) < max_examples:
+                    messages = [
+                        message[:MAX_MESSAGE_LENGTH] + "..." if len(message) > MAX_MESSAGE_LENGTH else message
+                        for message in exc.messages
+                    ]
+                    examples.append((response.pk, messages))
 
             labels = fields_cache.get(survey_id) or response.survey.fields
             # Match answers to labels as write_xlsx does: for duplicate labels, the last wins

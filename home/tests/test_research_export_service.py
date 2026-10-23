@@ -143,7 +143,7 @@ class ResearchExportDiagnoseTestCase(TestCase):
         self.assertEqual(diagnosis.blank_other_survey, 0)
         self.assertEqual(diagnosis.blank_not_stored, 0)
         self.assertEqual(diagnosis.short_responses, {})
-        self.assertEqual(dict(diagnosis.invalid_responses), {})
+        self.assertEqual(diagnosis.invalid_responses, {})
 
     def test_counts_blanks_from_other_surveys_questions(self):
         plain = make_survey()
@@ -167,7 +167,19 @@ class ResearchExportDiagnoseTestCase(TestCase):
         diagnosis = ResearchExport().diagnose()
         self.assertEqual(diagnosis.blank_not_stored, missing)
         self.assertEqual(diagnosis.short_responses, {survey.pk: 1})
-        self.assertEqual([pk for pk, _ in diagnosis.invalid_responses[survey.pk]], [response.pk])
+        self.assertEqual(diagnosis.invalid_responses, {survey.pk: 1})
+        self.assertEqual([pk for pk, _ in diagnosis.invalid_examples[survey.pk]], [response.pk])
+
+    def test_keeps_only_first_invalid_examples(self):
+        survey = make_survey()
+        responses = [make_response(survey, research_consent=True) for _ in range(3)]
+        for response in responses:
+            response.answers[-1] = []
+            response.save()
+
+        diagnosis = ResearchExport().diagnose(max_examples=2)
+        self.assertEqual(diagnosis.invalid_responses, {survey.pk: 3})
+        self.assertEqual([pk for pk, _ in diagnosis.invalid_examples[survey.pk]], [r.pk for r in responses[:2]])
 
     def test_counts_answers_overwritten_by_duplicate_labels(self):
         survey = make_survey()
