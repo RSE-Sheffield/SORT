@@ -595,6 +595,24 @@ class SurveyResponse(models.Model):
                 else:
                     yield "" if answer is None else answer
 
+    @property
+    def answers_stored(self) -> Generator[bool, None, None]:
+        """
+        Whether each value of answers_values was stored in the answers JSON (True), or is a
+        blank padded in because the stored answers are shorter than the survey configuration
+        (False). Aligned column-for-column with answers_values and Survey.fields_iter().
+        """
+        for section_index, section in enumerate(self.survey.sections):
+            section_answers = self._section_answers(section_index)
+            for field_index, field in enumerate(section["fields"]):
+                is_stored = field_index < len(section_answers)
+                if field["type"] == "likert":
+                    selected = self._as_list(section_answers[field_index]) if is_stored else list()
+                    for sublabel_index in range(len(field.get("sublabels", []))):
+                        yield sublabel_index < len(selected)
+                else:
+                    yield is_stored
+
     def _section_answers(self, section_index: int) -> list:
         """
         The stored answers for one section, or an empty list if the response has none.
