@@ -622,7 +622,7 @@ class SurveyActivateView(LoginRequiredMixin, DetailView):
         """
         self.object = self.get_object()
         self.activate()
-        messages.success(request, "Survey activated")
+        messages.success(request, "Survey reopened")
         return redirect(self.object.get_absolute_url())
 
 
@@ -630,7 +630,7 @@ class SurveyDeactivateView(LoginRequiredMixin, DetailView):
     """
     Deactivate response collection for this survey.
 
-    The user must confirm that they want to pause data collection.
+    The user must confirm that they want to conclude the survey.
     """
 
     model = Survey
@@ -648,10 +648,12 @@ class SurveyDeactivateView(LoginRequiredMixin, DetailView):
         # Confirmed
         if is_confirmed:
             self.deactivate()
-            messages.warning(request, "Survey deactivated")
+            messages.warning(request, "Survey concluded")
         # Unconfirmed
         else:
-            messages.error(request, "Please confirm that you want to pause this survey.")
+            messages.error(
+                request, "Please confirm that you want to conclude this survey."
+            )
         return redirect(self.object.get_absolute_url())
 
 
