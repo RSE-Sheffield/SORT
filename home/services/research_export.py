@@ -19,6 +19,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass, field
 from typing import IO
 
+import jsonschema
 import xlsxwriter
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -59,6 +60,8 @@ class ExportDiagnosis:
     blank_not_stored: int = 0
     # Blank because the answer was stored empty (e.g. an optional field left unanswered)
     blank_empty: int = 0
+    # Blank because a later empty field with the same label overwrote an earlier answer
+    blank_overwritten: int = 0
     # Answers lost because a later field in the same survey has the same label
     overwritten_answers: int = 0
     # Survey ID -> number of consented responses
@@ -74,7 +77,7 @@ class ExportDiagnosis:
 
     @property
     def blank_count(self) -> int:
-        return self.blank_other_survey + self.blank_not_stored + self.blank_empty
+        return self.blank_other_survey + self.blank_not_stored + self.blank_empty + self.blank_overwritten
 
 
 def _write_cell(sheet, row: int, col: int, value) -> None:
@@ -132,6 +135,8 @@ class ResearchExport:
         :param max_examples: Invalid responses to keep as examples per survey (None keeps all)
         """
         fields_cache, questions = self._questions()
+        # Each response has its own Survey instance, so build each survey's validator once here
+        validators: dict[int, jsonschema.protocols.Validator] = {}
         diagnosis = ExportDiagnosis(column_count=len(questions))
         for survey_id, labels in fields_cache.items():
             duplicates = {label: count for label, count in Counter(labels).items() if count > 1}
@@ -142,8 +147,10 @@ class ResearchExport:
             survey_id = response.survey_id
             diagnosis.row_count += 1
             diagnosis.rows_per_survey[survey_id] += 1
+            if survey_id not in validators:
+                validators[survey_id] = response.survey.response_validator
             try:
-                response.validate()
+                response.validate(validators[survey_id])
             except ValidationError as exc:
                 diagnosis.invalid_responses[survey_id] += 1
                 examples = diagnosis.invalid_examples[survey_id]
@@ -154,24 +161,36 @@ class ResearchExport:
                     ]
                     examples.append((response.pk, messages))
 
-            labels = fields_cache.get(survey_id) or response.survey.fields
+            if survey_id not in fields_cache:
+                # As in write_xlsx: a survey first seen after the columns were chosen
+                # has no columns for its new questions, so those answers are left out
+                fields_cache[survey_id] = response.survey.fields
             # Match answers to labels as write_xlsx does: for duplicate labels, the last wins
             cells: dict[str, tuple] = {}
-            for label, value, is_stored in zip(labels, response.answers_values, response.answers_stored):
-                if label in cells and cells[label][0] not in (None, ""):
-                    diagnosis.overwritten_answers += 1
-                cells[label] = (value, is_stored)
-            if not all(response.answers_stored):
+            short = False
+            for label, (value, is_stored) in zip(fields_cache[survey_id], response.answers_with_stored):
+                short = short or not is_stored
+                # Whether this cell's value hides an earlier answer to a field with the same label
+                hides_answer = False
+                if label in cells:
+                    previous_value, _, previous_hides_answer = cells[label]
+                    if previous_value not in (None, ""):
+                        diagnosis.overwritten_answers += 1
+                    hides_answer = previous_value not in (None, "") or previous_hides_answer
+                cells[label] = (value, is_stored, hides_answer)
+            if short:
                 diagnosis.short_responses[survey_id] += 1
 
             for question in questions:
                 if question not in cells:
                     diagnosis.blank_other_survey += 1
                     continue
-                value, is_stored = cells[question]
+                value, is_stored, hides_answer = cells[question]
                 if value not in (None, ""):
                     continue
-                if is_stored:
+                if hides_answer:
+                    diagnosis.blank_overwritten += 1
+                elif is_stored:
                     diagnosis.blank_empty += 1
                 else:
                     diagnosis.blank_not_stored += 1

@@ -241,6 +241,14 @@ class Survey(models.Model):
             "maxItems": len(section_schemas),
         }
 
+    @cached_property
+    def response_validator(self) -> jsonschema.protocols.Validator:
+        """
+        A JSON Schema validator for response answers, built once per Survey instance.
+        """
+        schema = self.response_schema
+        return jsonschema.validators.validator_for(schema)(schema)
+
     @classmethod
     def _generate_random_field_value(cls, field_config):
         field_type = field_config["type"]
@@ -518,17 +526,19 @@ class SurveyResponse(models.Model):
     def get_absolute_url(self, token):
         return reverse("survey", kwargs={"pk": self.survey.pk})
 
-    def validate(self) -> None:
+    def validate(self, validator: jsonschema.protocols.Validator | None = None) -> None:
         """
         Validate response answers against this survey's JSON Schema.
 
         Raises django.core.exceptions.ValidationError, with one message per
         failing field, if the answers do not match.
+
+        :param validator: This survey's response validator, if already built (e.g. to reuse
+            it across many responses whose Survey instances differ)
         """
-        schema = self.survey.response_schema
-        validator_cls = jsonschema.validators.validator_for(schema)
+        validator = validator or self.survey.response_validator
         errors = sorted(
-            validator_cls(schema).iter_errors(self.answers),
+            validator.iter_errors(self.answers),
             key=lambda exc: list(exc.absolute_path),
         )
         if errors:
@@ -581,19 +591,7 @@ class SurveyResponse(models.Model):
         so every row still lines up with the header, rather than silently dropping the
         remaining columns.
         """
-        for section_index, section in enumerate(self.survey.sections):
-            section_answers = self._section_answers(section_index)
-            for field_index, field in enumerate(section["fields"]):
-                answer = section_answers[field_index] if field_index < len(section_answers) else None
-                if field["type"] == "likert":
-                    sublabels = field.get("sublabels", [])
-                    selected = self._as_list(answer)
-                    for sublabel_index in range(len(sublabels)):
-                        yield (selected[sublabel_index] if sublabel_index < len(selected) else "")
-                elif field["type"] == "checkbox":
-                    yield ", ".join(self._as_list(answer))
-                else:
-                    yield "" if answer is None else answer
+        return (value for value, _ in self.answers_with_stored)
 
     @property
     def answers_stored(self) -> Generator[bool, None, None]:
@@ -602,16 +600,30 @@ class SurveyResponse(models.Model):
         blank padded in because the stored answers are shorter than the survey configuration
         (False). Aligned column-for-column with answers_values and Survey.fields_iter().
         """
+        return (is_stored for _, is_stored in self.answers_with_stored)
+
+    @property
+    def answers_with_stored(self) -> Generator[tuple[str, bool], None, None]:
+        """
+        Pairs of (answers_values value, answers_stored flag), from a single traversal of
+        the survey configuration so the two always stay aligned.
+        """
         for section_index, section in enumerate(self.survey.sections):
             section_answers = self._section_answers(section_index)
             for field_index, field in enumerate(section["fields"]):
                 is_stored = field_index < len(section_answers)
+                answer = section_answers[field_index] if is_stored else None
                 if field["type"] == "likert":
-                    selected = self._as_list(section_answers[field_index]) if is_stored else list()
+                    selected = self._as_list(answer)
                     for sublabel_index in range(len(field.get("sublabels", []))):
-                        yield sublabel_index < len(selected)
+                        if sublabel_index < len(selected):
+                            yield selected[sublabel_index], True
+                        else:
+                            yield "", False
+                elif field["type"] == "checkbox":
+                    yield ", ".join(self._as_list(answer)), is_stored
                 else:
-                    yield is_stored
+                    yield "" if answer is None else answer, is_stored
 
     def _section_answers(self, section_index: int) -> list:
         """
