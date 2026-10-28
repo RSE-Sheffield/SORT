@@ -45,11 +45,9 @@ class Command(BaseCommand):
             ("Question from another survey's config", diagnosis.blank_other_survey),
             ("Missing from stored answers (malformed)", diagnosis.blank_not_stored),
             ("Answered empty (e.g. optional field)", diagnosis.blank_empty),
-            ("Overwritten by duplicate label", diagnosis.blank_overwritten),
         )
         for cause, count in causes:
             write(f"  {cause + ':':<41}{count} ({share(count)})")
-        write(f"Answers overwritten by duplicate labels: {diagnosis.overwritten_answers}")
 
         write(f"\nResponses with answers missing from stored JSON: {sum(diagnosis.short_responses.values())}")
         for survey_id, count in sorted(diagnosis.short_responses.items()):
@@ -65,7 +63,10 @@ class Command(BaseCommand):
             if count > len(examples):
                 write(f"    ... and {count - len(examples)} more (use -v 2 to list all)")
 
-        write(f"\nSurveys with duplicate question labels: {len(diagnosis.duplicate_labels)}")
+        write(
+            f"\nSurveys with duplicate question labels (exported as separate numbered columns): "
+            f"{len(diagnosis.duplicate_labels)}"
+        )
         for survey_id, duplicates in sorted(diagnosis.duplicate_labels.items()):
             for label, count in duplicates.items():
                 write(f"  Survey {survey_id}: {count} fields labelled {label!r}")

@@ -1,3 +1,4 @@
+import collections
 import csv
 import io
 import itertools
@@ -28,6 +29,8 @@ logger = logging.getLogger(__name__)
 
 # The optional research consent question in the consent section (see CONSENT_TEMPLATE)
 RESEARCH_CONSENT_FIELD_NAME = "consent-research"
+# A SORT question code at the start of a likert sub-label, e.g. "A1" in "A1. Our organisation..."
+QUESTION_CODE = re.compile(r"\s*([A-Z]\d+)\.")
 
 
 class Profession(models.TextChoices):
@@ -328,6 +331,38 @@ class Survey(models.Model):
         Survey questions/field names
         """
         return tuple(self.fields_iter())
+
+    def field_ids_iter(self) -> Generator[str, None, None]:
+        """
+        Iterate over a stable identifier for each field (and sub-field), aligned with fields_iter().
+
+        Labels vary between profession variants and wording fixes, so identify each question by,
+        in order of preference: the SORT question code at the start of a likert sub-label (e.g. "A1"),
+        the field's name (e.g. "releasing_potential_comments"), or else its label (demography and
+        custom fields have no name).
+        """
+        for section in self.sections:
+            for field in section["fields"]:
+                if field["type"] == "likert":
+                    for sublabel in field["sublabels"]:
+                        match = QUESTION_CODE.match(sublabel)
+                        yield match.group(1) if match else sublabel
+                else:
+                    yield field.get("name") or field["label"]
+
+    @property
+    def field_ids(self) -> tuple[str]:
+        """
+        Stable field identifiers (see field_ids_iter), unique within this survey. A repeated
+        identifier, e.g. two fields labelled "What is your profession?", is numbered by its
+        occurrence: "What is your profession?", "What is your profession? (2)".
+        """
+        occurrences = collections.Counter()
+        field_ids = list()
+        for field_id in self.field_ids_iter():
+            occurrences[field_id] += 1
+            field_ids.append(field_id if occurrences[field_id] == 1 else f"{field_id} ({occurrences[field_id]})")
+        return tuple(field_ids)
 
     def responses_iter_values(self):
         """

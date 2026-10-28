@@ -12,11 +12,22 @@ import openpyxl
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 
-from home.services.research_export import EXAMPLES_PER_SURVEY, METADATA_COLUMNS, SHEET_NAME, ResearchExport
+from home.services.research_export import (
+    EXAMPLES_PER_SURVEY,
+    METADATA_COLUMNS,
+    QUESTIONS_COLUMNS,
+    QUESTIONS_SHEET_NAME,
+    SHEET_NAME,
+    ResearchExport,
+)
 from SORT.test.model_factory import SurveyFactory
-from survey.models import RESEARCH_CONSENT_FIELD_NAME, Survey, SurveyResponse
+from survey.models import RESEARCH_CONSENT_FIELD_NAME, Profession, Survey, SurveyResponse
 
+# A custom field added in the config editor has no name, so its label identifies its column
 EXTRA_QUESTION = "Extra question"
+# The SORT likert sub-questions (A1 to E9) and the comments field of each of the 5 SORT sections
+SORT_CODE_COUNT = 44
+SORT_COMMENTS_COUNT = 5
 
 
 def field_index(survey: Survey, name: str) -> int:
@@ -24,12 +35,14 @@ def field_index(survey: Survey, name: str) -> int:
     return next(i for i, f in enumerate(fields) if f["name"] == name)
 
 
-def make_survey(is_shared: bool = True, extra_question: bool = False) -> Survey:
-    survey = SurveyFactory(is_shared=is_shared)
+def make_survey(
+    is_shared: bool = True, extra_question: bool = False, profession: Profession = Profession.NURSES
+) -> Survey:
+    survey = SurveyFactory(is_shared=is_shared, survey_body_path=profession)
     survey.initialise()
     if extra_question:
         survey.survey_config["sections"].append(
-            {"title": "Extra", "fields": [{"type": "text", "name": "extra", "label": EXTRA_QUESTION}]}
+            {"title": "Extra", "fields": [{"type": "text", "label": EXTRA_QUESTION}]}
         )
     survey.save()
     return survey
@@ -45,11 +58,24 @@ def make_response(survey: Survey, research_consent: bool, extra_answer: str = No
     return SurveyResponse.objects.create(survey=survey, answers=answers)
 
 
-def read_sheet(export: ResearchExport) -> list[tuple]:
+def make_duplicate_label_survey() -> Survey:
+    """A survey whose customised section has two fields with the same label (as in production survey 180)."""
+    survey = make_survey()
+    survey.survey_config["sections"].append(
+        {
+            "title": "Extra",
+            "fields": [{"type": "text", "label": EXTRA_QUESTION}, {"type": "text", "label": EXTRA_QUESTION}],
+        }
+    )
+    survey.save()
+    return survey
+
+
+def read_sheet(export: ResearchExport, sheet_name: str = SHEET_NAME) -> list[tuple]:
     buffer = io.BytesIO()
     export.write_xlsx(buffer)
     workbook = openpyxl.load_workbook(io.BytesIO(buffer.getvalue()))
-    return list(workbook[SHEET_NAME].iter_rows(values_only=True))
+    return list(workbook[sheet_name].iter_rows(values_only=True))
 
 
 class ResearchExportTestCase(TestCase):
@@ -103,10 +129,54 @@ class ResearchExportTestCase(TestCase):
 
         header, plain_row, extended_row = read_sheet(ResearchExport())
         self.assertEqual(header.count(EXTRA_QUESTION), 1)
-        self.assertEqual(header[len(METADATA_COLUMNS) :], (*plain.fields, EXTRA_QUESTION))
+        self.assertEqual(header[len(METADATA_COLUMNS) :], (*plain.field_ids, EXTRA_QUESTION))
         extra_col = header.index(EXTRA_QUESTION)
         self.assertIsNone(plain_row[extra_col])
         self.assertEqual(extended_row[extra_col], "Hello")
+
+    def test_profession_variants_share_question_columns(self):
+        """
+        The same SORT question is worded differently in each profession variant, but shares a column.
+        See https://github.com/RSE-Sheffield/SORT/issues/799
+        """
+        nurses = make_survey(profession=Profession.NURSES)
+        ahp = make_survey(profession=Profession.AHP)
+        self.assertNotEqual(nurses.fields, ahp.fields)
+        make_response(nurses, research_consent=True)
+        make_response(ahp, research_consent=True)
+
+        header, *rows = read_sheet(ResearchExport())
+        codes = [column for column in header if column[0] in "ABCDE" and column[1:].isdigit()]
+        comments = [column for column in header if column.endswith("_comments")]
+        self.assertEqual(len(codes), SORT_CODE_COUNT)
+        self.assertEqual(len(comments), SORT_COMMENTS_COUNT)
+        self.assertEqual(len(header), len(METADATA_COLUMNS) + len(nurses.field_ids))
+        for row in rows:
+            self.assertTrue(all(row[header.index(code)] for code in codes))
+
+    def test_duplicate_labels_are_separate_columns(self):
+        survey = make_duplicate_label_survey()
+        response = make_response(survey, research_consent=True)
+        response.answers[-1] = ["First", "Second"]
+        response.save()
+
+        header, row = read_sheet(ResearchExport())
+        self.assertEqual(header[-2:], (EXTRA_QUESTION, f"{EXTRA_QUESTION} (2)"))
+        self.assertEqual(row[-2:], ("First", "Second"))
+
+    def test_questions_sheet_maps_columns_to_each_wording(self):
+        nurses = make_survey(profession=Profession.NURSES)
+        ahp = make_survey(profession=Profession.AHP)
+        make_response(nurses, research_consent=True)
+        make_response(ahp, research_consent=True)
+
+        header, *rows = read_sheet(ResearchExport(), QUESTIONS_SHEET_NAME)
+        self.assertEqual(header, QUESTIONS_COLUMNS)
+        wordings = {(question, survey_ids) for column, question, survey_ids in rows if column == "A2"}
+        a2 = nurses.field_ids.index("A2")
+        self.assertEqual(wordings, {(nurses.fields[a2], str(nurses.pk)), (ahp.fields[a2], str(ahp.pk))})
+        # A question worded the same in both surveys has one row listing both
+        self.assertIn(("consent-research", ahp.fields[1], f"{nurses.pk}, {ahp.pk}"), rows)
 
     def test_surveys_without_consented_responses_add_no_columns(self):
         plain = make_survey()
@@ -140,7 +210,7 @@ class ResearchExportDiagnoseTestCase(TestCase):
 
         diagnosis = ResearchExport().diagnose()
         self.assertEqual(diagnosis.row_count, 1)
-        self.assertEqual(diagnosis.column_count, len(survey.fields))
+        self.assertEqual(diagnosis.column_count, len(survey.field_ids))
         self.assertEqual(diagnosis.blank_other_survey, 0)
         self.assertEqual(diagnosis.blank_not_stored, 0)
         self.assertEqual(diagnosis.short_responses, {})
@@ -182,52 +252,19 @@ class ResearchExportDiagnoseTestCase(TestCase):
         self.assertEqual(diagnosis.invalid_responses, {survey.pk: 3})
         self.assertEqual([pk for pk, _ in diagnosis.invalid_examples[survey.pk]], [r.pk for r in responses[:2]])
 
-    def test_counts_answers_overwritten_by_duplicate_labels(self):
-        survey = make_survey()
-        survey.survey_config["sections"].append(
-            {
-                "title": "Extra",
-                "fields": [
-                    {"type": "text", "name": "other1", "label": EXTRA_QUESTION},
-                    {"type": "text", "name": "other2", "label": EXTRA_QUESTION},
-                ],
-            }
-        )
-        survey.save()
+    def test_reports_duplicate_labels_without_losing_answers(self):
+        survey = make_duplicate_label_survey()
         response = make_response(survey, research_consent=True)
-        response.answers[-1] = ["First", "Second"]
-        response.save()
-
-        diagnosis = ResearchExport().diagnose()
-        self.assertEqual(diagnosis.duplicate_labels, {survey.pk: {EXTRA_QUESTION: 2}})
-        self.assertEqual(diagnosis.overwritten_answers, 1)
-        self.assertEqual(diagnosis.blank_overwritten, 0)
-
-    def test_counts_blank_from_answer_overwritten_by_empty_duplicate(self):
-        survey = make_survey()
-        survey.survey_config["sections"].append(
-            {
-                "title": "Extra",
-                "fields": [
-                    {"type": "text", "name": "other1", "label": EXTRA_QUESTION},
-                    {"type": "text", "name": "other2", "label": EXTRA_QUESTION},
-                ],
-            }
-        )
-        survey.save()
-        response = make_response(survey, research_consent=True)
-        response.answers[-1] = ["", ""]
-        response.save()
-        both_empty = ResearchExport().diagnose()
         response.answers[-1] = ["First", ""]
         response.save()
 
         diagnosis = ResearchExport().diagnose()
-        self.assertEqual(diagnosis.overwritten_answers, 1)
-        self.assertEqual(diagnosis.blank_overwritten, 1)
-        # The same blank cell, counted once: as overwritten rather than answered empty
-        self.assertEqual(diagnosis.blank_empty, both_empty.blank_empty - 1)
-        self.assertEqual(diagnosis.blank_count, both_empty.blank_count)
+        self.assertEqual(diagnosis.duplicate_labels, {survey.pk: {EXTRA_QUESTION: 2}})
+        self.assertEqual(diagnosis.column_count, len(survey.field_ids))
+        # Only the second field is blank: the first answer is not overwritten
+        self.assertEqual(diagnosis.blank_other_survey, 0)
+        self.assertEqual(diagnosis.blank_not_stored, 0)
+        self.assertEqual(diagnosis.blank_count, diagnosis.blank_empty)
 
     def test_builds_one_validator_per_survey(self):
         surveys = [make_survey(), make_survey()]
