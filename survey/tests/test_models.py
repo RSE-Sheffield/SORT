@@ -156,3 +156,18 @@ class TestSurveyFieldIds(TestCase):
         survey.survey_config["sections"][-1]["fields"].append({"type": "text", "label": "What is your profession?"})
         self.assertEqual(survey.field_ids[-1], "What is your profession? (2)")
         self.assertEqual(survey.field_ids.count("What is your profession?"), 1)
+
+    def test_custom_likert_sublabels_do_not_take_question_codes(self):
+        survey = self._survey(Profession.NURSES)
+        sublabels = ["A1. I feel supported", "Q1. My manager is research-active"]
+        custom_section = {
+            "title": "Custom",
+            "type": "custom",
+            "fields": [{"type": "likert", "label": "Custom likert", "sublabels": sublabels, "options": ["Yes", "No"]}],
+        }
+        # After consent, before the SORT sections
+        survey.survey_config["sections"].insert(1, custom_section)
+        consent = len(survey.sections[0]["fields"])
+        self.assertEqual(survey.field_ids[consent : consent + 2], tuple(sublabels))
+        self.assertIn("A1", survey.field_ids)
+        self.assertNotIn("A1 (2)", survey.field_ids)

@@ -337,7 +337,7 @@ class Survey(models.Model):
         Iterate over a stable identifier for each field (and sub-field), aligned with fields_iter().
 
         Labels vary between profession variants and wording fixes, so identify each question by,
-        in order of preference: the SORT question code at the start of a likert sub-label (e.g. "A1"),
+        in order of preference: the SORT question code at the start of a SORT likert sub-label (e.g. "A1"),
         the field's name (e.g. "releasing_potential_comments"), or else its label (demography and
         custom fields have no name).
         """
@@ -345,7 +345,8 @@ class Survey(models.Model):
             for field in section["fields"]:
                 if field["type"] == "likert":
                     for sublabel in field["sublabels"]:
-                        match = QUESTION_CODE.match(sublabel)
+                        # Only SORT fields have a name; custom likert sub-labels may also start "Q1."
+                        match = QUESTION_CODE.match(sublabel) if field.get("name") else None
                         yield match.group(1) if match else sublabel
                 else:
                     yield field.get("name") or field["label"]
