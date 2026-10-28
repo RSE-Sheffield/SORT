@@ -161,8 +161,42 @@ class ResearchExportTestCase(TestCase):
         response.save()
 
         header, row = read_sheet(ResearchExport())
-        self.assertEqual(header[-2:], (EXTRA_QUESTION, f"{EXTRA_QUESTION} (2)"))
+        self.assertEqual(header[-2:], (f"{EXTRA_QUESTION} (1)", f"{EXTRA_QUESTION} (2)"))
         self.assertEqual(row[-2:], ("First", "Second"))
+
+    def test_repeated_label_does_not_share_a_column_with_a_single_one(self):
+        """
+        A survey that repeats a label doesn't mix its first answer with another survey's only one.
+        """
+        repeated = make_duplicate_label_survey()
+        single = make_survey(extra_question=True)
+        response = make_response(repeated, research_consent=True)
+        response.answers[-1] = ["First", "Second"]
+        response.save()
+        make_response(single, research_consent=True, extra_answer="Only")
+
+        header, repeated_row, single_row = read_sheet(ResearchExport())
+        only = header.index(EXTRA_QUESTION)
+        self.assertIsNone(repeated_row[only])
+        self.assertEqual(single_row[only], "Only")
+        self.assertNotIn("Only", repeated_row)
+
+    def test_questions_sheet_includes_surveys_first_seen_after_the_header(self):
+        """
+        A survey whose first consented response arrives after the columns are chosen still
+        has its wordings listed for the columns it shares.
+        """
+        early = make_survey(profession=Profession.NURSES)
+        make_response(early, research_consent=True)
+        export = ResearchExport()
+        columns = export._columns()
+        late = make_survey(profession=Profession.AHP)
+        make_response(late, research_consent=True)
+
+        with mock.patch.object(ResearchExport, "_columns", return_value=columns):
+            sheet_rows = read_sheet(export, QUESTIONS_SHEET_NAME)
+        a2 = late.field_ids.index("A2")
+        self.assertIn(("A2", late.fields[a2], str(late.pk)), sheet_rows)
 
     def test_questions_sheet_maps_columns_to_each_wording(self):
         nurses = make_survey(profession=Profession.NURSES)
@@ -252,14 +286,14 @@ class ResearchExportDiagnoseTestCase(TestCase):
         self.assertEqual(diagnosis.invalid_responses, {survey.pk: 3})
         self.assertEqual([pk for pk, _ in diagnosis.invalid_examples[survey.pk]], [r.pk for r in responses[:2]])
 
-    def test_reports_duplicate_labels_without_losing_answers(self):
+    def test_reports_repeated_ids_without_losing_answers(self):
         survey = make_duplicate_label_survey()
         response = make_response(survey, research_consent=True)
         response.answers[-1] = ["First", ""]
         response.save()
 
         diagnosis = ResearchExport().diagnose()
-        self.assertEqual(diagnosis.duplicate_labels, {survey.pk: {EXTRA_QUESTION: 2}})
+        self.assertEqual(diagnosis.repeated_ids, {survey.pk: {EXTRA_QUESTION: 2}})
         self.assertEqual(diagnosis.column_count, len(survey.field_ids))
         # Only the second field is blank: the first answer is not overwritten
         self.assertEqual(diagnosis.blank_other_survey, 0)

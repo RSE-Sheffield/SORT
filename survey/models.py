@@ -33,6 +33,33 @@ RESEARCH_CONSENT_FIELD_NAME = "consent-research"
 QUESTION_CODE = re.compile(r"\s*([A-Z]\d+)\.")
 
 
+def number_repeats(ids) -> tuple[str]:
+    """
+    Make identifiers unique by numbering every occurrence of a repeated one, e.g.
+    ("Role", "Role") becomes ("Role (1)", "Role (2)"). Every occurrence is numbered, so an
+    unnumbered identifier always means the only one of its kind. A generated identifier never
+    matches another identifier in the sequence, e.g. ("Role", "Role", "Role (2)").
+    """
+    ids = tuple(ids)
+    counts = collections.Counter(ids)
+    taken = set(ids)
+    numbered = list()
+    occurrences = collections.Counter()
+    for id_ in ids:
+        if counts[id_] == 1:
+            numbered.append(id_)
+            continue
+        occurrences[id_] += 1
+        candidate = f"{id_} ({occurrences[id_]})"
+        # Skip numbers already used by an identifier in the sequence
+        while candidate in taken:
+            occurrences[id_] += 1
+            candidate = f"{id_} ({occurrences[id_]})"
+        taken.add(candidate)
+        numbered.append(candidate)
+    return tuple(numbered)
+
+
 class Profession(models.TextChoices):
     """
     Respondent job category for the target audience that will complete the survey.
@@ -332,38 +359,50 @@ class Survey(models.Model):
         """
         return tuple(self.fields_iter())
 
+    @property
+    def unique_fields(self) -> tuple[str]:
+        """
+        Field labels made unique (see number_repeats), so that repeated labels such as two
+        "What is your profession?" fields each keep their own column in exports.
+        """
+        return number_repeats(self.fields_iter())
+
     def field_ids_iter(self) -> Generator[str, None, None]:
         """
         Iterate over a stable identifier for each field (and sub-field), aligned with fields_iter().
 
         Labels vary between profession variants and wording fixes, so identify each question by,
         in order of preference: the SORT question code at the start of a SORT likert sub-label (e.g. "A1"),
+        a SORT likert field's name and sub-label position (e.g. "releasing_potential:0") if the sub-label has no code,
         the field's name (e.g. "releasing_potential_comments"), or else its label (demography and
         custom fields have no name).
         """
         for section in self.sections:
             for field in section["fields"]:
                 if field["type"] == "likert":
-                    for sublabel in field["sublabels"]:
+                    name = field.get("name")
+                    for index, sublabel in enumerate(field["sublabels"]):
                         # Only SORT fields have a name; custom likert sub-labels may also start "Q1."
-                        match = QUESTION_CODE.match(sublabel) if field.get("name") else None
-                        yield match.group(1) if match else sublabel
+                        if not name:
+                            yield sublabel
+                        elif match := QUESTION_CODE.match(sublabel):
+                            yield match.group(1)
+                        else:
+                            yield f"{name}:{index}"
                 else:
                     yield field.get("name") or field["label"]
 
     @property
     def field_ids(self) -> tuple[str]:
         """
-        Stable field identifiers (see field_ids_iter), unique within this survey. A repeated
-        identifier, e.g. two fields labelled "What is your profession?", is numbered by its
-        occurrence: "What is your profession?", "What is your profession? (2)".
+        Stable field identifiers (see field_ids_iter), unique within this survey. Every occurrence
+        of a repeated identifier is numbered (see number_repeats), e.g. two fields labelled
+        "What is your profession?" become "What is your profession? (1)" and "(2)".
+
+        Numbering follows field order, so two surveys that both repeat a label-only question
+        line up only if their repeats are in the same order.
         """
-        occurrences = collections.Counter()
-        field_ids = list()
-        for field_id in self.field_ids_iter():
-            occurrences[field_id] += 1
-            field_ids.append(field_id if occurrences[field_id] == 1 else f"{field_id} ({occurrences[field_id]})")
-        return tuple(field_ids)
+        return number_repeats(self.field_ids_iter())
 
     def responses_iter_values(self):
         """
@@ -378,7 +417,7 @@ class Survey(models.Model):
         Generate an iterable of flat dictionaries, each with questions and answers for this survey.
         """
         for answers_values in self.responses_iter_values():
-            yield dict(itertools.zip_longest(self.fields, answers_values))
+            yield dict(itertools.zip_longest(self.unique_fields, answers_values))
 
     def to_csv(self, **kwargs) -> str:
         """
@@ -389,7 +428,7 @@ class Survey(models.Model):
         """
         # Build text data
         with io.StringIO() as buffer:
-            writer = csv.DictWriter(buffer, fieldnames=self.fields, **kwargs)
+            writer = csv.DictWriter(buffer, fieldnames=self.unique_fields, **kwargs)
             writer.writeheader()
             # Iterate over survey responses, one line per submitted response
             for row in self.responses_iter():

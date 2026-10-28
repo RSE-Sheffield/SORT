@@ -64,9 +64,9 @@ class Command(BaseCommand):
                 write(f"    ... and {count - len(examples)} more (use -v 2 to list all)")
 
         write(
-            f"\nSurveys with duplicate question labels (exported as separate numbered columns): "
-            f"{len(diagnosis.duplicate_labels)}"
+            f"\nSurveys with repeated question IDs (exported as separate numbered columns): "
+            f"{len(diagnosis.repeated_ids)}"
         )
-        for survey_id, duplicates in sorted(diagnosis.duplicate_labels.items()):
-            for label, count in duplicates.items():
-                write(f"  Survey {survey_id}: {count} fields labelled {label!r}")
+        for survey_id, repeated in sorted(diagnosis.repeated_ids.items()):
+            for field_id, count in repeated.items():
+                write(f"  Survey {survey_id}: {count} fields with ID {field_id!r}")

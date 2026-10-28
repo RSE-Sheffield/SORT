@@ -71,9 +71,9 @@ class ExportDiagnosis:
     invalid_responses: Counter = field(default_factory=Counter)
     # Survey ID -> [(response ID, truncated validation messages)] for the first few invalid responses
     invalid_examples: dict = field(default_factory=lambda: defaultdict(list))
-    # Survey ID -> {label: number of fields with that label}, for labels used more than once.
+    # Survey ID -> {question ID: number of fields with that ID}, for IDs used more than once.
     # These fields are exported as separate, numbered columns (see Survey.field_ids)
-    duplicate_labels: dict = field(default_factory=dict)
+    repeated_ids: dict = field(default_factory=dict)
 
     @property
     def blank_count(self) -> int:
@@ -91,6 +91,40 @@ def _write_cell(sheet, row: int, col: int, value) -> None:
         sheet.write_number(row, col, value)
     else:
         sheet.write_string(row, col, str(value))
+
+
+@dataclass
+class ExportColumns:
+    """
+    The export's question columns, gathered from each survey with consented responses.
+    """
+
+    # Survey ID -> that survey's question IDs (Survey.field_ids)
+    ids_cache: dict[int, tuple[str]] = field(default_factory=dict)
+    # Union of all surveys' question IDs, in survey order (a dict keeps insertion order)
+    columns: dict[str, None] = field(default_factory=dict)
+    # Question ID -> {wording: [survey IDs]}
+    wordings: dict = field(default_factory=lambda: defaultdict(lambda: defaultdict(list)))
+    # Survey ID -> {question ID: count}, for IDs used more than once in that survey
+    repeated_ids: dict[int, dict[str, int]] = field(default_factory=dict)
+
+    def add_survey(self, survey: Survey, add_columns: bool = False) -> None:
+        """
+        Record a survey's question IDs and wordings.
+
+        :param add_columns: Add the survey's new question IDs as columns. Once the header is
+            written, columns are fixed, so the wordings of questions without a column are left out.
+        """
+        field_ids = survey.field_ids
+        self.ids_cache[survey.pk] = field_ids
+        if add_columns:
+            self.columns.update(dict.fromkeys(field_ids))
+        for field_id, label in zip(field_ids, survey.fields):
+            if field_id in self.columns:
+                self.wordings[field_id][label].append(survey.pk)
+        repeated = {field_id: count for field_id, count in Counter(survey.field_ids_iter()).items() if count > 1}
+        if repeated:
+            self.repeated_ids[survey.pk] = repeated
 
 
 class ResearchExport:
@@ -115,23 +149,18 @@ class ResearchExport:
         # Participant consent lives inside the answers JSON, so filter in Python
         return (response for response in responses.iterator() if response.has_research_consent)
 
-    def _columns(self) -> tuple[dict[int, tuple[str]], list[str], dict[str, dict[str, list[int]]]]:
+    def _columns(self) -> ExportColumns:
         """
         Each survey's question identifiers, the union of them as columns (in survey order,
         matching the order responses are written in), and the wordings of each column's
         question with the surveys that used them.
         """
-        columns: dict[str, None] = {}
-        ids_cache: dict[int, tuple[str]] = {}
-        wordings: dict[str, dict[str, list[int]]] = defaultdict(lambda: defaultdict(list))
+        export_columns = ExportColumns()
         # Only surveys with a consented response contribute columns, so find them first
         survey_ids = {response.survey_id for response in self.consented_responses()}
         for survey in Survey.objects.filter(pk__in=survey_ids).order_by("pk"):
-            ids_cache[survey.pk] = survey.field_ids
-            columns.update(dict.fromkeys(ids_cache[survey.pk]))
-            for field_id, label in zip(ids_cache[survey.pk], survey.fields):
-                wordings[field_id][label].append(survey.pk)
-        return ids_cache, list(columns), wordings
+            export_columns.add_survey(survey, add_columns=True)
+        return export_columns
 
     def diagnose(self, max_examples: int | None = EXAMPLES_PER_SURVEY) -> ExportDiagnosis:
         """
@@ -140,14 +169,11 @@ class ResearchExport:
 
         :param max_examples: Invalid responses to keep as examples per survey (None keeps all)
         """
-        ids_cache, columns, _ = self._columns()
+        export_columns = self._columns()
+        ids_cache, columns = export_columns.ids_cache, export_columns.columns
         # Each response has its own Survey instance, so build each survey's validator once here
         validators: dict[int, jsonschema.protocols.Validator] = {}
-        diagnosis = ExportDiagnosis(column_count=len(columns))
-        for survey in Survey.objects.filter(pk__in=ids_cache).only("survey_config"):
-            duplicates = {label: count for label, count in Counter(survey.fields).items() if count > 1}
-            if duplicates:
-                diagnosis.duplicate_labels[survey.pk] = duplicates
+        diagnosis = ExportDiagnosis(column_count=len(columns), repeated_ids=export_columns.repeated_ids)
 
         for response in self.consented_responses():
             survey_id = response.survey_id
@@ -170,7 +196,7 @@ class ResearchExport:
             if survey_id not in ids_cache:
                 # As in write_xlsx: a survey first seen after the columns were chosen
                 # has no columns for its new questions, so those answers are left out
-                ids_cache[survey_id] = response.survey.field_ids
+                export_columns.add_survey(response.survey)
             cells = dict(zip(ids_cache[survey_id], response.answers_with_stored))
             if not all(is_stored for _, is_stored in cells.values()):
                 diagnosis.short_responses[survey_id] += 1
@@ -197,7 +223,8 @@ class ResearchExport:
         :returns: The number of responses written
         """
         # The header needs every column up front, before any row is written
-        ids_cache, columns, wordings = self._columns()
+        export_columns = self._columns()
+        ids_cache, columns = export_columns.ids_cache, export_columns.columns
 
         workbook = xlsxwriter.Workbook(file, {"constant_memory": True})
         bold = workbook.add_format({"bold": True})
@@ -225,13 +252,13 @@ class ResearchExport:
             if survey.pk not in ids_cache:
                 # First consented response arrived after the header was written; its
                 # survey's new questions (if any) have no column and are left out
-                ids_cache[survey.pk] = survey.field_ids
+                export_columns.add_survey(survey)
             answers = dict(zip(ids_cache[survey.pk], response.answers_values))
             for offset, column in enumerate(columns):
                 _write_cell(sheet, row_index, len(METADATA_COLUMNS) + offset, answers.get(column, ""))
             row_count = row_index
 
-        self._write_questions_sheet(workbook.add_worksheet(QUESTIONS_SHEET_NAME), bold, wordings)
+        self._write_questions_sheet(workbook.add_worksheet(QUESTIONS_SHEET_NAME), bold, export_columns.wordings)
         workbook.close()
         return row_count
 
