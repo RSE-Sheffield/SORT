@@ -1,6 +1,11 @@
 from django.core.management import BaseCommand, CommandError
 
-from home.services.research_export import EXAMPLES_PER_SURVEY, ExportDiagnosis, ResearchExport
+from home.services.research_export import (
+    EXAMPLES_PER_SURVEY,
+    MAX_MESSAGE_LENGTH,
+    ExportDiagnosis,
+    ResearchExport,
+)
 
 
 class Command(BaseCommand):
@@ -18,13 +23,21 @@ class Command(BaseCommand):
         group.add_argument(
             "--diagnose",
             action="store_true",
-            help="Report why export cells are blank and which responses are malformed, instead of exporting",
+            help=(
+                "Report why export cells are blank and which responses are malformed, instead of exporting. "
+                "Use -v 2 to list every invalid response with its full validation messages."
+            ),
         )
 
     def handle(self, *args, output=None, diagnose=False, verbosity=1, **options):
         if diagnose:
-            # List every invalid response only if --verbosity 2 or more asks for them
-            self.report(ResearchExport().diagnose(max_examples=None if verbosity >= 2 else EXAMPLES_PER_SURVEY))
+            # List every invalid response, with untruncated messages, only if --verbosity 2 or more asks for them
+            verbose = verbosity >= 2
+            diagnosis = ResearchExport().diagnose(
+                max_examples=None if verbose else EXAMPLES_PER_SURVEY,
+                max_message_length=None if verbose else MAX_MESSAGE_LENGTH,
+            )
+            self.report(diagnosis)
             return
         if not output:
             raise CommandError("Provide an output file with -o/--output, or use --diagnose")

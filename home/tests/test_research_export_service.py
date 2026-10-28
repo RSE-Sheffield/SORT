@@ -286,6 +286,17 @@ class ResearchExportDiagnoseTestCase(TestCase):
         self.assertEqual(diagnosis.invalid_responses, {survey.pk: 3})
         self.assertEqual([pk for pk, _ in diagnosis.invalid_examples[survey.pk]], [r.pk for r in responses[:2]])
 
+    def test_truncates_long_messages_unless_asked_not_to(self):
+        survey = make_survey()
+        response = make_response(survey, research_consent=True)
+        response.answers[-1] = []
+        response.save()
+
+        (_, messages), *_ = ResearchExport().diagnose(max_message_length=10).invalid_examples[survey.pk]
+        self.assertTrue(all(len(message) <= 13 and message.endswith("...") for message in messages))
+        (_, messages), *_ = ResearchExport().diagnose(max_message_length=None).invalid_examples[survey.pk]
+        self.assertFalse(any(message.endswith("...") for message in messages))
+
     def test_reports_repeated_ids_without_losing_answers(self):
         survey = make_duplicate_label_survey()
         response = make_response(survey, research_consent=True)
@@ -350,6 +361,17 @@ class ResearchExportCommandTestCase(TestCase):
         self.assertIn("Rows: 1 from 1 surveys", output)
         self.assertIn(f"Survey {survey.pk}: 1 of 1 responses", output)
         self.assertIn(f"Response {response.pk}:", output)
+
+    def test_diagnose_verbose_shows_full_messages(self):
+        survey = make_survey()
+        response = make_response(survey, research_consent=True)
+        response.answers[-1] = []
+        response.save()
+        with mock.patch(
+            "home.services.research_export.ResearchExport.diagnose", wraps=ResearchExport().diagnose
+        ) as diagnose:
+            call_command("research_export", "--diagnose", "-v", "2", stdout=StringIO())
+        diagnose.assert_called_once_with(max_examples=None, max_message_length=None)
 
     def test_requires_output_without_diagnose(self):
         with self.assertRaises(CommandError):

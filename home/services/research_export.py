@@ -162,12 +162,15 @@ class ResearchExport:
             export_columns.add_survey(survey, add_columns=True)
         return export_columns
 
-    def diagnose(self, max_examples: int | None = EXAMPLES_PER_SURVEY) -> ExportDiagnosis:
+    def diagnose(
+        self, max_examples: int | None = EXAMPLES_PER_SURVEY, max_message_length: int | None = MAX_MESSAGE_LENGTH
+    ) -> ExportDiagnosis:
         """
         Attribute every blank answer cell of the export to its cause, and check each
         consented response against its survey's JSON Schema. Reads only; writes nothing.
 
         :param max_examples: Invalid responses to keep as examples per survey (None keeps all)
+        :param max_message_length: Characters to keep of each validation message (None keeps all)
         """
         export_columns = self._columns()
         ids_cache, columns = export_columns.ids_cache, export_columns.columns
@@ -188,7 +191,11 @@ class ResearchExport:
                 examples = diagnosis.invalid_examples[survey_id]
                 if max_examples is None or len(examples) < max_examples:
                     messages = [
-                        message[:MAX_MESSAGE_LENGTH] + "..." if len(message) > MAX_MESSAGE_LENGTH else message
+                        (
+                            message[:max_message_length] + "..."
+                            if max_message_length is not None and len(message) > max_message_length
+                            else message
+                        )
                         for message in exc.messages
                     ]
                     examples.append((response.pk, messages))
