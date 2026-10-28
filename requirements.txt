@@ -3,7 +3,7 @@ django-bootstrap5==24.3
 django-extensions==3.2.3
 django-qr-code==4.1.0
 django-crispy-forms==2.4
-crispy-bootstrap5==2025.4
+crispy-bootstrap5==2026.9
 django-invitations==2.1.0
 django-allauth==65.14.1
 psycopg[binary]==3.2.*
