@@ -6,12 +6,13 @@ import io
 import tempfile
 from io import StringIO
 from pathlib import Path
+from unittest import mock
 
 import openpyxl
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 
-from home.services.research_export import METADATA_COLUMNS, SHEET_NAME, ResearchExport
+from home.services.research_export import EXAMPLES_PER_SURVEY, METADATA_COLUMNS, SHEET_NAME, ResearchExport
 from SORT.test.model_factory import SurveyFactory
 from survey.models import RESEARCH_CONSENT_FIELD_NAME, Survey, SurveyResponse
 
@@ -200,6 +201,49 @@ class ResearchExportDiagnoseTestCase(TestCase):
         diagnosis = ResearchExport().diagnose()
         self.assertEqual(diagnosis.duplicate_labels, {survey.pk: {EXTRA_QUESTION: 2}})
         self.assertEqual(diagnosis.overwritten_answers, 1)
+        self.assertEqual(diagnosis.blank_overwritten, 0)
+
+    def test_counts_blank_from_answer_overwritten_by_empty_duplicate(self):
+        survey = make_survey()
+        survey.survey_config["sections"].append(
+            {
+                "title": "Extra",
+                "fields": [
+                    {"type": "text", "name": "other1", "label": EXTRA_QUESTION},
+                    {"type": "text", "name": "other2", "label": EXTRA_QUESTION},
+                ],
+            }
+        )
+        survey.save()
+        response = make_response(survey, research_consent=True)
+        response.answers[-1] = ["", ""]
+        response.save()
+        both_empty = ResearchExport().diagnose()
+        response.answers[-1] = ["First", ""]
+        response.save()
+
+        diagnosis = ResearchExport().diagnose()
+        self.assertEqual(diagnosis.overwritten_answers, 1)
+        self.assertEqual(diagnosis.blank_overwritten, 1)
+        # The same blank cell, counted once: as overwritten rather than answered empty
+        self.assertEqual(diagnosis.blank_empty, both_empty.blank_empty - 1)
+        self.assertEqual(diagnosis.blank_count, both_empty.blank_count)
+
+    def test_builds_one_validator_per_survey(self):
+        surveys = [make_survey(), make_survey()]
+        for survey in surveys:
+            for _ in range(3):
+                make_response(survey, research_consent=True)
+
+        # Both surveys share the default configuration, so one real validator serves both
+        validator = surveys[0].response_validator
+        with mock.patch.object(
+            Survey, "response_validator", new_callable=mock.PropertyMock, return_value=validator
+        ) as response_validator:
+            diagnosis = ResearchExport().diagnose()
+        self.assertEqual(diagnosis.row_count, 6)
+        self.assertEqual(diagnosis.invalid_responses, {})
+        self.assertEqual(response_validator.call_count, len(surveys))
 
     def test_answers_stored_aligns_with_answers_values(self):
         survey = make_survey()
@@ -239,3 +283,22 @@ class ResearchExportCommandTestCase(TestCase):
     def test_requires_output_without_diagnose(self):
         with self.assertRaises(CommandError):
             call_command("research_export", stdout=StringIO())
+
+    def test_rejects_output_with_diagnose(self):
+        with self.assertRaises(CommandError):
+            call_command("research_export", "--diagnose", "-o", "research.xlsx", stdout=StringIO())
+
+    def test_diagnose_says_how_many_examples_were_omitted(self):
+        survey = make_survey()
+        for _ in range(EXAMPLES_PER_SURVEY + 2):
+            response = make_response(survey, research_consent=True)
+            response.answers[-1] = []
+            response.save()
+
+        out = StringIO()
+        call_command("research_export", "--diagnose", stdout=out)
+        self.assertIn("... and 2 more (use -v 2 to list all)", out.getvalue())
+
+        out = StringIO()
+        call_command("research_export", "--diagnose", verbosity=2, stdout=out)
+        self.assertNotIn("more (use -v 2", out.getvalue())
