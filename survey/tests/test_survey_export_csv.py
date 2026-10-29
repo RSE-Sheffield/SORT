@@ -84,6 +84,30 @@ class TestSurveyCsvExport(TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["Which colours do you like?"], "Red")
 
+    def test_csv_export_keeps_answers_to_fields_with_the_same_label(self):
+        """
+        Two fields with the same label each get their own column, rather than the second
+        answer overwriting the first.
+        """
+        survey = SurveyFactory()
+        survey.survey_config = {
+            "sections": [
+                {
+                    "title": "Section 1",
+                    "fields": [
+                        {"type": "text", "label": "What is your profession?"},
+                        {"type": "text", "label": "What is your profession?"},
+                    ],
+                }
+            ]
+        }
+        survey.save()
+        SurveyResponse.objects.create(survey=survey, answers=[["Nurse", "Midwife"]])
+
+        rows = list(csv.DictReader(io.StringIO(survey.to_csv())))
+
+        self.assertEqual(rows, [{"What is your profession? (1)": "Nurse", "What is your profession? (2)": "Midwife"}])
+
     def test_csv_export_with_answers_missing_from_a_response(self):
         """
         A response holding fewer answers than the survey has questions should still

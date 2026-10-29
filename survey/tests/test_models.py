@@ -5,7 +5,7 @@ from django.db import IntegrityError
 from django.test import TestCase
 
 from SORT.test.model_factory import SurveyFactory
-from survey.models import Profession, SurveyEvidenceSection
+from survey.models import Profession, SurveyEvidenceSection, number_repeats
 
 
 class TestSurveyEvidenceSection(TestCase):
@@ -117,3 +117,77 @@ class TestSurveyConfigSublabels(TestCase):
                     text,
                     msg=f"{label} sublabel in {filename!r} has unexpected phrasing: {text!r}",
                 )
+
+
+class TestSurveyFieldIds(TestCase):
+    """
+    Stable question identifiers, used to align questions across surveys whose wording differs.
+    See https://github.com/RSE-Sheffield/SORT/issues/799
+    """
+
+    def _survey(self, profession: Profession):
+        survey = SurveyFactory(survey_body_path=profession)
+        survey.initialise()
+        return survey
+
+    def test_field_ids_are_unique_and_aligned_with_fields(self):
+        for profession in Profession:
+            survey = self._survey(profession)
+            with self.subTest(profession=profession):
+                self.assertEqual(len(survey.field_ids), len(survey.fields))
+                self.assertEqual(len(set(survey.field_ids)), len(survey.field_ids))
+
+    def test_sort_question_ids_are_the_same_in_every_profession_variant(self):
+        def sort_ids(survey):
+            # Drop the consent (first) and demography (last) sections
+            consent = len(survey.sections[0]["fields"])
+            demography = len(survey.sections[-1]["fields"])
+            return survey.field_ids[consent:-demography]
+
+        expected = sort_ids(self._survey(Profession.NURSES))
+        self.assertEqual(expected[:3], ("A1", "A2", "A3"))
+        self.assertIn("releasing_potential_comments", expected)
+        for profession in Profession:
+            with self.subTest(profession=profession):
+                self.assertEqual(sort_ids(self._survey(profession)), expected)
+
+    def test_repeated_labels_are_numbered(self):
+        survey = self._survey(Profession.NURSES)
+        survey.survey_config["sections"][-1]["fields"].append({"type": "text", "label": "What is your profession?"})
+        self.assertEqual(survey.field_ids[-1], "What is your profession? (2)")
+        self.assertIn("What is your profession? (1)", survey.field_ids)
+        # Every occurrence is numbered, so a bare ID always means the only one of its kind
+        self.assertNotIn("What is your profession?", survey.field_ids)
+
+    def test_numbered_ids_do_not_collide_with_existing_ids(self):
+        self.assertEqual(number_repeats(("Role", "Role", "Role (2)")), ("Role (1)", "Role (3)", "Role (2)"))
+        self.assertEqual(number_repeats(("Role (1)", "Role", "Role")), ("Role (1)", "Role (2)", "Role (3)"))
+
+    def test_sort_likert_sublabel_without_a_code_uses_field_name_and_position(self):
+        survey = self._survey(Profession.NURSES)
+        likert = survey.sections[1]["fields"][0]
+        likert["sublabels"][1] = "A question reworded without its code"
+        consent = len(survey.sections[0]["fields"])
+        self.assertEqual(survey.field_ids[consent : consent + 3], ("A1", f"{likert['name']}:1", "A3"))
+
+    def test_unique_fields_are_unique_and_aligned_with_fields(self):
+        survey = self._survey(Profession.NURSES)
+        survey.survey_config["sections"][-1]["fields"].append({"type": "text", "label": "What is your profession?"})
+        self.assertEqual(len(survey.unique_fields), len(survey.fields))
+        self.assertEqual(len(set(survey.unique_fields)), len(survey.unique_fields))
+        self.assertEqual(survey.unique_fields[0], survey.fields[0])
+
+    def test_custom_likert_sublabels_do_not_take_question_codes(self):
+        survey = self._survey(Profession.NURSES)
+        sublabels = ["A1. I feel supported", "Q1. My manager is research-active"]
+        custom_section = {
+            "title": "Custom",
+            "type": "custom",
+            "fields": [{"type": "likert", "label": "Custom likert", "sublabels": sublabels, "options": ["Yes", "No"]}],
+        }
+        # After consent, before the SORT sections
+        survey.survey_config["sections"].insert(1, custom_section)
+        consent = len(survey.sections[0]["fields"])
+        self.assertEqual(survey.field_ids[consent : consent + 2], tuple(sublabels))
+        self.assertIn("A1", survey.field_ids)
+        self.assertNotIn("A1 (2)", survey.field_ids)

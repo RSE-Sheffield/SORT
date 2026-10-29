@@ -1,6 +1,11 @@
 from django.core.management import BaseCommand, CommandError
 
-from home.services.research_export import EXAMPLES_PER_SURVEY, ExportDiagnosis, ResearchExport
+from home.services.research_export import (
+    EXAMPLES_PER_SURVEY,
+    MAX_MESSAGE_LENGTH,
+    ExportDiagnosis,
+    ResearchExport,
+)
 
 
 class Command(BaseCommand):
@@ -18,13 +23,21 @@ class Command(BaseCommand):
         group.add_argument(
             "--diagnose",
             action="store_true",
-            help="Report why export cells are blank and which responses are malformed, instead of exporting",
+            help=(
+                "Report why export cells are blank and which responses are malformed, instead of exporting. "
+                "Use -v 2 to list every invalid response with its full validation messages."
+            ),
         )
 
     def handle(self, *args, output=None, diagnose=False, verbosity=1, **options):
         if diagnose:
-            # List every invalid response only if --verbosity 2 or more asks for them
-            self.report(ResearchExport().diagnose(max_examples=None if verbosity >= 2 else EXAMPLES_PER_SURVEY))
+            # List every invalid response, with untruncated messages, only if --verbosity 2 or more asks for them
+            verbose = verbosity >= 2
+            diagnosis = ResearchExport().diagnose(
+                max_examples=None if verbose else EXAMPLES_PER_SURVEY,
+                max_message_length=None if verbose else MAX_MESSAGE_LENGTH,
+            )
+            self.report(diagnosis)
             return
         if not output:
             raise CommandError("Provide an output file with -o/--output, or use --diagnose")
@@ -45,11 +58,9 @@ class Command(BaseCommand):
             ("Question from another survey's config", diagnosis.blank_other_survey),
             ("Missing from stored answers (malformed)", diagnosis.blank_not_stored),
             ("Answered empty (e.g. optional field)", diagnosis.blank_empty),
-            ("Overwritten by duplicate label", diagnosis.blank_overwritten),
         )
         for cause, count in causes:
             write(f"  {cause + ':':<41}{count} ({share(count)})")
-        write(f"Answers overwritten by duplicate labels: {diagnosis.overwritten_answers}")
 
         write(f"\nResponses with answers missing from stored JSON: {sum(diagnosis.short_responses.values())}")
         for survey_id, count in sorted(diagnosis.short_responses.items()):
@@ -65,7 +76,10 @@ class Command(BaseCommand):
             if count > len(examples):
                 write(f"    ... and {count - len(examples)} more (use -v 2 to list all)")
 
-        write(f"\nSurveys with duplicate question labels: {len(diagnosis.duplicate_labels)}")
-        for survey_id, duplicates in sorted(diagnosis.duplicate_labels.items()):
-            for label, count in duplicates.items():
-                write(f"  Survey {survey_id}: {count} fields labelled {label!r}")
+        write(
+            f"\nSurveys with repeated question IDs (exported as separate numbered columns): "
+            f"{len(diagnosis.repeated_ids)}"
+        )
+        for survey_id, repeated in sorted(diagnosis.repeated_ids.items()):
+            for field_id, count in repeated.items():
+                write(f"  Survey {survey_id}: {count} fields with ID {field_id!r}")
