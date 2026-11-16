@@ -53,7 +53,7 @@ jobs:
       - name: Run test suite
         run: npm run test:coverage
       - name: Report coverage
-        uses: davelosert/vitest-coverage-report-action@c4bbc33a89b7ace0e63d35f1f7d4bcee31155a73 # v2.13.0
+        uses: davelosert/vitest-coverage-report-action@74c2d9210b4fc44c84d8213f61d7ec99837b7aa0 # v2.13.2
         with:
           json-summary-path: ui_components/coverage/coverage-summary.json
           json-final-path: ui_components/coverage/coverage-final.json
