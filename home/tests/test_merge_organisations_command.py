@@ -67,6 +67,20 @@ class MergeOrganisationsCommandTestCase(SORT.test.test_case.ServiceTestCase):
         self.assertEqual(self.target, project.organisation)
         self.assertFalse(Organisation.objects.filter(pk=self.source.pk).exists())
 
+    def test_force_is_alias_for_yes(self):
+        project = ProjectFactory(organisation=self.source)
+
+        self._call(
+            self.source.pk,
+            self.target.pk,
+            "--force",
+            f"--actioned-by={self.superuser.email}",
+        )
+
+        project.refresh_from_db()
+        self.assertEqual(self.target, project.organisation)
+        self.assertFalse(Organisation.objects.filter(pk=self.source.pk).exists())
+
     def test_unconfirmed_prompt_aborts(self):
         project = ProjectFactory(organisation=self.source)
 
