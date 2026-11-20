@@ -59,5 +59,19 @@
                 </p>
             </div>
         </div>
+        <div class="card custom-card border-danger shadow-sm my-4">
+            <div class="card-body">
+                <h2>Danger zone</h2>
+                {% if user.is_staff or user.is_superuser %}
+                    <p class="mb-0">Staff accounts can't be deleted here. Ask another staff member to delete your account from the console.</p>
+                {% else %}
+                    <p>Withdraw your consent and permanently delete your SORT account and personal data.</p>
+                    <a href="{% url 'delete_account' %}" class="btn btn-outline-danger">
+                        <i class="bx bxs-trash"></i>
+                        Delete my account
+                    </a>
+                {% endif %}
+            </div>
+        </div>
     </div>
 {% endblock %}

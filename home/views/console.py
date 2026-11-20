@@ -22,6 +22,7 @@ from home.forms.user_profile import UserProfileForm
 from home.mixins import StaffRequiredMixin
 from home.models import (
     DataProtectionEvent,
+    ErasureRequest,
     Organisation,
     OrganisationJoinRequest,
     OrganisationMembership,
@@ -57,6 +58,9 @@ class ConsoleView(StaffRequiredMixin, TemplateView):
             "projects": Project.objects.count(),
             "surveys": Survey.objects.count(),
             "responses": SurveyResponse.objects.count(),
+            "pending_erasure_requests": ErasureRequest.objects.filter(
+                status=ErasureRequest.Status.PENDING
+            ).count(),
         }
 
         # Recent activity feed
@@ -238,6 +242,9 @@ class ConsoleUserDetailView(StaffRequiredMixin, TemplateView):
             .select_related("organisation")
             .order_by("organisation__name", "name")
         )
+        context["pending_erasure_request"] = ErasureRequest.objects.filter(
+            user=user, status=ErasureRequest.Status.PENDING
+        ).first()
         return context
 
 
@@ -361,7 +368,16 @@ class ConsoleDeleteUserView(StaffRequiredMixin, TemplateResponseMixin, View):
         target_user = self._get_user(pk)
         self._check_safe(request, target_user)
         display_name = str(target_user)
-        user_service.anonymise(target_user)
+        pending_requests = ErasureRequest.objects.filter(user=target_user, status=ErasureRequest.Status.PENDING)
+        # Only attribute the request to the subject when they actually asked
+        # for erasure; otherwise it's a staff-initiated action.
+        requested_by = target_user if pending_requests.exists() else None
+        user_service.anonymise(target_user, requested_by=requested_by, actioned_by=request.user)
+        pending_requests.update(
+            status=ErasureRequest.Status.COMPLETED,
+            completed_at=timezone.now(),
+            completed_by=request.user,
+        )
         messages.success(request, f"{display_name} has been anonymised and removed.")
         return redirect("admin_users")
 
@@ -535,6 +551,7 @@ class ConsoleEditUserView(StaffRequiredMixin, TemplateResponseMixin, View):
         data_protection_service.record_event(
             event_type=DataProtectionEvent.EventType.RECTIFICATION,
             subject_user=target_user,
+            subject_email=old_values["email"],
             actioned_by=request.user,
             notes="Corrected by staff via console: " + "; ".join(changes),
         )
@@ -584,4 +601,22 @@ class ConsoleDataProtectionLogView(StaffRequiredMixin, SortableMixin, TemplateVi
         context["selected_event_type"] = event_type
         context["selected_subject_user"] = raw_subject
         context["filter_qs"] = filter_params.urlencode()
+        return context
+
+
+class ConsolePendingErasureRequestsView(StaffRequiredMixin, TemplateView):
+    """
+    Self-service erasure requests (issue #585) that couldn't be completed
+    automatically — e.g. the requester is a sole organisation admin — and
+    are waiting on staff. Completing one is just the existing
+    ConsoleDeleteUserView flow; this page only lists what's outstanding.
+    """
+
+    template_name = "console/pending_erasure_requests.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["requests"] = ErasureRequest.objects.filter(
+            status=ErasureRequest.Status.PENDING
+        ).select_related("user").order_by("requested_at")
         return context

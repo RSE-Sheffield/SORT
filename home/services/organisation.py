@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Set, Union
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
 
@@ -375,6 +375,27 @@ class OrganisationService(BasePermissionService):
     def get_organisation_members(self, user: User, organisation: Organisation) -> QuerySet[OrganisationMembership]:
         """Get all members of an organisation with their roles"""
         return OrganisationMembership.objects.filter(organisation=organisation).select_related("user")
+
+    def get_sole_admin_orgs_with_other_members(self, user: User) -> QuerySet[Organisation]:
+        """
+        Organisations where `user` is the only ADMIN and other members
+        exist. Erasing `user` immediately would strand these orgs with
+        nobody able to manage them, so self-service erasure defers to staff
+        instead (see UserService.request_self_erasure).
+        """
+        admin_org_ids = OrganisationMembership.objects.filter(user=user, role=ROLE_ADMIN).values(
+            "organisation_id"
+        )
+        return (
+            Organisation.objects.filter(pk__in=admin_org_ids)
+            .annotate(
+                admin_count=Count(
+                    "organisationmembership", filter=Q(organisationmembership__role=ROLE_ADMIN), distinct=True
+                ),
+                member_count=Count("organisationmembership", distinct=True),
+            )
+            .filter(admin_count=1, member_count__gt=1)
+        )
 
     def can_merge(self, user: User) -> bool:
         """

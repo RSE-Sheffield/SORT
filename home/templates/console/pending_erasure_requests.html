@@ -1,0 +1,52 @@
+{% extends "base_console.html" %}
+{% block title %}| Admin — Pending erasure requests{% endblock %}
+
+{% block content %}
+    <div class="container py-4">
+        <h1 class="h3 mb-1">Pending erasure requests</h1>
+        <p class="text-muted mb-4">
+            Self-service account deletion requests that couldn't be completed
+            automatically — usually because the requester is the sole admin
+            of an organisation with other members. UK GDPR Art. 12(3)
+            requires these to be actioned within one month. Use each user's
+            existing "Delete user" action in the console to complete a request.
+        </p>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Requested</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for erasure_request in requests %}
+                    <tr>
+                        <td><a href="{% url 'admin_user_detail' erasure_request.user.pk %}">{{ erasure_request.user }}</a></td>
+                        <td>{{ erasure_request.user.email }}</td>
+                        <td>{{ erasure_request.requested_at|date:"d M Y" }}</td>
+                        <td>
+                            {% if erasure_request.is_overdue %}
+                                <span class="badge bg-danger">Overdue</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'admin_delete_user' erasure_request.user.pk %}" class="btn btn-sm btn-danger">Complete erasure</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-muted">No pending erasure requests.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
